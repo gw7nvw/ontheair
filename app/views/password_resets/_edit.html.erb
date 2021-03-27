@@ -1,0 +1,28 @@
+<% provide(:title, "Password Reset") %>
+<% @title=" | Password Reset " %>
+<%= render 'flash' %>
+
+<script> 
+   update_title('<%=@title%>'); 
+   document.getElementById("page_status").innerHTML = '';
+</script>
+
+ <div class="erow">
+  <div class="span6">
+    <%= form_for @user, url: password_reset_path(params[:id]) do |f| %>
+      <%= render 'shared/error_messages' %>
+
+      <%= hidden_field_tag :email, @user.email %>
+
+      <%= f.label :password %>
+      <%= f.password_field :password, class: 'form-control' %>
+
+      <%= f.label :password_confirmation, "Confirmation" %>
+      <%= f.password_field :password_confirmation, class: 'form-control' %>
+
+      <div class="erow"><i>Password rules: any combination of letters and numbers. No spaces or extended characters</i></div>
+
+      <%= f.submit "Update password", class: "btn btn-small btn-primary" %>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,146 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   site_toggle_docland(false);
+   site_toggle_huts(false);
+   site_toggle_island(2);
+   site_toggle_summits(false);
+   document.title = 'NZIslands On The Air'
+   document.getElementById('logo').innerHTML='NZIslands On The Air'
+
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Islands</b>
+     </div>
+   <div id="controls">
+       <% if current_user and current_user.is_admin %>
+            <%=  link_to "Edit Table", '/islands/editgrid', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+       <% end %>
+       <% if current_user and current_user.is_modifier %>
+            <%=  link_to "Add island", '/islands/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('add')" %>
+       <% end %>
+       <% if current_user  %>
+         <%=  link_to "Download", '/islands.csv', class: "btn btn-small btn-primary"%>
+       <% end %>
+       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+<div id="right_scroll">
+  <%= render 'flash' %>
+<%= form_tag '/islands', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+  <br/>
+  <div class="erow">
+  <div class="rowtitle">Find island:</div>
+  <div class="rowtext">
+    <input type="text" name="searchtext" value='<%=@searchtext%>'/>
+  </div>
+  </div>
+  <div class="erow">
+  <div class="rowtitle">Only official names</div>
+  <div class="rowtext">
+     <input id="search_minor_reserves" name="search_mr" type="checkbox" value="true" <%=if @searchMR==true then "checked" end %>></div>
+  </div>
+  <div class="buttonshort">
+    <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small"  %>
+    <%=  link_to "Clear", '/islands', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
+
+  </div>
+</form>
+
+<% if !@searchtext %>
+  Your search returned no results.
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+   <div class="sectiontitle">NZ Inshore and Freshwater Islands On The Air - league table</div>
+
+  <table class="users">
+    <tr>
+      <th>Position</th>
+      <th>User</th>
+      <th>Unique islands</th>
+      <th>Total islands</th>
+    </tr>
+
+<%
+    position=0
+    lastscore=9999999
+
+    if @users then @users.each do |user|
+      if user.islands_bagged<lastscore then position=position+1; lastscore=user.islands_bagged  end
+%>
+      <tr>
+        <td>
+          <%= position.to_s %>
+        </td>
+        <td>
+          <%= link_to user.callsign.upcase, '/users/'+user.callsign, remote: true, :id => 'user_link_'+user.id.to_s, :style => (if not user.activated then 'color:grey' else '' end), :onclick => "linkHandler('user_link_"+user.id.to_s+"')" %>
+        </td>
+        <td><%=user.islands_bagged%></td>
+        <td><%=user.islands_bagged_total%></td>
+      </tr>
+    <% end end  %>
+  </table>
+
+<% else %>
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+  Your search returned <%=@count.to_s%> results.
+  <% if @count>99 then %>
+     This is more than can be displayed.  Please refine your search
+  <% end %>
+
+  <table class="places">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Notes</th>
+        <th style="text-align:center">
+          <%=render :partial => 'filter',  :locals => {:filtername => "active", :formname => "/islands"} %>
+          Active?
+        </th>
+   
+      </tr>
+    <% if @islands then @islands.each do |island| %>
+      <tr>
+        <td>ZLI/<%=island.id.to_s%></td>
+        <td>
+          <% if current_user and current_user.is_modifier %>
+             <span title="Click to edit row"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/islands/'+island.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+          <% end %>
+          <%= link_to island.name, '/islands/'+island.id.to_s, remote: true, :id => 'island_link_'+island.id.to_s, :onclick => "linkHandler('island_link_"+island.id.to_s+"')" %>
+        </td>
+        <td>
+            <%= island.info_description %>
+        </td>
+        <td>
+            <%= island.info_note %> | <%= island.feat_note %> | <%= island.treaty_legislation %>
+        </td>
+
+        <td style="text-align:center"><%= check_box "island", "is_active", {:checked => island.is_active, :disabled => true} %></td>
+      </tr>
+    <% end end %>
+  </table>
+</div>
+
+<% end %>
+<script>
+    if(site_map_size==0) { 
+       $('#actionbar').removeClass('span7');
+       $('#actionbar').addClass('span12');
+}
+</script>

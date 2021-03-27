@@ -1,0 +1,51 @@
+class Park < ActiveRecord::Base
+
+  set_rgeo_factory_for_column(:boundary, RGeo::Geographic.spherical_factory(:srid => 4326, :proj4=> '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs', :has_z_coordinate => false))
+
+  def self.update_table
+    parks=Docparks.all
+
+    parks.each do |park|
+      p=self.find_by_id(park.NaPALIS_ID)
+      if not p then
+        p=self.create(id: park.NaPALIS_ID, name: park.Name)
+      end
+    end
+  end
+
+  def all_boundary
+   if self.boundary==nil then
+     boundary=Docparks.find_by_id(self.id).WKT
+   else
+     boundary=self.boundary
+   end
+   boundary
+  end
+  
+  def simple_boundary
+   if self.boundary==nil then
+     rnd=0.0002
+     boundarys=Docparks.find_by_sql [ 'select id, ST_AsText(ST_Simplify("WKT", '+rnd.to_s+')) as "WKT" from docparks where id='+self.id.to_s ] 
+     boundary=boundarys.first.WKT
+   else
+     boundary=self.boundary
+   end
+   boundary
+  end
+
+  def location
+   if self.boundary==nil then
+      locations=Docparks.find_by_sql [ 'select id, ST_Centroid("WKT") as "WKT" from docparks where id='+self.id.to_s ] 
+      if locations then location=locations.first.WKT else location=nil end
+   else
+      locations=Park.find_by_sql [ 'select id, ST_Centroid("boundary") as "boundary" from parks where id='+self.id.to_s ] 
+      if locations then location=locations.first.boundary else location=nil end
+   end
+   location
+  end
+
+  def huts
+   hs=Hut.find_by_sql [ "select * from huts h where ST_Within(h.location, ST_GeomFromText('"+self.all_boundary.as_text+"',4326));" ]
+   hs
+  end
+end

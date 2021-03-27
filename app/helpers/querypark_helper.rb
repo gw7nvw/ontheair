@@ -1,0 +1,2 @@
+module QueryparkHelper
+end

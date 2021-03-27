@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script src="/assets/ol.js"></script>
+    <link rel="stylesheet" href="/assets/ol.css" type="text/css">
+
+<script>
+if( /Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent))
+{
+ var ismobile=true;
+} else {
+ var ismobile=false;
+}
+</script>
+
+    <script>
+      <% if @zoomlevel and @zoomlevel.to_i>=5 and @zoomlevel.to_i<=15%> var defzoom=<%=@zoomlevel%> <% end %>
+      <% if @map_x %> var def_x=<%=@map_x%> <% end %>
+      <% if @map_y %> var def_y=<%=@map_y%> <% end %>
+    </script>
+    <%  @init_name = "site_init()" %>
+
+    <title>... On The Air</title>
+    <% if @description and @description.length>0 %>
+    <meta name="description" content="<%=@description%>">
+    <% end %>
+    <%= stylesheet_link_tag "application", media: "all", "data-turbolinks-track" => true %>
+    <%= stylesheet_link_tag "application", media: "all", "jquery-ui.mi" => true %>
+
+    <%= javascript_include_tag "application", "data-turbolinks-track" => true %>
+   <%= javascript_include_tag "dhtmlxgrid" %>
+    <%= csrf_meta_tags %>
+    <%= render 'layouts/shim' %> 
+    <meta name="google-site-verification" content="KIylIchG3986annyXGfxBNJ-qMOJCDG2tdcuUMFPoO0" />
+    <script src="/styles.js"></script>
+
+</head>
+<% if @help=="true" %>
+ <body>
+    <div id="right_panel" class="panel" class='style="margin-left: 0px; width: 100%'>
+<% else %>
+ <body onload='<%=@init_name%>' style="cursor: auto;">
+  <%= form_tag '/redisplay', :remote=> true, :id => "thelink", :name=> 'selectform', :method=> 'post'%>
+    <div class="row">
+     <input type="hidden" name="select"/>
+     <input type="hidden" name="signed_in" value="<%=signed_in?%>"/>
+     <input type="hidden" name="selectname"/>
+     <input type="hidden" name="selectx"/>
+     <input type="hidden" name="selecty"/>
+     <input type="hidden" name="selecttype"/>
+     <input type="hidden" name="currentx"/>
+     <input type="hidden" name="currenty"/>
+     <input type="hidden" name="currentzoom"/>
+    </div>
+  </form>
+
+    <%= render 'layouts/header' %>
+    <div id="main_page" class="container-fluid"> 
+    <div class="row-fluid">
+    <div id="left_panel" class="span5"> 
+      <%=render 'maps/map' %>
+    </div> 
+    <div id="right_panel" class="span7"> 
+ <% end %> 
+
+      <%=yield %>
+    </div> 
+    <div class="clear"></div> 
+  </div>
+  </div>
+</body>
+</html>

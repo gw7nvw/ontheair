@@ -1,0 +1,43 @@
+  <table class="places">
+      <tr>
+        <th></th>
+        <th>Callsign1</th>
+        <th>Callsign2</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Freq (MHz)</th>
+        <th>Mode</th>
+        <th>Location1</th>
+        <th>Location2</th>
+      </tr>
+    <% count=0
+       if @contacts then @contacts.each do |contact| %>
+      <tr>
+        <td>
+          <% if !@brief and current_user  and (current_user.callsign==contact.callsign1 or current_user.callsign==contact.callsign2 or current_user.is_admin) %>
+            <%= link_to 'Edit', '/contacts/'+contact.id.to_s+'/edit?referring=index', remote: true, :id => 'editbutton'+contact.id.to_s, :onclick => "linkHandler('editbutton"+contact.id.to_s+"')" %><br/>
+          <% end %>
+          <%= link_to 'View', '/contacts/'+contact.id.to_s, remote: true, :id => 'contact_link_'+contact.id.to_s, :onclick => "linkHandler('contact_link_"+contact.id.to_s+"')" %>
+        </td>
+        <%
+          style1=""
+          if contact.is_qrp1 then style1=style1+"color:green;" end 
+          if !contact.is_portable1 then style1=style1+"text-decoration:underline;" end 
+          style2=""
+          if contact.is_qrp2 then style2=style2+"color:green;" end 
+          if !contact.is_portable2 then style2=style2+"text-decoration:underline;" end 
+        %>
+        <td> <%=link_to contact.callsign1, '/users/'+contact.callsign1, remote: true,  :id => 'user', :onclick => "linkHandler('user')", :style => style1%> </td>
+        <td> <%=link_to contact.callsign2, '/users/'+contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler('user')", :style => style2  %> </td>
+        <td> <%= contact.localdate(current_user) %> </td>
+        <td> <%= if contact.time then contact.localtime(current_user) else '' end %> <%=contact.localtimezone(current_user) %></td>
+        <td> <%= if contact.frequency then '%.3f' % contact.frequency else '' end%> </td>
+        <td> <%= contact.mode %> </td>
+        <td> <%= contact.location1_text %> </td>
+        <td> <%= contact.location2_text %> </td>
+      </tr>
+    <%count=count+1%>
+    <% end end %>
+  </table>
+</div>
+

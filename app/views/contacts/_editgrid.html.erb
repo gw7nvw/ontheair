@@ -1,0 +1,164 @@
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  "Contacts:", '/contacts', remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Edit Table</b>
+     </div>
+   <div id="controls">
+       <%=  link_to "Index", '/contacts/', class: "btn btn-small btn-primary", remote: true, :id => 'contacts', :onclick => "linkHandler('contacts')" %>
+       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+
+<div class="fullform">
+   <%= render 'flash' %>
+   <%= render 'shared/error_messages' %>
+
+     <%= form_for @contact, remote: true, :html => {:name => 'contactform'} do |f| %>
+      <%= hidden_field_tag(:referring, 'editgrid') %>
+
+      <div class="erow"><div class="sectiontitle_bold">Your Details</div></div>
+      <div class="sectiontitle">Your Callsign</div>
+      <%= f.text_field :callsign1 %>
+
+      <div class="sectiontitle">Date</div> <%= f.date_field :date %>
+
+      <div class="sectiontitle">Timezone</div><%= collection_select( :contact, :timezone, Timezone.all.order(:name), :id, :name, {}, {}) %>
+      <table>
+        <tr>
+            <td> <div class="sectiontitle">QRP?  </div> <%= f.check_box :is_qrp1%></td>
+            <td> <div class="sectiontitle">Portable?  </div> <%= f.check_box :is_portable1%></td>
+        </tr>
+      </table>
+
+      <div class="erow"><div class="rowtitle">Hut</div>
+        <%=  link_to "Select from list", '/query?hutfield=hut1', class: "btn btn-small", :remote => true,  :onclick => "search_huts('hut1')" %>
+        <%=  link_to "Select from map", '#', class: "btn btn-small",  :onclick => "site_selectPlace('contact_hut1_id', 'hut1_name', 'contact_location1', 'contact_x1', 'contact_y1', null, null, site_green_star);return false;" %>
+        <%=  link_to "Clear", '#', class: "btn btn-small", :onclick => "site_clear_element(['contact_hut1_id', 'hut1_name', 'contact_location1', 'contact_x1', 'contact_y1']);map_clear_scratch_layer(null,site_green_star);return false;" %>
+      </div>
+
+      <div class="roxtext">
+        <input type="text" id="hut1_name" name="hut1_name" value='<%=(if @contact.hut1 then @contact.hut1.name else "" end)%>' readonly='true'>
+
+        <%= f.text_field :hut1_id, :readonly => true, :style => 'display:none' %>
+
+      </div>
+
+      <div class="erow"><div class="rowtitle">Park</div>
+        <%=  link_to "Select from list", '/querypark?parkfield=park1', class: "btn btn-small", :remote => true,  :onclick => "search_parks('park1')" %>
+        <%=  link_to "Select from map", '#', class: "btn btn-small",  :onclick => "site_selectPark('contact_park1_id', 'park1_name',  null, null, site_green_polygon);return false;" %>
+        <%=  link_to "Clear", '#', class: "btn btn-small", :onclick => "site_clear_element(['contact_park1_id', 'park1_name']);map_clear_scratch_layer(null, site_green_polygon);return false;" %>
+      </div>
+      <div class="roxtext">
+        <input type="text" id="park1_name" name="park1_name" value='<%=(if @contact.park1 then @contact.park1.name else "" end)%>' readonly='true'>
+
+      <%= f.text_field :park1_id, :readonly => true, :style => 'display:none' %>
+      </div>
+
+      <div class="erow"><div class="rowtitle">Island</div>
+        <%=  link_to "Select from list", '/queryisland?islandfield=island1', class: "btn btn-small", :remote => true,  :onclick => "search_islands('island1')" %>
+        <%=  link_to "Select from map", '#', class: "btn btn-small",  :onclick => "site_selectIsland('contact_island1_id', 'island1_name',  null, null, site_green_star);return false;" %>
+        <%=  link_to "Clear", '#', class: "btn btn-small", :onclick => "site_clear_element(['contact_island1_id', 'island1_name']);map_clear_scratch_layer(null, site_green_star);return false;" %>
+      </div>
+      <div class="roxtext">
+        <input type="text" id="island1_name" name="island1_name" value='<%=(if @contact.island1 then @contact.island1.name else "" end)%>' readonly='true'>
+
+      <%= f.text_field :island1_id, :readonly => true, :style => 'display:none' %>
+      </div>
+
+     <div class="erow">
+         <div class="rowtitle">NZTM2000 Reference:</div>
+         <div id="placeplus" style="display:block"> <a class="btn btn-small" href="#" onclick="site_drawPlace('placetick', 'placeplus', 'contact_location1', 'contact_x1', 'contact_y1',site_green_star); return false;">Select</a></div>
+         <div id="placetick" style="display:none"> <a class="btn btn-small" href="#" onclick="site_selectNothing('placetick', 'placeplus'); return false;">Confirm</a></div>
+      </div>
+      <%= f.hidden_field :location1, :readonly => true %>
+
+      <table>
+        <tr>
+           <td>E<%= f.text_field :x1, :size => 8 %></td><td>N<%= f.text_field :y1, :size => 8 %></td>
+         </tr>
+      </table>
+
+
+<div id="your_details" style='display:none'>
+      <div class="sectiontitle">Altitude (leave blank to calculate from map upon save):</div>
+      <%= f.text_field :altitude1 %>
+
+      <div class="sectiontitle">Location description</div>
+      <%= f.text_field :loc_desc1 %>
+
+      <div class="sectiontitle">Power tx</div>
+      <%= f.text_field :power1 %>
+
+      <div class="sectiontitle">Transceiver</div>
+      <%= f.text_field :transceiver1 %>
+
+      <div class="sectiontitle">Antenna</div>
+      <%= f.text_field :antenna1 %>
+
+      <div class="sectiontitle">Comments / Notes</div>
+      <%= f.text_area :comments1 %>
+
+</div>
+
+      <%=render :partial => 'expand_buttons',  :locals => {:expName => "your_details", :initialSt => 0} %>
+
+      <div class="erow">
+         <div class="hrline">
+            <hr noshade size="4">
+         </div>
+      </div>
+      <div class="erow"><div class="sectiontitle_bold">Contact Details</div></div>
+  <div id="right_scroll">
+  <table>
+    <tr>
+      <th>Time</th>
+      <th>Freq(MHz)</th>
+      <th>Mode</th>
+      <th>Callsign</th>
+      <th>QRP?</th>
+      <th>Location</th>
+      <th>Your Signal</th>
+      <th>Their Signal</th>
+      <th>Comments</th>
+      <th></th>
+    </tr>
+    <% @contacts.each do |c| %>
+      <tr>
+        <td><%=c.localtime(current_user)%> <%=c.localtimezone(current_user)%></td>
+        <td><%=if c.frequency then  '%.3f' % c.frequency else '' end %></td>
+        <td><%=c.mode%></td>
+        <td><%=c.callsign2%></td>
+        <td><%=if c.is_qrp2 then "Y" else "N" end%></td>
+        <td><%=c.loc_desc2%></td>
+        <td><%=c.signal1%></td>
+        <td><%=c.signal2%></td>
+        <td><%=c.comments1%></td>
+        <td><%= link_to 'Edit', '/contacts/'+c.id.to_s+'/edit?referring=editgrid', remote: true, :id => 'editbutton'+c.id.to_s, :onclick => "linkHandler('editbutton"+c.id.to_s+"')" %>
+</td>
+      </tr>
+    <% end %>
+    <tr>
+        <td><%=f.time_field :time%></td>
+        <td><%=f.text_field :frequency%></td>
+        <td><%=f.text_field :mode%></td>
+        <td><%=f.text_field :callsign2%></td>
+        <td><%=f.check_box :is_qrp2%></td>
+        <td><%=f.text_field :loc_desc2%></td>
+        <td><%=f.text_field :signal1%></td>
+        <td><%=f.text_field :signal2%></td>
+        <td><%=f.text_area :comments1%></td>
+        <td><%= f.submit "Add", class: "btn btn-small btn-primary btn-highlight" %>
+    </tr>
+  </table>
+<% end %>
+</div>
+</div>
+<script>
+    reset_map_controllers(); 
+    deactivate_all_click();
+    site_toggle_huts(true);
+</script>

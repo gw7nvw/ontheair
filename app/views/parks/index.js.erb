@@ -1,0 +1,2 @@
+if (window.history.pushState!=null) window.history.pushState(null, '', '/parks/');
+$('#right_panel').html("<%= escape_javascript(render(:partial => 'parks/index')).html_safe %>");

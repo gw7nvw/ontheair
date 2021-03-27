@@ -1,0 +1,156 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   site_toggle_huts(false);
+   site_toggle_docland(false);
+   site_toggle_island(0);
+   site_toggle_summits(true);
+   document.title = 'NZSummits On The Air'
+   document.getElementById('logo').innerHTML='NZSummits On The Air'
+
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>SOTA Summits</b>
+     </div>
+   <div id="controls">
+       <% if current_user %>
+         <%=  link_to "Download", '/summits.csv', class: "btn btn-small btn-primary"%>
+       <% end %>
+       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+<div id="right_scroll">
+  <%= render 'flash' %>
+
+<%= form_tag '/summits', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+  <br/>
+  <p>Data in this table is sourced from <a href="http://sota.org.uk">sota.org.uk</a>. Visit the official SOTA site to participate in Summits on the Air activiies.</p>
+  <div class="rowtitle">Find summit:</div>
+  <div class="rowtext">
+    <input type="text" name="searchtext" value='<%=@searchtext%>'/>
+  </div>
+  <div class="buttonshort">
+    <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small" %>
+    <%=  link_to "Clear", '/summits', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
+
+  </div>
+</form>
+
+<% if !@searchtext %>
+  Your search returned no results.
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+   <div class="sectiontitle">SOTA - North Island activators league table</div>
+
+  <table class="users">
+    <tr>
+      <th>Position</th>
+      <th>User</th>
+      <th>Summits actvated</th>
+      <th>Points</th>
+    </tr>
+
+<%
+    position=0
+    if @summits_zl1 then @summits_zl1.each do |summit|
+      position=position+1
+%>
+      <tr>
+        <td>
+          <%= position.to_s %>
+        </td>
+        <td> <%=summit["Callsign"]  %> </td>
+        <td><%=summit["Summits"]%></td>
+        <td><%=summit["totalPoints"]%></td>
+      </tr>
+    <% end end  %>
+  </table>
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+   <div class="sectiontitle">SOTA - South Island activators league table</div>
+
+  <table class="users">
+    <tr>
+      <th>Position</th>
+      <th>User</th>
+      <th>Summits actvated</th>
+      <th>Points</th>
+    </tr>
+
+<%
+    position=0
+    if @summits_zl3 then @summits_zl3.each do |summit|
+      position=position+1
+%>
+      <tr>
+        <td>
+          <%= position.to_s %>
+        </td>
+        <td> <%=summit["Callsign"]  %> </td>
+        <td><%=summit["Summits"]%></td>
+        <td><%=summit["totalPoints"]%></td>
+      </tr>
+    <% end end  %>
+  </table>
+
+
+<% else %>
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+  Your search returned <%=@count.to_s%> results.
+  <% if @count>99 then %>
+     This is more than can be displayed.  Please refine your search
+  <% end %>
+  <table class="places">
+      <tr>
+        <th>SOTA Code</th>
+        <th>Name</th>
+        <th>Park</th>
+        <th>SOTA Points</th>
+   
+      </tr>
+    <% if @summits then @summits.each do |summit| %>
+      <tr>
+        <td>
+          <%=link_to summit.summit_code, 'https://summits.sota.org.uk/summit/'+summit.summit_code, :target=>"_blank"  %>
+          <img src="/assets/external-link-symbol.png">
+        </td>
+        <td>
+          <%= link_to summit.name, '/summits/'+summit.short_code, remote: true, :id => 'summit_link_'+summit.id.to_s, :onclick => "linkHandler('summit_link_"+summit.id.to_s+"')"  %>
+        </td>
+        <td>
+          <%=if summit.park_id then link_to summit.park.name, '/parks/'+summit.park.id.to_s, remote: true,  :id => 'park', :onclick => "linkHandler('home')" end %>
+        </td>
+        <td>
+            <%= summit.points %>
+        </td>
+
+      </tr>
+    <% end end %>
+  </table>
+</div>
+
+<% end %>
+<script>
+    if(site_map_size==0) { 
+       $('#actionbar').removeClass('span7');
+       $('#actionbar').addClass('span12');
+}
+</script>

@@ -1,0 +1,106 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.title = '... On The Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Spots</b>
+</div>
+   <div id="controls">
+      <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <h2><a href="https://qrp.nz/topics/25">Going portable spots</a></h2>
+  <table class="users">
+     <tr>
+      <th>Date</th>
+      <th>Time (NZ)</th>
+      <th>Spotted by</th>
+      <th>Comments</th>
+    </tr>
+    <% @hota_spots.each do |post| %>
+    <tr>
+      <% us=User.find_by(id: post.created_by_id) %>
+        <% if us then u=us.callsign else u="" end %>
+        <td><%=if post.referenced_date then post.referenced_date.strftime("%Y-%m-%d") end%></td>
+        <td><%=if post.referenced_time then post.referenced_time.strftime("%H:%M") end%></td>
+        <td><%=u%></td>
+        <td><b><%=post.title%></b><br/><%=raw (post.description).gsub(/(?<=<style type=\"text\/css\">).+(?=<\/style>)/m,'')%></td>
+      </tr>
+    <% end %>
+  </table>
+
+
+  <h2><a href="https://pota.us/#/">POTA spots (ZL/VK)</a></h2>
+  <table class="users">
+    <tr>
+      <th>Date</th>
+      <th>Time (NZ)</th>
+      <th>Spotted by</th>
+      <th>Callsign</th>
+      <th>POTA-Code</th>
+      <th>Park name</th>
+      <th>Frequency</th>
+      <th>Mode</th>
+      <th>Comments</th>
+    </tr>
+    <% @zlvk_pota_spots.each do |spot| %>
+      <tr>
+        <td><%=if spot["spotTime"].to_datetime then spot["spotTime"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d") end%></td>
+        <td><%=if spot["spotTime"].to_datetime then spot["spotTime"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%H:%M") end%></td>
+        <td><%=spot["spotter"]%></td>
+        <td><%=spot["activator"]%></td>
+        <td><%=spot["reference"]%></td>
+        <td><%=spot["name"]%></td>
+        <td><%=spot["frequency"]%></td>
+        <td><%=spot["mode"]%></td>
+        <td><%=spot["comments"]%></td>
+      </tr>
+    <% end %>
+  </table>
+  <h2><a href="https://sotawatch.sota.org.uk/en/">SOTA spots (ZL/VK)</a></h2>
+  <table class="users">
+    <tr>
+      <th>Date</th>
+      <th>Time (NZ)</th>
+      <th>Spotted by</th>
+      <th>Callsign</th>
+      <th>SOTA-Code</th>
+      <th>Summit name</th>
+      <th>Frequency</th>
+      <th>Mode</th>
+      <th>Comments</th>
+    </tr>
+    <% @zlvk_sota_spots.each do |spot| %>
+      <tr>
+        <td><%=if spot["timeStamp"].to_datetime then spot["timeStamp"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d") end%></td>
+        <td><%=if spot["timeStamp"].to_datetime then spot["timeStamp"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%H:%M") end%></td>
+        <td><%=spot["callsign"]%></td>
+        <td><%=spot["activatorCallsign"]%></td>
+        <td><%=spot["associationCode"]+"/"+spot["summitCode"]%></td>
+        <td><%=spot["summitDetails"]%></td>
+        <td><%=spot["frequency"]%></td>
+        <td><%=spot["mode"]%></td>
+        <td><%=spot["comments"]%></td>
+      </tr>
+    <% end %>
+  </table>
+</div>
+<script>
+if ($(window).width() < 960) {
+        site_smaller_map();
+      }
+    if(site_map_size==0) { 
+       $('#actionbar').removeClass('span7');
+       $('#actionbar').addClass('span12');
+}
+</script>
+

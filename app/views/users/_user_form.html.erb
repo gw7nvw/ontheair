@@ -1,0 +1,99 @@
+
+<script> 
+   document.getElementById("page_status").innerHTML = '';
+</script>
+
+<%= javascript_include_tag('rsa/jsbn', 'rsa/prng4', 'rsa/rng', 'rsa/rsa', 'rsa/base64', :cache => true) %>
+
+<div class="fullform">
+    <%= form_for(@user) do |f| %>
+      <div id="actionbar-form" class="span7">
+       <div id="crumbs">
+         <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+         &nbsp;--&gt;&nbsp;
+         <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+         &nbsp;--&gt;&nbsp;
+         <%if @user.id%>
+            <b><%=link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true, :id => 'user', :onclick => "linkHandler('user')" %>
+            &nbsp;--&gt;&nbsp;
+            <b>Edit</b>
+         <% else %>
+            <b>New</b>
+         <% end %>
+
+       </div>
+
+       <div id="controls">
+          <%= f.submit @submit_button, onclick: "signupHandler();", class: "btn btn-small btn-primary btn-highlight" %>
+          <% if @user.id %><% if params[:referring]=='index'%>
+            <%=  link_to "Cancel", '/users', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+          <% else %>
+            <%=  link_to "Cancel", '/users/'+@user.callsign, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+          <% end %> <% end %>
+
+          <%  if(@submit_button == "Save Changes" and @current_user.is_admin) %>
+            <%= f.submit "Delete", confirm: "Delete user: Are you sure?", class: "btn btn-small btn-primary", callsign: "delete", id:  "deletebutton", remote: true %>
+          <% end %>
+
+          <%= link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+       </div>
+      </div>
+
+      <%= render 'shared/error_messages' %>	
+
+      <div id="right_scroll">
+
+      Callsign:
+      <%= f.text_field :callsign %>
+
+      <%= "First name" %>
+      <%= f.text_field :firstname %>
+
+      <%= "Last name" %>
+      <%= f.text_field :lastname %>
+
+      <%= f.label :email %>
+      <%= f.text_field :email %>
+
+      <%= f.label "Home QTH" %>
+      <%= f.text_field :home_qth %>
+
+      <% if(@submit_button != "Save Changes") %>
+        <% if (!@user.membership_confirmed and !@user.membership_requested)  then %>
+          <div class="erow"><div class="sectiontext">Join the QRPers NZ group?
+          <%= f.check_box :membership_requested %></div></div>
+          <small>Group membership is optional and is not required for HOTA participation or website access.  Membership allows you to <a href="https://qrp.nz/topics/13-about-nz-qrpers-group" target="blank"> take part in group events </a> and receive group newsletters. By requesting membership you are accepting the QRPers NZ <a href="https://qrp.nz/topics/21-nz-qrpers-group-code-of-conduct" target="blank"> code of conduct </a>. You can also request membership at a later date by using the link under your profile on this site.</small>
+        <% end %>
+      <% end %>
+
+      <% if  current_user and current_user.is_admin and @submit_button == "Save Changes" then %>
+        <%= f.label :membership_requested %>
+        <%= f.check_box :membership_requested %>
+
+        <%= f.label :membership_confirmed %>
+        <%= f.check_box :membership_confirmed %>
+      <% end %>
+ 
+      <%= f.label :timezone %>
+      <%= collection_select( :user, :timezone, Timezone.all.order(:name), :id, :name, {}) %></td>
+
+      <%= f.label :password %>
+      <%= f.password_field :password %>
+
+      <%= f.label :password_confirmation, "Confirmation" %>
+      <%= f.password_field :password_confirmation %>
+<div class="erow"><i>Password rules: any combination of letters and numbers. No spaces or extended characters</i></div>
+    </div>
+
+
+    <% end %>
+  </div>
+<script>
+    if(site_map_size==0) { 
+       $('#actionbar-form').removeClass('span7');
+       $('#actionbar-form').addClass('span12');
+    }
+
+</script>
+
+

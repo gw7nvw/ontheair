@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+      var print_mode=true;
+      var wwidth=(location.search.split('wwidth=')[1]||'').split('&')[0];
+      var wheight=(location.search.split('wheight=')[1]||'').split('&')[0];
+      var mtop=(location.search.split('bottom=')[1]||'').split('&')[0];
+      var mbottom=(location.search.split('top=')[1]||'').split('&')[0];
+      var mleft=(location.search.split('left=')[1]||'').split('&')[0];
+      var mright=(location.search.split('right=')[1]||'').split('&')[0];
+      var sheetid=(location.search.split('sheetid=')[1]||'').split('&')[0];
+      var layerid=decodeURI((location.search.split('layerid=')[1]||'').split('&')[0]);
+      var maxzoom=(location.search.split('maxzoom=')[1]||'').split('&')[0];
+      var filetype=(location.search.split('filetype=')[1]||'').split('&')[0];
+      var filename=(location.search.split('filename=')[1]||'').split('&')[0];
+      if (typeof(filename)=='undefined' || filename.length<1) {filename="map";}
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta http-equiv="content-language" content="en-uk">
+
+    <title>Routeguides.co.nz | A repository for tramping knowledge</title>
+    <script src="http://mapspast.org.nz/assets/OpenLayers.js"></script>
+    <script src="http://mapspast.org.nz/assets/proj4js-compressed.js"></script>
+    <script src="http://routeguides.co.nz/styles.js"></script>
+    <script src="http://routeguides.co.nz/assets/printmap.js"></script>
+   <link rel="stylesheet" type="text/css" href="http://mapspast.org.nz/assets/print.css" />
+   <script src="http://mapspast.org.nz/assets/html2canvas.js"></script>
+   <script src="http://mapspast.org.nz/assets/canvas-toBlob.js"></script>
+   <script src="http://mapspast.org.nz/assets/FileSaver.js"></script>
+  </head>
+  <body onload='init()' style="cursor: auto;"> 
+  <div id="map_status">Loading ...</div>
+  <div id="map_map"></div>
+  </body>
+</html>

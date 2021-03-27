@@ -1,0 +1,28 @@
+  <% if params[:islandfield]=='' then islandfield='island1' else islandfield=params[:islandfield] end %>`
+<%= form_tag '/queryisland?islandfield='+islandfield, :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+  <div class="rowtitle">Find:</div>
+  <div class="rowtext">
+    <input type="text" name="searchtext" value='<%=@searchtext%>'/>
+  </div>
+  <div class="buttonshort">
+    <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');" %>
+  </div>
+</form>
+
+<% if @islands and @islands.count>0 %>
+  <% if @islands.count>39 then %>
+    <div class="erow">
+    Your search returned more results than listed. Please refine
+    </div>
+  <% end %>
+  <table>
+  <% @islands.each do |island| %>
+    <tr>
+      <td> 
+        <%= link_to island.name.to_s, '#', :id => 'island_link'+island.id.to_s, :onclick => "select_island('"+islandfield+"', "+island.id.to_s+", '"+island.name+"','"+island.WKT.to_s+"');return(false);" %>
+      </td>
+    </tr>
+  <% end %>
+<% else %>
+  No results found
+<% end %>

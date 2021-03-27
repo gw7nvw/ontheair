@@ -1,0 +1,175 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.title = '... On the Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>About</b>
+
+   </div>
+   <div id="controls">
+      <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <div style="background-image: url('assets/hota-logo4.JPG'); background-size: cover;padding-bottom: 10px">
+    <h1>About</h1>
+  </div>
+
+  <div class="erow"><div class="sectiontitle">
+  ... On The Air - NZ
+  </div></div>
+  <br/>
+  <br/>
+  <p><b>Huts On The Air</b>: A New Zealand take on the amateur radio passtime of travelling to remote summits (SOTA), islands (IOTA), parks (POTA) for the purpose of radio communication.  New Zealand has over 950 public backcountry huts managed by the Department of Conservation (DOC) and uncounted other private and club huts scattered through the high country.  And, lets face it - hauling you radio gear to the nearest DOC hut is cheaper than sailing it to a remote island. And sitting at the table by the fire in a cozy hut is far more comfortable than clinging to some remote mountain summit whist the wind and rain try to destroy your shelter, radio and will to live. 
+</p>
+<p>
+<b>NZParks On The Air</b>: Over 30% of NZ is protected as conservation land - giving us one of the best networks of parks in the world. There are over 12000 out there to activate - so what are you waiting for?
+</p>
+<p>
+<b>NZIslands On The Air</b>: The lakes and inshore waters of NZ are host to 1511 named islands.  Most are accessible by boat or kayak, and a few are even connected to the mainland by bridges and causeways.  Take a look and see what's near you - you may be surprised.
+</p>
+<p>
+<b><a href="http://sota.org.uk">SOTA</a></b>: Lists and maps of summits are also included on this site, but you are encouraged to use the official <a href="http://sota.org.uk">SOTA</a> programme to log summit activations.</p>
+<p>
+So take on the challenge.  Test your ability to operate in remote locations with portable, low-power equipment. Or test your ability to work those back country, low power stations at your own home QTH with the challenges of the noisy domestic, urban environment.
+</p>
+<div clss="erow"> <div class="sectiontitle">
+  The Rules
+</div></div>
+<div class="erow">
+<p>
+<ol>
+<li>
+A single contact either from or to a backcountry hut is all it takes to 'bag' that hut and add it to your tally.
+</li>
+<li>
+A single contact either from or to a conservation area is all it takes to 'bag' that park and add it to your tally.
+</li>
+<li>
+A single contact either from (i.e. on the ground on) or to an inshore or freshwater island is all it takes to 'bag' that island and add it to your tally.
+</li>
+<li>
+The first person to bag a hut, park or island gets bragging rights for having activated that location.
+</li>
+<li>
+Log your contact to/from a hut, park or island recording (at minimum): time, date, frequency, mode, both callsigns, location of each party, and both signal reports.
+</li>
+<li>
+The competition is open-ended and has no closing date.
+</li>
+<li>
+Historic (pre 2020) contacts can be included 
+</li>
+<li>
+Huts must be either DOC or club huts or off-grid, back country private huts to qualify.
+</li>
+<li>
+You can still bag the park even if you're not in a hut - just record your location and choose the park you are in.
+</li>
+<li>
+QRP or QRO - all welcome.  It's your call how much radio gear you wish to lug into the backcountry!
+</li>
+</ol>
+</p>
+</div>
+<div clss="erow"> <div class="sectiontitle">
+  Recommended Frequencies
+</div></div>
+<div class="erow">
+<p>
+<br/>
+You can use any frequency of mode you wish - including repeater operation. However - the following HF SSB frequencies can be considered 'recommended'. These are the SOTA frequency for each band, with the QRP SSB frequency.  See <a href="https://vk1nam.wordpress.com/2014/12/14/sota-preferred-operating-frequencies/"> the official unofficial SOTA frequency list</a> for CW, VHF and UHF options
+</p>
+<table>
+  <tr>
+    <th>Band</th>
+    <th>SOTA Frequency</th>
+    <th>QRP SSB Frequency</th>
+  </tr>
+  <tr>
+    <td>80m</td>
+    <td>3.585</td>
+    <td>3.690</td>
+  </tr>
+  <tr>
+    <td>40m</td>
+    <td>7.090</td>
+    <td>7.285</td>
+  </tr>
+  <tr>
+    <td>20m</td>
+    <td>14.310</td>
+    <td>14.285</td>
+  </tr>
+  <tr>
+    <td>15m</td>
+    <td>21.300</td>
+    <td>21.385</td>
+  </tr>
+  <tr>
+    <td>10m</td>
+    <td>28.480</td>
+    <td>28.385</td>
+  </tr>
+</table>
+<br/>
+</div>
+<div class="erow">
+<div class="sectiontitle">
+  So what do I do?
+</div>
+</div>
+<div class="erow">
+<br/>
+<p>
+First register on the site by clicking 'Sign Up' in the header bar.
+</p>
+<p>
+Second, record your contacts by clicking on the Add Contact button under 'My Contacts' 
+</p>
+<p>
+And that's about it.  You can add more huts if you want - please email me if you want editor permissions adding to your account - they are disabled by default to prevent mischief. Use the Add button under 'huts'.  All DOC-administered parks are currently present on the site. I may try an add council-run regional parks later, if I can find a source for the boundaries. Let me know if there is any specific park you want that is missing.
+</p> 
+<br/>
+Contact mattbriggs@yahoo.com with questions.
+<br/>
+<br/>
+73s de ZL4NVW
+</div>
+<div class="erow">
+<br/>
+<div class="sectiontitle">
+  Acknowledgements
+</div>
+</div>
+<br/>
+<div class="erow">
+<br/>
+  <div>Includes icons made by <a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+<div>Includes icons made by <a href="https://www.flaticon.com/authors/surang" title="surang">surang</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+<div>Includes icons made by <a href="https://www.flaticon.com/authors/dave-gandy" title="Dave Gandy">Dave Gandy</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+
+<div>Thanks always to Daniel Azuma for <a href="https://daniel-azuma.com/articles/georails/">his work and tutorials on RGeo</a></div>
+<div>And to Michael Hartl for his priceless (but no longer free) <a href="https://www.railstutorial.org/">guide to Ruby on Rails</a></div>
+</div>
+</div>
+
+<script>
+if ($(window).width() < 960) {
+        site_smaller_map();
+      }
+    if(site_map_size==0) { 
+       $('#actionbar').removeClass('span7');
+       $('#actionbar').addClass('span12');
+}
+</script>
+

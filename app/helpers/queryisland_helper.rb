@@ -1,0 +1,2 @@
+module QueryislandHelper
+end

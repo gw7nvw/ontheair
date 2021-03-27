@@ -1,0 +1,4 @@
+if (window.history.pushState!=null) window.history.pushState(null, 'Huts on the Air', '/awards/new');
+$('#right_panel').html("<%= escape_javascript(render(:partial => 'awards/new')).html_safe %>");
+
+

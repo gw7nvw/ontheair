@@ -1,0 +1,96 @@
+  <table class="places" id="tree-table">
+    <tr>
+      <th>Event</th>
+      <th>Location</th>
+      <th>Date</th>
+      <th>Number</th>
+      <th>Notes</th>
+      <th>Action</th>
+    </tr>
+    <% count=0 %>
+    <% collection_row=count %>
+    <tr data-tt-id="<%=count%>" style="height: 34px;">
+      <td>
+        <% if current_person.is_modifier %>
+          <span title="Click to edit"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/collections/'+@collection.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+        <% end %>
+
+      <%= link_to "Collected: "+@collection.id.to_s, '/collections/'+@collection.id.to_s, remote: true, :id => 'collection_link_'+@collection.id.to_s, :onclick => "linkHandler('collection_link_"+@collection.id.to_s+"')" %>
+      </td>
+      <td><%if @collection.source then%>
+            <%=link_to @collection.source.name, '/sources/'+@collection.source.id.to_s, remote: true, :id => 'collection_source_'+@collection.id.to_s, :onclick => "linkHandler('collection_source_"+@collection.id.to_s+"')" %>
+          <% else %>
+            <%=@collection.source_description%>
+          <% end %></td>
+      <td><%=if @collection.date then @collection.date.strftime('%d/%m/%Y') end%></td>
+      <td><%=@collection.no_collected %></td>
+      <td><%if @collection.notes and @collection.notes.length>0 %><div class="hoverover"><span title='<%=@collection.notes%>'><%=@collection.notes[0..8]+"..."%></span></div><%end%></td>
+      <td><%=  link_to "Sow", '/seeds/new?source='+@collection.id.to_s, class: "btn btn-small btn-primary", style: "width: 28px;", remote: true, :onclick => "linkHandler('add')" %></td>
+    </tr>
+
+
+    <% if @collection and @collection.seeds then @collection.seeds.order("seed_code").each do |seed| %>    
+      <% count+=1 %>
+      <% seed_row=count %>
+      <tr data-tt-id="<%=count%>" data-tt-parent-id="<%=collection_row%>"  style="height: 34px;">
+        <td>
+          <% if current_person.is_modifier %>
+            <span title="Click to edit"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/seeds/'+seed.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+          <% end %>
+
+        <%= link_to "Sown: "+seed.seed_code, '/seeds/'+seed.id.to_s, remote: true, :id => 'seed_link_'+seed.id.to_s, :onclick => "linkHandler('seed_link_"+seed.id.to_s+"')" %>
+        </td>
+        <td></td>
+        <td><%=if seed.date_sown then seed.date_sown.strftime('%d/%m/%Y') end%></td>
+        <td><%=seed.number_sown %></td>
+        <td><%if seed.notes and seed.notes.length>0 %><div class="hoverover"><span title='<%=seed.notes%>'><%=seed.notes[0..8]+"..."%></span></div><%end%></td>
+        <td><%=  link_to "Pot", '/seedlings/new?source='+seed.seed_code, class: "btn btn-small btn-primary", style: "width: 28px;", remote: true, :onclick => "linkHandler('add')" %></td>
+      </tr>
+
+
+      <% seed.seedlings.order("seedling_code").each do |seedling| %>
+         <% count+=1%>
+         <% seedling_row=count %>
+         <tr data-tt-id="<%=count%>" data-tt-parent-id="<%=seed_row%>"  style="height: 34px;">
+           <td>
+              <% if current_person.is_modifier %>
+                <span title="Click to edit"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/seedlings/'+seedling.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+              <% end %>
+              <%= link_to "Potted: "+seedling.seedling_code, '/seedlings/'+seedling.id.to_s, remote: true, :id => 'seedling_link_'+seedling.id.to_s, :onclick => "linkHandler('seedling_link_"+seedling.id.to_s+"')" %>
+           </td>
+           <td></td>
+           <td><%=if seedling.date_potted then seedling.date_potted.strftime('%d/%m/%Y') end%></td>
+           <td><%=seedling.number_potted.to_s+"("+seedling.current_stock.to_s+")" %></td>
+           <td><%if seedling.notes and seedling.notes.length>0 %><div class="hoverover"><span title='<%=seedling.notes%>'><%=seedling.notes[0..8]+"..."%></span></div><%end%></td>
+           <td><%=  link_to "Plant", '/plantings/new?source='+seedling.seedling_code, class: "btn btn-small btn-primary", style: "width: 28px;", remote: true, :onclick => "linkHandler('add')" %></td>
+         </tr> 
+
+         <% seedling.plantings.order("planting_code").each do |planting| %>
+           <% count+=1%>
+           <% planting_row=count %>
+           <tr data-tt-id="<%=count%>" data-tt-parent-id="<%=seedling_row%>"  style="height: 34px;">
+             <td>
+                <% if current_person.is_modifier %>
+                  <span title="Click to edit"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/plantings/'+planting.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+                <% end %>
+                <%= link_to "Planted: "+planting.planting_code, '/plantings/'+planting.id.to_s, remote: true, :id => 'planting_link_'+planting.id.to_s, :onclick => "linkHandler('planting_link_"+planting.id.to_s+"')" %>
+             </td>
+             <td>
+               <%if planting.destination then %>
+                 <%= link_to planting.destination.name, '/destinations/'+planting.destination.id.to_s, remote: true, :id => 'destination_link_'+planting.id.to_s, :onclick => "linkHandler('destination_link_"+planting.id.to_s+"')" %>
+              <% else %>
+                <div class="hoverover"><span title='<%=planting.dest_description%>'><%=planting.dest_description[0..15]+"..."%></span></div>
+              <% end %>
+             </td>
+             <td><%=if planting.date_planted then planting.date_planted.strftime('%d/%m/%Y') end%></td>
+             <td><%=planting.number_planted.to_s+"("+planting.number_survived.to_s+")" %></td>
+             <td><%if planting.notes and planting.notes.length>0 %><div class="hoverover"><span title='<%=planting.notes%>'><%=planting.notes[0..8]+"..."%></span></div><%end%></td>
+             <td></td>
+           </tr>
+         <% end %>
+      <% end %>
+    <% end end %>
+</table>
+<script>
+$("#tree-table").treetable({ expandable: true, initialState: "expanded" });
+</script>

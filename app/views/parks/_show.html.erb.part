@@ -1,0 +1,93 @@
+<script> 
+   document.getElementById("page_status").innerHTML = '';
+</script>
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  "Parks:", '/parks', remote: true,  :id => 'parks', :onclick => "linkHandler('parks')" %>
+     &nbsp;--&gt;&nbsp;
+     <b><%= @park.name %></b>
+     </div>
+   <div id="controls">
+       <% if current_user and current_user.is_modifier %>
+            <%=  link_to "Edit", '/parks/'+@park.id.to_s+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
+       <% end %>
+       <%=  link_to "Index", "/parks", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+<div id="right_scroll">
+   <%= render 'flash' %>
+   <div class="erow" id="email">
+      <div class="rowtitle"><%= "Park Id:" %></div>
+      <div class="rowtext"><%= @park.id.to_s %></div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Name" %></div>
+      <div class="rowtext">
+        <%=link_to @park.name, '/parks/'+@park.id.to_s, remote: true,  :id => 'park', :onclick => "linkHandler('home')" %>
+      </div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Description" %></div>
+      <div class="rowtext"><%= @park.description%></div>
+   </div>
+   <div class="erow" id="email">
+      <div class="rowtitle"><%= "Active?" %></div>
+      <div class="textext"><%= if @park.is_active then "Yes" else "No" end %></div>
+   </div>
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+   <div class="sectiontitle25">Links:</div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "DOC" %></div>
+      <div class="rowtext"><%= link_to @park.doc_link, @park.doc_link, :target=>"_blank" %></div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Tramper" %></div>
+      <div class="rowtext"><%= link_to @park.tramper_link, @park.tramper_link, :target=>"_blank" %></div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Other" %></div>
+      <div class="rowtext"><%= link_to @park.general_link, @park.general_link, :target=>"_blank" %></div>
+   </div>
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+   <div class="sectiontitle25">Huts:</div>
+
+   <table> 
+   <% @park.huts.each do |h| %>
+     <tr>
+       <td>
+          <%=link_to h.name, '/huts/'+h.id.to_s, remote: true,  :id => 'hut'+h.id.to_s, :onclick => "linkHandler('hut')" %>
+       </td>
+     </tr>
+   <% end %>
+   </table>
+</div>
+<%
+#p=Park.find_by_sql [ "select id, ST_Centroid(boundary) as boundary from parks where id="+@park.id.to_s ] 
+
+#  b=Park.find_by_sql [ "select id, ST_AsText(ST_Simplify(boundary, "+rnd.to_s+")) as boundary from parks where id="+@park.id.to_s ] 
+%>
+<script>
+    parks_layer.setVisibility(true);
+
+    place_init('', '', 0);
+    if(site_map_size==0) { 
+       $('#actionbar').removeClass('span7');
+       $('#actionbar').addClass('span12');
+    }
+</script>
+

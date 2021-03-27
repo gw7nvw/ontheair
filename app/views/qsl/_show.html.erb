@@ -1,0 +1,101 @@
+<script>
+site_show_island=0;
+site_show_huts=false;
+site_show_controls=false;
+def_zoom=0;
+   document.getElementById("page_status").innerHTML = '';
+</script>
+<div class="erow" data-turbolinks="false">
+    <a id="export-png" class="btn btn-small btn-primary btn-highlight" download="myImage.jpg" onclick="download_img(this);"><i class="fa fa-download"></i>Download</a>
+    <% if @photo>0 then %>
+      <%=link_to "Previous photo", "/qsl/"+@contact.id.to_s+"?photo="+(@photo-1).to_s, class: "btn btn-small btn-primary", target: "_blank" %>
+    <% end %>
+    <% if @photo<@maxphoto then %>
+      <%=link_to "Next photo", "/qsl/"+@contact.id.to_s+"?photo="+(@photo+1).to_s, class: "btn btn-small btn-primary", target: "_blank" %>
+    <% end %>
+
+</div>
+<div id="qsl_main_page">
+<div id="qsl_top_panel">
+  <div class="erow">
+     <div class="hrline">
+        <hr noshade size="4">
+     </div>
+  </div>
+  <div class="erow">
+    <div class="qsl-callsign">
+      <%=@contact.callsign1%>
+    </div>
+  </div>
+  <div class="erow">
+    <div class="qsl-location">
+      <%=@contact.location1_text%>
+    </div>
+  </div>
+  
+  <div class="erow">
+     <div class="hrline">
+        <hr noshade size="4">
+     </div>
+  </div>
+</div> 
+
+<div id="qsl_mid_panel">
+  <div id="qsl_left_panel">
+    <%=render 'maps/map' %>
+  </div>
+  <div id="qsl_right_panel" style="background-image: url('<%=@pic_url%>')">
+  </div>
+</div>
+<div id="qsl_bottom_panel">
+  <table class="qsl_table">
+    <tr>
+      <th><%=@contact.callsign1%> operating</th> 
+      <th>Power</th>
+      <th>Radio</th>
+      <th>Antenna</th>
+    </tr>
+    <tr>
+      <td><%=if @contact.is_qrp1 then "QRP" else "QRO" end%><%=if @contact.is_portable1 then " Portable" else " HS" end%></td>
+      <td><%=@contact.power1%></td>
+      <td><%=@contact.transceiver1%></td>
+      <td><%=@contact.antenna1%></td>
+    </tr>
+  </table>
+  <table class="qsl_table">
+    <tr>
+      <th>Confirmins QSO with</th>
+      <th>Time (NZT)</th>
+      <th>Date</th>
+      <th>RST</th>
+      <th>Mode</th>
+      <th>MHz</th>
+      <th>Location</th>
+    </tr>
+    <tr>
+      <td><%=@contact.callsign2%>
+      <td><%=@contact.localtime(current_user)%></td>
+      <td><%=@contact.localdate(current_user)%></td>
+      <td><%=@contact.signal2%></td>
+      <td><%=@contact.mode%></td>
+      <td><%=@contact.frequency%></td>
+      <td><%=@contact.location2_text%></td>
+    </tr>
+  </table>
+</div> 
+</div>
+<script>
+    place_init('<%=@contact.location1%>', 0, site_green_circle);
+    download_img = function(el) {
+      map_map.once('rendercomplete', function () {
+        html2canvas(document.getElementById("qsl_main_page"), {
+          allowTaint: true, onrendered: function(canvas) {
+            ourcanvas=canvas;
+            var imageURI = ourcanvas.toDataURL("image/jpg");
+            el.href = imageURI;
+          }
+        });
+      });
+      map_map.renderSync();
+    };
+</script>

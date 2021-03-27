@@ -1,0 +1,45 @@
+function init_styles() {
+style_pt_default = {strokeColor: "#6B0808", strokeOpacity: "0.8", strokeWidth: 1, cursor: "pointer", pointRadius: 3, fillColor: "#6B0808", graphicName: "circle", title: '${name}'};
+var sty = OpenLayers.Util.applyDefaults(style_pt_default, OpenLayers.Feature.Vector.style["default"]);
+pt_styleMap = new OpenLayers.StyleMap({
+            'default': sty,
+            'select': {strokeColor: "pink", fillColor: "pink"}
+        });
+
+style_cl_default = {strokeColor: "#0d3b0b", strokeOpacity: "0.8", strokeWidth: 1, cursor: "pointer", pointRadius: 3, fillColor: "#0d3b0b", graphicName: "circle", title: '${name}'};
+var sty = OpenLayers.Util.applyDefaults(style_cl_default, OpenLayers.Feature.Vector.style["default"]);
+cl_styleMap = new OpenLayers.StyleMap({
+            'default': sty,
+            'select': {strokeColor: "pink", fillColor: "pink"}
+        });
+
+    layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+    layer_style.fillOpacity = 0.2;
+    layer_style.graphicOpacity = 1;
+    layer_style.strokeWidth = 2;
+    layer_style.strokeColor = "red";
+    layer_style.fillColor = "red";
+
+
+style_pcl_default = {strokeColor: "green", strokeOpacity: "0.3", strokeWidth: 1, cursor: "pointer", fillColor: "darkgreen", fillOpacity: "0.3", strokeDashstyle: "solid", title: '${name}', };
+var pcl_sty = OpenLayers.Util.applyDefaults(style_pcl_default, OpenLayers.Feature.Vector.style["default"]);
+pcl_styleMap = new OpenLayers.StyleMap({
+            'default': pcl_sty,
+            'select': {strokeColor: "darkred", fillColor: "darkred", strokeDashstyle: "solid"}
+        });
+
+style_rt_default = {strokeColor: "red", strokeOpacity: "0.3", strokeWidth: 1, cursor: "pointer", fillColor: "red", fillOpacity: "0.3", strokeDashstyle: "solid", title: '${name}', };
+var rt_sty = OpenLayers.Util.applyDefaults(style_rt_default, OpenLayers.Feature.Vector.style["default"]);
+rt_styleMap = new OpenLayers.StyleMap({
+            'default': rt_sty,
+            'select': {strokeColor: "darkred", fillColor: "darkred", strokeDashstyle: "solid"}
+        });
+
+style_linz_default = {strokeColor: "purple", strokeOpacity: "0.7", strokeWidth: 1, cursor: "pointer", fillColor: "purple", fillOpacity: "0.2", strokeDashstyle: "solid", title: '${owners} --- (${estate_des})', };
+var linz_sty = OpenLayers.Util.applyDefaults(style_linz_default, OpenLayers.Feature.Vector.style["default"]);
+linz_styleMap = new OpenLayers.StyleMap({
+            'default': linz_sty,
+            'select': {strokeColor: "darkred", fillColor: "darkred", strokeDashstyle: "solid"}
+        });
+
+}

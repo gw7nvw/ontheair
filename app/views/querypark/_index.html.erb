@@ -1,0 +1,28 @@
+  <% if params[:parkfield]=='' then parkfield='park1' else parkfield=params[:parkfield] end %>`
+<%= form_tag '/querypark?parkfield='+parkfield, :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+  <div class="rowtitle">Find:</div>
+  <div class="rowtext">
+    <input type="text" name="searchtext" value='<%=@searchtext%>'/>
+  </div>
+  <div class="buttonshort">
+    <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');" %>
+  </div>
+</form>
+
+<% if @parks and @parks.count>0 %>
+  <% if @parks.count>39 then %>
+    <div class="erow">
+    Your search returned more results than listed. Please refine
+    </div>
+  <% end %>
+  <table>
+  <% @parks.each do |park| %>
+    <tr>
+      <td> 
+        <%= link_to park.name.to_s, '#', :id => 'park_link'+park.id.to_s, :onclick => "select_park('"+parkfield+"', "+park.id.to_s+", '"+park.name+"','"+park.all_boundary+"');return(false);" %>
+      </td>
+    </tr>
+  <% end %>
+<% else %>
+  No results found
+<% end %>

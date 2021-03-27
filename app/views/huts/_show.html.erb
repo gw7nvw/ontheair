@@ -1,0 +1,155 @@
+<script> 
+   document.getElementById("page_status").innerHTML = '';
+   document.title = 'Huts On the Air'
+   document.getElementById('logo').innerHTML='Huts On The Air'
+
+</script>
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  "Huts:", '/huts', remote: true,  :id => 'huts', :onclick => "linkHandler('huts')" %>
+     &nbsp;--&gt;&nbsp;
+     <b><%= @hut.name %></b>
+     </div>
+   <div id="controls">
+       <% if current_user and current_user.is_modifier %>
+            <%=  link_to "Edit", '/huts/'+@hut.id.to_s+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
+       <% end %>
+       <%=  link_to "Index", "/huts", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+<div id="right_scroll">
+   <%= render 'flash' %>
+   <div class="erow" id="email">
+      <div class="rowtitle"><%= "Hut Id:" %></div>
+      <div class="rowtext">ZLH/<%= @hut.id.to_s %></div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Name" %></div>
+      <div class="rowtext"> 
+        <%=link_to @hut.name, '/huts/'+@hut.id.to_s, remote: true,  :id => 'hut', :onclick => "linkHandler('hut')" %>
+      </div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Description" %></div>
+      <div class="rowtext"><%= @hut.description%></div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Park" %></div>
+      <div class="rowtext"> 
+        <%=if @hut.park then link_to @hut.park.name, '/parks/'+@hut.park.id.to_s, remote: true,  :id => 'park', :onclick => "linkHandler('home')" end %>
+      </div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Island" %></div>
+      <div class="rowtext"> 
+        <%=if @hut.island then link_to @hut.island.name, '/islands/'+@hut.island.id.to_s, remote: true,  :id => 'island', :onclick => "linkHandler('home')" end %>
+      </div>
+   </div>
+   <div class="erow" id="location">
+      <div class="rowtitle"><%= "Location" %></div>
+      <% if @hut.x and @hut.y %>
+        <div class="rowtext"> <%= "NZTM2000: "+@hut.x.round().to_s+", "+@hut.y.round().to_s %><% if @hut.altitude %><%=" (alt: "+@hut.altitude.to_i.to_s+"m)"%> <% end %> </div>
+      <% end %>
+   </div>
+   <div class="erow" id="doc">
+      <div class="rowtitle"><%= "DOC Hut?" %></div>
+      <div class="textext"><%= if @hut.is_doc then "Yes" else "No" end %></div>
+   </div>
+   <div class="erow" id="email">
+      <div class="rowtitle"><%= "Active?" %></div>
+      <div class="textext"><%= if @hut.is_active then "Yes" else "No" end %></div>
+   </div>
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+   <div class="sectiontitle_bold">Links:</div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "DOC" %></div>
+      <div class="rowtext"><%= if @hut.doc_link then link_to @hut.doc_link, @hut.doc_link, :target=>"_blank" end %></div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Hutbagger" %></div>
+      <div class="rowtext"><%= if @hut.hutbagger_link then link_to @hut.hutbagger_link, @hut.hutbagger_link, :target=>"_blank" end %></div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Tramper" %></div>
+      <div class="rowtext"><%= if @hut.tramper_link then link_to @hut.tramper_link, @hut.tramper_link, :target=>"_blank" end %></div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Routeguides" %></div>
+      <div class="rowtext"><%= if @hut.routeguides_link then link_to @hut.routeguides_link, @hut.routeguides_link, :target=>"_blank" end %></div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Other" %></div>
+      <div class="rowtext"><%= if @hut.general_link then link_to @hut.general_link, @hut.general_link, :target=>"_blank" end %></div>
+   </div>
+
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+   <div class="sectiontitle_bold">Bagged by:</div>
+   <div class="erow">
+     <% if not @hut.baggers or (@hut.baggers and @hut.baggers.count==0) then %>
+        <i>No-one has bagged this hut yet. Be the first!</i></br>
+     <% end %>
+
+     <% @hut.baggers.each do |user| %>
+         <%=link_to user.callsign, '/users/'+user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp
+     <% end %>
+   </div> 
+
+   <div class="erow">
+     <% if @hut.contacts and @hut.contacts.count>0 then %>
+         <b><%=link_to @hut.contacts.count.to_s+" Contacts (View)", '/contacts/?hut='+@hut.id.to_s, remote: true,  :id => 'user', :onclick => "linkHandler('contact')" %></b>
+     <% end %>
+   </div>
+   <% if current_user %>
+     <%=  link_to "Add Contact (Bag Hut)", "/contacts/new?hut1="+@hut.id.to_s+"&park1="+@hut.park_id.to_s, class: "btn btn-small btn-primary btn-highlight", remote: true,  :id => 'contact', :onclick => "linkHandler('contact')" %>
+            <%=  link_to "Add Many Contacts", '/contacts/editgrid?hut1='+@hut.id.to_s+'&park1='+@hut.park_id.to_s, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+
+   <% end %>
+
+   <% if @hut.hutbagger_link and @hut.hutbagger_link.length>1 then %>
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+
+  <div class="sectiontitle_bold" style="margin-bottom: 4px">Photos of this hut on  <%=link_to "Hut Bagger", @hut.hutbagger_link, class: 'link_to'%>:</div>
+  <div class="erow">
+    <% if !@hut.photos or @hut.photos.count==0 %>
+      <p><i>No photos have been uploaded. Visit <%=link_to "hutbagger.co.nz", @hut.hutbagger_link, target: "_blank"%> to add one.</i></p>
+    <% end %>
+    <div class="photo-bar">
+     <div style="width:1000%">
+      <% @hut.photos.each do |photo| %>
+        <span>
+         <%=link_to (image_tag(photo.url.gsub(/large/,'small'))), @hut.hutbagger_link, :class => "photo", :target=>"_blank"%>
+        </span>
+      <% end %>
+     </div>
+    </div>
+  </div>
+  <% end %>
+</div>
+<script>
+    place_init('<%=@hut.location%>',  0);
+    if(site_map_size==0) { 
+       $('#actionbar').removeClass('span7');
+       $('#actionbar').addClass('span12');
+    }
+</script>
+

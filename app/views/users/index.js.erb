@@ -1,0 +1,2 @@
+if (window.history.pushState!=null) window.history.pushState(null, '', '/users/');
+$('#right_panel').html("<%= escape_javascript(render(:partial => 'users/index')).html_safe %>");

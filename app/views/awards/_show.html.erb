@@ -1,0 +1,99 @@
+<script> 
+   document.getElementById("page_status").innerHTML = '';
+</script>
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  "Awards:", '/awards', remote: true,  :id => 'awards', :onclick => "linkHandler('awards')" %>
+     &nbsp;--&gt;&nbsp;
+     <b><%= @award.name %></b>
+     </div>
+   <div id="controls">
+       <% if current_user and current_user.is_modifier %>
+            <%=  link_to "Edit", '/awards/'+@award.id.to_s+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
+       <% end %>
+       <%=  link_to "Index", "/awards", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+<div id="right_scroll">
+   <%= render 'flash' %>
+   <div class="erow" id="email">
+      <div class="rowtitle"><%= "Award Id:" %></div>
+      <div class="rowtext"><%= @award.id.to_s %></div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Name" %></div>
+      <div class="rowtext">
+        <%=link_to @award.name, '/awards/'+@award.id.to_s, remote: true,  :id => 'award', :onclick => "linkHandler('home')" %>
+      </div>
+   </div>
+   <div class="erow" id="desc">
+      <div class="rowtitle"><%= "Description" %></div>
+      <div class="rowtext"><%= @award.description%></div>
+   </div>
+   <div class="erow" id="email">
+      <div class="rowtitle"><%= "Email to be send on achiving" %></div>
+      <div class="rowtext"><%= @award.email_text%></div>
+   </div>
+   <div class="erow" id="c1">
+      <div class="rowtitle"><%= "Minimum huts for award" %></div>
+      <div class="rowtext"><%= @award.huts_minimum%></div>
+   </div>
+   <div class="erow" id="c2">
+      <div class="rowtitle"><%= "Minimum parks for award" %></div>
+      <div class="rowtext"><%= @award.parks_minimum%></div>
+   </div>
+   <div class="erow" id="c3">
+      <div class="rowtitle"><%= "Minimum islands for award" %></div>
+      <div class="rowtext"><%= @award.islands_minimum%></div>
+   </div>
+   <div class="erow" id="user_qrp">
+      <div class="rowtitle"><%= "Claimant must be QRP?" %></div>
+      <div class="textext"><%= if @award.user_qrp then "Yes" else "No" end %></div>
+   </div>
+   <div class="erow" id="qrp">
+      <div class="rowtitle"><%= "Entire contact must be QRP?" %></div>
+      <div class="textext"><%= if @award.contact_qrp then "Yes" else "No" end %></div>
+   </div>
+   <div class="erow" id="repeat">
+      <div class="rowtitle"><%= "Count subsequent repeat visits to same QTH?" %></div>
+      <div class="textext"><%= if @award.allow_repeat_visits then "Yes" else "No" end %></div>
+   </div>
+   <div class="erow" id="active">
+      <div class="rowtitle"><%= "Active?" %></div>
+      <div class="textext"><%= if @award.is_active then "Yes" else "No" end %></div>
+   </div>
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+   <div class="sectiontitle_bold">Awarded to:</div>
+   <div class="erow">
+     <% if not @award.baggers or (@award.baggers and @award.baggers.count==0) then %>
+        <i>No-one has achieved this award yet. Be the first!</i></br>
+     <% end %>
+     <% @award.baggers.each do |ua| %>
+         <%=link_to ua.user.callsign, '/users/'+ua.user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %><%=if current_user.is_admin then " Emailed: "+ua.notification_sent.to_s+", Acknowledged: "+ua.acknowledged.to_s+";  " end %><br/>
+     <% end %>
+   </div>   
+
+</div>
+<script>
+
+    if(site_map_size==0) { 
+       $('#actionbar').removeClass('span7');
+       $('#actionbar').addClass('span12');
+    }
+</script>
+

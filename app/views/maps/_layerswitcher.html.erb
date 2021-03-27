@@ -1,0 +1,9 @@
+<ul style="list-style-type:none;padding:0;margin:0;">
+  <% @maplayers.each do |m| %>
+    <li>
+       <% if params[:baselayer] and params[:baselayer]==m.name then checked=true else checked=false end %>
+      <%=check_box_tag m.id.to_s, "1", checked, :onclick => "map_select_maplayer('"+m.name+"', '"+m.baseurl+"', '"+m.basemap+"', "+m.minzoom.to_s+", "+m.maxzoom.to_s+")"%>
+      <%=m.name%>
+    </li>
+  <% end %>
+</ul>

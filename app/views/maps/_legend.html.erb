@@ -1,0 +1,4 @@
+<div class="erow">
+<p>Coordinate format:</p>
+<%=select_tag("projections", options_from_collection_for_select(@projections, "epsg", "name", @projection), {:onchange => 'map_updateProjection()', :class=>'body-select'})%>
+</div>

@@ -1,0 +1,27 @@
+<% provide(:title, "Password Reset") %>
+<% @title=" | Password Reset " %>
+<%= render 'flash' %>
+
+<script> 
+   update_title('<%=@title%>'); 
+   document.getElementById("page_status").innerHTML = '';
+</script>
+<div clas"erow">
+Enter your account's registered email below to request a password reset.  You will be emailed with a link to reset your password.  </div>
+<div class="erow">The email may end up in your spam folder. There are known issues with delivery being rejected to yahoo addresses due to their filters on apparent bulk-mail. </div>
+<div class="erow">Email me mattbriggs@yahoo.com if you need to request a manual reset instead.  
+</div>
+ <div class="row">
+  <div class="span6">
+    <%= form_for :password_reset, url: password_resets_path, remote: true do |f| %>
+
+      <%= f.label :email %>
+      <%= f.text_field :email %>
+
+      <br/>
+
+      <%= f.submit "Reset password", class: "btn btn-small btn-primary" %>
+    <% end %>
+
+  </div>
+</div>

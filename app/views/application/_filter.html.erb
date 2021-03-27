@@ -1,0 +1,22 @@
+<% if filtername=="active"%>
+         <%if @filter!=filtername %>
+           <span title="Click to disable filter">
+            <%= link_to image_tag("/assets/filter24.png", :style => "border:2px solid green", :class => 'dock-item'), formname+"?filter="+filtername, remote: true, onclick: "linkHandler('filterbutton')", id:  "filterbutton", alt: "filter"  %>
+           </span>
+          <% else %>
+           <span title="Click to filter on this column">
+            <%= link_to image_tag("/assets/filter24.png", :border=>0, :class => 'dock-item'), formname, remote: true, onclick: "linkHandler('filterbutton')", id:  "filterbutton", alt: "filter"  %>
+           </span>
+         <% end %>
+
+<% else %>
+         <%if @filter==filtername %>
+           <span title="Click to disable filter">
+            <%= link_to image_tag("/assets/filter24.png", :style => "border:2px solid green", :class => 'dock-item'), formname, remote: true, onclick: "linkHandler('filterbutton')", id:  "filterbutton", alt: "filter"  %>
+           </span>
+          <% else %>
+           <span title="Click to filter on this column">
+            <%= link_to image_tag("/assets/filter24.png", :border=>0, :class => 'dock-item'), formname+"?filter="+filtername, remote: true, onclick: "linkHandler('filterbutton')", id:  "filterbutton", alt: "filter"  %>
+           </span>
+         <% end %>
+<% end %>

@@ -1,0 +1,58 @@
+<div class="fullform">
+  <div id="actionbar" class="span7" style="margin-top: -32px; margin-left: -6px">
+    <div id="crumbs">
+      <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+      &nbsp;--&gt;&nbsp;
+      <%=  link_to  "Contacts:", '/contacts', remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %>
+      &nbsp;--&gt;&nbsp;
+      <b>New</b>
+    </div>
+    <div id="controls">
+      <%=  link_to "Cancel", '/contacts', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+      <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+    </div>
+  </div>
+  <div id="right_scroll">
+  <div class="erow">
+    <div class="sectiontitle_bold">Contacts exist for these callsigns on this date</div>
+  </div>
+
+  <div class="erow">
+    <div class="sectiontitle">Select an existing contact to update or create a new one?</div>
+  </div>
+
+  <table>
+    <tr>
+      <th></th>
+      <th>Date/Time</th>
+      <th>Callsign1</th>
+      <th>Location1</th>
+      <th>Callsign2</th>
+      <th>Location2</th>
+    </tr>
+
+<% @contacts.each do | contact| %>
+    <tr> 
+      <td>
+        <%= form_tag '/contacts/select2?id='+contact.id.to_s, :name => 'selectform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+        <%= submit_tag "Update", :id => "Select"+contact.id.to_s, :remote => true %>
+        </form>
+      </td>
+      <%tz=Timezone.find_by_id(contact.timezone)%>
+      <td><%=contact.localdate(current_user)%> <%=contact.localtime(current_user)%> <%=contact.localtimezone(current_user)%></td>
+      <td><%=contact.callsign1%></td>
+      <td><%=contact.location1_text%></td>
+      <td><%=contact.callsign2%></td>
+      <td><%=contact.location2_text%></td>
+    </tr>
+<% end %>
+    <tr>
+      <td>
+        <%= form_tag '/contacts/select2?id=new&callsign1='+@contact.callsign1+'&callsign2='+@contact.callsign2+'&date='+@contact.date.to_date.to_s, :name => 'selectform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+        <%= submit_tag "Create New", :id => "New", :remote => true %>
+        </form>
+      </td>
+    </tr>
+  </table>  
+  </div>
+</div>

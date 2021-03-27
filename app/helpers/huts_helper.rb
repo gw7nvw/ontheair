@@ -1,0 +1,2 @@
+module HutsHelper
+end

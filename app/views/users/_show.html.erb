@@ -1,0 +1,165 @@
+<script> 
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   site_toggle_huts(false);
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+     &nbsp;--&gt;&nbsp;
+     <b><%= @user.callsign.upcase %></b>
+   </div>
+   <div id="controls">
+       <% if current_user and (current_user.is_admin or current_user.id == @user.id) %>
+            <%=  link_to "Edit", '/users/'+@user.callsign+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
+       <% end %>
+       <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+
+
+<div id="right_scroll">
+   <%= render 'flash' %>
+
+   <div class="sectiontitle" id="page_title">
+     <%= @user.callsign.upcase %><br/>
+     <br/>
+   </div>
+
+   <div class="erow" id="realname">
+      <% if @user.activated then %>
+         <i>Registered user  </i>
+         <% if @user.is_modifier then %>
+            <i> - authorised to edit hut and park data </i>
+         <% else %>
+            <i> - not authorised to edit hut and park data </i>
+         <% end %>
+      <% else %>
+        <i> Not a registered user </i>
+      <% end %>
+   </div>
+   <div class="erow" id="realname">
+      <% if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
+         <%= if @user.firstname then @user.firstname.capitalize else "" end+" "+if @user.lastname then @user.lastname.capitalize else "" end %><br/>
+      <% else %>
+         <%= if @user.firstname then @user.firstname.capitalize else "" end+" "+if @user.lastname then @user.lastname.capitalize else "" end %><br/>
+      <% end %>
+   </div>
+
+   <%     if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
+     <div class="erow" id="email">
+         Email: <%= @user.email %>
+     </div>
+
+     <div class="erow" id="home_qth">
+         Home QTH: <%= @user.home_qth %>
+     </div>
+
+     <div class="erow" id="membership_requested">
+         NZ QRPers group member:
+         <% if @user.membership_confirmed then %> Yes <% elsif @user.membership_requested then %> Application sent <% else %> No <% end %>
+         <% if !@user.membership_requested and !@user.membership_confirmed and @user == current_user %>
+            <%=  link_to "Request Membership", "http://qrp.nz/qrpnzmembers/new?referring=hota", class: "btn btn-small btn-primary" %>
+         <% end %>
+     </div>
+
+   <%end%>
+     <div class="erow" id="email">
+         Timezone: <%= @user.timezonename %>
+     </div>
+</div>
+
+<div class="erow">
+   <div class="hrline">
+      <hr noshade size="4">
+   </div>
+</div>
+
+<div class="erow">
+  <div class="sectiontitle">Huts bagged: <%=@user.huts_bagged%> huts (on <%=@user.huts_bagged_total%> activations)</br></div>
+</div>
+
+<div id="erow">
+  <% @user.huts.each do |hut| %>
+      <%=link_to hut.name, '/huts/'+hut.id.to_s, remote: true,  :id => 'hut', :onclick => "linkHandler('hut')" %>,&nbsp
+
+  <% end %>
+</div>
+
+<div class="erow">
+   <div class="hrline">
+      <hr noshade size="4">
+   </div>
+</div>
+
+<div class="erow">
+  <div class="sectiontitle">Parks bagged: <%=@user.parks_bagged%> parks (on <%=@user.parks_bagged_total%> activations)</br></div>
+</div>
+
+<div id="erow">
+  <% @user.parks.each do |park| %>
+      <%=link_to park.name, '/parks/'+park.id.to_s, remote: true,  :id => 'park', :onclick => "linkHandler('park')" %>,&nbsp
+  <% end %>
+</div>
+
+<div class="erow">
+   <div class="hrline">
+      <hr noshade size="4">
+   </div>
+</div>
+
+<div class="erow">
+  <div class="sectiontitle">Islands bagged: <%=@user.islands_bagged%> islands (on <%=@user.islands_bagged_total%> activations)</br></div>
+</div>
+
+<div id="erow">
+  <% @user.islands.each do |island| %>
+      <%=link_to island.name, '/islands/'+island.id.to_s, remote: true,  :id => 'island', :onclick => "linkHandler('island')" %>,&nbsp
+  <% end %>
+</div>
+
+<div class="erow">
+   <div class="hrline">
+      <hr noshade size="4">
+   </div>
+</div>
+
+<div class="erow">
+  <div class="sectiontitle">Contacts: <%=link_to @user.contacts.count.to_s+" (view)", '/contacts?user='+@user.callsign, remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %>,
+</div>
+
+<div class="erow">
+   <div class="hrline">
+      <hr noshade size="4">
+   </div>
+</div>
+<script>
+  <% count=0 %>
+  <% if @contacts then @contacts.each do |contact| %>
+      <% if @user and @user.callsign==contact.callsign2 then
+            l2=contact.location1
+            l1=contact.location2
+         else
+            l1=contact.location1
+            l2=contact.location2
+         end
+      %>
+      <% if l1 then %> 
+           map_add_feature_from_wkt('<%=l1%>', 'EPSG:4326',site_green_circle);
+      <% end %>
+      <% if l2 then %>
+           map_add_feature_from_wkt('<%=l2%>', 'EPSG:4326',site_red_circle);
+      <% end %>
+
+      <% count=count+1 %>
+  <% end end %>
+  if(site_map_size==0) { 
+     $('#actionbar').removeClass('span7');
+     $('#actionbar').addClass('span12');
+  }
+
+</script>

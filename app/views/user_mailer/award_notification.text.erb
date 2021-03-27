@@ -1,0 +1,9 @@
+Hello <%= @aul.user.callsign %>
+
+<%= @aul.award.email_text %>
+
+You can download your logs for this award at:
+
+http://ontheair.nz/contacts/?user=<%=@aul.user.callsign%><%=if @aul.award.user_qrp then "&user_qrp=true" end%><%=if @aul.award.contact_qrp then "&contact_qrp=true" end%>
+
+73s from the team at ontheair.nz

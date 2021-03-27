@@ -1,0 +1,69 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   site_toggle_huts(false);
+   site_toggle_island(0);
+   document.title = '... On the Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Contacts <%=
+          if @hut then "("+@hut.name+")"
+          elsif @park then "("+@park.name+")" 
+          elsif @all then "(All)"
+          elsif @user then "("+@user.callsign+")" end%></b>
+     </div>
+   <div id="controls">
+       <% if current_user  %>
+            <% if current_user.is_admin then %>
+              <%=  link_to "View All", '/contacts/?all=true', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('all')" %>
+            <% end %>
+            <%=  link_to "Add Contact", '/contacts/new', class: "btn btn-small btn-primary btn-highlight", remote: true, :onclick => "linkHandler('add')" %>
+            <%=  link_to "Add Many Contacts", '/contacts/editgrid', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+       <% end %>
+       <% if current_user and ((@user and current_user.callsign==@user.callsign) or current_user.is_admin) %>
+          <% 
+            parmtext=""
+            params.each do |k, v|
+              parmtext+="&"+k.to_s+"="+v.to_s
+            end
+            if parmtext!="" then parmtext[0]="?" end
+          %>
+           <%=  link_to "Download", '/contacts.csv'+parmtext, class: "btn btn-small btn-primary"%>
+       <% end %>
+       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <%= render 'list' %>
+</div>
+
+<div class="erow">Key: <div style="color:green">QRP</div>  <div style="text-decoration:underline">Home Station</div></div>
+<script>
+  <% if @contacts then @contacts.each do |contact| %>
+      <% if @user and @user.callsign==contact.callsign2 then
+            l2=contact.location1
+            l1=contact.location2
+         else
+            l1=contact.location1
+            l2=contact.location2
+         end
+      %>
+      <% if l1 then %> 
+           map_add_feature_from_wkt('<%=l1%>', 'EPSG:4326',site_green_circle);
+      <% end %>
+      <% if l2 then %>
+           map_add_feature_from_wkt('<%=l2%>', 'EPSG:4326',site_red_circle);
+      <% end %>
+  <% end end %>
+    if(site_map_size==0) { 
+       $('#actionbar').removeClass('span7');
+       $('#actionbar').addClass('span12');
+}
+</script>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script src="/assets/ol.js"></script>
+    <link rel="stylesheet" href="/assets/ol.css" type="text/css">
+   <script src="/assets/html2canvas.js"></script>
+   <script src="http://mapspast.org.nz/assets/canvas-toBlob.js"></script>
+   <script src="http://mapspast.org.nz/assets/FileSaver.js"></script>
+
+<script>
+if( /Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent))
+{
+ var ismobile=true;
+} else {
+ var ismobile=false;
+}
+</script>
+
+    <script>
+      var defzoom=1 
+    </script>
+    <%  @init_name = "site_init()" %>
+
+    <title>QSL Card</title>
+    <%= stylesheet_link_tag "application", media: "all", "data-turbolinks-track" => true %>
+    <%= stylesheet_link_tag "application", media: "all", "jquery-ui.mi" => true %>
+
+    <%= javascript_include_tag "application", "data-turbolinks-track" => true %>
+    <%= csrf_meta_tags %>
+    <%= render 'layouts/shim' %> 
+    <meta name="google-site-verification" content="KIylIchG3986annyXGfxBNJ-qMOJCDG2tdcuUMFPoO0" />
+    <script src="/styles.js"></script>
+
+</head>
+ <body onload='<%=@init_name%>' style="cursor: auto;">
+        <%=yield %>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<script> 
+   document.getElementById("page_status").innerHTML = '';
+</script>
+
+<div class="fullform">
+  <%= form_for(:session, url: sessions_path) do |f| %>
+    <div id="actionbar-form" class="span7">
+       <div id="crumbs">
+         <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+         &nbsp;--&gt;&nbsp;
+         <b>Sign In</b>
+       </div>
+
+       <div id="controls">
+          <%= f.submit "Sign in", class: "btn btn-small btn-primary btn-highlight" %>
+          <%= link_to "Forgotton password", new_password_reset_path, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('forgot')" %>
+          <%= link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+       </div>
+    </div>
+
+    <div id="right_scroll">
+      <%= hidden_field_tag(:referring, @referring) %>
+      <%= render 'flash' %>
+      <%= render 'shared/error_messages' %>
+
+      <div class="sectiontitle">Callsign</div>
+      <%= f.text_field :email %>
+
+      <div class="sectiontitle">Password</div>
+      <%= f.password_field :password %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+    if(site_map_size==0) { 
+       $('#actionbar-form').removeClass('span7');
+       $('#actionbar-form').addClass('span12');
+    }
+</script>
+

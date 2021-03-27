@@ -1,0 +1,64 @@
+    <header class="navbar navbar-fixed-top navbar-inverse">
+      <div class="navbar-inner" style="font-size:0.8em">
+<!--        <div class="container"> -->
+        <div id="our_logo">
+          <div id="rg-image">
+            <img src='/assets/antenna32.png'>
+          </div>
+          <div id="rg-text">
+            <%= link_to "... On The Air", root_path, id: "logo", remote: true, :onclick => "linkHandler('logo')" %>
+          </div>
+        </div>
+          <nav>
+            <ul class="nav pull-right" id="menus">
+                <li id="fat-menu" class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                   ...OnTheAir <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><%= link_to 'QRP.NZ', 'http://qrp.nz' %></li>
+                  <li><%= link_to 'Home', root_path, remote: true, :id => 'home_link', :onclick => "linkHandler('home_link')"  %></li>
+                  <li><%= link_to 'About', '/about', remote: true, :id => 'about_link', :onclick => "linkHandler('about_link')"  %></li>
+                  <% if signed_in? %>
+                    <li><%= link_to "Users", '/users',  remote: true,  :id => 'users_link', :onclick => "linkHandler('users_link')"  %></li>
+                  <% end %>
+                </ul>
+
+                <li><%= link_to "Huts", '/huts',  remote: true,  :id => 'huts_link', :onclick => "linkHandler('huts_link')"  %></li>
+                <li><%= link_to "Parks", '/parks',  remote: true,  :id => 'parks_link', :onclick => "linkHandler('parks_link')"  %></li>
+                <li><%= link_to "Islands", '/islands',  remote: true,  :id => 'islands_link', :onclick => "linkHandler('islands_link')"  %></li>
+                <li><%= link_to "Summits", '/summits',  remote: true,  :id => 'summits_link', :onclick => "linkHandler('summits_link')"  %></li>
+                <li><%= link_to "Spots", '/spots',  remote: true,  :id => 'spots_link', :onclick => "linkHandler('spots_link')"  %></li>
+                <li><%= link_to "Alerts", '/alerts',  remote: true,  :id => 'alerts_link', :onclick => "linkHandler('alerts_link')"  %></li>
+
+              <% if signed_in? %>
+                <li><%= link_to "My Contacts", '/contacts',  remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')"  %></li>
+                     
+                <li id="fat-menu" class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                   <b><%=current_user.callsign.upcase%></b> <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><%= link_to "Profile", '/users/'+current_user.callsign, remote: true, :id => 'profile_link', :onclick => "linkHandler('profile_link')" %></li>
+                  <li><%= link_to "POTA Logs", '/pota_logs', remote: true, :id => 'pota_link', :onclick => "linkHandler('pota_link')" %></li>
+                  <li class="divider"></li>
+                  <li>
+                    <%= link_to "Sign out", signout_path, method: "delete" %>
+                  </li>
+                  <% if current_user.is_admin then %>
+	            <li class="divider"></li>
+                    <li><%= link_to "Awards", awards_path, remote: true %></li>
+                  <% end %>
+                </ul>
+              </li>
+              <% else %>
+                <li><%= link_to "Sign in", signin_path, remote: true %></li>
+                <li><%= link_to "Sign up", signup_path, remote: true %></li>
+              <% end %>
+
+            </ul>
+          </nav>
+<!--        </div>-->
+      </div>
+    </header>
+

@@ -1,0 +1,95 @@
+<div class="fullform">
+   <%= form_for @park, remote: true, :html => {:name => 'parkform'} do |f| %>
+    <div id="actionbar-form" class="span7">
+       <div id="crumbs">
+         <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+         &nbsp;--&gt;&nbsp;
+         <%=  link_to  "Parks:", '/parks', remote: true,  :id => 'parks', :onclick => "linkHandler('parks')" %>
+         &nbsp;--&gt;&nbsp;
+         <%if @park.id%> 
+            <b><%=link_to @park.name, '/parks/'+@park.id.to_s, remote: true, :id => 'park', :onclick => "linkHandler('park')" %>
+            &nbsp;--&gt;&nbsp;
+            <b>Edit</b>
+         <% else %>
+            <b>New</b>
+         <% end %>
+       </div>
+       <div id="controls">
+          <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight" %>
+          <%  if(@submit_button == "Save Changes" and current_user and current_user.is_admin) %>
+            <%= f.submit "Delete", confirm: "Delete park: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>
+          <% end %>
+          <% if params[:referring]=='index'%>
+            <%=  link_to "Cancel", '/parks', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+          <% else %>
+            <%=  link_to "Cancel", '/parks/'+@park.id.to_s, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+          <% end %>
+          <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+       </div>
+    </div>
+
+    <div id="right_scroll">
+      <%= hidden_field_tag(:referring, @referring) %>
+      <%= render 'flash' %>
+      <%= render 'shared/error_messages' %>
+
+      <div class="sectiontitle">Park ID</div>
+      <%if current_user and current_user.is_admin%><%= f.text_field :id %><%else%><%= f.text_field :id, readonly: true %><% end %>
+
+      <div class="sectiontitle">Name</div>
+      <%= f.text_field :name %>
+
+      <div class="sectiontitle">Description</div>
+      <%= f.text_area :description %>
+
+     <div class="erow">
+           <div class="leftbuttons">
+              <span title="Click to draw location on map">
+                 <img id="boundaryplus" src="/assets/draw.png" onclick="drawBoundary('boundarytick', 'boundaryplus', 'park_boundary')" width="16" style="display:block">
+              </span>
+
+              <span title="Click to confirm selection">
+                 <img id="boundarytick" src="/assets/tick.png" onclick="site_selectNothing('boundarytick', 'boundaryplus')" width="16" style="display:none">
+              </span>
+           </div>
+         <div class="sectiontitle25">Boundary:</div>
+      </div>
+      <%= f.text_field :boundary, :readonly => true %>
+
+      <%= "Minor reserve (marginal strip or local purpose reserve)? " %><br/>
+      <%= f.check_box :is_mr%><br/><br/>
+
+      <%= "Active? " %><br/>
+      <% if current_user and current_user.is_admin%> 
+        <%= f.check_box :is_active%><br/><br/>
+      <% else %>
+        <%= f.check_box :is_active, :readonly => true%><br/><br/>
+      <% end %>
+ 
+      <div class="sectiontitle25">Links:</div>
+      <div class="sectiontitle">DOC</div>
+      <%= f.text_field :doc_link %>
+ 
+      <div class="sectiontitle">Tramper</div>
+      <%= f.text_field :tramper_link %>
+ 
+      <div class="sectiontitle">Other</div>
+      <%= f.text_field :general_link %>
+ 
+    </div>
+  <% end %>
+</div>
+
+<script>
+    reset_map_controllers(); 
+    site_toggle_docland(true);
+    park_init('<%=@park.simple_boundary%>', 0);
+
+    deactivate_all_click();
+    if(site_map_size==0) { 
+       $('#actionbar-form').removeClass('span7');
+       $('#actionbar-form').addClass('span12');
+    }
+
+</script>
+

@@ -1,0 +1,2 @@
+module PotaLogsHelper
+end

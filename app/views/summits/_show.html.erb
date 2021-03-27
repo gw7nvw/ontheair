@@ -1,0 +1,83 @@
+<script> 
+   document.getElementById("page_status").innerHTML = '';
+   document.title = 'NZSummits On the Air'
+   document.getElementById('logo').innerHTML='NZSummits On The Air'
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  "SOTA Summits:", '/summits', remote: true,  :id => 'summits', :onclick => "linkHandler('summits')" %>
+     &nbsp;--&gt;&nbsp;
+     <b><%= @summit.name %></b>
+     </div>
+   <div id="controls">
+       <%=  link_to "Index", "/summits", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+<div id="right_scroll">
+   <%= render 'flash' %>
+   <div class="erow" id="email">
+      <div class="rowtitle">SOTA Summit Id:</div>
+      <div class="rowtext">
+          <%=link_to @summit.summit_code, 'https://summits.sota.org.uk/summit/'+@summit.summit_code, :target=>"_blank"  %>
+          <img src="/assets/external-link-symbol.png">
+      </div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle">Name</div>
+      <div class="rowtext"> 
+        <%=link_to @summit.name, '/summits/'+@summit.short_code, remote: true,  :id => 'summit', :onclick => "linkHandler('summit')" %>
+      </div>
+   </div>
+   <div class="erow" id="park">
+      <div class="rowtitle">Park</div>
+      <div class="rowtext">
+        <%=if @summit.park then link_to @summit.park.name, '/parks/'+@summit.park.id.to_s, remote: true,  :id => 'park', :onclick => "linkHandler('home')" end %>
+      </div>
+   </div>
+   <div class="erow" id="island">
+      <div class="rowtitle">Island</div>
+      <div class="rowtext">
+        <%=if @summit.island then link_to @summit.island.name, '/islands/'+@summit.island.id.to_s, remote: true,  :id => 'island', :onclick => "linkHandler('home')" end %>
+      </div>
+   </div>
+   <div class="erow" id="location">
+      <div class="rowtitle">Location</div>
+<%
+       # convert to NZTM2000 
+       fromproj4s= Projection.find_by_id(4326).proj4
+       toproj4s=  Projection.find_by_id(2193).proj4
+
+       fromproj=RGeo::CoordSys::Proj4.new(fromproj4s)
+       toproj=RGeo::CoordSys::Proj4.new(toproj4s)
+
+       xyarr=RGeo::CoordSys::Proj4::transform_coords(fromproj,toproj,@summit.location.x,@summit.location.y)
+
+
+%>
+
+        <div class="rowtext"> <%= "NZTM2000: "+xyarr[0].round().to_s+", "+xyarr[1].round().to_s %><% if @summit.alt then %><%=" (alt: "+@summit.alt.to_i.to_s+"m)"%> <% end %> </div>
+      </div>
+   </div>
+   <div class="erow" id="points">
+      <div class="rowtitle">SOTA Points</div>
+      <div class="rowtext"><%=@summit.points%></div>
+   </div>
+<div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+
+<script>
+    place_init('<%=@summit.location%>',  0);
+    if(site_map_size==0) { 
+       $('#actionbar').removeClass('span7');
+       $('#actionbar').addClass('span12');
+    }
+</script>
+

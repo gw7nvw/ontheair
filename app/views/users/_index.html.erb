@@ -1,0 +1,85 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.title = '... On the Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Users</b>
+     </div>
+   <div id="controls">
+       <% if current_user and current_user.is_admin %>
+            <%=  link_to "Edit Table", '/users/editgrid', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+            <%=  link_to "Add User", '/users/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('add')" %>
+            <%=  link_to "Download", '/users.csv', class: "btn btn-small btn-primary"%>
+       <% end %>
+       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <table class="places">
+    <tr>
+      <th>Callsign</th>
+      <th>Name</th>
+      <th>Huts</th>
+      <th>Parks</th>
+      <th>Islands</th>
+      <th>Contacts</th>
+      <th>Registered</th>
+      <% if current_user and (current_user.is_admin) %>
+        <th>Email</th>
+        <th>Admin?</th>
+      <% end %>
+      <th>Editor</th>
+      <th style="text-align:center">
+        <%=render :partial => 'filter',  :locals => {:filtername => "active", :formname => "/users"} %>
+       Active?
+      </th>
+
+
+    </tr>
+
+    <% if @users then @users.each do |user| %>
+      <tr>
+        <td>
+          <% if current_user and (current_user.is_admin or current_user.id == user.id) %>
+            <span title="Click to edit"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/users/'+user.callsign+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+          <% end %>
+          <%= link_to user.callsign.upcase, '/users/'+user.callsign, remote: true, :id => 'user_link_'+user.id.to_s, :style => (if not user.activated then 'color:grey' else '' end), :onclick => "linkHandler('user_link_"+user.id.to_s+"')" %>
+
+        </td>
+
+        <td><%= if user.firstname then user.firstname.capitalize else " " end+ " "+if user.lastname then user.lastname.capitalize else " " end%></td>
+        <td><%=user.huts_bagged%><%if user.huts_bagged!=user.huts_bagged_total then %><span style="color:grey"> (<%=user.huts_bagged_total%>)</span><%end%></td>
+        <td><%=user.parks_bagged%><%if user.parks_bagged!=user.parks_bagged_total then%><span style="color:grey"> (<%=user.parks_bagged_total%>)</span><%end%></td>
+        <td><%=user.islands_bagged%><%if user.islands_bagged!=user.islands_bagged_total then%><span style="color:grey"> (<%=user.islands_bagged_total%>)</span><%end%></td>
+        <td><%=user.contacts.count%></td>
+        <td style="text-align:center"><%= check_box "user", "activated", {:checked => user.activated, :disabled => true} %></td>
+        <% if current_user and (current_user.is_admin) %>
+          <td><%=user.email%></td>
+          <td style="text-align:center"><%= check_box "user", "is_admin", {:checked => user.is_admin, :disabled => true} %></td>
+        <% end %>
+        <td style="text-align:center"><%= check_box "user", "is_modifier", {:checked => user.is_modifier, :disabled => true} %></td>
+        <td style="text-align:center"><%= check_box "user", "is_active", {:checked => user.is_active, :disabled => true} %></td>
+      </tr>
+    <% end end %>
+  </table>
+</div>
+<div class="erow">
+Key to huts / parks / islands: </br>
+  Number of unique locations bagged <span style="color:grey">(total number of activations)</span>
+</div>
+
+<script>
+    if(site_map_size==0) { 
+       $('#actionbar').removeClass('span7');
+       $('#actionbar').addClass('span12');
+}
+</script>
+

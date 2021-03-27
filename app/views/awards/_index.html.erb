@@ -1,0 +1,75 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Awards</b>
+     </div>
+   <div id="controls">
+       <% if current_user and current_user.is_modifier %>
+            <%=  link_to "Add award", '/awards/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('add')" %>
+       <% end %>
+       <% if current_user  %>
+         <%=  link_to "Download", '/awards.csv', class: "btn btn-small btn-primary"%>
+       <% end %>
+       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+<div id="right_scroll">
+  <%= render 'flash' %>
+
+  <table class="places">
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Huts</th>
+        <th>Parks</th>
+        <th>Islands</th>
+        <th>User QRP</th>
+        <th>Contact QRP</th>
+        <th>Revisits</th>
+        <th style="text-align:center">
+          <%=render :partial => 'filter',  :locals => {:filtername => "active", :formname => "/awards"} %>
+          Active?
+        </th>
+   
+      </tr>
+    <% if @awards then @awards.each do |award| %>
+      <tr>
+        <td>
+          <% if current_user and current_user.is_modifier %>
+             <span title="Click to edit row"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/awards/'+award.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+          <% end %>
+          <%= link_to award.name, '/awards/'+award.id.to_s, remote: true, :id => 'award_link_'+award.id.to_s, :onclick => "linkHandler('award_link_"+award.id.to_s+"')" %>
+        </td>
+        <td>
+            <%= award.description %>
+        </td>
+        <td>
+            <%= award.huts_minimum.to_s %>
+        </td>
+        <td>
+            <%= award.parks_minimum.to_s %>
+        </td>
+        <td>
+            <%= award.islands_minimum.to_s %>
+        </td>
+        <td style="text-align:center"><%= check_box "award", "user_qrp", {:checked => award.user_qrp, :disabled => true} %></td>
+        <td style="text-align:center"><%= check_box "award", "contact_qrp", {:checked => award.contact_qrp, :disabled => true} %></td>
+        <td style="text-align:center"><%= check_box "award", "allow_repeat_visits", {:checked => award.allow_repeat_visits, :disabled => true} %></td>
+        <td style="text-align:center"><%= check_box "award", "is_active", {:checked => award.is_active, :disabled => true} %></td>
+      </tr>
+    <% end end %>
+  </table>
+</div>
+
+<script>
+    if(site_map_size==0) { 
+       $('#actionbar').removeClass('span7');
+       $('#actionbar').addClass('span12');
+}
+</script>

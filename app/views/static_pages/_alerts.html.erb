@@ -1,0 +1,99 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.title = '... On The Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Alerts</b>
+</div>
+   <div id="controls">
+      <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <h2><a href="https://qrp.nz/topics/1">Going portable alerts</a></h2>
+  <table class="users">
+    <tr>
+      <th>Callsign</th>
+      <th>Date</th>
+      <th>Time (NZ)</th>
+      <th>Duration (days)</th>
+      <th>Comments</th>
+    </tr>
+    <% @hota_alerts.each do |post| %>
+    <tr>
+      <% us=User.find_by(id: post.created_by_id) %>
+        <% if us then u=us.callsign else u="" end %>
+        <td><%=u%></td>
+        <td><%=if post.referenced_date then post.referenced_date.strftime("%Y-%m-%d") end%></td>
+        <td><%=if post.referenced_time then post.referenced_time.strftime("%H:%M") end%></td>
+        <td><%=if post.duration then post.duration.to_s end%></td>
+        <td><b><%=post.title%></b><br/><%=raw (post.description).gsub(/(?<=<style type=\"text\/css\">).+(?=<\/style>)/m,'')%></td>
+      </tr>
+    <% end %>
+  </table>
+
+  <h2><a href="https://stats.parksontheair.com/spotting/scheduling.php">POTA alerts (ZL/VK)</a></h2>
+  <table class="users">
+    <tr>
+      <th>Time (NZ)</th>
+      <th>Callsign</th>
+      <th>POTA-Code</th>
+      <th>Park name</th>
+      <th>Frequency/Mode</th>
+      <th>Comments</th>
+    </tr>
+    <% @zlvk_pota_alerts.each do |alert| %>
+      <tr>
+        <td><%=if alert["Start Date"].to_datetime then alert["Start Date"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d %H:%M") end%> - <%=if alert["End Date"].to_datetime then alert["End Date"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d %H:%M") end%> </td>
+        <td><%=alert["Activator"]%></td>
+        <td><%=alert["Reference"]%></td>
+        <td><%=alert["Park Name"]%></td>
+        <td><%=alert["Frequencies"]%></td>
+        <td><%=alert["Comments"]%></td>
+      </tr>
+    <% end %>
+  </table>
+  <h2><a href="https://sotawatch.sota.org.uk/en/">SOTA alerts (ZL/VK)</a></h2>
+  <table class="users">
+    <tr>
+      <th>Date</th>
+      <th>Time (NZ)</th>
+      <th>Callsign</th>
+      <th>SOTA-Code</th>
+      <th>Summit name</th>
+      <th>Frequency</th>
+      <th>Mode</th>
+      <th>Comments</th>
+    </tr>
+    <% @zlvk_sota_alerts.each do |alert| %>
+      <tr>
+        <td><%=if alert["dateActivated"].to_datetime then alert["dateActivated"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d") end%></td>
+        <td><%=if alert["dateActivated"].to_datetime then alert["dateActivated"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%H:%M") end%></td>
+        <td><%=alert["activatingCallsign"]%></td>
+        <td><%=alert["associationCode"]+"/"+alert["summitCode"]%></td>
+        <td><%=alert["summitDetails"]%></td>
+        <td><%=alert["frequency"]%></td>
+        <td><%=alert["mode"]%></td>
+        <td><%=alert["comments"]%></td>
+      </tr>
+    <% end %>
+  </table>
+</div>
+<script>
+if ($(window).width() < 960) {
+        site_smaller_map();
+      }
+    if(site_map_size==0) { 
+       $('#actionbar').removeClass('span7');
+       $('#actionbar').addClass('span12');
+}
+</script>
+

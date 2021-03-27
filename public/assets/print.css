@@ -1,0 +1,476 @@
+$grayLighter: #eee;
+$grayMediumLight: #eaeaea;
+
+/* universal */
+
+
+html {
+  overflow-y: scroll;
+}
+
+body {
+  padding-top: 60px;
+  font-size: 0.9em;
+  line-height: 1.3em;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+section {
+  overflow: auto;
+}
+
+textarea {
+  resize: vertical;
+}
+
+
+/* typography */
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1;
+}
+
+h1 {
+  font-size: 3em;
+  letter-spacing: -2px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+h2 {
+  font-size: 1.2em;
+  letter-spacing: -1px;
+  margin-bottom: 30px;
+  text-align: center;
+  font-weight: normal;
+  color: #999;
+}
+
+small {
+  color: #999;
+  font-size: 0.7em;
+}
+
+p {
+  font-size: 0.9em;
+  line-height: 1.2em;
+}
+
+
+/* header */
+
+#main_page{
+  float: left;
+  width: 100%;
+  height: 100%;
+  margin-left: 2%;
+  margin-right: 2%;
+  margin-top: 45px;
+}
+
+#map_status{
+  display: none;
+}
+#page_status{
+  display: none;
+}
+
+#header
+{
+  display: none;
+}
+
+#our_logo {
+  display: none;
+}
+
+#logo {
+  display: none;
+}
+
+#menus {
+  display: none;
+}
+
+.container{
+  width:100%;
+}
+
+#map_map {
+        width: 100%;
+        height: 100%;
+}
+#tooltip{
+  display: none;
+}
+
+#addbutton {
+  display: none;
+}
+#links_section {
+  display: none;
+}
+#left_panel
+{
+        width: 100%;
+        height: 100%;
+}
+
+html, body {
+        height: 100%;
+        width: 100%;
+        border: 0px;
+        margin: 0px;
+        padding: 0px;
+}
+
+.selectedrow {
+        background-color: #d6ffd6;
+
+}
+
+.cutrow {
+
+        background-color: #d6d6d6;
+}
+.diff_label
+{
+        float: left;
+        width: 90px;
+        height: 30px;
+        font-weight: bold;
+}
+.difficulty
+{
+        float: left;
+        width: 100%;
+}
+.diff_details
+{
+        float: left;
+        height: 30px;
+        width: 100%;
+        font-weight: lighter;
+        font-style: italic;
+        margin-left: 90px;
+        color: darkgrey;
+}
+.diff_name
+{
+        float: left;
+        height: 30px;
+        width: 250px;
+}
+.diff_slider
+{
+        float: left;
+        height: 30px;
+        width: 210px;
+}
+
+.helptext {
+        border: 1px solid;
+        border-radius: 5px;
+        border-color: blue;
+        color: blue;
+        padding: 5px;
+        margin-bottom: 5px;
+}
+
+.no-print {
+        display: none;
+}
+.erow {
+        width: 100%;
+        float: left;
+}
+
+.left-bubble {
+	position:relative;
+	padding:5px;
+	margin:0em 0 0em;
+        margin-right:50px;
+	color:#000;
+	background:#99ccff; /* default background for browsers without gradient support */
+	/* css3 */
+	-webkit-border-radius:10px;
+	-moz-border-radius:10px;
+	border-radius:10px;
+}
+
+.right-bubble-blue {
+	position:relative;
+	padding:5px;
+	margin:0em 0 0em;
+        margin-left:50px;
+	color:#000;
+	background:#99ccff; /* default background for browsers without gradient support */
+	/* css3 */
+	-webkit-border-radius:10px;
+	-moz-border-radius:10px;
+	border-radius:10px;
+}
+
+
+.right-bubble {
+	position:relative;
+	padding:5px;
+	margin:0em 0 0em;
+        margin-left:50px;
+	color:#000;
+	background:#ffff99; /* default background for browsers without gradient support */
+	/* css3 */
+	-webkit-border-radius:10px;
+	-moz-border-radius:10px;
+	border-radius:10px;
+}
+
+.subrow {
+        width: 100%;
+        float: left;
+        margin-left: 25px;
+
+}
+
+.rightbuttons {
+        display: none;
+}
+
+.leftbuttons {
+        display: none;
+}
+
+.leftbuttons50 {
+        display: none;
+}
+
+.hrline {
+        width: 100%;
+        height: 4px;
+}
+
+.thinhrline {
+        width: 100%;
+        height: 2px;
+        float: left;
+}
+.sectiontext {
+        float: left;
+        width: 100%;
+        margin-left: 0px;
+}
+.sectiontext50 {
+        float: left;
+        width: 100%;
+        margin-left: 25px;
+}
+.sectiontext25 {
+        width: 100%;
+        margin-left: 0px;
+}
+.rowtitlesmall {
+        width: calc(25% - 25px);
+        margin-top: 1px;
+        float: left;
+        font-size: 1.2em;
+        letter-spacing: -1px;
+        font-weight: bold;
+        color: #999;
+}
+
+
+.rowtitle {
+        width: 25%;
+        margin-top: 1px;
+        float: left;
+        font-size: 1.2em;
+        letter-spacing: -1px;
+        font-weight: bold;
+        color: #999;
+}
+
+.checktitle {
+        width: 25%;
+        margin-top: 1px;
+        margin-left: 25%;
+        float: left;
+        font-size: 0.9em;
+        letter-spacing: -1px;
+        font-weight: normal;
+        color: #999;
+}
+.checkbox {
+        float: left;
+        width: 25px;
+}
+
+.rowtext {
+        float: left;
+        width: 75%;
+}
+
+.sectiontitle {
+        margin-top: 1px;
+        float: left;
+        font-size: 1.2em;
+        letter-spacing: -1px;
+        font-weight: bold;
+        color: #999;
+}
+.sectiontitle25 {
+        margin-top: 1px;
+        margin-left: 0px;
+        font-size: 1.2em;
+        letter-spacing: -1px;
+        font-weight: bold;
+        color: #999;
+}
+
+.sectiontitle50 {
+        margin-top: 1px;
+        margin-left: 25px;
+        font-size: 1.2em;
+        letter-spacing: -1px;
+        font-weight: bold;
+        color: #999;
+}
+
+.sectiontitle-bold {
+        margin-top: 1px;
+        float: left;
+        font-size: 1.2em;
+        letter-spacing: -1px;
+        font-weight: bold;
+        color: #999;
+}
+
+#links_section > .erow > #route_details > .erow > .sectiontitle25 {
+        font-weight: normal;
+}
+
+#links_section > .erow > .sectiontitle {
+        font-weight: normal;
+}
+
+#map_map {
+        width: calc(100% - 2px);
+        height: calc(100% - 62px); 
+        border: 0px;
+        margin: 0px;
+ /*       margin-top: 100px; */
+	margin-left: 20px;
+        padding: 0px;
+}
+
+#map-blah
+{
+	float: left;
+	width: 100%;
+	height: 80%;
+}
+
+#map_controls
+{
+        display: none;
+
+}
+#photo_panel
+{
+        display: none;
+}
+
+#right_panel
+{
+	width: 100%;
+	height: 100%;
+}
+
+#footer
+{
+        display: none;
+}
+
+a:link {
+    text-decoration: none;
+    color: inherit;
+}
+
+a:visited {
+    text-decoration: none;
+    color: inherit;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+a:active {
+    text-decoration: none;
+}
+
+/*footer {
+  margin-top: 45px;
+  padding-top: 5px;
+  border-top: 1px solid $grayMediumLight;
+  color: $grayLight;
+  a {
+    color: $gray;
+    &:hover {
+      color: $grayDarker;
+    }
+  }
+  small {
+    float: left;
+  }
+  ul {
+    float: right;
+    list-style: none;
+    li {
+      float: left;
+      margin-left: 1%;
+    }
+  }
+*/
+
+/* miscellaneous */
+
+/* forms */
+
+input, textarea, select, .uneditable-input {
+  border: 1px solid #bbb;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+input {
+  height: auto !important;
+}
+
+
+/* Places index */
+
+.places {
+  list-style: none;
+  margin: 0;
+}
+.imageWrap { 
+    width: 640px; 
+    height: 420px; 
+    background: url('ajax-loader.gif') center center no-repeat; 
+}
+/**
+ * Map Examples Specific
+ */
+.smallmap {
+    width: 512px;
+    height: 256px;
+    border: 1px solid #ccc;
+}
+#tags {
+    display: none;
+}
+
+#docs p {
+    margin-bottom: 0.5em;
+}
+/* mobile specific */

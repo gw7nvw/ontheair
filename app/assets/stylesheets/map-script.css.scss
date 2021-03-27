@@ -1,0 +1,31 @@
+        .olControlButton  {
+          top: 2px;
+          left: 96px;
+//	  width: 32px;
+	  height: 32px;
+  background-color: rgba(255,255,255,.4);
+  border-radius: 4px;
+padding: 2px;
+margin: 2px;
+border: 1px solid;
+padding: 0px 2px;
+border-radius: 4px;
+background-color: white;
+float: left;
+overflow: visible;
+opacity: 0.6;
+  }
+
+	.ol-control button {
+          width: 24px !important;
+	  height: 24px !important;
+	}
+
+input#url {
+    width: 100%;
+}
+
+div.ol-mouse-position:before {
+  content: attr(data-before);
+}
+

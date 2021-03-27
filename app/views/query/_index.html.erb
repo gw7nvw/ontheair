@@ -1,0 +1,28 @@
+  <% if params[:hutfield]=='hut2' then hutfield='hut2' else hutfield='hut1' end %>`
+<%= form_tag '/query?hutfield='+hutfield, :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+  <div class="rowtitle">Find:</div>
+  <div class="rowtext">
+    <input type="text" name="searchtext" value='<%=@searchtext%>'/>
+  </div>
+  <div class="buttonshort">
+    <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');" %>
+  </div>
+</form>
+
+<% if @huts and @huts.count>0 %>
+  <% if @huts.count>39 then %>
+    <div class="erow">
+    Your search returned more results than listed. Please refine
+    </div>
+  <% end %>
+  <table>
+  <% @huts.each do |hut| %>
+    <tr>
+      <td> 
+        <%= link_to hut.name.to_s+(if(hut.park) then " ("+hut.park.name+")" else "" end), '#', :id => 'hut_link'+hut.id.to_s, :onclick => "select_hut('"+hutfield+"', "+hut.id.to_s+", '"+hut.name+"', '"+hut.x.to_s+"', '"+hut.y.to_s+"', '"+hut.location.to_s+"', '"+(if hut.park then hut.park.id.to_s else '' end)+"', '"+(if hut.park then hut.park.name else '' end)+"');return(false);" %>
+      </td>
+    </tr>
+  <% end %>
+<% else %>
+  No results found
+<% end %>
