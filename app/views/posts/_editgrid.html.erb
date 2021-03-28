@@ -1,0 +1,48 @@
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  "Huts:", '/huts', remote: true,  :id => 'huts', :onclick => "linkHandler('huts')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Edit Table</b>
+     </div>
+   <div id="controls">
+       <%=  link_to "View Table", '/huts/', class: "btn btn-small btn-primary", remote: true, :id => 'huts', :onclick => "linkHandler('huts')" %>
+       <% if current_user.is_admin %>
+            <input type="button" class= "btn btn-small btn-primary" value="Delete Row" onclick="grid.deleteSelectedRows()" />
+       <% end %>
+       <%=  link_to "Download", '/huts.csv', class: "btn btn-small btn-primary"%>
+       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+
+<div id="right_scroll">
+   <%= render 'flash' %>
+   <div id="grid_here" style="width: 100%; height: calc(100% - 72px); position: fixed"></div>
+</div>
+<script type="text/javascript" charset="UTF-8">
+     map_smaller();
+     var grid = new dhtmlXGridObject("grid_here");
+     grid.setImagePath("/assets/imgs/");
+     grid.setHeader("Id, Name, Description,X,Y,altitude,DOC?,Active?,DOC Link, Hutbagger Link, Tramper Link, Routeguides Link, General Link");
+     grid.attachHeader("#,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter");
+     grid.setColSorting("int,str,str,int,int,int,str,str,str,str,str,str,str");
+     grid.setColTypes("ro,ed,ed,edn,edn,edn,ch,ch,ed,ed,ed,ed,ed");
+     grid.setInitWidths("60,100,200,100,100,60,60,60,100,100,100,100,100");
+
+     grid.setSkin("dhx_skyblue");
+     grid.init();
+     grid.load("<%= hut_data_path %>", "json");
+     dp = new dataProcessor("<%= hut_db_action_path %>");
+     dp.setTransactionMode("GET",false);
+     dp.init(grid);
+
+    if(map_size==0) { 
+       $('#actionbar').removeClass('span7');
+       $('#actionbar').addClass('span12');
+    }
+
+</script>
+
+

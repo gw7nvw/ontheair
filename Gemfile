@@ -55,6 +55,8 @@ ruby '2.0.0'
   gem 'ffi', '1.9.6'
 
   gem 'hike', '1.2.3'
+  gem 'htmlentities'
+
 
   gem 'i18n', '0.7.0'
 

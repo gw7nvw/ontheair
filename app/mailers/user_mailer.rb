@@ -1,4 +1,6 @@
 class UserMailer < ActionMailer::Base
+  helper ApplicationHelper
+
   default from: "qrp_nz@qrp.nz"
 
   # Subject can be set in your I18n file at config/locales/en.yml
@@ -59,4 +61,12 @@ class UserMailer < ActionMailer::Base
                                    :content => log }
     mail from: "admin@qrp.nz", to: email, bcc: "admin@qrp.nz", subject: "POTA log from "+user.callsign, reply_to: user.email
   end
+  def subscriber_mail(item,user)
+    @user=user
+    @item=item
+    if user and user.email then
+      mail to: user.email, subject: "QRP.NZ: New post from "+@item.end_item.updated_by_name+" in your followed topics"
+    end
+  end
+
 end

@@ -11,8 +11,11 @@
      &nbsp;--&gt;&nbsp;
      <b>Alerts</b>
 </div>
-   <div id="controls">
-      <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   <div id="controls">   
+     <% if current_user  %>
+       <%=  link_to "Add Alert", "/posts/new?topic_id=1", class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+     <% end %>
+     <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
    </div>
 </div>
 
@@ -21,68 +24,51 @@
   <h2><a href="https://qrp.nz/topics/1">Going portable alerts</a></h2>
   <table class="users">
     <tr>
-      <th>Callsign</th>
       <th>Date</th>
       <th>Time (NZ)</th>
-      <th>Duration (days)</th>
+      <th>For (days)</th>
+      <th>Callsign</th>
+      <th>Location</th>
+      <th>Freq</th>
       <th>Comments</th>
     </tr>
     <% @hota_alerts.each do |post| %>
     <tr>
       <% us=User.find_by(id: post.created_by_id) %>
         <% if us then u=us.callsign else u="" end %>
-        <td><%=u%></td>
-        <td><%=if post.referenced_date then post.referenced_date.strftime("%Y-%m-%d") end%></td>
+        <td><%=if post.referenced_date then link_to post.referenced_date.strftime("%Y-%m-%d"),'/posts/'+post.id.to_s, remote: true,  :id => 'home', :onclick => "linkHandler('home')"  end%></td>
         <td><%=if post.referenced_time then post.referenced_time.strftime("%H:%M") end%></td>
         <td><%=if post.duration then post.duration.to_s end%></td>
+        <td><%=u%></td>
+        <td><%=post.site%></td>
+        <td><%=post.freq%><%=if post.mode and post.mode.length>0 then " - "+post.mode end%></td>
         <td><b><%=post.title%></b><br/><%=raw (post.description).gsub(/(?<=<style type=\"text\/css\">).+(?=<\/style>)/m,'')%></td>
       </tr>
     <% end %>
   </table>
 
-  <h2><a href="https://stats.parksontheair.com/spotting/scheduling.php">POTA alerts (ZL/VK)</a></h2>
+  <h2>Other alerts</h2>
   <table class="users">
     <tr>
+      <th>Type</th>
       <th>Time (NZ)</th>
       <th>Callsign</th>
-      <th>POTA-Code</th>
-      <th>Park name</th>
-      <th>Frequency/Mode</th>
-      <th>Comments</th>
-    </tr>
-    <% @zlvk_pota_alerts.each do |alert| %>
-      <tr>
-        <td><%=if alert["Start Date"].to_datetime then alert["Start Date"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d %H:%M") end%> - <%=if alert["End Date"].to_datetime then alert["End Date"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d %H:%M") end%> </td>
-        <td><%=alert["Activator"]%></td>
-        <td><%=alert["Reference"]%></td>
-        <td><%=alert["Park Name"]%></td>
-        <td><%=alert["Frequencies"]%></td>
-        <td><%=alert["Comments"]%></td>
-      </tr>
-    <% end %>
-  </table>
-  <h2><a href="https://sotawatch.sota.org.uk/en/">SOTA alerts (ZL/VK)</a></h2>
-  <table class="users">
-    <tr>
-      <th>Date</th>
-      <th>Time (NZ)</th>
-      <th>Callsign</th>
-      <th>SOTA-Code</th>
-      <th>Summit name</th>
-      <th>Frequency</th>
+      <th>Code</th>
+      <th>Name</th>
+      <th>Freq</th>
       <th>Mode</th>
       <th>Comments</th>
     </tr>
-    <% @zlvk_sota_alerts.each do |alert| %>
+    <% @all_alerts.each do |alert| %>
       <tr>
-        <td><%=if alert["dateActivated"].to_datetime then alert["dateActivated"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d") end%></td>
-        <td><%=if alert["dateActivated"].to_datetime then alert["dateActivated"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%H:%M") end%></td>
-        <td><%=alert["activatingCallsign"]%></td>
-        <td><%=alert["associationCode"]+"/"+alert["summitCode"]%></td>
-        <td><%=alert["summitDetails"]%></td>
-        <td><%=alert["frequency"]%></td>
-        <td><%=alert["mode"]%></td>
-        <td><%=alert["comments"]%></td>
+        <td><%=alert[:type]%>
+        <td><%=alert[:starttime]%></td>
+        <td><%=alert[:activatingCallsign]%></td>
+        <td><%=alert[:code]%></td>
+        <td><%=alert[:name]%></td>
+        <td><%=alert[:frequency]%></td>
+        <td><%=alert[:mode]%></td>
+        <td><%=alert[:comments]%></td>
       </tr>
     <% end %>
   </table>

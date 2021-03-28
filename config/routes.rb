@@ -16,6 +16,13 @@ match "/users/editgrid", :to => "users#editgrid", :via => "get"
 match "/users/data", :to => "users#data", :as => "user_data", :via => "get"
 match "/users/db_action", :to => "users#db_action", :as => "user_db_action", :via => "get"
 resources :users
+resources :posts, only: [:new, :create, :show, :edit, :update]
+get 'posts/:id/delete', to: 'posts#delete'
+match '/queries/hut', to: 'queries#hut',    via:'get'
+match '/queries/park', to: 'queries#park',    via:'get'
+match '/queries/island', to: 'queries#island',    via:'get'
+match '/queries/summit', to: 'queries#summit',    via:'get'
+
 resources :pota_logs
 match "/pota_logs/:id/send", :to => "pota_logs#send_email", :as => "send_log", :via => "get"
 

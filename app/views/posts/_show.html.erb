@@ -1,0 +1,33 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.title = '... On The Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Posts</b>
+</div>
+   <div id="controls">
+       <% if current_user and (current_user.is_admin or @post.created_by_id==current_user.id) %>
+            <%=  link_to "Edit Post", '/posts/'+@post.id.to_s+'/edit', class: "btn btn-small btn-primary",remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
+            <%=  link_to "Delete Post", '/posts/'+@post.id.to_s+'/delete', confirm: "Delete post: Are you sure?", class: "btn btn-small btn-primary",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')"%>
+       <% end %>
+      <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+
+
+<div id="right_scroll">
+   <%= render 'flash' %>
+  <%= render 'post_details' %>
+<div class="erow">
+   <div class="hrline">
+      <hr noshade size="4">
+   </div>
+</div>
+</div>
+</div>

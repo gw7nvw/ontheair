@@ -73,6 +73,24 @@ textarea {
   resize: vertical;
 }
 
+.tt-menu {
+    width: 422px;
+    margin: 12px 0;
+    padding: 8px 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+    -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    z-index: 10000 !important;
+}
+.tt-input {
+    z-index: 9999 !important;
+}
 .link_to {
    color: #000000;
    border-bottom: 1px dotted;
@@ -94,6 +112,37 @@ textarea {
   h1 {
     margin-bottom: 10px;
   }
+}
+
+.bordered_box {
+    display: inline-block;
+    position: relative;
+    border: 1px solid #ccc;
+    border-radius: .2em;
+    background-color: #f7f7f7;
+    width: 98%;
+    font-size: .8em;
+    margin: 1em 0;
+}
+
+.box_header {
+    border-bottom: 1px solid #ccc;
+    padding: .5em .7em;
+    vertical-align: middle;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.box_contents {
+    background-color: #fff;
+    padding: 1em;
+    border-radius: .2em;
+    justify-content: space-between;
+    align-items: center;
+    overflow-wrap: break-word;
+    overflow-x: auto;
+    word-wrap: break-word;
+    word-break: break-word;
 }
 
 .row-fluid div {
@@ -406,6 +455,7 @@ html, body {
         line-height: 1.3em;
 }
 .sectiontitle {
+        width:100%;
         margin-top: 1px;
         float: left;
         font-size: 1.2em;
