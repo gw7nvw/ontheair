@@ -72,7 +72,7 @@ class StaticPagesController < ApplicationController
            type: "POTA"})
       end
       pnp_spots.each do |spot|
-       if spot["WWFFid"][0..1]=="VK" or spot["WWFFid"][0..1]=="ZL" or spot["actLocation"][0..1]=="VK" or spot["actLocation"][0..1]=="ZL" then 
+       if spot["WWFFid"][0..1]=="VK" or spot["WWFFid"][0..1]=="ZL" or spot["actLocation"][0..1]=="VK" or spot["actLocation"][0..1]=="ZL" or spot["actCallsign"][0..1]=="ZL" or spot["actCallsign"][0..1]=="VK" then 
          @all_spots.push({     
            date: if spot["actTime"].to_datetime then spot["actTime"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d") else "" end,
            time: if spot["actTime"].to_datetime then spot["actTime"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%H:%M") else "" end,

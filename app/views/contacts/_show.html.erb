@@ -89,15 +89,15 @@
    </div>
    <div class="erow" id="name">
      <div class="rowtitle">Hut</div>
-     <div class="rowtext"> <%= if @contact.hut1 then link_to @contact.hut1.name, '/huts/'+@contact.hut1_id.to_s, remote: true,  :id => 'hut', :onclick => "linkHandler('hut')" end %></div>
+     <div class="rowtext"> <%= if @contact.hut1 then link_to @contact.hut1.codename, '/huts/'+@contact.hut1_id.to_s, remote: true,  :id => 'hut', :onclick => "linkHandler('hut')" end %></div>
    </div>
    <div class="erow" id="name">
      <div class="rowtitle">Park</div>
-     <div class="rowtext"> <%= if @contact.park1 then link_to @contact.park1.name, '/parks/'+@contact.park1_id.to_s, remote: true,  :id => 'park', :onclick => "linkHandler('park')" end %></div>
+     <div class="rowtext"> <%= if @contact.park1 then link_to @contact.park1.codename, '/parks/'+@contact.park1_id.to_s, remote: true,  :id => 'park', :onclick => "linkHandler('park')" end %></div>
    </div>
    <div class="erow" id="name">
      <div class="rowtitle">Island</div>
-     <div class="rowtext"> <%= if @contact.island1 then link_to @contact.island1.name, '/islands/'+@contact.island1_id.to_s, remote: true,  :id => 'island', :onclick => "linkHandler('island')" end %></div>
+     <div class="rowtext"> <%= if @contact.island1 then link_to @contact.island1.codename, '/islands/'+@contact.island1_id.to_s, remote: true,  :id => 'island', :onclick => "linkHandler('island')" end %></div>
    </div>
 
    <div class="erow" id="location">
@@ -158,15 +158,15 @@
    </div>
    <div class="erow" id="name">
      <div class="rowtitle">Hut</div>
-     <div class="rowtext"> <%= if @contact.hut2 then link_to @contact.hut2.name, '/huts/'+@contact.hut2_id.to_s, remote: true,  :id => 'hut', :onclick => "linkHandler('hut')" end %></div>
+     <div class="rowtext"> <%= if @contact.hut2 then link_to @contact.hut2.codename, '/huts/'+@contact.hut2_id.to_s, remote: true,  :id => 'hut', :onclick => "linkHandler('hut')" end %></div>
    </div>
    <div class="erow" id="name">
      <div class="rowtitle">Park</div>
-     <div class="rowtext"> <%= if @contact.park2 then link_to @contact.park2.name, '/parks/'+@contact.park2_id.to_s, remote: true,  :id => 'park', :onclick => "linkHandler('park')" end %></div>
+     <div class="rowtext"> <%= if @contact.park2 then link_to @contact.park2.codename, '/parks/'+@contact.park2_id.to_s, remote: true,  :id => 'park', :onclick => "linkHandler('park')" end %></div>
    </div>
    <div class="erow" id="name">
      <div class="rowtitle">Island</div>
-     <div class="rowtext"> <%= if @contact.island2 then link_to @contact.island2.name, '/islands/'+@contact.island2_id.to_s, remote: true,  :id => 'island', :onclick => "linkHandler('island')" end %></div>
+     <div class="rowtext"> <%= if @contact.island2 then link_to @contact.island2.codename, '/islands/'+@contact.island2_id.to_s, remote: true,  :id => 'island', :onclick => "linkHandler('island')" end %></div>
    </div>
 
    <div class="erow" id="location">

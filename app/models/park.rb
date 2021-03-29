@@ -2,6 +2,14 @@ class Park < ActiveRecord::Base
 
   set_rgeo_factory_for_column(:boundary, RGeo::Geographic.spherical_factory(:srid => 4326, :proj4=> '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs', :has_z_coordinate => false))
 
+  def code
+    code="ZLP/"+self.id.to_s.rjust(7,'0')
+  end
+
+  def codename
+    codename=self.code+" - "+self.name
+  end
+
   def doc_park
     #dp=Docparks.find_by_id(self.id) 
     dp=Crownparks.find_by(napalis_id: self.id) 

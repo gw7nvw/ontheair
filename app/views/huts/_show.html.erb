@@ -24,7 +24,7 @@
    <%= render 'flash' %>
    <div class="erow" id="email">
       <div class="rowtitle"><%= "Hut Id:" %></div>
-      <div class="rowtext">ZLH/<%= @hut.id.to_s %></div>
+      <div class="rowtext"><%= @hut.code %></div>
    </div>
    <div class="erow" id="name">
       <div class="rowtitle"><%= "Name" %></div>
@@ -39,13 +39,13 @@
    <div class="erow" id="name">
       <div class="rowtitle"><%= "Park" %></div>
       <div class="rowtext"> 
-        <%=if @hut.park then link_to @hut.park.name, '/parks/'+@hut.park.id.to_s, remote: true,  :id => 'park', :onclick => "linkHandler('home')" end %>
+        <%=if @hut.park then link_to @hut.park.codename, '/parks/'+@hut.park.id.to_s, remote: true,  :id => 'park', :onclick => "linkHandler('home')" end %>
       </div>
    </div>
    <div class="erow" id="name">
       <div class="rowtitle"><%= "Island" %></div>
       <div class="rowtext"> 
-        <%=if @hut.island then link_to @hut.island.name, '/islands/'+@hut.island.id.to_s, remote: true,  :id => 'island', :onclick => "linkHandler('home')" end %>
+        <%=if @hut.island then link_to @hut.island.codename, '/islands/'+@hut.island.id.to_s, remote: true,  :id => 'island', :onclick => "linkHandler('home')" end %>
       </div>
    </div>
    <div class="erow" id="location">

@@ -114,7 +114,7 @@
       </tr>
     <% if @huts then @huts.each do |hut| %>
       <tr>
-        <td>ZLH/<%=hut.id.to_s%></td>
+        <td><%=hut.code%></td>
         <td>
           <% if current_user and current_user.is_modifier %>
              <span title="Click to edit row"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/huts/'+hut.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>

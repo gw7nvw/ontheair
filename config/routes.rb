@@ -22,6 +22,7 @@ match '/queries/hut', to: 'queries#hut',    via:'get'
 match '/queries/park', to: 'queries#park',    via:'get'
 match '/queries/island', to: 'queries#island',    via:'get'
 match '/queries/summit', to: 'queries#summit',    via:'get'
+match '/queries/test', to: 'queries#test',    via:'post'
 
 resources :pota_logs
 match "/pota_logs/:id/send", :to => "pota_logs#send_email", :as => "send_log", :via => "get"

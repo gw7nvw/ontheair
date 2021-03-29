@@ -19,7 +19,7 @@
   <% @parks.each do |park| %>
     <tr>
       <td> 
-        <%= link_to park.name.to_s, '#', :id => 'park_link'+park.id.to_s, :onclick => "select_park('"+parkfield+"', "+park.id.to_s+", '"+park.name+"','"+park.all_boundary+"');return(false);" %>
+        <%= link_to park.codename.to_s, '#', :id => 'park_link'+park.id.to_s, :onclick => "select_park('"+parkfield+"', "+park.id.to_s+", '"+park.name+"','"+park.all_boundary+"');return(false);" %>
       </td>
     </tr>
   <% end %>

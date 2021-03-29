@@ -116,7 +116,7 @@
       </tr>
     <% if @parks then @parks.each do |park| %>
       <tr> 
-        <td>ZLP/<%=park.id.to_s%></td>
+        <td><%=park.code%></td>
         <td>
           <% if current_user and current_user.is_modifier %>
              <span title="Click to edit row"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/parks/'+park.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>

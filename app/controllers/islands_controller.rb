@@ -24,7 +24,7 @@ class IslandsController < ApplicationController
         @searchMR=false 
     end
     if params[:searchtext] then
-       whereclause=whereclause+" and (lower(name) like '%%"+@searchtext.downcase+"%%' or CONCAT('zli/',id) like '%%"+@searchtext.downcase+"%%')"
+       whereclause=whereclause+" and (lower(name) like '%%"+@searchtext.downcase+"%%' or CONCAT('zli/',LPAD(id::text, 5, '0')) like '%%"+@searchtext.downcase+"%%')"
 
     end
 
@@ -42,7 +42,7 @@ class IslandsController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.csv { send_data huts_to_csv(@islands), filename: "parks-#{Date.today}.csv" }
+      format.csv { send_data islands_to_csv(Island.all), filename: "islands-#{Date.today}.csv" }
     end
   end
 
@@ -199,19 +199,17 @@ def db_action
 end
 
   def islands_to_csv(items)
-    if signed_in? and current_user.is_admin then
       require 'csv'
       csvtext=""
       if items and items.first then
-        columns=[]; items.first.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") then columns << name end end
+        columns=["code"]; items.first.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") then columns << name end end
         csvtext << columns.to_csv
         items.each do |item|
-           fields=[]; item.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") then fields << value end end
+           fields=[item.code]; item.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") then fields << value end end
            csvtext << fields.to_csv
         end
      end
      csvtext
-   end
   end
 
   private

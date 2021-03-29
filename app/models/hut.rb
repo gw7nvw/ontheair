@@ -5,6 +5,14 @@ require 'open-uri'
   belongs_to :park, class_name: "Park"
   belongs_to :island, class_name: "Island"
 
+  def code
+    code="ZLH/"+self.id.to_s.rjust(4,'0')
+  end
+
+  def codename
+    codename=self.code+" - "+self.name
+  end
+
   def find_doc_park
    #ps=Docparks.find_by_sql [ %q{select * from docparks dp where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), dp."WKT");} ]
    ps=Crownparks.find_by_sql [ %q{select * from crownparks dp where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), dp."WKT");} ]

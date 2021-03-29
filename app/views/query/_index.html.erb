@@ -19,7 +19,7 @@
   <% @huts.each do |hut| %>
     <tr>
       <td> 
-        <%= link_to hut.name.to_s+(if(hut.park) then " ("+hut.park.name+")" else "" end), '#', :id => 'hut_link'+hut.id.to_s, :onclick => "select_hut('"+hutfield+"', "+hut.id.to_s+", '"+hut.name+"', '"+hut.x.to_s+"', '"+hut.y.to_s+"', '"+hut.location.to_s+"', '"+(if hut.park then hut.park.id.to_s else '' end)+"', '"+(if hut.park then hut.park.name else '' end)+"');return(false);" %>
+        <%= link_to hut.codename.to_s+(if(hut.park) then " ("+hut.park.codename+")" else "" end), '#', :id => 'hut_link'+hut.id.to_s, :onclick => "select_hut('"+hutfield+"', "+hut.id.to_s+", '"+hut.name+"', '"+hut.x.to_s+"', '"+hut.y.to_s+"', '"+hut.location.to_s+"', '"+(if hut.park then hut.park.id.to_s else '' end)+"', '"+(if hut.park then hut.park.name else '' end)+"');return(false);" %>
       </td>
     </tr>
   <% end %>

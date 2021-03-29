@@ -24,7 +24,7 @@
    <%= render 'flash' %>
    <div class="erow" id="email">
       <div class="rowtitle"><%= "NZGeoDb Id:" %></div>
-      <div class="rowtext">ZLI/<%= @island.id.to_s %></div>
+      <div class="rowtext"><%= @island.code %></div>
    </div>
    <div class="erow" id="name">
       <div class="rowtitle"><%= "Name" %></div>
@@ -142,7 +142,7 @@
    <% @island.huts.each do |h| %>
      <tr>
        <td>
-          <%=link_to h.name, '/huts/'+h.id.to_s, remote: true,  :id => 'hut'+h.id.to_s, :onclick => "linkHandler('hut')" %>
+          <%=link_to h.codename, '/huts/'+h.id.to_s, remote: true,  :id => 'hut'+h.id.to_s, :onclick => "linkHandler('hut')" %>
        </td>
      </tr>
    <% end %>
@@ -161,10 +161,8 @@
    <% @island.summits.each do |s| %>
      <tr>
        <td>
-          <%=link_to s.summit_code, '/summits/'+s.short_code, remote: true,  :id => 'summit'+s.id.to_s, :onclick => "linkHandler('summit')"   %>
+          <%=link_to s.codename, '/summits/'+s.short_code, remote: true,  :id => 'summit'+s.id.to_s, :onclick => "linkHandler('summit')"   %>
        </td>
-       <td>
-          <%=s.name %>
      </tr>
    <% end %>
    </table>

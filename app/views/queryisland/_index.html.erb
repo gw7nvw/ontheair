@@ -19,7 +19,7 @@
   <% @islands.each do |island| %>
     <tr>
       <td> 
-        <%= link_to island.name.to_s, '#', :id => 'island_link'+island.id.to_s, :onclick => "select_island('"+islandfield+"', "+island.id.to_s+", '"+island.name+"','"+island.WKT.to_s+"');return(false);" %>
+        <%= link_to island.codename.to_s, '#', :id => 'island_link'+island.id.to_s, :onclick => "select_island('"+islandfield+"', "+island.id.to_s+", '"+island.name+"','"+island.WKT.to_s+"');return(false);" %>
       </td>
     </tr>
   <% end %>

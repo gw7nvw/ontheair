@@ -1,5 +1,13 @@
 class Island < ActiveRecord::Base
 
+  def code
+    code="ZLI/"+self.id.to_s.rjust(5,'0')
+  end
+
+  def codename
+    codename=self.code+" - "+self.name
+  end
+
 def huts
    hs=[]
 #   if self.boundary then 

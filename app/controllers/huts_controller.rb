@@ -14,7 +14,7 @@ class HutsController < ApplicationController
     
     @searchtext=params[:searchtext]
     if params[:searchtext] then
-       whereclause=whereclause+" and (lower(name) like '%%"+@searchtext.downcase+"%%' or CONCAT('zlh/',id) like '%%"+@searchtext.downcase+"%%')"
+       whereclause=whereclause+" and (lower(name) like '%%"+@searchtext.downcase+"%%' or CONCAT('zlh/',LPAD(id::text, 4, '0')) like '%%"+@searchtext.downcase+"%%')"
     end
 
     @huts=Hut.find_by_sql [ 'select * from huts where '+whereclause+' order by name limit 100' ]
@@ -30,7 +30,7 @@ class HutsController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.csv { send_data huts_to_csv(@huts), filename: "huts-#{Date.today}.csv" }
+      format.csv { send_data huts_to_csv(Hut.all), filename: "huts-#{Date.today}.csv" }
     end
   end
 
@@ -222,19 +222,17 @@ def db_action
 end
 
   def huts_to_csv(items)
-    if signed_in? and current_user.is_admin then
       require 'csv'
       csvtext=""
       if items and items.first then
-        columns=[]; items.first.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") then columns << name end end
+        columns=["code"]; items.first.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") and !name.include?("_link") then columns << name end end
         csvtext << columns.to_csv
         items.each do |item|
-           fields=[]; item.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") then fields << value end end
+           fields=[item.code]; item.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") and !name.include?("_link") then fields << value end end
            csvtext << fields.to_csv
         end
      end
      csvtext
-   end
   end
 
   private
