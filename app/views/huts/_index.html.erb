@@ -60,8 +60,9 @@
     <tr>
       <th>Position</th>
       <th>User</th>
-      <th>Unique huts</th>
-      <th>Total huts</th>
+      <th>Total</th>
+      <th>Activated</th>
+      <th>Chased</th>
     </tr>
 
 <% 
@@ -77,8 +78,15 @@
         <td>
           <%= link_to user.callsign.upcase, '/users/'+user.callsign, remote: true, :id => 'user_link_'+user.id.to_s, :style => (if not user.activated then 'color:grey' else '' end), :onclick => "linkHandler('user_link_"+user.id.to_s+"')" %>
         </td>
-        <td><%=user.huts_bagged%></td>
-        <td><%=user.huts_bagged_total%></td>
+<% 
+       hat=user.huts_activated_count(false)
+       hatc=user.huts_activated_count(true)
+       hct=user.huts_chased_count(false)
+       hctc=user.huts_chased_count(true)
+%>
+        <td><%=user.huts_bagged%><%if user.huts_bagged_total and user.huts_bagged_total>0 and user.huts_bagged_total!=user.huts_bagged then%> (<%=user.huts_bagged_total%>)<%end%></td>
+        <td><%=hat%><%if hatc and hatc>0 and hatc!=hat then%> (<%=hatc%>)<%end%></td>
+        <td><%=hct%><%if hctc and hctc>0 and hctc!=hct then%> (<%=hctc%>)<%end%></td>
       </tr>
     <% end end  %>
   </table>
@@ -132,7 +140,8 @@
         <td style="text-align:center"><%= check_box "hut", "is_doc", {:checked => hut.is_doc, :disabled => true} %></td>
       </tr>
     <% end end %>
-  </table>
+</table>
+<i>Key: Unique huts (total huts including revisits)</i>
 </div>
 
 <% end %>

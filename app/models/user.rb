@@ -104,6 +104,108 @@ def authenticated?(attribute, token)
     huts=self.huts_filtered(false, false)
   end
 
+  def huts_activated_count(revisits)
+   huts=[]
+   contacts=self.contacts_filtered(nil, nil)
+   contacts.each do |c|
+       if c.hut1 and c.callsign1==self.callsign then
+         if revisits then huts.push(c.hut1.id.to_s+" "+c.localdate(nil).to_s)
+         else huts.push(c.hut1.id.to_s) end
+       end
+       if c.hut2 and c.callsign2==self.callsign then
+         if revisits then huts.push(c.hut2.id.to_s+" "+c.localdate(nil).to_s)
+         else huts.push(c.hut2.id.to_s) end
+       end
+   end
+   huts.uniq.count
+   
+  end
+
+  def huts_chased_count(revisits)
+   huts=[]
+   contacts=self.contacts_filtered(nil, nil)
+   contacts.each do |c|
+       if c.hut1 and c.callsign2==self.callsign then
+         if revisits then huts.push(c.hut1.id.to_s+" "+c.localdate(nil).to_s)
+         else huts.push(c.hut1.id.to_s) end
+       end
+       if c.hut2 and c.callsign1==self.callsign then
+         if revisits then huts.push(c.hut2.id.to_s+" "+c.localdate(nil).to_s)
+         else huts.push(c.hut2.id.to_s) end
+       end
+   end
+   huts.uniq.count
+
+  end
+  def parks_activated_count(revisits)
+   parks=[]
+   contacts=self.contacts_filtered(nil, nil)
+   contacts.each do |c|
+       if c.park1 and c.callsign1==self.callsign then
+         if revisits then parks.push(c.park1.id.to_s+" "+c.localdate(nil).to_s)
+         else parks.push(c.park1.id.to_s) end
+       end
+       if c.park2 and c.callsign2==self.callsign then
+         if revisits then parks.push(c.park2.id.to_s+" "+c.localdate(nil).to_s)
+         else parks.push(c.park2.id.to_s) end
+       end
+   end
+   parks.uniq.count
+
+  end
+
+  def parks_chased_count(revisits)
+   parks=[]
+   contacts=self.contacts_filtered(nil, nil)
+   contacts.each do |c|
+       if c.park1 and c.callsign2==self.callsign then
+         if revisits then parks.push(c.park1.id.to_s+" "+c.localdate(nil).to_s)
+         else parks.push(c.park1.id.to_s) end
+       end
+       if c.park2 and c.callsign1==self.callsign then
+         if revisits then parks.push(c.park2.id.to_s+" "+c.localdate(nil).to_s)
+         else parks.push(c.park2.id.to_s) end
+       end
+   end
+   parks.uniq.count
+
+  end
+
+  def islands_activated_count(revisits)
+   islands=[]
+   contacts=self.contacts_filtered(nil, nil)
+   contacts.each do |c|
+       if c.island1 and c.callsign1==self.callsign then
+         if revisits then islands.push(c.island1.id.to_s+" "+c.localdate(nil).to_s)
+         else islands.push(c.island1.id.to_s) end
+       end
+       if c.island2 and c.callsign2==self.callsign then
+         if revisits then islands.push(c.island2.id.to_s+" "+c.localdate(nil).to_s)
+         else islands.push(c.island2.id.to_s) end
+       end
+   end
+   islands.uniq.count
+
+  end
+
+  def islands_chased_count(revisits)
+   islands=[]
+   contacts=self.contacts_filtered(nil, nil)
+   contacts.each do |c|
+       if c.island1 and c.callsign2==self.callsign then
+         if revisits then islands.push(c.island1.id.to_s+" "+c.localdate(nil).to_s)
+         else islands.push(c.island1.id.to_s) end
+       end
+       if c.island2 and c.callsign1==self.callsign then
+         if revisits then islands.push(c.island2.id.to_s+" "+c.localdate(nil).to_s)
+         else islands.push(c.island2.id.to_s) end
+       end
+   end
+   islands.uniq.count
+
+  end
+
+
   def hut_count_filtered(user_qrp, contact_qrp, revisits)
    huts=[]
    contacts=self.contacts_filtered(user_qrp, contact_qrp)
