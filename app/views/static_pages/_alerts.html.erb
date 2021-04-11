@@ -63,8 +63,20 @@
       <tr>
         <td><%=alert[:type]%>
         <td><%=alert[:starttime]%></td>
-        <td><%=alert[:activatingCallsign]%></td>
-        <td><%=alert[:code]%></td>
+        <td><%user=User.find_by_full_callsign(alert[:activatingCallsign])%>
+          <% if user then %>
+            <%=link_to alert[:activatingCallsign], "users/"+user.callsign, remote: true,  :id => 'link', :onclick => "linkHandler('link')" %>
+          <% else %>
+            <%=alert[:activatingCallsign]%>
+          <% end %>
+        </td>
+        <td><%link=Asset.url_from_code(alert[:code])%>
+          <% if link[:external] then %>
+           <%=link_to alert[:code],link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png"> 
+          <% else %>
+           <%=link_to alert[:code],link[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+          <% end %>
+        </td>
         <td><%=alert[:name]%></td>
         <td><%=alert[:frequency]%></td>
         <td><%=alert[:mode]%></td>

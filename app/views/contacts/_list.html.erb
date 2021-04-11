@@ -34,8 +34,28 @@
         <td> <%= if contact.time then contact.localtime(current_user) else '' end %> <%=contact.localtimezone(current_user) %></td>
         <td> <%= if contact.frequency then '%.3f' % contact.frequency else '' end%> </td>
         <td> <%= contact.mode %> </td>
-        <td> <%= contact.location1_text %> </td>
-        <td> <%= contact.location2_text %> </td>
+        <td> <%link=Asset.url_from_code(contact.location1_code)%>
+          <% if link[:url] then %>
+            <% if link[:external] then %>
+              <%=link_to contact.location1_text,link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
+            <% else %>
+              <%=link_to contact.location1_text,link[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+            <% end %>
+          <% else %>
+            <%= contact.location1_text %> 
+          <% end %>
+        </td>
+        <td> <%link=Asset.url_from_code(contact.location2_code)%>
+          <% if link[:url] then %>
+            <% if link[:external] then %>
+              <%=link_to contact.location2_text,link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
+            <% else %>
+              <%=link_to contact.location2_text,link[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+            <% end %>
+          <% else %>
+            <%= contact.location2_text %>
+          <% end %>
+
       </tr>
     <%count=count+1%>
     <% end end %>

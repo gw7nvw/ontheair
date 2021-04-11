@@ -65,9 +65,28 @@
         <td><%=spot[:type]%></td>
         <td><%=spot[:date]%></td>
         <td><%=spot[:time]%></td>
-        <td><%=spot[:callsign]%></td>
-        <td><%=spot[:activatorCallsign]%></td>
-        <td><%=spot[:code]%></td>
+        <td><%user=User.find_by_full_callsign(spot[:callsign])%>
+          <% if user then %>
+            <%=link_to spot[:callsign], "users/"+user.callsign, remote: true,  :id => 'link', :onclick => "linkHandler('link')" %>
+          <% else %>
+            <%=spot[:callsign]%>
+          <% end %>
+        </td>
+        <td><%user=User.find_by_full_callsign(spot[:activatorCallsign])%>
+          <% if user then %>
+            <%=link_to spot[:activatorCallsign], "users/"+user.callsign, remote: true,  :id => 'link', :onclick => "linkHandler('link')" %>
+          <% else %>
+            <%=spot[:activatorCallsign]%>
+          <% end %>
+        </td>
+
+        <td><%link=Asset.url_from_code(spot[:code])%>
+          <% if link[:external] then %>
+           <%=link_to spot[:code],link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
+          <% else %>
+           <%=link_to spot[:code],link[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+          <% end %>
+        </td>
         <td><%=spot[:name]%></td>
         <td><%=spot[:frequency]%></td>
         <td><%=spot[:mode]%></td>

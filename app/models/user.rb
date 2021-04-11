@@ -47,6 +47,12 @@ def authenticated?(attribute, token)
    timezonename
  end
 
+  def self.find_by_full_callsign(callsign)
+    endpos=callsign.index("/")
+    if endpos then callsign=callsign[0..endpos-1] end
+    user=User.find_by(callsign: callsign)
+  end
+
   # Sends activation email.
   def send_activation_email
     UserMailer.account_activation(self).deliver

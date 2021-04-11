@@ -146,6 +146,36 @@ class Contact < ActiveRecord::Base
     else "" end
  end
 
+ def location1_code
+  text=""
+  if self.hut1 then text=self.hut1.code 
+  elsif self.summit1 then text=self.summit1.summit_code
+  elsif self.park1 then text=self.park1.code
+  elsif self.island1 then text=self.island1.code 
+  end
+  if text=="" then
+    if self.loc_desc1 then 
+       text=self.loc_desc1 
+    end
+  end
+  text
+ end
+
+ def location2_code
+  text=""
+  if self.hut2 then text=self.hut2.code 
+  elsif self.summit2 then text=self.summit2.summit_code
+  elsif self.park2 then text=self.park2.code
+  elsif self.island2 then text=self.island2.code
+  end
+  if text=="" then
+    if self.loc_desc2 then 
+       text=self.loc_desc2 
+    end
+  end
+  text
+ end
+
  def location1_text
   text=""
   if self.hut1 then text=self.hut1.name end
