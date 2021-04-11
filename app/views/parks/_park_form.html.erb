@@ -56,7 +56,7 @@
       </div>
       <%= f.text_field :boundary, :readonly => true %>
 
-      <%= "Minor reserve (marginal strip or local purpose reserve)? " %><br/>
+      <%= "Specific purpose reserve (marginal strip or local purpose reserve)? " %><br/>
       <%= f.check_box :is_mr%><br/><br/>
 
       <%= "Active? " %><br/>
@@ -83,7 +83,7 @@
 <script>
     reset_map_controllers(); 
     site_toggle_docland(true);
-    park_init('<%=@park.simple_boundary%>', 0);
+    park_init('<%=@park.simple_boundary%>', '<%=@park.location%>');
 
     deactivate_all_click();
     if(site_map_size==0) { 

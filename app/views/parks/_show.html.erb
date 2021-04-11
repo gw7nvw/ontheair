@@ -32,7 +32,7 @@
       </div>
    </div>
    <%
-      if not @park.description or @park.description="" then
+      if (not @park.description) or @park.description=="" then
         dp=Crownparks.find_by(napalis_id: @park.id)
 #        if dp then description=dp.Legislatio+" "+dp.Section end
         if dp then description=dp.legislation+" "+dp.section end
@@ -49,9 +49,17 @@
       <div class="rowtext"><%= @park.owner%></div>
    </div>
    <div class="erow" id="email">
-      <div class="rowtitle"><%= "Minor reserve?" %></div>
+      <div class="rowtitle"><%= "Specific purpose reserve?" %></div>
       <div class="textext"><%= if @park.is_mr then "Yes" else "No" end %></div>
    </div>
+   <div class="erow" id="email">
+      <div class="rowtitle"><%= "WWFF reference" %></div>
+      <div class="textext">
+        <% if @park.wwff_park then %>
+          <%= link_to @park.wwff_park.code, "https://wwff.co/directory/", :target=>"_blank" %>
+          <img src="/assets/external-link-symbol.png">
+        <% else %> None <% end %>
+      </div> </div>
    <div class="erow" id="email">
       <div class="rowtitle"><%= "POTA reference" %></div>
       <div class="textext">
@@ -157,8 +165,7 @@
    </div>
 </div>
 <script>
-
-    park_init('<%=@park.simple_boundary%>', 0);
+    park_init('<%=@park.simple_boundary%>', 0, '<%=@park.location%>');
     site_toggle_docland(true);
     if(site_map_size==0) { 
        $('#actionbar').removeClass('span7');

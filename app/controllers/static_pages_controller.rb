@@ -3,7 +3,9 @@ class StaticPagesController < ApplicationController
        @static_page=true
        @sortby=params[:sortby]
        @brief=true
-       @contacts=Contact.find_by_sql [ " select * from contacts order by time desc limit 10 " ]
+       @fullcontacts=Contact.find_by_sql [ " select * from contacts order by time desc limit 10 " ]
+       @contacts=@fullcontacts.paginate(:per_page => 20, :page => params[:page])
+
   end
 
   def about
@@ -149,7 +151,7 @@ class StaticPagesController < ApplicationController
 
      pnp_alerts.each do |alert|
        @all_alerts.push({
-          starttime: if alert["alTime"].to_datetime then alert["alTime"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d %H:%M") + ( if alert["alDay"]=="1" then " (Morning)" elsif alert["alDay"]=="2" then " (Afternoon)" elsif alert["alDay"]=="3" then " (Day)" else "" end) else "" end,
+          starttime: if alert["alTime"].to_datetime then alert["alTime"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d %H:%M") + ( if alert["alDay"]=="1" then " (Day)" elsif alert["alDay"]=="2" then " (Morning)" elsif alert["alDay"]=="3" then " (Afternoon)" elsif alert["alDay"]=="4" then " (Evening)" elsif alert["alDay"]=="5" then " (Overnight)"  else "" end) else "" end,
           activatingCallsign: alert["CallSign"],
           code: if alert["WWFFID"] and alert["WWFFID"].length>0 then alert["WWFFID"] else alert["Location"] end,
           name: alert["Location"],

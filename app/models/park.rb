@@ -15,6 +15,16 @@ class Park < ActiveRecord::Base
     dp=Crownparks.find_by(napalis_id: self.id) 
   end
 
+
+  def self.add_centroids
+    ps=Park.all
+    ps.each do |p|
+      location=p.calc_location
+      if location then p.location=location; p.save; end 
+    end
+    true
+  end
+ 
   def self.update_table
     #parks=Docparks.all
     parks=Crownparks.all
@@ -47,6 +57,8 @@ class Park < ActiveRecord::Base
       p.save
       uc=uc+1
     end
+    Park.add_centroids
+
     puts "Created "+cc.to_s+" rows, updated "+uc.to_s+" rows"
     true
   end
@@ -55,11 +67,11 @@ class Park < ActiveRecord::Base
    if self.boundary==nil then
        #boundarys=Docparks.find_by_sql [ 'select id, ST_AsText("WKT") as "WKT" from docparks where id='+self.id.to_s ] 
        boundarys=Crownparks.find_by_sql [ 'select id, ST_AsText("WKT") as "WKT" from crownparks where napalis_id='+self.id.to_s ] 
-       boundary=boundarys.first.WKT
+       if boundarys and boundarys.count>0 then boundary=boundarys.first.WKT else boundary=nil end
    else
      boundary=self.boundary
    end
-   boundary
+   if boundary then boundary else "" end
   end
   
   def simple_boundary
@@ -69,26 +81,60 @@ class Park < ActiveRecord::Base
        rnd=0.0002
        #boundarys=Docparks.find_by_sql [ 'select id, ST_AsText(ST_Simplify("WKT", '+rnd.to_s+')) as "WKT" from docparks where id='+self.id.to_s ] 
        boundarys=Crownparks.find_by_sql [ 'select id, ST_AsText(ST_Simplify("WKT", '+rnd.to_s+')) as "WKT" from crownparks where napalis_id='+self.id.to_s ] 
-       boundary=boundarys.first.WKT
+       if boundarys and boundarys.count>0 then boundary=boundarys.first.WKT else boundary=nil end
      else
        boundary=self.boundary
      end
     end
-    boundary
+   if boundary then boundary else "" end
+
   end
-  def location
+  def calc_location
    location=nil
    if self.id then
      if self.boundary==nil then
 #        locations=Docparks.find_by_sql [ 'select id, ST_Centroid("WKT") as "WKT" from docparks where id='+self.id.to_s ] 
-        locations=Crownparks.find_by_sql [ 'select id, ST_Centroid("WKT") as "WKT" from crownparks where napalis_id='+self.id.to_s ] 
-        if locations then location=locations.first.WKT else location=nil end
+        locations=Crownparks.find_by_sql [ 'select id, CASE
+                  WHEN (ST_ContainsProperly("WKT", ST_Centroid("WKT")))
+                  THEN ST_Centroid("WKT")
+                  ELSE ST_PointOnSurface("WKT")
+                END AS  "WKT" from crownparks where napalis_id='+self.id.to_s ] 
+        if locations and locations.count>0 then location=locations.first.WKT else location=nil; puts "ERROR: failed to find "+self.id.to_s end
      else
-        locations=Park.find_by_sql [ 'select id, ST_Centroid("boundary") as "boundary" from parks where napalis_id='+self.id.to_s ] 
-        if locations then location=locations.first.boundary else location=nil end
+        locations=Park.find_by_sql [ 'select id, CASE
+                  WHEN (ST_ContainsProperly(boundary, ST_Centroid(boundary)))
+                  THEN ST_Centroid(boundary)
+                  ELSE ST_PointOnSurface(boundary)
+                END AS location from parks where napalis_id='+self.id.to_s ] 
+        if locations and locations.count>0 then location=locations.first.location else location=nil end
      end
    end
    location
+  end
+  
+  def self.prune_parks(test)
+   ops=[]
+   ps=Park.all
+   ps.each do |p| 
+     cps=Crownparks.where(:napalis_id => p.id)
+     if cps and cps.count>0 then
+
+     else
+       if p.boundary==nil then
+         puts "Orphan found :"+p.id.to_s
+         ops.push(p.id)
+         if !test then p.is_active=false; p.save end
+       else
+         puts "Local definition found :"+p.id.to_s
+       end
+     end
+   end
+   ops
+  end
+     
+  def wwff_park
+    pps=WwffPark.where(:napalis_id => self.id)
+    if pps then pps.first else nil end
   end
 
   def pota_park

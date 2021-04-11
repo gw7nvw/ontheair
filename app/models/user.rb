@@ -312,6 +312,100 @@ def authenticated?(attribute, token)
     end
   end
 
+  def wwff_logs
+   wwff_logs=[]
+   contacts1=Contact.where(callsign1: callsign)
+   contacts2=Contact.where(callsign2: callsign)
+
+   parks=[]
+   contacts1.each do |contact|
+     if contact.park1 and contact.park1.wwff_park then
+       parks.push(contact.park1)
+     end
+   end
+   contacts2.each do |contact|
+     if contact.park2 and contact.park2.wwff_park then
+       parks.push(contact.park2)
+     end
+   end
+   parks=parks.uniq
+
+   parks.each do |park|
+     contacts1=Contact.where(callsign1: self.callsign, park1_id: park.id)
+     contacts2=Contact.where(callsign2: self.callsign, park2_id: park.id)
+
+     contact_count=contacts1.count+contacts2.count
+     callsigns=[]
+     contacts=[]
+     contacts1.each do |contact| callsigns.push({callsign: contact.callsign2,date: contact.date.to_date}) end
+     contacts2.each do |contact| callsigns.push({callsign: contact.callsign1,date: contact.date.to_date}) end
+     callsigns=callsigns.uniq
+     contacts_count=callsigns.count
+
+     callsigns.each do |cs|
+       contacts1=Contact.where(callsign1: self.callsign, callsign2: cs[:callsign],date: cs[:date].beginning_of_day..cs[:date].end_of_day, park1_id: park.id)
+       if contacts1 and contacts1.count>0 then 
+         contacts.push(contacts1.first) 
+         if contacts1.count>1 then puts "Dropping "+(contacts1.count-1).to_s+" "+contacts1.first.callsign1+" "+contacts1.first.callsign2+" "+contacts1.first.date.to_date.to_s end
+       else
+         contacts2=Contact.where(callsign2: self.callsign, callsign1: cs[:callsign],date: cs[:date].beginning_of_day..cs[:date].end_of_day, park2_id: park.id)
+         if contacts2.count>1 then puts "Dropping "+(contacts1.count-1).to_s+" "+contacts2.first.callsign2+" "+contacts2.first.callsign2+" "+contacts2.first.date.to_date.to_s end
+         if contacts2 and contacts2.count>0 then 
+           contacts.push(contacts2.first) 
+         else
+           puts "ERROR should not get here!"
+         end
+       end
+     end
+     
+     wwff_logs.push({park: park, count: contact_count, contacts: contacts.sort_by{|c| c.date}})
+   end
+  wwff_logs
+  end
+
+  def sota_logs
+   sota_logs=[]
+   contacts1=Contact.where(callsign1: callsign)
+   contacts2=Contact.where(callsign2: callsign)
+
+   summits=[]
+   contacts1.each do |contact|
+     if contact.summit1 then
+       summits.push(contact.summit1)
+     end
+   end
+   contacts2.each do |contact|
+     if contact.summit2 then
+       summits.push(contact.summit2)
+     end
+   end
+   summits=summits.uniq
+
+   summits.each do |summit| 
+     contacts1=Contact.where(callsign1: self.callsign, summit1_id: summit.short_code)
+     contacts2=Contact.where(callsign2: self.callsign, summit1_id: summit.short_code)
+     dates=[]
+     contacts1.each do |contact|
+       dates.push(contact.date.to_date)
+     end
+     contacts2.each do |contact|
+       dates.push(contact.date.to_date)
+     end
+     dates=dates.uniq
+      
+     dates.each do |date| 
+       contacts1=Contact.where(callsign1: self.callsign, summit1_id: summit.short_code, date: date.beginning_of_day..date.end_of_day)
+       contacts2=Contact.where(callsign2: self.callsign, summit2_id: summit.short_code, date: date.beginning_of_day..date.end_of_day)
+       contact_count=contacts1.count+contacts2.count
+       contacts=[]
+       contacts1.each do |contact| contacts.push(contact) end
+       contacts2.each do |contact| contacts.push(contact) end
+       sota_logs.push({summit: summit, date: date, count: contact_count, contacts: contacts.sort_by{|c| c.date}})  
+     end
+   end 
+  sota_logs
+  end
+
   def pota_logs
    pota_logs=[]
    contacts1=Contact.where(callsign1: callsign)
@@ -349,7 +443,7 @@ def authenticated?(attribute, token)
        contacts=[]
        contacts1.each do |contact| contacts.push(contact) end
        contacts2.each do |contact| contacts.push(contact) end
-       pota_logs.push({park: park, date: date, count: contact_count, contacts: contacts})  
+       pota_logs.push({park: park, date: date, count: contact_count, contacts: contacts.sort_by{|c| c.date}})  
      end
    end 
   pota_logs

@@ -6,7 +6,7 @@ class ParksController < ApplicationController
   end
 
   def index_prep
-    whereclause="true"
+    whereclause="is_active=true"
     if params[:filter] then
       @filter=params[:filter]
       whereclause="is_"+@filter+" is true"
@@ -42,7 +42,7 @@ class ParksController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.csv { send_data parks_to_csv(Park.all), filename: "parks-#{Date.today}.csv" }
+      format.csv { send_data parks_to_csv(Park.where(is_active: true)), filename: "parks-#{Date.today}.csv" }
     end
   end
 

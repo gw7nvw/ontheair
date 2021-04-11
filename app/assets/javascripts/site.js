@@ -85,16 +85,17 @@ function place_init(plloc, keep,style)
   map_map.updateSize();
 }
 
-function park_init(plloc,keep) {
+function park_init(plloc,keep,cntloc) {
   if (typeof(map_map)=='undefined') site_init();
 
   if (keep==0) map_clear_scratch_layer();
   if(plloc && plloc.length>0) {
-    cntloc=map_get_centre_of_geom(plloc);
-    map_add_feature_from_wkt(cntloc, 'EPSG:4326',site_purple_star);
-    map_add_feature_from_wkt(plloc, 'EPSG:4326',site_highlight_polygon);
-    if (site_map_pinned==false) map_centre(plloc,'EPSG:4326');
+    if (cntloc==null) cntloc=map_get_centre_of_geom(plloc);
   }
+  if (cntloc && cntloc.length>0)  map_add_feature_from_wkt(cntloc, 'EPSG:4326',site_purple_star);
+  if (plloc && plloc.length>0)  map_add_feature_from_wkt(plloc, 'EPSG:4326',site_highlight_polygon);
+  if (site_map_pinned==false) map_centre(cntloc,'EPSG:4326');
+  
   map_map.updateSize();
 }
 
@@ -577,14 +578,14 @@ function linkHandler(entity_name) {
     $(function() {
      $.rails.ajax = function (options) {
        options.tryCount= (!options.tryCount) ? 0 : options.tryCount;0;
-       options.timeout = 5000*(options.tryCount+1);
-       options.retryLimit=1;
+       options.timeout = 20000*(options.tryCount+1);
+       options.retryLimit=0;
        options.complete = function(jqXHR, thrownError) {
          /* complete also fires when error ocurred, so only clear if no error has been shown */
          if(thrownError=="timeout") {
            this.tryCount++;
            document.getElementById("page_status").innerHTML = 'Retrying ...';
-           this.timeout=15000*this.tryCount;
+           this.timeout=20000*this.tryCount;
            if(this.tryCount<=this.retryLimit) {
              $.rails.ajax(this);
            } else {
@@ -625,7 +626,7 @@ function search_islands(field) {
             xhr.setRequestHeader("Accept","text/javascript");
           },
           type: "GET",
-          timeout: 10000,
+          timeout: 20000,
           url: "/queryisland?islandfield="+field,
           error: function() {
               document.getElementById("info_details2").innerHTML = 'Error contacting server';
@@ -651,7 +652,7 @@ function search_parks(field) {
             xhr.setRequestHeader("Accept","text/javascript");
           },
           type: "GET",
-          timeout: 10000,
+          timeout: 20000,
           url: "/querypark?parkfield="+field,
           error: function() {
               document.getElementById("info_details2").innerHTML = 'Error contacting server';
@@ -710,6 +711,32 @@ function select_island(field, id, name, loc) {
   return false;
 }
 
+function select_summit(field, id, name, x, y, loc, park, park_name) {
+  if (field=="summit1") {
+    document.contactform.contact_summit1_id.value=id;
+    document.contactform.summit1_name.value=name;
+    document.contactform.contact_x1.value=x;
+    document.contactform.contact_y1.value=y;
+    document.contactform.contact_location1.value=loc;
+    document.contactform.contact_park1_id.value=park;
+    document.contactform.park1_name.value=park_name;
+    map_clear_scratch_layer('Point', site_green_star);
+    map_add_feature_from_wkt(loc,'EPSG:4326',site_green_star) ;
+  }
+  if (field=="summit2") {
+    document.contactform.contact_summit2_id.value=id;
+    document.contactform.summit2_name.value=name;
+    document.contactform.contact_x2.value=x;
+    document.contactform.contact_y2.value=y;
+    document.contactform.contact_location2.value=loc;
+    document.contactform.contact_park2_id.value=park;
+    document.contactform.park2_name.value=park_name;
+    map_clear_scratch_layer('Point', site_red_star);
+    map_add_feature_from_wkt(loc,'EPSG:4326',site_red_star) ;
+  }
+  return false;
+}
+
 function select_hut(field, id, name, x, y, loc, park, park_name) {
   if (field=="hut1") {
     document.contactform.contact_hut1_id.value=id;
@@ -750,7 +777,7 @@ function search_huts(field) {
             xhr.setRequestHeader("Accept","text/javascript");
           },
           type: "GET",
-          timeout: 10000,
+          timeout: 20000,
           url: "/query?hutfield="+field,
           error: function() {
               document.getElementById("info_details2").innerHTML = 'Error contacting server';
@@ -776,7 +803,7 @@ function search_summits(field) {
             xhr.setRequestHeader("Accept","text/javascript");
           },
           type: "GET",
-          timeout: 10000,
+          timeout: 20000,
           url: "/querysummit?summitfield="+field,
           error: function() {
               document.getElementById("info_details2").innerHTML = 'Error contacting server';

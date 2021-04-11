@@ -53,6 +53,15 @@ class UserMailer < ActionMailer::Base
      mail to: @user.email, subject: "Your QRPers NZ membership request"
   end
 
+  def wwff_log_submission(user,park,filename,log,email)
+    @user=user
+    @park=park
+    @address=email
+    attachments[filename] = {:mime_type => 'text/plain',
+                                   :content => log }
+    mail from: "admin@qrp.nz", to: user.email, bcc: "admin@qrp.nz", subject: "WWFF log from "+user.callsign, reply_to: user.email
+  end
+
   def pota_log_submission(user,park,logdate,filename,log,email)
     @user=user
     @park=park

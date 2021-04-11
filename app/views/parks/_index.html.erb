@@ -134,7 +134,7 @@
         </td>
         <td><%=park.owner%></td>
    <%
-      if not park.description or park.description="" then
+      if not park.description or park.description=="" then
         #dp=Docparks.find_by_id(park.id)
         dp=Crownparks.find_by(napalis_id: park.id)
         #if dp then description=dp.Legislatio+" "+dp.Section end

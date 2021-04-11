@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210326201857) do
+ActiveRecord::Schema.define(version: 20210411010647) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -96,6 +96,10 @@ ActiveRecord::Schema.define(version: 20210326201857) do
     t.boolean  "is_qrp2"
     t.boolean  "is_portable2"
     t.boolean  "submitted_to_pota"
+    t.boolean  "submitted_to_wwff"
+    t.boolean  "submitted_to_sota"
+    t.string   "summit1_id"
+    t.string   "summit2_id"
   end
 
   create_table "hut_photo_links", force: true do |t|
@@ -244,6 +248,7 @@ ActiveRecord::Schema.define(version: 20210326201857) do
     t.spatial  "boundary",     limit: {:srid=>4326, :type=>"multi_polygon"}
     t.boolean  "is_mr"
     t.string   "owner"
+    t.spatial  "location",     limit: {:srid=>4326, :type=>"point"}
   end
 
   create_table "places", force: true do |t|
@@ -343,5 +348,17 @@ ActiveRecord::Schema.define(version: 20210326201857) do
   end
 
   add_index "users", ["remember_token"], :name => "index_users_on_remember_token"
+
+  create_table "wwff_parks", force: true do |t|
+    t.string   "code"
+    t.string   "name"
+    t.string   "dxcc"
+    t.string   "region"
+    t.string   "notes"
+    t.integer  "napalis_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.spatial  "location",   limit: {:srid=>4326, :type=>"point"}
+  end
 
 end

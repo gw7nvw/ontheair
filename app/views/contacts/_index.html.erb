@@ -6,14 +6,23 @@
    document.title = '... On the Air'
    document.getElementById('logo').innerHTML='... On The Air'
 
-</script>
+$(function () {
+  $('#right_panel .pagination a').on('click', function () {
+    $.getScript(this.href);
+    return false;
+  });
+});
 
+
+</script>
+ 
 <div id="actionbar" class="span7">
    <div id="crumbs">
      <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
      &nbsp;--&gt;&nbsp;
      <b>Contacts <%=
           if @hut then "("+@hut.name+")"
+          elsif @summit then "("+@summit.name+")"
           elsif @park then "("+@park.name+")" 
           elsif @all then "(All)"
           elsif @user then "("+@user.callsign+")" end%></b>
@@ -46,7 +55,9 @@
 
 <div class="erow">Key: <div style="color:green">QRP</div>  <div style="text-decoration:underline">Home Station</div></div>
 <script>
-  <% if @contacts then @contacts.each do |contact| %>
+  <% if @contacts then %>
+
+   <%  @contacts.each do |contact| %>
       <% if @user and @user.callsign==contact.callsign2 then
             l2=contact.location1
             l1=contact.location2
@@ -61,7 +72,9 @@
       <% if l2 then %>
            map_add_feature_from_wkt('<%=l2%>', 'EPSG:4326',site_red_circle);
       <% end %>
-  <% end end %>
+  <% end %>
+
+<% end %>
     if(site_map_size==0) { 
        $('#actionbar').removeClass('span7');
        $('#actionbar').addClass('span12');

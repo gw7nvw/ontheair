@@ -88,6 +88,19 @@
 
       </div>
  
+      <div class="erow"><div class="rowtitle">Summit</div>
+        <%=  link_to "Select from list", '/querysummit?summitfield=summit1', class: "btn btn-small", :remote => true,  :onclick => "search_summits('summit1')" %>
+        <%=  link_to "Select from map", '#', class: "btn btn-small",  :onclick => "site_selectSummit('contact_summit1_id', 'summit1_name', 'contact_location1', 'contact_x1', 'contact_y1', null, null, site_green_star);return false;" %>
+        <%=  link_to "Clear", '#', class: "btn btn-small", :onclick => "site_clear_element(['contact_summit1_id', 'summit1_name', 'contact_location1', 'contact_x1', 'contact_y1']);map_clear_scratch_layer(null,site_green_star);return false;" %>
+      </div>
+
+      <div class="roxtext">
+        <input type="text" id="summit1_name" name="summit1_name" value='<%=(if @contact.summit1 then @contact.summit1.name else "" end)%>' readonly='true'>
+
+      <%= f.text_field :summit1_id, :readonly => true, :style => 'display:none' %>
+
+      </div>
+ 
 
       <div class="erow"><div class="rowtitle">Park</div>
         <%=  link_to "Select from list", '/querypark?parkfield=park1', class: "btn btn-small", :remote => true,  :onclick => "search_parks('park1')" %>
@@ -181,6 +194,18 @@
         <input type="text" id="hut2_name" name="hut2_name" value='<%=(if @contact.hut2 then @contact.hut2.name else "" end)%>' readonly='true'>
 
       <%= f.text_field :hut2_id, :readonly => true, :style => 'display:none' %>
+      </div>
+
+     <div class="erow"><div class="rowtitle">Summit</div>
+        <%=  link_to "Select from list", '/querysummit?summitfield=summit2', class: "btn btn-small", :remote => true,  :onclick => "search_summits('summit2')" %>
+        <%=  link_to "Select from map", '#', class: "btn btn-small",  :onclick => "site_selectSummit('contact_summit2_id', 'summit2_name', 'contact_location2', 'contact_x2', 'contact_y2', null, null, site_green_star);return false;" %>
+        <%=  link_to "Clear", '#', class: "btn btn-small", :onclick => "site_clear_element(['contact_summit2_id', 'summit2_name', 'contact_location2', 'contact_x2', 'contact_y2']);map_clear_scratch_layer(null,site_green_star);return false;" %>
+      </div>
+      <div class="roxtext">
+        <input type="text" id="summit2_name" name="summit2_name" value='<%=(if @contact.summit2 then @contact.summit2.name else "" end)%>' readonly='true'>
+
+      <%= f.text_field :summit2_id, :readonly => true, :style => 'display:none' %>
+
       </div>
 
 

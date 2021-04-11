@@ -48,6 +48,9 @@ function startEdit() {
 
     <div id="right_scroll">
       <%=hidden_field_tag(:topic_id, @topic.id)%>
+      <%= render 'flash' %>
+      <%= render 'shared/error_messages' %>
+
  
       <% if @topic.is_spot or @topic.is_alert then %>
         <b><%=@topic.name%></b><br>
@@ -58,16 +61,13 @@ function startEdit() {
               <td style="padding:0px; margin:0px;" colspan=3><%=f.text_field :callsign, :style =>"padding:0px; margin:0px;" %></td>
             </tr>
           <% end %>
-          <tr>
-            <td>On/from:</td>
-            <td style="padding:0px; margin:0px;"><%=   f.date_field :referenced_date, :style =>"padding:0px; margin:0px;" %></td><td style="padding:0px; margin:0px;"><%=   f.time_field :referenced_time, :style =>"padding:0px; margin:0px;" %></td>
-            <% if @topic.is_alert then %>
-              <td>For (days):</td><td style="padding:0px; margin:0px;"> <%=   f.text_field :duration, :style =>"padding:0px; margin:0px;" %></td>
-            <%else%>
-              <td colspan=2></td>
-            <% end %>
-          </tr>
- 
+          <% if @topic.is_alert then %>
+            <tr>
+              <td>On air from:</td>
+              <td style="padding:0px; margin:0px;"><%=   f.date_field :referenced_date, :style =>"padding:0px; margin:0px;" %></td><td style="padding:0px; margin:0px;"><%=   f.time_field :referenced_time, :style =>"padding:0px; margin:0px;" %></td>
+              <td>Trip length (days):</td><td style="padding:0px; margin:0px;"> <%=   f.text_field :duration, :style =>"padding:0px; margin:0px;" %></td>
+            </tr>
+          <% end %> 
           <tr>
             <td>Hut:</td>
             <td style="padding:0px; margin:0px;">
@@ -112,6 +112,10 @@ function startEdit() {
       <input id="pnp" name="pnp" type="checkbox" checked="checked">
       </span>
     <%  if(@submit_button != "Save Changes" and current_user and current_user.is_admin) %>
+      <span>
+      DEBUG PnP
+      <input id="debug" name="debug" type="checkbox">
+      </span>
       <div class="erow">
         <%=f.label "Check to supress emails of this post" %> 
         <%= f.check_box :do_not_publish %>

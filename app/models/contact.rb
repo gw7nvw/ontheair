@@ -13,6 +13,7 @@ class Contact < ActiveRecord::Base
   belongs_to :hut1, class_name: "Hut"
   belongs_to :hut2, class_name: "Hut"
 
+
   before_save { self.callsign1 = callsign1.upcase }
   before_save { self.callsign2 = callsign2.upcase }
   validates :callsign1,  presence: true, length: { maximum: 50 }
@@ -22,6 +23,16 @@ class Contact < ActiveRecord::Base
   validates :frequency,  presence: true
   validates :mode,  presence: true
 
+  def summit1
+    summit1=SotaPeak.where(:short_code => self.summit1_id)
+    if summit1 and summit1.count>0 then summit1.first else nil end
+  end
+  def summit2
+    summit2=SotaPeak.where(:short_code => self.summit2_id)
+    if summit2 and summit2.count>0 then summit2.first else nil end
+  end
+
+  
   def adif_mode
     mode=""
     rawmode=self.mode.upcase
@@ -109,6 +120,19 @@ class Contact < ActiveRecord::Base
     name=self.island2.name
     else "" end
  end
+ 
+ def summit1_name
+    if self.summit1 then
+    name=self.summit1.name
+    else "" end
+ end
+
+ def summit2_name
+    if self.summit2 then
+    name=self.summit2.name
+    else "" end
+ end
+
 
  def park1_name
     if self.park1 then
@@ -125,6 +149,7 @@ class Contact < ActiveRecord::Base
  def location1_text
   text=""
   if self.hut1 then text=self.hut1.name end
+  if self.summit1 then text=self.summit1.name end
   if self.park1 then text+=" ("+self.park1.name+") " end
   if self.island1 then text+=" ("+self.island1.name+") " end
 
@@ -141,6 +166,7 @@ class Contact < ActiveRecord::Base
  def location2_text
   text=""
   if self.hut2 then text=self.hut2.name end
+  if self.summit2 then text=self.summit2.name end
   if self.park2 then text+=" ("+self.park2.name+") " end
   if self.island2 then text+=" ("+self.island2.name+") " end
 

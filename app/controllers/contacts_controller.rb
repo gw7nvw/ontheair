@@ -18,6 +18,14 @@ class ContactsController < ApplicationController
     end
     if params[:park1] then @contact.park1_id=params[:park1].to_i end
     if params[:island1] then @contact.island1_id=params[:island1].to_i end
+    if params[:summit1] then 
+      @contact.summit1_id=params[:summit1].to_i
+      summit=SotaPeak.find_by_id(@contact.summit1_id)
+      if summit then
+              @contact.x1=summit.x
+              @contact.y1=summit.y
+      end
+   end
 
   end
 
@@ -32,27 +40,27 @@ class ContactsController < ApplicationController
     end
 
     if params[:user] then
-         @contacts=Contact.find_by_sql [ "select * from contacts where (callsign1='"+params[:user]+"' or callsign2='"+params[:user]+"') and "+whereclause+" order by date desc, time desc" ]
+         @fullcontacts=Contact.find_by_sql [ "select * from contacts where (callsign1='"+params[:user]+"' or callsign2='"+params[:user]+"') and "+whereclause+" order by date desc, time desc" ]
          @user=User.find_by(callsign: params[:user])
     elsif params[:hut] then
-         @contacts=Contact.find_by_sql [ "select * from contacts where (hut1_id="+params[:hut]+" or hut2_id="+params[:hut]+") and "+whereclause+" order by date desc, time desc" ]
+         @fullcontacts=Contact.find_by_sql [ "select * from contacts where (hut1_id="+params[:hut]+" or hut2_id="+params[:hut]+") and "+whereclause+" order by date desc, time desc" ]
          @hut=Hut.find_by_id(params[:hut])
 
     elsif params[:park] then
-         @contacts=Contact.find_by_sql [ "select * from contacts where (park1_id="+params[:park]+" or park2_id="+params[:park]+") and "+whereclause+" order by date desc, time desc" ]
+         @fullcontacts=Contact.find_by_sql [ "select * from contacts where (park1_id="+params[:park]+" or park2_id="+params[:park]+") and "+whereclause+" order by date desc, time desc" ]
          @park=Park.find_by_id(params[:park])
 
     elsif params[:island] then
-         @contacts=Contact.find_by_sql [ "select * from contacts where (island1_id="+params[:island]+" or island2_id="+params[:island]+") and "+whereclause+" order by date desc, time desc" ]
+         @fullcontacts=Contact.find_by_sql [ "select * from contacts where (island1_id="+params[:island]+" or island2_id="+params[:island]+") and "+whereclause+" order by date desc, time desc" ]
          @island=Island.find_by_id(params[:island])
 
     else 
       if current_user  then
        if  current_user.is_admin and params[:all] then
-         @contacts=Contact.find_by_sql [ "select * from contacts where "+whereclause+" order by date desc, time desc" ]
+         @fullcontacts=Contact.find_by_sql [ "select * from contacts where "+whereclause+" order by date desc, time desc" ]
          @all=true
        else
-         @contacts=Contact.find_by_sql [ "select * from contacts where (callsign1='"+current_user.callsign+"' or callsign2='"+current_user.callsign+"') and "+whereclause+" order by date desc, time desc" ]
+         @fullcontacts=Contact.find_by_sql [ "select * from contacts where (callsign1='"+current_user.callsign+"' or callsign2='"+current_user.callsign+"') and "+whereclause+" order by date desc, time desc" ]
          @user=current_user
        end
      end
@@ -61,14 +69,15 @@ class ContactsController < ApplicationController
       if params[:user] then callsign=params[:user].upcase else callsign=current_user.callsign.upcase end
       cs=[]
 
-      @contacts.each do |contact|
+      @fullcontacts.each do |contact|
         if (contact.callsign1.upcase==callsign and contact.is_qrp1) or 
           (contact.callsign2.upcase==callsign and contact.is_qrp2) then 
             cs.push(contact)
         end 
      end
-     @contacts=cs
+     @fullcontacts=cs
     end
+ @contacts=@fullcontacts.paginate(:per_page => 20, :page => params[:page]) 
   end
   
   def index
@@ -76,7 +85,7 @@ class ContactsController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.csv { send_data contacts_to_csv(@contacts), filename: "contacts-#{Date.today}.csv" }
+      format.csv { send_data contacts_to_csv(@fullcontacts), filename: "contacts-#{Date.today}.csv" }
     end
   end
 
@@ -207,9 +216,9 @@ class ContactsController < ApplicationController
             @contact.comments1=nil
             if current_user then tz=current_user.timezonename else tz=Timezone.first.name end
             if @contact.hut1_id and @contact.park1_id then 
-              @contacts=Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date(time at time zone 'UTC' at time zone '"+tz+"') ='"+@contact.localdate(current_user)+"' and hut1_id="+@contact.hut1_id.to_s+" and park1_id="+@contact.park1_id.to_s+" and loc_desc1='"+@contact.loc_desc1+"' " ] 
+              @contacts=(Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date(time at time zone 'UTC' at time zone '"+tz+"') ='"+@contact.localdate(current_user)+"' and hut1_id="+@contact.hut1_id.to_s+" and park1_id="+@contact.park1_id.to_s+" and loc_desc1='"+@contact.loc_desc1+"' " ]).sort_by{|c| c.time}
             else
-              @contacts=Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date(time at time zone 'UTC' at time zone '"+tz+"')='"+@contact.localdate(current_user)+"' and loc_desc1='"+@contact.loc_desc1+"' " ]
+              @contacts=(Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date(time at time zone 'UTC' at time zone '"+tz+"')='"+@contact.localdate(current_user)+"' and loc_desc1='"+@contact.loc_desc1+"' " ]).sort_by{|c| c.time}
             end
             @contact.date=@contact.localdate(current_user)
             @contact.time=@contact.localtime(current_user)
@@ -224,9 +233,9 @@ class ContactsController < ApplicationController
             if @contact.time then 
               if current_user then tz=current_user.timezonename else tz=Timezone.first.name end
               if @contact.hut1_id and @contact.park1_id then 
-                @contacts=Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date(time at time zone 'UTC' at time zone '"+tz+"') ='"+@contact.localdate(current_user)+"' and hut1_id="+@contact.hut1_id.to_s+" and park1_id="+@contact.park1_id.to_s+" and loc_desc1='"+@contact.loc_desc1+"' " ] 
+                @contacts=(Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date(time at time zone 'UTC' at time zone '"+tz+"') ='"+@contact.localdate(current_user)+"' and hut1_id="+@contact.hut1_id.to_s+" and park1_id="+@contact.park1_id.to_s+" and loc_desc1='"+@contact.loc_desc1+"' " ]).sort_by { |c| c.time}
               else
-                @contacts=Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date(time at time zone 'UTC' at time zone '"+tz+"')='"+@contact.localdate(current_user)+"' and loc_desc1='"+@contact.loc_desc1+"' " ]
+                @contacts=(Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date(time at time zone 'UTC' at time zone '"+tz+"')='"+@contact.localdate(current_user)+"' and loc_desc1='"+@contact.loc_desc1+"' " ]).sort_by { |c| c.time}
               end
             else 
               @contacts=[]
@@ -272,8 +281,8 @@ class ContactsController < ApplicationController
             @contact.signal2=nil
             @contact.loc_desc2=nil
             @contact.comments1=nil
-            if @contact.hut1_id and @contact.park1_id then @contacts=Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date='"+@contact.date.to_s+"' and hut1_id="+@contact.hut1_id.to_s+" and park1_id="+@contact.park1_id.to_s+" and loc_desc1='"+@contact.loc_desc1+"' " ] else
-              @contacts=Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date='"+@contact.date.to_s+"' and loc_desc1='"+@contact.loc_desc1+"' " ]
+            if @contact.hut1_id and @contact.park1_id then @contacts=(Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date='"+@contact.date.to_s+"' and hut1_id="+@contact.hut1_id.to_s+" and park1_id="+@contact.park1_id.to_s+" and loc_desc1='"+@contact.loc_desc1+"' " ]).sort_by { |c| c.time} else
+              @contacts=(Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date='"+@contact.date.to_s+"' and loc_desc1='"+@contact.loc_desc1+"' " ]).sort_by { |c| c.time}
             end
             render 'editgrid'
           else
@@ -325,8 +334,8 @@ class ContactsController < ApplicationController
             @contact.signal2=nil
             @contact.loc_desc2=nil
             @contact.comments1=nil
-            if @contact.hut1_id and @contact.park1_id then @contacts=Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date='"+@contact.date.to_s+"' and hut1_id="+@contact.hut1_id.to_s+" and park1_id="+@contact.park1_id.to_s+" and loc_desc1='"+@contact.loc_desc1+"' " ] else
-              @contacts=Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date='"+@contact.date.to_s+"' and loc_desc1='"+@contact.loc_desc1+"' " ]
+            if @contact.hut1_id and @contact.park1_id then @contacts=(Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date='"+@contact.date.to_s+"' and hut1_id="+@contact.hut1_id.to_s+" and park1_id="+@contact.park1_id.to_s+" and loc_desc1='"+@contact.loc_desc1+"' " ]).sort_by { |c| c.time} else
+              @contacts=(Contact.find_by_sql [ " select * from contacts where callsign1='"+@contact.callsign1+"' and date='"+@contact.date.to_s+"' and loc_desc1='"+@contact.loc_desc1+"' " ]).sort_by { |c| c.time}
             end
             render 'editgrid'
 
@@ -453,7 +462,7 @@ class ContactsController < ApplicationController
 end
   private
   def contact_params
-    params.require(:contact).permit(:id, :callsign1, :user1_id, :power1, :signal1, :transceiver1, :antenna1, :comments1, :location1, :park1, :callsign2, :user2_id, :power2, :signal2, :transceiver2, :antenna2, :comments2, :hut2, :park2, :date, :time, :timezone,  :frequency, :mode, :loc_desc1, :loc_desc2, :x1, :y1, :altitude1, :locationi1, :x2, :y2, :altitude2, :location2, :is_active, :hut1_id, :hut2_id, :park1_id, :park2_id, :island1_id, :island2_id, :is_qrp1, :is_qrp2, :is_portable1, :is_portable2)
+    params.require(:contact).permit(:id, :callsign1, :user1_id, :power1, :signal1, :transceiver1, :antenna1, :comments1, :location1, :park1, :callsign2, :user2_id, :power2, :signal2, :transceiver2, :antenna2, :comments2, :hut2, :park2, :date, :time, :timezone,  :frequency, :mode, :loc_desc1, :loc_desc2, :x1, :y1, :altitude1, :locationi1, :x2, :y2, :altitude2, :location2, :is_active, :hut1_id, :hut2_id, :park1_id, :park2_id, :island1_id, :island2_id, :is_qrp1, :is_qrp2, :is_portable1, :is_portable2, :summit1_id, :summit2_id)
   end
 
   def convert_to_utc

@@ -1,0 +1,14 @@
+Please check that the following log is correct, and click the <b>Download</b> button download it. You can then upload it to <a href="https://www.sotadata.org.uk/en/" target="_blank">SOTA</a>.
+<br/>
+<br/>
+Filename: <%=@filename%><br/>
+<br/>
+<%=@sota_log%>
+<br/>
+<br/>
+Invalid contacts rejected: <%=@invalid_contacts.count%><br/>
+<% @invalid_contacts.each do |contact| %>
+  <%=link_to "Contact: "+contact.id.to_s, '/contacts/'+contact.id.to_s ,remote: true, :onclick => "linkHandler('submit')"%><br/>
+<% end %>
+<%=link_to "Download Log", '/sota_logs/'+@summit.short_code+".adi?date="+@logdate+"&user="+@user.callsign, class: "btn btn-small btn-primary" %>
+<%=link_to "Cancel", '/sota_logs?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>

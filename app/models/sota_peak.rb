@@ -6,6 +6,32 @@ def codename
   codename=self.summit_code+" - "+self.name
 end
 
+def x
+       # convert to 2193 
+       fromproj4s= Projection.find_by_id(4326).proj4
+       toproj4s=  Projection.find_by_id(2193).proj4
+
+       fromproj=RGeo::CoordSys::Proj4.new(fromproj4s)
+       toproj=RGeo::CoordSys::Proj4.new(toproj4s)
+
+       xyarr=RGeo::CoordSys::Proj4::transform_coords(fromproj,toproj,self.location.x,self.location.y)
+       xyarr[0]
+end
+
+
+def y
+       # convert to 2193 
+       fromproj4s= Projection.find_by_id(4326).proj4
+       toproj4s=  Projection.find_by_id(2193).proj4
+
+       fromproj=RGeo::CoordSys::Proj4.new(fromproj4s)
+       toproj=RGeo::CoordSys::Proj4.new(toproj4s)
+
+       xyarr=RGeo::CoordSys::Proj4::transform_coords(fromproj,toproj,self.location.x,self.location.y)
+       xyarr[1]
+end
+
+
 def find_doc_park
    #ps=Docparks.find_by_sql [ %q{select * from docparks dp where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), dp."WKT");} ]
    ps=Crownparks.find_by_sql [ %q{select * from crownparks dp where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), dp."WKT");} ]

@@ -24,8 +24,11 @@ match '/queries/island', to: 'queries#island',    via:'get'
 match '/queries/summit', to: 'queries#summit',    via:'get'
 match '/queries/test', to: 'queries#test',    via:'post'
 
+resources :sota_logs
 resources :pota_logs
 match "/pota_logs/:id/send", :to => "pota_logs#send_email", :as => "send_log", :via => "get"
+resources :wwff_logs
+match "/wwff_logs/:id/send", :to => "wwff_logs#send_email", :as => "wwff_send_log", :via => "get"
 
 match "/contacts/check", :to => "contacts#check", :via => "get"
 match "/contacts/select", :to => "contacts#select", :via => "get"
@@ -71,6 +74,7 @@ resources :awards
 
 
 resources :query, only: [:index]
+resources :querysummit, only: [:index]
 resources :querypark, only: [:index]
 resources :queryisland, only: [:index]
 

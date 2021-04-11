@@ -40,7 +40,11 @@
                 </a>
                 <ul class="dropdown-menu">
                   <li><%= link_to "Profile", '/users/'+current_user.callsign, remote: true, :id => 'profile_link', :onclick => "linkHandler('profile_link')" %></li>
+                  <li class="divider"></li>
+                  <li><%= link_to "SOTA Logs", '/sota_logs', remote: true, :id => 'sota_link', :onclick => "linkHandler('sota_link')" %></li>
+                  <li class="divider"></li>
                   <li><%= link_to "POTA Logs", '/pota_logs', remote: true, :id => 'pota_link', :onclick => "linkHandler('pota_link')" %></li>
+                  <li><%= link_to "WWFF Logs", '/wwff_logs', remote: true, :id => 'wwff_link', :onclick => "linkHandler('wwff_link')" %></li>
                   <li class="divider"></li>
                   <li>
                     <%= link_to "Sign out", signout_path, method: "delete" %>
