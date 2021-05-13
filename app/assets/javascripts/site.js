@@ -21,6 +21,9 @@ var polygon_simple_layer;
 var polygon_very_simple_layer;
 var points_layer;
 var site_map_layers={}
+var site_default_point_layers=['hut','island','summit']
+var site_all_point_layers=['park', 'hut','island','summit','lake']
+var site_default_polygon_layers=[]
 
 //styles
 var site_docland_style;
@@ -213,12 +216,12 @@ function site_points_style_function(feature, resoluton) {
 
 
 function site_add_vector_layers() {
-  site_set_map_filters('polygon',[]);
+  site_set_map_filters('polygon',site_default_polygon_layers);
   polygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon",site_polygon_style_function,true,11,32,'polygon');
   polygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_simple",site_polygon_style_function,true,8,11,'polygon');
   polygon_very_simple_layer=map_add_vector_layer("Polygon Very Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_very_simple",site_polygon_style_function,true,1,8,'polygon');
 
-  site_set_map_filters('point',['hut','island','summit']);
+  site_set_map_filters('point',site_default_point_layers);
   points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,1,32,'point');
   contacts_layer=map_add_vector_layer("Contacts", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "contacts",site_contacts_style,false,1,32);
 

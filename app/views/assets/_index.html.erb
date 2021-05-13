@@ -1,10 +1,25 @@
 
 <script>
+  function page_set_layer_filter(name) {
+   if (name=='all') {
+     if (JSON.stringify(site_map_layers['point'])!=JSON.stringify(site_all_point_layers)) {
+       site_set_map_filters('point',site_all_point_layers);
+       site_refresh_layer('point');
+     };
+   } else {
+     if (JSON.stringify(site_map_layers['point'])!=JSON.stringify([name])) {
+       site_set_map_filters('point',[name]);
+       site_refresh_layer('point');
+     };
+   };
+}
+
    reset_map_controllers();
    document.getElementById("page_status").innerHTML = '';
-   site_toggle_assets(<%=@asset_type.display_name%>)
-   document.title = 'ZL On The Air'
-   document.getElementById('logo').innerHTML='ZL On The Air'
+//   site_toggle_assets(<%=@asset_type.display_name%>)
+   page_set_layer_filter("<%=@asset_type.name%>");
+   document.title = 'ZL On The Air';
+   document.getElementById('logo').innerHTML='ZL On The Air';
 </script>
 
 <div id="actionbar" class="span7">
@@ -33,7 +48,7 @@
   <br/>
   <div class="rowtitle">Type:</div>
   <div class="rowtext">
-    <%= collection_select( :asset_type, :name, AssetType.all.order(:display_name), :name, :display_name,{default: @asset_type}) %>    
+    <%= collection_select( :asset_type, :name, AssetType.all.order(:display_name), :name, :display_name,{default: @asset_type}, onchange: 'page_set_layer_filter(document.getElementById("asset_type_name").value);') %>    
   </div>
   <div class="rowtitle">Find:</div>
   <div class="rowtext">
