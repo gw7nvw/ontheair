@@ -15,8 +15,8 @@
      <% if current_user  and (current_user.callsign==@contact.callsign1 or current_user.callsign==@contact.callsign2) %>
             <%=  link_to "QSL", '/qsl/'+@contact.id.to_s, class: "btn btn-small btn-primary", :target => "_blank" %>
      <% end %>
-     <% if current_user  and (current_user.callsign==@contact.callsign1 or current_user.callsign==@contact.callsign2 or current_user.is_admin) %>
-            <%=  link_to "Edit", '/contacts/'+@contact.id.to_s+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
+     <% if current_user  and (current_user.callsign==@contact.callsign1 or current_user.is_admin) %>
+            <%=  link_to "Edit", '/contacts/'+@contact.id.to_s+'/editlog', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
        <% end %>
        <%=  link_to "Index", "/contacts", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
        <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
@@ -87,23 +87,22 @@
       <div class="rowtitle"><%= "Signal reported" %></div>
       <div class="rowtext"> <%= @contact.signal1 %></div>
    </div>
-   <div class="erow" id="name">
-     <div class="rowtitle">Hut</div>
-     <div class="rowtext"> <%= if @contact.hut1 then link_to @contact.hut1.codename, '/huts/'+@contact.hut1_id.to_s, remote: true,  :id => 'hut', :onclick => "linkHandler('hut')" end %></div>
-   </div>
-   <div class="erow" id="name">
-     <div class="rowtitle">Summit</div>
-     <div class="rowtext"> <%= if @contact.summit1 then link_to @contact.summit1.codename, '/summits/'+@contact.summit1.short_code.to_s, remote: true,  :id => 'summit', :onclick => "linkHandler('summit')" end %></div>
-   </div>
-   <div class="erow" id="name">
-     <div class="rowtitle">Park</div>
-     <div class="rowtext"> <%= if @contact.park1 then link_to @contact.park1.codename, '/parks/'+@contact.park1_id.to_s, remote: true,  :id => 'park', :onclick => "linkHandler('park')" end %></div>
-   </div>
-   <div class="erow" id="name">
-     <div class="rowtitle">Island</div>
-     <div class="rowtext"> <%= if @contact.island1 then link_to @contact.island1.codename, '/islands/'+@contact.island1_id.to_s, remote: true,  :id => 'island', :onclick => "linkHandler('island')" end %></div>
-   </div>
-
+   <% @contact.asset1_codes.each do |cal|%>
+     <%links=Asset.assets_from_code(cal)%>
+     <%links.each do |link|%>
+       <% if link[:external] then %>
+         <div class="erow" id="name">
+           <div class="rowtitle"><%=link[:title]%></div>
+           <div class="rowtext"> <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png"> </div>
+         </div>
+       <% else %>
+         <div class="erow" id="name">
+           <div class="rowtitle"><%=link[:asset].type.display_name%></div>
+           <div class="rowtext"> <%=link_to link[:asset].codename, '/'+link[:asset].url,remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+         </div>
+       <% end %>
+     <% end %>
+   <% end %>
    <div class="erow" id="location">
       <div class="rowtitle"><%= "Location" %></div>
       <% if @contact.x1 and @contact.y1 %>
@@ -160,22 +159,22 @@
       <div class="rowtitle"><%= "Signal reported" %></div>
       <div class="rowtext"> <%= @contact.signal2 %></div>
    </div>
-   <div class="erow" id="name">
-     <div class="rowtitle">Hut</div>
-     <div class="rowtext"> <%= if @contact.hut2 then link_to @contact.hut2.codename, '/huts/'+@contact.hut2_id.to_s, remote: true,  :id => 'hut', :onclick => "linkHandler('hut')" end %></div>
-   </div>
-   <div class="erow" id="name">
-     <div class="rowtitle">Summit</div>
-     <div class="rowtext"> <%= if @contact.summit2 then link_to @contact.summit2.codename, '/summits/'+@contact.summit2.short_code.to_s, remote: true,  :id => 'summit', :onclick => "linkHandler('summit')" end %></div>
-   </div>
-   <div class="erow" id="name">
-     <div class="rowtitle">Park</div>
-     <div class="rowtext"> <%= if @contact.park2 then link_to @contact.park2.codename, '/parks/'+@contact.park2_id.to_s, remote: true,  :id => 'park', :onclick => "linkHandler('park')" end %></div>
-   </div>
-   <div class="erow" id="name">
-     <div class="rowtitle">Island</div>
-     <div class="rowtext"> <%= if @contact.island2 then link_to @contact.island2.codename, '/islands/'+@contact.island2_id.to_s, remote: true,  :id => 'island', :onclick => "linkHandler('island')" end %></div>
-   </div>
+   <% @contact.asset2_codes.each do |cal|%>
+     <%links=Asset.assets_from_code(cal)%>
+     <% links.each do |link| %>
+       <% if link[:external] then %>
+         <div class="erow" id="name">
+           <div class="rowtitle"><%=link[:title]%></div>
+           <div class="rowtext"> <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png"> </div>
+         </div>
+       <% else %>
+         <div class="erow" id="name">
+           <div class="rowtitle"><%=link[:asset].type.display_name%></div>
+           <div class="rowtext"> <%=link_to link[:asset].codename, '/'+link[:asset].url,remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+         </div>
+       <% end %>
+     <% end %>
+   <% end %>
 
    <div class="erow" id="location">
       <div class="rowtitle"><%= "Location" %></div>

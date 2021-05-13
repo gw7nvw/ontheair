@@ -15,8 +15,8 @@
        if @contacts then @contacts.each do |contact| %>
       <tr>
         <td>
-          <% if !@brief and current_user  and (current_user.callsign==contact.callsign1 or current_user.callsign==contact.callsign2 or current_user.is_admin) %>
-            <%= link_to 'Edit', '/contacts/'+contact.id.to_s+'/edit?referring=index', remote: true, :id => 'editbutton'+contact.id.to_s, :onclick => "linkHandler('editbutton"+contact.id.to_s+"')" %><br/>
+          <% if !@brief and current_user  and (current_user.callsign==contact.callsign1 or current_user.is_admin) %>
+            <%= link_to 'Edit', '/contacts/'+contact.id.to_s+'/editlog?referring=index', remote: true, :id => 'editbutton'+contact.id.to_s, :onclick => "linkHandler('editbutton"+contact.id.to_s+"')" %><br/>
           <% end %>
           <%= link_to 'View', '/contacts/'+contact.id.to_s, remote: true, :id => 'contact_link_'+contact.id.to_s, :onclick => "linkHandler('contact_link_"+contact.id.to_s+"')" %>
         </td>
@@ -34,28 +34,42 @@
         <td> <%= if contact.time then contact.localtime(current_user) else '' end %> <%=contact.localtimezone(current_user) %></td>
         <td> <%= if contact.frequency then '%.3f' % contact.frequency else '' end%> </td>
         <td> <%= contact.mode %> </td>
-        <td> <%link=Asset.url_from_code(contact.location1_code)%>
-          <% if link[:url] then %>
-            <% if link[:external] then %>
-              <%=link_to contact.location1_text,link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
-            <% else %>
-              <%=link_to contact.location1_text,link[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+        <td>  <ul style="list-style-type:none;padding:0;margin:0;">
+          <% if contact.asset1_codes.count>0 then %>
+            <% contact.asset1_codes.each do |cal|%>
+              <li>
+                <%links=Asset.assets_from_code(cal)%>
+                <% links.each do |link| %>
+                  <% if link[:external] then %>
+                    <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
+                  <% else %>
+                    <%=link_to link[:asset].codename, link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                  <% end %>
+                <% end %>
+              </li>
             <% end %>
           <% else %>
-            <%= contact.location1_text %> 
+            <%= contact.loc_desc1 %> 
           <% end %>
-        </td>
-        <td> <%link=Asset.url_from_code(contact.location2_code)%>
-          <% if link[:url] then %>
-            <% if link[:external] then %>
-              <%=link_to contact.location2_text,link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
-            <% else %>
-              <%=link_to contact.location2_text,link[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+        </ul></td>
+        <td>  <ul style="list-style-type:none;padding:0;margin:0;">
+          <% if contact.asset2_codes.count>0 then %>
+            <% contact.asset2_codes.each do |cal|%>
+              <li>
+                <%links=Asset.assets_from_code(cal)%>
+                <% links.each do |link| %>
+                  <% if link[:external] then %>
+                    <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
+                  <% else %>
+                    <%=link_to link[:asset].codename, link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                  <% end %>
+                <% end %>
+              </li>
             <% end %>
           <% else %>
-            <%= contact.location2_text %>
+            <%= contact.loc_desc2 %> 
           <% end %>
-
+        </ul></td>
       </tr>
     <%count=count+1%>
     <% end end %>

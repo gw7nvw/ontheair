@@ -26,6 +26,16 @@ $lightblue: #4444ff;
 
 .hoverover { border-bottom: 1px dotted green; color: purple }
 
+.handsontable .truncated {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.twitter-typeahead {
+  width: 100%;
+}
+
 div#right_panel div.gridbox_dhx_skyblue.isModern table.hdr tr td {
     font-weight: bold !important;
     color: white !important;
@@ -92,9 +102,28 @@ textarea {
     z-index: 9999 !important;
 }
 .link_to {
-   color: #000000;
+   color: #440000;
    border-bottom: 1px dotted;
-#   font-style: italic;
+   font-style: italic;
+}
+
+
+.td-l {
+  border-right:0;
+  padding-top:0px;
+  padding-bottom:0px;
+}
+
+.td-d {
+  border-left:0;
+  padding-top:5px;
+  padding-bottom:5px;
+  input, select {
+    padding: 0px;
+    vertical-align: middle;
+    margin: 0px;
+    margin-bottom: 0px !important;
+  }
 }
 
 .modal {
@@ -479,8 +508,13 @@ html, body {
         margin: 0px;
         padding: 0px;
         float: left;
+        z-index: 20000;
 }
 
+ul {
+    /* rest of the styles */
+    -webkit-transform: translate3d(0,0,0);
+}
 
 #right_panel
 {
@@ -494,6 +528,14 @@ html, body {
      margin-top: 32px;
      padding-bottom: 64px;
 }
+
+#grid_scroll
+{ 
+     width: 100%;
+     height: 200px;
+     overflow: overlay;
+}
+
 #actionbar
 {
      background-color: #4B0082;
@@ -667,6 +709,48 @@ input {
 .btn-highlight {
   border: 2px solid #ffff00;
 }
+  .open > .dropdown-menu {
+   z-index: 9999 !important;
+}
+
+
+  .ildd-menu > li {
+    display: block;
+    padding: 0;   
+    margin:0;
+    clear: both;
+    font-weight: normal;
+    line-height: 20px;
+    color: #333;
+    white-space: nowrap;
+  }
+  .ilnb .nav > li > a {
+    padding: 0;
+    margin:0;
+    line-height: 20px;
+    height: 20px;
+    color: #999;
+  }
+  .ilnb .nav > li {
+    height: 16px;
+    line-height: 12px;
+    margin-top: -10px;
+ }
+  .ilnb .nav {
+    height: 20px;
+ }
+
+  .ildd > li {
+       display: block;
+    padding: 0;
+    clear: both;
+    font-weight: normal;
+    line-height: 20px;
+    height: 20px;
+    color: #333;
+    white-space: nowrap;
+
+  }
 
 /* mobile specific */
 @media only screen and (max-width: 540px) {
@@ -677,6 +761,7 @@ input {
   .navbar .nav > li > a {
    padding: 10px 4px 10px;
   }
+
  #rg-image {
    width:20px !important;
    padding-top: 4px !important;

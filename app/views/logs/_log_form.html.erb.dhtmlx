@@ -1,0 +1,88 @@
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  "Contest Log:", '/contest_log', remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Edit Table</b>
+     </div>
+   <div id="controls">
+       <%=  link_to "Index", '/contest_log/', class: "btn btn-small btn-primary", remote: true, :id => 'contacts', :onclick => "linkHandler('contacts')" %>
+       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+
+<div class="fullform">
+  <div id="right_scroll">
+    <%= render 'flash' %>
+    <%= render 'shared/error_messages' %>
+ 
+    <%= form_for @contest_log, remote: true, :html => {:name => 'contestlogform'} do |f| %>
+      <%= hidden_field_tag(:referring, 'new') %>
+ 
+      <div class="erow"><div class="sectiontitle_bold">Your Details</div></div>
+      <table>
+        <tr>
+          <td colspan=2><div class="sectiontitle">Log for </div><%= collection_select( :contest_log, :contest_id, @contests, :id, :name, {}, {}) %></td>
+          <td>Location: <%= f.text_field :location%></td>
+          <td>Name: <%= f.text_field :fullname%></td>
+        </tr>
+        <tr>
+           <td>Callsign: <%= f.text_field :callsign%></td>
+           <td>Date: <%= f.text_field :date%></td>
+           <td>TX Power: <%= f.text_field :power%></td>
+           <td>Antenna: <%= f.text_field :antenna%></td>
+        </tr>
+        <tr>
+          <td> <div class="sectiontitle">QRP?  </div> <%= f.check_box :is_qrp%></td>
+          <td> <div class="sectiontitle">Portable?  </div> <%= f.check_box :is_portable%></td>
+          <td> <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight" %></td>
+ 
+        </tr>
+      </table>
+    <% end %>
+<% if @edit then %>
+  <div id="grid_here" style="width: 100%; height: calc(100% - 72px); position: fixed"></div>
+<script type="text/javascript" charset="UTF-8">
+     site_smaller_map();
+     var grid = new dhtmlXGridObject("grid_here");
+     grid.setImagePath("/assets/imgs/");
+     grid.setHeader("Id, Time, Callsign, QRP, Portable, Mode, Name, Location, RST, Serial, RST, Serial");
+     grid.setColSorting("int,str,str,str,str,str,str,str,str,str,str,str");
+     grid.setColTypes("ro,ed,ed,ch,ch,ed,ed,ed,ed,ed,ed,ed");
+     grid.setInitWidths("60,60,100,60,60,60,100,100,60,60,60,60");
+     grid.setSkin("dhx_skyblue");
+     grid.init();
+     grid.load("<%= contest_log_data_path+'?log_id='+@contest_log.id.to_s %>", "json");
+     dp = new dataProcessor("<%= contest_log_db_action_path %>");
+     dp.setTransactionMode("GET",false);
+     dp.init(grid);
+
+    if(site_map_size==0) { 
+       $('#actionbar').removeClass('span7');
+       $('#actionbar').addClass('span12');
+    }
+</script>
+
+<% else %>
+    <table>
+      <tr>
+        <th>Id</th>
+        <th>Time</th>
+        <th>Callsign</th>
+        <th>QRP</th>
+        <th>Portable</th>
+        <th>Mode</th>
+        <th>Name</th>
+        <th>Location</th>
+        <th colspan=2>Cypher Sent</th>
+        <th colspan=2>Cypher Rec'd</th>
+      </tr>
+    </table>
+<% end %>
+  </div>
+</div>
+<script>
+    reset_map_controllers(); 
+</script>

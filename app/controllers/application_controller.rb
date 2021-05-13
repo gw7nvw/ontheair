@@ -31,43 +31,11 @@ before_filter :set_cache_headers
    csvtext
   end
 
-  def update_score(callsign)
-
-   if callsign and callsign.length>0 then
- 
-     user=User.find_by(callsign: callsign)
-     if not user then 
-       user=User.create(callsign: callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
-     end
-
-     user.huts_bagged=user.hut_count_filtered(false,false,false)
-     user.parks_bagged=user.park_count_filtered(false,false,false)
-     user.islands_bagged=user.island_count_filtered(false,false,false)
-
-     user.huts_bagged_total=user.hut_count_filtered(false,false,true)
-     user.parks_bagged_total=user.park_count_filtered(false,false,true)
-     user.islands_bagged_total=user.island_count_filtered(false,false,true)
-     success=user.save
-
-     if success then 
-       #issue awards
-       as=Award.check_awards(user)
-       as.each do |a|
-         aul=AwardUserLink.new
-         aul.award_id=a.id
-         aul.user_id=user.id
-         aul.save
-       end
-  
-       #notify of awards
-       auls=AwardUserLink.where(:user_id => user)
-  
-       auls.each do |aul|
-         if aul.notification_sent!=true then
-           aul.generate_notification 
-         end
-       end
-     end
-   end
-  end
+def params_to_query
+    newparams=params.dup
+    newparams.delete(:action)
+    newparams.delete(:controller)
+    newparams.delete(:id)
+    newparams.to_query
+end
 end

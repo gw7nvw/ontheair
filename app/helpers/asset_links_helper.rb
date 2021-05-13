@@ -1,0 +1,2 @@
+module AssetLinksHelper
+end

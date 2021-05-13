@@ -1,28 +1,29 @@
+require 'resque/server'
+
 Hota::Application.routes.draw do
 root 'static_pages#home'
   get "password_resets/new"
   get "password_resets/edit"
   get "password_reset/new"
   get "password_reset/edit"
+mount Resque::Server.new, at: "/resque"
 
 get "proxy" => "proxy#get", :as => "proxy"
 
 match '/about',   to: 'static_pages#about',   via: 'get'
+match '/results',   to: 'static_pages#results',   via: 'get'
 match '/spots',   to: 'static_pages#spots',   via: 'get'
 match '/alerts',   to: 'static_pages#alerts',   via: 'get'
 resources :sessions, only: [:new, :create, :destroy]
+resources :asset_web_links, only: [:create]
+resources :asset_links, only: [:create]
+get 'asset_web_links/:id/delete', to: 'asset_links#delete'
+get 'asset_links/:id/delete', to: 'asset_links#delete'
 resources :qsl, only: [:show]
-match "/users/editgrid", :to => "users#editgrid", :via => "get"
-match "/users/data", :to => "users#data", :as => "user_data", :via => "get"
-match "/users/db_action", :to => "users#db_action", :as => "user_db_action", :via => "get"
 resources :users
 resources :posts, only: [:new, :create, :show, :edit, :update]
 get 'posts/:id/delete', to: 'posts#delete'
-match '/queries/hut', to: 'queries#hut',    via:'get'
-match '/queries/park', to: 'queries#park',    via:'get'
-match '/queries/island', to: 'queries#island',    via:'get'
-match '/queries/summit', to: 'queries#summit',    via:'get'
-match '/queries/test', to: 'queries#test',    via:'post'
+match '/queries/asset', to: 'queries#asset',    via:'get'
 
 resources :sota_logs
 resources :pota_logs
@@ -30,38 +31,20 @@ match "/pota_logs/:id/send", :to => "pota_logs#send_email", :as => "send_log", :
 resources :wwff_logs
 match "/wwff_logs/:id/send", :to => "wwff_logs#send_email", :as => "wwff_send_log", :via => "get"
 
-match "/contacts/check", :to => "contacts#check", :via => "get"
-match "/contacts/select", :to => "contacts#select", :via => "get"
-match "/contacts/select2", :to => "contacts#select2", :via => "get"
-match "/contacts/new2", :to => "contacts#new2", :via => "get"
-match "/contacts/editgrid", :to => "contacts#editgrid", :via => "get"
-match "/contacts/data", :to => "contacts#data", :as => "contacts_data", :via => "get"
-match "/contacts/db_action", :to => "contacts#db_action", :as => "contacts_db_action", :via => "get"
+match "/logs/:id/save", :to => "logs#save", :as => "log_save_data", :via => "post"
+match "/logs/:id/load", :to => "logs#load", :as => "log_load_data", :via => "get"
+resources :logs
+ get 'logs/:id/delete', to: 'logs#delete'
 
-match "/contacts/editgrid", :to => "contacts#editgrid", :via => "get"
-match "/contacts/data", :to => "contacts#data", :as => "contact_data", :via => "get"
-match "/contacts/db_action", :to => "contacts#db_action", :as => "contact_db_action", :via => "get"
+match "/contacts/:id/editlog", :to => "logs#editcontact", :via => "get"
 resources :contacts
-match "/contest_logs/data", :to => "contest_logs#data", :as => "contest_log_data", :via => "get"
-match "/contest_logs/db_action", :to => "contest_logs#db_action", :as => "contest_log_db_action", :via => "get"
-match "/contest_logs/:id/save", :to => "contest_logs#save", :as => "contest_log_save_data", :via => "post"
-match "/contest_logs/:id/load", :to => "contest_logs#load", :as => "contest_log_load_data", :via => "get"
-resources :contest_logs
 
-match "/huts/editgrid", :to => "huts#editgrid", :via => "get"
-match "/huts/data", :to => "huts#data", :as => "hut_data", :via => "get"
-match "/huts/db_action", :to => "huts#db_action", :as => "hut_db_action", :via => "get"
+resources :assets
+match "/assets/:id/associations", :to => "assets#associations", :via => "get"
 resources :huts
 resources :summits
-
-match "/parks/editgrid", :to => "parks#editgrid", :via => "get"
-match "/parks/data", :to => "parks#data", :as => "park_data", :via => "get"
-match "/parks/db_action", :to => "parks#db_action", :as => "park_db_action", :via => "get"
 resources :parks
 resources :islands
-resources :contest_series
-resources :contests
-resources :awards
 
   match '/sessions', to: 'static_pages#home',    via:'get'
   match '/signin',  to: 'sessions#new',         via: 'get'
@@ -74,9 +57,6 @@ resources :awards
 
 
 resources :query, only: [:index]
-resources :querysummit, only: [:index]
-resources :querypark, only: [:index]
-resources :queryisland, only: [:index]
 
 end
 

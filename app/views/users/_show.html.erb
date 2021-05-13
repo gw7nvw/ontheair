@@ -79,16 +79,23 @@
    </div>
 </div>
 
-<div class="erow">
-  <div class="sectiontitle">Huts bagged: <%=@user.huts_bagged%> huts (on <%=@user.huts_bagged_total%> activations)</br></div>
-</div>
+<% AssetType.all.each do |at| %>
 
-<div id="erow">
-  <% @user.huts.each do |hut| %>
-      <%=link_to hut.name, '/huts/'+hut.id.to_s, remote: true,  :id => 'hut', :onclick => "linkHandler('hut')" %>,&nbsp
+  <% abs=@user.assets_count_filtered(at.name,false,false,false) %>
+  <% if abs>0 then %>
 
+    <div class="erow">
+      <div class="sectiontitle"><%=at.name.capitalize.pluralize%> bagged: <%=abs%> <%=at.name.pluralize%> (on <%=@user.assets_count_filtered(at.name,false,false,true)%> activations)</br></div>
+    </div>
+
+    <div id="erow">
+      <% @user.assets(at.name).each do |asset| %>
+        <%=link_to asset.name, '/assets/'+asset.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>,&nbsp
+
+      <% end %>
+    </div>
   <% end %>
-</div>
+<% end %>
 
 <div class="erow">
    <div class="hrline">
@@ -96,37 +103,6 @@
    </div>
 </div>
 
-<div class="erow">
-  <div class="sectiontitle">Parks bagged: <%=@user.parks_bagged%> parks (on <%=@user.parks_bagged_total%> activations)</br></div>
-</div>
-
-<div id="erow">
-  <% @user.parks.each do |park| %>
-      <%=link_to park.name, '/parks/'+park.id.to_s, remote: true,  :id => 'park', :onclick => "linkHandler('park')" %>,&nbsp
-  <% end %>
-</div>
-
-<div class="erow">
-   <div class="hrline">
-      <hr noshade size="4">
-   </div>
-</div>
-
-<div class="erow">
-  <div class="sectiontitle">Islands bagged: <%=@user.islands_bagged%> islands (on <%=@user.islands_bagged_total%> activations)</br></div>
-</div>
-
-<div id="erow">
-  <% @user.islands.each do |island| %>
-      <%=link_to island.name, '/islands/'+island.id.to_s, remote: true,  :id => 'island', :onclick => "linkHandler('island')" %>,&nbsp
-  <% end %>
-</div>
-
-<div class="erow">
-   <div class="hrline">
-      <hr noshade size="4">
-   </div>
-</div>
 
 <div class="erow">
   <div class="sectiontitle">Contacts: <%=link_to @user.contacts.count.to_s+" (view)", '/contacts?user='+@user.callsign, remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %>,

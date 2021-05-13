@@ -1,6 +1,6 @@
 class Island < ActiveRecord::Base
 
-  def code
+  def get_code
     code="ZLI/"+self.id.to_s.rjust(5,'0')
   end
 
@@ -63,6 +63,14 @@ def has_polygon
 end
   def summits
     pps=SotaPeak.where(:island_id => self.id)
+  end
+
+  def self.add_codes
+     ps=Island.all
+     ps.each do |p|
+       p.code=p.get_code
+       p.save
+     end
   end
 
 end

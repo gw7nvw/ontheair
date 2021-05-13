@@ -2,6 +2,8 @@ class WwffLogsController < ApplicationController
   before_action :signed_in_user, only: [:index, :show, :send_email]
 
 def index
+    @parameters=params_to_query
+
   callsign=""
   if current_user then callsign=current_user.callsign end
   if params[:user] then callsign=params[:user].upcase end
@@ -14,6 +16,7 @@ def index
 end
 
 def show
+    @parameters=params_to_query
   if current_user then callsign=current_user.callsign else callsign="" end 
   if params[:user] then callsign=params[:user].upcase end
   if current_user and (current_user.is_admin or current_user.callsign==callsign) then
@@ -27,26 +30,24 @@ def show
     pls=@user.wwff_logs
     wwff_log=nil
     pls.each do |pl|
-      if pl[:park].id==params[:id].to_i  then wwff_log=pl end
+      if pl[:park][:wwffpark]==params[:id]  then wwff_log=pl end
     end 
   
-    park=Park.find_by(id: params[:id].to_i)
+    park=Asset.find_by(code: params[:id])
   
     @wwff_log=""
     @invalid_contacts=[]
     @contacts=wwff_log[:contacts]
     wwff_log[:contacts].each do |contact|
       other_park=nil
-      if contact.callsign1==@user.callsign then other_callsign=contact.callsign2 else other_callsign=contact.callsign1 end
-      if contact.park1 and contact.park1.id==park.id then
-        if contact.park2 and contact.park2.wwff_park then 
-          other_park=contact.park2
-        end
-      else
-        if contact.park1 and contact.park1.wwff_park then 
-          other_park=contact.park1
-        end
+      other_callsign=contact.callsign2
+      if pp=contact.find_asset2_by_type('wwff park') then
+        other_park_code=pp.code
+      elsif p=contact.find_asset2_by_type('park') then
+        las=p.linked_assets_by_type('wwff park')
+        if las and las.count>0 then other_park_code=las.first.code end
       end
+
       if contact.band.length>0 and contact.adif_mode.length>0 and contact.time and contact.time.strftime("%H%M").length==4 then
         @wwff_log+="<call:"+other_callsign.length.to_s+">"+other_callsign
         @wwff_log+="<station_callsign:"+@user.callsign.length.to_s+">"+@user.callsign
@@ -56,15 +57,15 @@ def show
         @wwff_log+="<qso_date:8>"+contact.date.strftime("%Y%m%d")
         @wwff_log+="<time_on:4>"+contact.time.strftime("%H%M")
         @wwff_log+="<my_sig:4>WWFF"
-        @wwff_log+="<my_sig_info:"+park.wwff_park.code.length.to_s+">"+park.wwff_park.code
-        if other_park then @wwff_log+="<sig:4>WWFF" end
-        if other_park then @wwff_log+="<sig_info:"+other_park.wwff_park.code.length.to_s+">"+other_park.wwff_park.code end
+        @wwff_log+="<my_sig_info:"+park.code.length.to_s+">"+park.code
+        if other_park_code then @wwff_log+="<sig:4>WWFF" end
+        if other_park_code then @wwff_log+="<sig_info:"+other_park_code.length.to_s+">"+other_park_code end
         @wwff_log+="<eor>\n"
       else 
         @invalid_contacts.push(contact)
       end
     end
-    @filename=@user.callsign+"@"+park.wwff_park.code+".adi" 
+    @filename=@user.callsign+"@"+park.code+".adi" 
     callnumber=@user.callsign.gsub(/[^0-9]/, '').first 
     @address=""
     if callnumber then 

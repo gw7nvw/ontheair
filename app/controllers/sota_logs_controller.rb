@@ -2,6 +2,8 @@ class SotaLogsController < ApplicationController
   before_action :signed_in_user, only: [:index, :show, :send_email]
 
 def index
+    @parameters=params_to_query
+
   callsign=""
   if current_user then callsign=current_user.callsign end
   if params[:user] then callsign=params[:user].upcase end
@@ -14,6 +16,8 @@ def index
 end
 
 def show
+    @parameters=params_to_query
+
   if current_user then callsign=current_user.callsign else callsign="" end 
   if params[:user] then callsign=params[:user].upcase end
   if current_user and (current_user.is_admin or current_user.callsign==callsign) then
@@ -27,24 +31,20 @@ def show
     sls=@user.sota_logs
     sota_log=nil
     sls.each do |sl|
-      if sl[:summit].short_code==params[:id] and sl[:date].strftime("%Y%m%d")==params[:date] then sota_log=sl end
+      if sl[:summit].code==params[:id].gsub('_','/') and sl[:date].strftime("%Y%m%d")==params[:date] then sota_log=sl end
     end 
   
-    summit=SotaPeak.find_by(short_code: params[:id])
-  
+    summit=Asset.find_by(code: params[:id].gsub('_','/'))
+ 
     @sota_log=""
     @invalid_contacts=[]
     @contacts=sota_log[:contacts]
     sota_log[:contacts].each do |contact|
-      other_summit=nil
-      if contact.callsign1==@user.callsign then other_callsign=contact.callsign2 else other_callsign=contact.callsign1 end
-      if contact.summit1 and contact.summit1.short_code==summit.short_code then
-        if contact.summit2 then 
-          other_summit=contact.summit2
-        end
-      else
-        if contact.summit1  then 
-          other_summit=contact.summit1
+      other_summit_code=nil
+      other_callsign=contact.callsign2
+      if contact.find_asset1_by_type('summit') and contact.find_asset1_by_type('summit').code==summit.code then
+        if contact.find_asset2_by_type('summit') then 
+          other_summit_code=contact.find_asset2_by_type('summit').code
         end
       end
       if contact.band.length>0 and contact.adif_mode.length>0 and contact.time and contact.time.strftime("%H%M").length==4 then
@@ -54,14 +54,14 @@ def show
         @sota_log+="<mode:"+contact.adif_mode.length.to_s+">"+contact.adif_mode
         @sota_log+="<qso_date:8>"+params[:date]
         @sota_log+="<time_on:4>"+contact.time.strftime("%H%M")
-        @sota_log+="<my_sota_ref:"+summit.summit_code.length.to_s+">"+summit.summit_code
-        if other_summit then @sota_log+="<sota_ref:"+other_summit.summit_code.length.to_s+">"+other_summit.summit_code end
+        @sota_log+="<my_sota_ref:"+summit.code.length.to_s+">"+summit.code
+        if other_summit_code and other_summit_code.length>0 then @sota_log+="<sota_ref:"+other_summit_code.length.to_s+">"+other_summit_code end
         @sota_log+="<eor>\n"
       else 
         @invalid_contacts.push(contact)
       end
     end
-    @filename=@user.callsign+"@"+summit.short_code+"-"+params[:date]+".adi" 
+    @filename=@user.callsign+"@"+summit.safecode+"-"+params[:date]+".adi" 
     callnumber=@user.callsign.gsub(/[^0-9]/, '').first 
     @address=""
     if callnumber then 

@@ -1,5 +1,8 @@
 class WwffPark < ActiveRecord::Base
 
+  def park
+    p=Park.find_by(:id => self.napalis_id)
+  end
 
   def find_doc_park
    #ps=Docparks.find_by_sql [ %q{select * from docparks dp where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), dp."WKT");} ]
@@ -97,11 +100,29 @@ def self.import
          p.region="OC / ZL"
          p.location='POINT('+feature["Longitude"].to_s+' '+feature["Latitude"].to_s+')'
          p.save
-         pp=p.find_park
-         if !pp then pp=p.find_doc_park end
-         if pp then p.napalis_id=pp.id end
-         p.save
+         a=Asset.add_wwff_park(p)
+         a.find_links
        end
+    end
+  end
+end
+
+def self.migrate_to_assets
+  pps=WwffPark.all
+  pps.each do |pp|
+    p=Asset.find_by(code: 'ZLP/'+pp.napalis_id.to_s)
+    if p then
+      dup=AssetLink.where(parent_code: pp.code, child_code: p.code)
+      if !dup or dup.count==0 then
+        al=AssetLink.create(parent_code: pp.code, child_code: p.code)
+      end
+      dup=AssetLink.where(parent_code: p.code, child_code: pp.code)
+      if !dup or dup.count==0 then
+        al=AssetLink.create(parent_code: p.code, child_code: pp.code)
+      end
+      puts pp.code
+    else
+      puts "ERROR: no park found for POTA park "+pp.name
     end
   end
 end

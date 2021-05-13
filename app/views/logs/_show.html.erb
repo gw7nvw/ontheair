@@ -1,0 +1,115 @@
+
+<div id="actionbar" class="span12">
+   <div id="crumbs">
+     <%=link_to "Home", '/' %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  @contest_log.contest.contest_series.name, '/contest_series/'+@contest_log.contest.contest_series.id.to_s %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  @contest_log.contest.name, '/contests/'+@contest_log.contest.id.to_s %>
+     &nbsp;--&gt;&nbsp;
+     <b><%=link_to @contest_log.callsign, '/contest_logs/'+@contest_log.id.to_s %></b>
+     </div>
+   <div id="controls">
+      <% if current_user and @contest_log.contest.contest_series.is_active and (current_user.callsign == @contest_log.callsign or current_user.is_admin) then %>
+        <%=  link_to "Delete", '/contest_logs/'+@contest_log.id.to_s+'/delete', class: "btn btn-small btn-primary", confirm: "Delete log: Are you sure?"%>
+        <%=  link_to "Edit", '/contest_logs/'+@contest_log.id.to_s+'/edit', class: "btn btn-small btn-primary"%>
+      <% end %>
+      <%=  link_to "Index", '/contests/'+@contest_log.contest.id.to_s, class: "btn btn-small btn-primary"%>
+   </div>
+</div>
+<div id="left_panel"  style="margin-top:0px !important">
+   <%=render 'layouts/left_panel'%>
+</div>
+<div id="right_panel"  style="margin-top:0px !important">
+
+<div class="fullform">
+  <div id="right_scroll">
+    <%= render 'flash' %>
+    <%= render 'shared/error_messages' %>
+      <div class="erow"><div class="sectiontitle_bold">Contestant's Details</div></div>
+      <table>
+        <tr>
+          <td colspan=6><div class="sectiontitle"><%= link_to "Log for "+@contest_log.contest.name, '/contest_logs/'+@contest_log.id.to_s %></div></td>
+          <td class="td-l">Date:</td>
+          <td class="td-d"><%= if @contest_log.date then @contest_log.date.strftime('%d/%m/%Y') end %></td>
+        </tr>
+        <tr>
+          <td class="td-l">Callsign:</td>
+          <td class="td-d"><%= @contest_log.callsign%></td>
+          <td class="td-l">Location:</td>
+          <td class="td-d"><%= @contest_log.location%></td>
+          <td class="td-l">Name:</td>
+          <td class="td-d"><%= @contest_log.fullname%></td>
+          <td class="td-l">Antenna:</td>
+          <td class="td-d"><%= @contest_log.antenna%></td>
+        </tr>
+        <tr>
+          <td class="td-l">QRP?</td>
+          <td class="td-d"><%= if @contest_log.is_qrp then 'Yes' else 'No' end%></td>
+          <td class="td-l">Portable?</td>
+          <td class="td-d"><%= if @contest_log.is_portable then 'Yes' else 'No' end%></td>
+          <td class="td-l">Backcountry?</td>
+          <td class="td-d"><%= if @contest_log.is_backcountry then 'Yes' else 'No' end%></td>
+          <td class="td-l">TX Power:</td>
+          <td class="td-d"><%= @contest_log.power%></td>
+        </tr>
+      </table>
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+      <div class="erow"><div class="sectiontitle_bold">Contact logs</div></div>
+
+    <table>
+      <tr>
+        <th>Id</th>
+        <th>OK?</th>
+        <th>Time</th>
+        <th>Callsign</th>
+        <th>QRP</th>
+        <th>Portable</th>
+        <th>Backcountry</th>
+        <th>DX</th>
+        <th>Mode</th>
+        <th>Band</th>
+        <th>Name</th>
+        <th>Location</th>
+        <th colspan=2>Cypher Sent</th>
+        <th colspan=2>Cypher Rec'd</th>
+        <th>Points</th>
+      </tr>
+<% cs=ContestLogEntry.where(contest_log_id: @contest_log.id).order(:rownum) %>
+   <%cs.each do |c| %>
+      <tr>
+        <td><%=c.rownum.to_s%></td>
+        <td> 
+          <%if c.is_valid==true then%>
+            <u><%= link_to "Yes", "/contest_logs/"+c.validated_against_log.to_s, {:style=>'color:#008800;'}%></u> 
+          <%elsif c.is_valid==false then%> 
+            <u><%= link_to "No", "/contest_logs/"+c.validated_against_log.to_s, {:style=>'color:#ff0000;'}%></u>
+          <%end%>
+        </td>
+
+        <td <%=if c.time_valid then "style=color:#008800" end %><%=if c.time_valid==false then "style=color:#FF0000" end %>><%=c.time %></td>
+        <td><%=c.callsign %></td>
+        <td <%=if c.qrp_valid then "style=color:#008800" end %><%=if c.qrp_valid==false then "style=color:#FF0000" end %>><%=if c.is_qrp then 'Yes' else 'No' end%></td>
+        <td <%=if c.portable_valid then "style=color:#008800" end %><%=if c.portable_valid==false then "style=color:#FF0000" end %>><%=if c.is_portable then 'Yes' else 'No' end%></td>
+        <td <%=if c.backcountry_valid then "style=color:#008800" end %><%=if c.backcountry_valid==false then "style=color:#FF0000" end %>><%=if c.is_backcountry then 'Yes' else 'No' end%></td>
+        <td <%=if c.dx_valid then "style=color:#008800" end %><%=if c.dx_valid==false then "style=color:#FF0000" end %>><%=if c.is_dx then 'Yes' else 'No' end%></td>
+        <td><%=c.mode %></td>
+        <td><%=c.band %></td>
+        <td><%=c.name %></td>
+        <td><%=c.location %></td>
+        <td><%=c.rst_sent %></td>
+        <td><%=if c.index_sent then "%03d" % c.index_sent end %></td>
+        <td <%=if c.rst_recd_valid then "style=color:#008800" end %><%=if c.rst_recd_valid==false then "style=color:#FF0000" end %>><%=c.rst_recd %></td>
+        <td <%=if c.index_recd_valid then "style=color:#008800" end %><%=if c.index_recd_valid==false then "style=color:#FF0000" end %>><%=if c.index_recd then "%03d" % c.index_recd end %></td>
+        <td><%=c.points %></td>
+      </tr>
+<% end %>
+    </table>
+  </div>
+</div>
+</div>

@@ -14,6 +14,23 @@ require 'csv'
 
     establish_connection "crownparks"
 
+def self.ecan_import(file)
+  h=[]
+  CSV.foreach(file, :headers => true) do |row|
+    h.push(row.to_hash)
+  end
+ 
+  h.each do |park|
+  p=Crownparks.new
+  p.name=park["COMMON_NAM"]
+  p.WKT=park["WKT"]
+  p.reserve_type="Regional park"
+  p.start_date=park["DATE_CREAT"]
+  p.recorded_area=park["Shape_Area"].to_d/10000
+  p.save
+  puts "Added crownpark :"+p.id.to_s+" - "+p.name
+  end
+end
 
 def self.my_import(file)
   count=0

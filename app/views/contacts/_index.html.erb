@@ -1,8 +1,6 @@
 <script>
    reset_map_controllers();
    document.getElementById("page_status").innerHTML = '';
-   site_toggle_huts(false);
-   site_toggle_island(0);
    document.title = '... On the Air'
    document.getElementById('logo').innerHTML='... On The Air'
 
@@ -13,6 +11,12 @@ $(function () {
   });
 });
 
+$(function () {
+  $('#right_panel .pagination a').on('click', function () {
+    $.getScript(this.href);
+    return false;
+  });
+})
 
 </script>
  
@@ -32,8 +36,7 @@ $(function () {
             <% if current_user.is_admin then %>
               <%=  link_to "View All", '/contacts/?all=true', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('all')" %>
             <% end %>
-            <%=  link_to "Add Contact", '/contacts/new', class: "btn btn-small btn-primary btn-highlight", remote: true, :onclick => "linkHandler('add')" %>
-            <%=  link_to "Add Many Contacts", '/contacts/editgrid', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+            <%=  link_to "Add Contacts", '/logs/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
        <% end %>
        <% if current_user and ((@user and current_user.callsign==@user.callsign) or current_user.is_admin) %>
           <% 

@@ -36,7 +36,7 @@
 
       <div class="erow"><div class="rowtitle">Hut</div>
         <%=  link_to "Select from list", '/query?hutfield=hut1', class: "btn btn-small", :remote => true,  :onclick => "search_huts('hut1')" %>
-        <%=  link_to "Select from map", '#', class: "btn btn-small",  :onclick => "site_selectPlace('contact_hut1_id', 'hut1_name', 'contact_location1', 'contact_x1', 'contact_y1', null, null, site_green_star);return false;" %>
+        <%=  link_to "Select from map", '#', class: "btn btn-small",  :onclick => "site_selectPlace(null,'contact_hut1_id', 'hut1_name', 'contact_location1', 'contact_x1', 'contact_y1', null, null, site_green_star);return false;" %>
         <%=  link_to "Clear", '#', class: "btn btn-small", :onclick => "site_clear_element(['contact_hut1_id', 'hut1_name', 'contact_location1', 'contact_x1', 'contact_y1']);map_clear_scratch_layer(null,site_green_star);return false;" %>
       </div>
 
@@ -49,7 +49,7 @@
 
       <div class="erow"><div class="rowtitle">Summit</div>
         <%=  link_to "Select from list", '/querysummit?summitfield=summit1', class: "btn btn-small", :remote => true,  :onclick => "search_summits('summit1')" %>
-        <%=  link_to "Select from map", '#', class: "btn btn-small",  :onclick => "site_selectSummit('contact_summit1_id', 'summit1_name', 'contact_location1', 'contact_x1', 'contact_y1', null, null, site_green_star);return false;" %>
+        <%=  link_to "Select from map", '#', class: "btn btn-small",  :onclick => "site_selectSummit(null,'contact_summit1_id', 'summit1_name', 'contact_location1', 'contact_x1', 'contact_y1', null, null, site_green_star);return false;" %>
         <%=  link_to "Clear", '#', class: "btn btn-small", :onclick => "site_clear_element(['contact_summit1_id', 'summit1_name', 'contact_location1', 'contact_x1', 'contact_y1']);map_clear_scratch_layer(null,site_green_star);return false;" %>
       </div>
 
@@ -62,7 +62,7 @@
 
       <div class="erow"><div class="rowtitle">Park</div>
         <%=  link_to "Select from list", '/querypark?parkfield=park1', class: "btn btn-small", :remote => true,  :onclick => "search_parks('park1')" %>
-        <%=  link_to "Select from map", '#', class: "btn btn-small",  :onclick => "site_selectPark('contact_park1_id', 'park1_name',  null, null, site_green_polygon);return false;" %>
+        <%=  link_to "Select from map", '#', class: "btn btn-small",  :onclick => "site_selectPark(null,'contact_park1_id', 'park1_name',  null, null, site_green_polygon);return false;" %>
         <%=  link_to "Clear", '#', class: "btn btn-small", :onclick => "site_clear_element(['contact_park1_id', 'park1_name']);map_clear_scratch_layer(null, site_green_polygon);return false;" %>
       </div>
       <div class="roxtext">
@@ -73,7 +73,7 @@
 
       <div class="erow"><div class="rowtitle">Island</div>
         <%=  link_to "Select from list", '/queryisland?islandfield=island1', class: "btn btn-small", :remote => true,  :onclick => "search_islands('island1')" %>
-        <%=  link_to "Select from map", '#', class: "btn btn-small",  :onclick => "site_selectIsland('contact_island1_id', 'island1_name',  null, null, site_green_star);return false;" %>
+        <%=  link_to "Select from map", '#', class: "btn btn-small",  :onclick => "site_selectIsland(null,'contact_island1_id', 'island1_name',  null, null, site_green_star);return false;" %>
         <%=  link_to "Clear", '#', class: "btn btn-small", :onclick => "site_clear_element(['contact_island1_id', 'island1_name']);map_clear_scratch_layer(null, site_green_star);return false;" %>
       </div>
       <div class="roxtext">

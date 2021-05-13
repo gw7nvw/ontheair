@@ -5,7 +5,7 @@ require 'open-uri'
   belongs_to :park, class_name: "Park"
   belongs_to :island, class_name: "Island"
 
-  def code
+  def get_code
     code="ZLH/"+self.id.to_s.rjust(4,'0')
   end
 
@@ -156,4 +156,12 @@ require 'open-uri'
      true
    end
   end
+  def self.add_codes
+     ps=Hut.all
+     ps.each do |p|
+       p.code=p.get_code
+       p.save
+     end
+  end
+
 end

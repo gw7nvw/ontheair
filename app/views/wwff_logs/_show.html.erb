@@ -11,5 +11,5 @@ Invalid contacts rejected: <%=@invalid_contacts.count%><br/>
 <% @invalid_contacts.each do |contact| %>
   <%=link_to "Contact: "+contact.id.to_s, '/contacts/'+contact.id.to_s ,remote: true, :onclick => "linkHandler('submit')"%><br/>
 <% end %>
-<%=link_to "Send Log", '/wwff_logs/'+@park.id.to_s+"/send?user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
+<%=link_to "Send Log", '/wwff_logs/'+@park.code+"/send?user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
 <%=link_to "Cancel", '/wwff_logs?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>

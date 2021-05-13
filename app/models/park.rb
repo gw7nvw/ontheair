@@ -2,7 +2,7 @@ class Park < ActiveRecord::Base
 
   set_rgeo_factory_for_column(:boundary, RGeo::Geographic.spherical_factory(:srid => 4326, :proj4=> '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs', :has_z_coordinate => false))
 
-  def code
+  def get_code
     code="ZLP/"+self.id.to_s.rjust(7,'0')
   end
 
@@ -153,11 +153,11 @@ class Park < ActiveRecord::Base
   end
 
   def contacts
-      contacts1=Contact.find_by_sql [ "select * from contacts where park1_id="+self.id.to_s+" or park2_id="+self.id.to_s  ]
+      contacts1=Contact.find_by_sql [ "select * from contacts where park1_id='"+self.id.to_s+"' or park2_id='"+self.id.to_s+"'"  ]
   end
 
   def baggers
-      contacts1=Contact.find_by_sql [ "select * from contacts where park1_id="+self.id.to_s+" or park2_id="+self.id.to_s  ]
+      contacts1=Contact.find_by_sql [ "select * from contacts where park1_id='"+self.id.to_s+"' or park2_id='"+self.id.to_s+"'"  ]
 
       contacts=[]
 
@@ -171,4 +171,12 @@ class Park < ActiveRecord::Base
       users=User.where(callsign: contacts).order(:callsign)
   end
 
+  def self.add_codes
+     ps=Park.all
+     ps.each do |p|
+       p.code=p.get_code
+       p.save
+     end
+  end
+   
 end

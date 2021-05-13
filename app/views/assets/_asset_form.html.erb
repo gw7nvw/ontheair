@@ -1,0 +1,97 @@
+<div class="fullform">
+   <%= form_for @asset, remote: true, :html => {:name => 'assetform'} do |f| %>
+    <div id="actionbar-form" class="span7">
+       <div id="crumbs">
+         <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+         &nbsp;--&gt;&nbsp;
+         <%=  link_to  "Assets:", '/assets', remote: true,  :id => 'assets', :onclick => "linkHandler('assets')" %>
+         &nbsp;--&gt;&nbsp;
+         <%if @asset.id%> 
+            <b><%=link_to @asset.name, '/assets/'+@asset.safecode, remote: true, :id => 'asset', :onclick => "linkHandler('asset')" %>
+            &nbsp;--&gt;&nbsp;
+            <b>Edit</b>
+         <% else %>
+            <b>New</b>
+         <% end %>
+       </div>
+       <div id="controls">
+          <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-hightlight" %>
+          <%  if(@submit_button == "Save Changes" and current_user and current_user.is_admin) %>
+            <%= f.submit "Delete", confirm: "Delete asset: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>
+          <% end %>
+          <% if params[:referring]=='index' or @asset.id==nil%>
+            <%=  link_to "Cancel", '/assets', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+          <% else %>
+            <%=  link_to "Cancel", '/assets/'+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+          <% end %>
+          <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+       </div>
+    </div>
+
+    <div id="right_scroll">
+      <%= hidden_field_tag(:referring, @referring) %>
+      <%= render 'flash' %>
+      <%= render 'shared/error_messages' %>
+
+      <div class="sectiontitle">Asset ID</div>
+      <%if current_user and current_user.is_admin%><%= f.text_field :id %><%else%><%= f.text_field :id, readonly: true %><% end %>
+
+      <div class="sectiontitle">Asset Code</div>
+      <%if current_user and current_user.is_admin %><%= f.text_field :code %><%else%><%= f.text_field :code, readonly: true %><% end %>
+      <div class="sectiontitle">Asset Type</div>
+      <%= f.collection_select( :asset_type, AssetType.where("name != 'all'").order(:name), :name, :display_name) %>
+
+      <div class="sectiontitle">Name</div>
+      <%= f.text_field :name %>
+
+      <div class="sectiontitle">Description</div>
+      <%= f.text_area :description %>
+
+     <div class="erow">
+           <div class="leftbuttons">
+              <span title="Click to draw location on map">
+                 <img id="placeplus" src="/assets/draw-point.png" onclick="site_drawPlace('placetick', 'placeplus', 'asset_location', 'asset_x', 'asset_y')" width="16" style="display:block">
+              </span>
+
+              <span title="Click to confirm selection">
+                 <img id="placetick" src="/assets/tick.png" onclick="site_selectNothing('placetick', 'placeplus')" width="16" style="display:none">
+              </span>
+           </div>
+         <div class="sectiontitle25">Location:</div>
+      </div>
+      <%= f.hidden_field :location, :readonly => true %>
+
+      <%= f.label :x %>
+      <%= f.text_field :x, :size => 8 %>
+
+      <%= f.label :y %>
+      <%= f.text_field :y, :size => 8 %>
+
+      <div class="sectiontitle">Altitude (leave blank to calculate from map upon save):</div>
+      <%= f.text_field :altitude %>
+
+
+      <%#= "DOC Asset? " %><br/>
+      <%#= f.check_box :is_doc%><br/><br/>
+
+      <%= "Active? " %><br/>
+      <% if current_user and current_user.is_admin%> 
+        <%= f.check_box :is_active%><br/><br/>
+      <% else %>
+        <%= f.check_box :is_active, :readonly => true%><br/><br/>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+    reset_map_controllers(); 
+    place_init('<%=@asset.location%>', 0);
+    deactivate_all_click();
+    if(site_map_size==0) { 
+       $('#actionbar-form').removeClass('span7');
+       $('#actionbar-form').addClass('span12');
+    }
+
+</script>
+

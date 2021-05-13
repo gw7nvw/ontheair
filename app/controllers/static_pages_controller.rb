@@ -1,11 +1,25 @@
 class StaticPagesController < ApplicationController
   def home
+      @parameters=params_to_query
+
+      @users=User.users_with_assets
+
        @static_page=true
        @sortby=params[:sortby]
+       if !@sortby or @sortby=='' then @sortby="hut" end
        @brief=true
        @fullcontacts=Contact.find_by_sql [ " select * from contacts order by time desc limit 10 " ]
        @contacts=@fullcontacts.paginate(:per_page => 20, :page => params[:page])
+  end
 
+  def results
+      @parameters=params_to_query
+
+      @users=User.users_with_assets
+
+       @static_page=true
+       @sortby=params[:sortby]
+       if !@sortby or @sortby=='' then @sortby="hut" end
   end
 
   def about

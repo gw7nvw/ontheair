@@ -28,28 +28,28 @@
 
 var debug_f
 var map_map;
-var Map = ol.Map; //import Map from 'ol/Map.js';
-var View = ol.View; // import View from 'ol/View.js';
-var TileLayer=ol.layer.Tile; //TileLayerimport TileLayer from 'ol/layer/Tile.js';
-var Draw=ol.interaction.Draw; 
-var TileGrid = ol.tilegrid.TileGrid
-var XYZ=ol.source.XYZ; //import XYZ from 'ol/source/XYZ.js';
-var Control=ol.control.Control;
-var CircleStyle=ol.style.Circle;
-var RegularShape=ol.style.RegularShape;
-var Fill=ol.style.Fill
-var Stroke=ol.style.Stroke
-var Style=ol.style.Style
+//var Map = ol.Map; //import Map from 'ol/Map.js';
+//var View = ol.View; // import View from 'ol/View.js';
+//var TileLayer=ol.layer.Tile; //TileLayerimport TileLayer from 'ol/layer/Tile.js';
+//var Draw=ol.interaction.Draw; 
+//var TileGrid = ol.tilegrid.TileGrid
+//var XYZ=ol.source.XYZ; //import XYZ from 'ol/source/XYZ.js';
+//var Control=ol.control.Control;
+//var CircleStyle=ol.style.Circle;
+//var RegularShape=ol.style.RegularShape;
+//var Fill=ol.style.Fill
+//var Stroke=ol.style.Stroke
+//var Style=ol.style.Style
 //var bboxStrategy=ol.loadingstrategy.bbox;
 var bboxStrategy=ol.loadingstrategy.tile(new ol.tilegrid.createXYZ());
-var VectorLayer=ol.layer.Vector;
-var GeoJSON=ol.format.GeoJSON;
-var WKT=ol.format.WKT;
-var VectorSource=ol.source.Vector;
+//var VectorLayer=ol.layer.Vector;
+//var GeoJSON=ol.format.GeoJSON;
+//var WKT=ol.format.WKT;
+//var VectorSource=ol.source.Vector;
 var createStringXY=ol.coordinate.createStringXY
-var defaultControls=ol.control.defaults
+//var defaultControls=ol.control.defaults
 var proj4=proj4
-var register=ol.proj.proj4.register
+//var register=ol.proj.proj4.register
 var map_map;
 var map_current_layer="NZTM Topo 2019";
 var map_current_proj="2193"
@@ -57,16 +57,17 @@ var map_projection_name="EPSG:2193"
 var map_projection;
 var map_current_projname="NZTM2000"
 var map_current_projdp=0;
-var mpc;
+var map_mpc;
 var mapBounds = [827933.23, 3729820.29, 3195373.59, 7039943.58];
 var mapcontrols = [];
-var control_count=0;
-var layer_count=0;
+var map_control_count=0;
+var map_layer_count=0;
 var map_default_extent=mapBounds;
 var map_scratch_source=new ol.source.Vector();
 var map_scratch_layer=new ol.layer.Vector({ source: map_scratch_source, name: 'Scratch layer' });
 var maplayers = [];
 var map_last_centre='POINT(173 -41)';
+var map_filters={null: ""}
 
 // scratch layer behaviour
 var map_x_target=null;
@@ -77,9 +78,6 @@ var map_draw_status=false;
 
 // debug
 var persist_feature;
-var x
-var y
-var loc
 
 var mapspast_origin=[-20037508, 20037508];
 var mapspast_resolutions=[156543.0339,
@@ -122,8 +120,8 @@ function map_create_control(buttonicon, buttontitle, callback, id ) {
    var theListener=callback;
    var theButtonTitle=buttontitle;
    var theButtonIcon=buttonicon;
-   var theButtonPosition=64+(36*control_count);
-   mapcontrols[control_count] = /*@__PURE__*/(function (Control) {
+   var theButtonPosition=64+(36*map_control_count);
+   mapcontrols[map_control_count] = /*@__PURE__*/(function (Control) {
      function thisController(opt_options) {
        var options = opt_options || {};
        var button = document.createElement('button');
@@ -151,8 +149,8 @@ function map_create_control(buttonicon, buttontitle, callback, id ) {
           theListener();
      }
      return thisController;
-   }(Control));
-   control_count=control_count+1;
+   }(ol.control.Control));
+   map_control_count=map_control_count+1;
 }
 
 
@@ -192,8 +190,8 @@ function map_add_raster_layer(name,url,source,maxresolution,numzooms) {
    } else {
 	   var tilegrid=linz_tilegrid;
    };
-   maplayers[layer_count]=new TileLayer({
-     source: new XYZ({
+   maplayers[map_layer_count]=new ol.layer.Tile({
+     source: new ol.source.XYZ({
        projection: epsg2193,
        url: url,
        maxResolution: maxresolution,
@@ -207,7 +205,7 @@ function map_add_raster_layer(name,url,source,maxresolution,numzooms) {
      maxResolution: maxresolution,
      numZoomLevels: numzooms
    });
-   layer_count=layer_count+1;
+   map_layer_count=map_layer_count+1;
 }
 
 
@@ -227,34 +225,61 @@ function map_add_vector_layer(name, url, field, style, visible,minzoom,maxzoom,f
 ////    strategy: ol.loadingstrategy.tile(new ol.tilegrid.createXYZ()),
 //    projection: 'EPSG:2193'
 //  });
-  var vectorSource = new ol.source.Vector({
-    loader: function(extent) {
-      $.ajax(url, {
-        type: 'GET',
-        data: {
-          service: 'WFS',
-          version: '1.0.0',
-          request: 'GetFeature',
-          typename: field,
-          srsname: 'EPSG:2193',
-          outputFormat: 'application/geojson',
-          bbox: extent.join(',') + ',EPSG:2193',
-          cql_filter: filter
-        }
-      }).done(function(response) {
-        var tmp_f=new ol.format.GeoJSON().readFeatures(response);
-        var length=tmp_f.length;
-        for(var count=0; count<length; count++) {
-           tmp_f[count].id_=tmp_f[count].get('id');
-        }
-        vector.getSource().addFeatures(tmp_f);
-      });    
-    },
-    strategy: ol.loadingstrategy.bbox,
-    projection: 'EPSG:2193'
-  })
+  if (filter) {
+    var vectorSource = new ol.source.Vector({
+      loader: function(extent) {
+        $.ajax(url, {
+          type: 'GET',
+          data: {
+            service: 'WFS',
+            version: '1.0.0',
+            request: 'GetFeature',
+            typename: field,
+            srsname: 'EPSG:2193',
+            outputFormat: 'application/geojson',
+            FILTER: '<ogc:Filter><AND><ogc:BBOX><ogc:PropertyName>Shape</ogc:PropertyName><gml:Box srsName="urn:x-ogc:def:crs:EPSG:2193"><gml:coordinates>'+extent[0]+','+extent[1]+' '+extent[2]+','+extent[3]+'</gml:coordinates></gml:Box></ogc:BBOX>'+map_filters[filter]+'</AND></ogc:Filter>'
+          }
+        }).done(function(response) {
+          var tmp_f=new ol.format.GeoJSON().readFeatures(response);
+          var length=tmp_f.length;
+          for(var count=0; count<length; count++) {
+             tmp_f[count].id_=tmp_f[count].get('id');
+          }
+          vector.getSource().addFeatures(tmp_f);
+        });    
+      },
+      strategy: ol.loadingstrategy.bbox,
+      projection: 'EPSG:2193'
+    })
+  } else {
+    var vectorSource = new ol.source.Vector({
+      loader: function(extent) {
+        $.ajax(url, {
+          type: 'GET',
+          data: {
+            service: 'WFS',
+            version: '1.0.0',
+            request: 'GetFeature',
+            typename: field,
+            srsname: 'EPSG:2193',
+              outputFormat: 'application/geojson',
+            bbox: extent.join(',') + ',EPSG:2193'
+          }
+        }).done(function(response) {
+          var tmp_f=new ol.format.GeoJSON().readFeatures(response);
+          var length=tmp_f.length;
+          for(var count=0; count<length; count++) {
+             tmp_f[count].id_=tmp_f[count].get('id');
+          }
+          vector.getSource().addFeatures(tmp_f);
+        });
+      },
+      strategy: ol.loadingstrategy.bbox,
+      projection: 'EPSG:2193'
+    });
+  }
 
-  vector=new VectorLayer({
+  vector=new ol.layer.Vector({
       minResolution: minresolution,
       maxResolution: maxresolution,
       source: vectorSource,
@@ -274,16 +299,16 @@ function map_on_click_deactivate(callback) {
 
 function map_create_style(shape, radius, fillcolor, linecolor, linewidth) {
   var image
-  var fill=new Fill({
+  var fill=new ol.style.Fill({
       color: fillcolor
     });
-  var stroke=new Stroke({
+  var stroke=new ol.style.Stroke({
       color: linecolor,
       width: linewidth 
     });
   switch(shape) {
     case 'triangle':
-      image= new RegularShape({
+      image= new ol.style.RegularShape({
         fill: fill,
         stroke: stroke,
         points: 3,
@@ -293,7 +318,7 @@ function map_create_style(shape, radius, fillcolor, linecolor, linewidth) {
       })
     break;
     case 'square':
-      image= new RegularShape({
+      image= new ol.style.RegularShape({
         fill: fill,
         stroke: stroke,
         points: 4,
@@ -302,7 +327,7 @@ function map_create_style(shape, radius, fillcolor, linecolor, linewidth) {
       })
     break;
     case 'star':
-      image= new RegularShape({
+      image= new ol.style.RegularShape({
         fill: fill,
         stroke: stroke,
         points: 5,
@@ -312,7 +337,7 @@ function map_create_style(shape, radius, fillcolor, linecolor, linewidth) {
       });
       break;
     case 'cross':
-      image= new RegularShape({
+      image= new ol.style.RegularShape({
         fill: fill,
         stroke: stroke,
         points: 4,
@@ -322,7 +347,7 @@ function map_create_style(shape, radius, fillcolor, linecolor, linewidth) {
       });
       break;
     case 'x':
-      image= new RegularShape({
+      image= new ol.style.RegularShape({
         fill: fill,
         stroke: stroke,
         points: 4,
@@ -332,7 +357,7 @@ function map_create_style(shape, radius, fillcolor, linecolor, linewidth) {
       });
       break;
     case 'circle':
-      image= new CircleStyle({
+      image= new ol.style.Circle({
         radius: radius,
         fill: fill,
         stroke: stroke
@@ -342,7 +367,7 @@ function map_create_style(shape, radius, fillcolor, linecolor, linewidth) {
   };
 
 
-  var style=new Style({
+  var style=new ol.style.Style({
     fill: fill,
     stroke: stroke,
     image: image
@@ -381,7 +406,7 @@ function map_clear_scratch_layer(type,style) {
 
 function map_enable_draw(type, style, loc_dest, x_dest, y_dest, move) {
         map_draw_status=true; 
-	map_draw= new Draw({
+	map_draw= new ol.interaction.Draw({
 		source: map_scratch_source,
 		type: type
 	});
@@ -426,7 +451,7 @@ function map_init(divid) {
    		     maxResolution: 2445.9849046875,
                      numZoomLevels: 11
         });
-        mpc= new ol.control.MousePosition({
+        map_mpc= new ol.control.MousePosition({
              coordinateFormat: createStringXY(map_current_projdp),
              projection: ol.proj.get('EPSG:'+map_current_proj)
         }); 
@@ -435,11 +460,11 @@ function map_init(divid) {
 	site_add_controls();
 
 
-        map_map = new Map({
+        map_map = new ol.Map({
             view: view,
             target: divid,
             layers: maplayers,
-            controls: defaultControls().extend([ mpc ]),
+            controls: ol.control.defaults().extend([ map_mpc ]),
           });
 	mapcontrols.forEach(map_add_control);
 
@@ -521,7 +546,7 @@ function map_mapLayers() {
 function map_set_coord_format() {
    	var prefix=map_current_projname+": ";
         $('.ol-mouse-position').attr('data-before',prefix);
-	mpc.setCoordinateFormat(createStringXY(map_current_projdp))
+	map_mpc.setCoordinateFormat(createStringXY(map_current_projdp))
 }
 
 
@@ -534,7 +559,7 @@ function map_updateProjection() {
             $.each(BootstrapDialog.dialogs, function(id, dialog){
                 dialog.close();
             });
-            mpc.setProjection(ol.proj.get('EPSG:'+map_current_proj)); 
+            map_mpc.setProjection(ol.proj.get('EPSG:'+map_current_proj)); 
 	    map_set_coord_format();
 }
 
@@ -574,7 +599,7 @@ function map_zoom(zoom) {
      map_map.getView().setZoom(zoom-5);
 }
 function map_add_feature_from_wkt(wkt, source_proj, style) {
-  var format = new WKT();
+  var format = new ol.format.WKT();
   var feature=format.readFeature(wkt, {
     dataProjection: source_proj,
     featureProjection: map_projection_name
@@ -638,7 +663,7 @@ function map_navigate_on_click_callback(evt) {
 
 
 function map_centre(wkt,proj) {
-  var format = new WKT();
+  var format = new ol.format.WKT();
   var feature=format.readFeature(wkt, {
     dataProjection: proj,
     featureProjection: map_projection_name

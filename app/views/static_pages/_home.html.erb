@@ -18,64 +18,12 @@
 <div id="right_scroll">
   <%= render 'flash' %>
   <div style="background-image: url('assets/hota-logo4.JPG'); background-size: cover;padding-bottom: 10px">
-    <h1>... On The Air</h1>
+    <h1>ZL ... On The Air</h1>
   </div>
-<% if @sortby=="parks" then %>
-  <div class="sectiontitle"><br/><br/>NZParks On The Air - league table<br/><br/></div>
 
-<%          elsif @sortby=="islands" then %>
-  <div class="sectiontitle"><br/><br/>NZIslands On The Air - league table<br/><br/></div>
-
-<%          else #huts %>
-  <div class="sectiontitle"><br/><br/>Huts On The Air - league table<br/><br/></div>
-
-<%          end %>
-
-
-  <table class="users">
-    <tr>
-      <th>Position</th>
-      <th>Callsign</th>
-      <th <%=if !@sortby then 'style=background-color:#33ff22 !important' end%>><u><%= link_to "Huts worked",'/',remote: true, :onclick => "linkHandler('default_order')", :style => if !@sortby then "color: #000000" else "color: #ffffff" end %></u></th>
-      <th <%=if @sortby=="parks" then 'style=background-color:#33ff22!important;color:#000000' else 'style=color:#ffffff!important' end%>><u><%= link_to "Parks worked",'/?sortby=parks',remote: true, :onclick => "linkHandler('parks_order')", :style => if @sortby=="parks" then "color: #000000" else "color: #ffffff" end%></u></th>
-      <th <%=if @sortby=="islands" then 'style=background-color:#33ff22 !important;' end%>><u><%= link_to "Islands worked",'/?sortby=islands',remote: true, :onclick => "linkHandler('parks_order')", :style => if @sortby=="islands" then "color: #000000" else "color: #ffffff" end%></u></th>
-    </tr>
-
-    <% 
-       if !@sortby then @users=User.where("huts_bagged is not null and huts_bagged>0").order(:huts_bagged).reverse end
-       if @sortby=="parks" then @users=User.where("parks_bagged is not null and parks_bagged>0").order(:parks_bagged).reverse end
-       if @sortby=="islands" then @users=User.where("islands_bagged is not null and islands_bagged>0").order(:islands_bagged).reverse end
-     
-    position=0    
-    lastscore=99999999
-    if @users then @users.each do |user| %>
-      <% 
-         if @sortby=="parks" then
-            if user.parks_bagged<lastscore then position=position+1;lastscore=user.parks_bagged  end
-         elsif @sortby=="islands" then
-            if user.islands_bagged<lastscore then position=position+1;lastscore=user.islands_bagged  end
-         else #huts
-            if user.huts_bagged<lastscore then position=position+1;lastscore=user.huts_bagged  end
-         end
-      %>
-      <tr>
-        <td>
-          <%= position.to_s %>
-        </td>
-        <td>
-          <%= link_to user.callsign.upcase, '/users/'+user.callsign, remote: true, :id => 'user_link_'+user.id.to_s, :style => (if not user.activated then 'color:grey' else '' end), :onclick => "linkHandler('user_link_"+user.id.to_s+"')" %>
-        </td>
-        <td><%=user.huts_bagged%><%if user.huts_bagged!=user.huts_bagged_total then %><span style="color:grey"> (<%=user.huts_bagged_total%>)</span><%end%></td>
-        <td><%=user.parks_bagged%><%if user.parks_bagged!=user.parks_bagged_total then%><span style="color:grey"> (<%=user.parks_bagged_total%>)</span><%end%></td>
-        <td><%=user.islands_bagged%><%if user.islands_bagged!=user.islands_bagged_total then%><span style="color:grey"> (<%=user.islands_bagged_total%>)</span><%end%></td>
-      </tr>
-    <% end end  %>
-  </table>
-</div>
-<div class="erow">
-Key to scores: </br>
-  Number of unique locations bagged <span style="color:grey">(total number of activations)</span>
-</div>
+  <h2><i>ZL OnTheAir is undergoing major upgrades</i></h2>
+  <p><i>Please be patient with us.  Some features may not be working.  You can access the old site at <a href="http://old.ontheair.nz">http://old.ontheair.nz</a>.  Send any bug reports to mattbriggs@yahoo.com. </i></p>
+  <%=render 'result_table'%>
 
 <div class="sectiontitle"><br/><br/>Recent actvity<br/><br/></div>
 

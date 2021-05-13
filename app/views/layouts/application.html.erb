@@ -4,8 +4,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <script src="/assets/ol.js"></script>
+    <script src="/handsontable/handsontable.full.js"></script>
     <link rel="stylesheet" href="/assets/ol.css" type="text/css">
-
+    <link rel="stylesheet" href="/handsontable/handsontable.full.css" type="text/css">
 <script>
 if( /Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent))
 {
@@ -41,7 +42,7 @@ if( /Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent))
  <body>
     <div id="right_panel" class="panel" class='style="margin-left: 0px; width: 100%'>
 <% else %>
- <body onload='<%=@init_name%>' style="cursor: auto;">
+ <body onload='<%=@init_name%>' style="cursor: auto;"> 
   <%= form_tag '/redisplay', :remote=> true, :id => "thelink", :name=> 'selectform', :method=> 'post'%>
     <div class="row">
      <input type="hidden" name="select"/>

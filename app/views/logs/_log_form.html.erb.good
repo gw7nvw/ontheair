@@ -1,0 +1,343 @@
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/' %>
+     &nbsp;--&gt;&nbsp;
+     logs
+     &nbsp;--&gt;&nbsp;
+     <b>New</b>
+     </div>
+   <div id="controls">
+       <% if @log.id then %>
+          <%=  link_to "Delete", '/logs/'+@log.id.to_s+'/delete', class: "btn btn-small btn-primary", confirm: "Delete log: Are you sure?"%>
+          <%=  link_to "Cancel", '/contacts', class: "btn btn-small btn-primary"%>
+       <% else %>
+         <%=  link_to "Cancel", '/contacts/', class: "btn btn-small btn-primary"%>
+       <% end %>
+       <%=  link_to "Index", '/contacts/', class: "btn btn-small btn-primary"%>
+   </div>
+</div>
+  <div id="right_scroll">
+  <div class="fullform">
+    <%= hidden_field_tag(:referring, @referring) %>
+    <%= render 'flash' %>
+    <%= render 'shared/error_messages' %>
+ 
+    <%= form_for @log, :html => {:name => 'logform'} do |f| %>
+      <%= hidden_field_tag(:referring, 'new') %>
+ 
+      <div class="erow"><div class="sectiontitle_bold">Your Details:</div></div>
+      <table style="table-layout: fixed">
+        <tr>
+          <td class="td-l">Callsign</td>
+          <td colspan=2 class="td-d"> <%= f.text_field :callsign1%></td>
+          <td class="td-l">Date:</td>
+          <td colspan=2 class="td-d"> <%= f.date_field :date%></td>
+          <td class="td-l">QRP?</td>
+          <td class="td-d"> <%= f.check_box :is_qrp1%></td>
+        </tr>
+        <tr>
+          <td class="td-l">Timezone:</td>
+          <td colspan=2 class="td-d"><%= collection_select( :log, :timezone, Timezone.all.order(:name), :id, :name, {}, {}) %></td>
+          <td class="td-l">Power:</td>
+          <td colspan=2 class="td-d"> <%= f.text_field :power1%></td>
+
+          <td class="td-l">Portable?</td>
+          <td class="td-d"> <%= f.check_box :is_portable1%></td>
+        </tr>
+        <tr>
+        </tr>
+        <tr>
+          <td class="td-l">Hut</td>
+          <td colspan=2 class="td-d">
+             <input type="text" id="hut1_name" name="hut1_name" value='<%=(if @log.hut1 then @log.hut1.name else "" end)%>' readonly='true'>
+             <%= f.text_field :hut1_id, :readonly => true, :style => 'display:none' %>
+          </td>
+          <td>
+            <ul style="float: left;margin: 0" class="nav pull-left" id="menus">
+              <li id="fat-menu" class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                     Select <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><%= link_to "... from list", '/query?hutfield=hut1', :remote => true,  :onclick => "search_huts('hut1')" %>
+                  <li><%= link_to "... from map", '#',  :onclick => "site_selectPlace('log_hut1_id', 'hut1_name', 'log_location1', 'log_x1', 'log_y1', null, null, site_green_star);return false;" %>
+                  <li><%= link_to "Clear", '#',  :onclick => "site_clear_element(['log_hut1_id', 'hut1_name', 'log_location1', 'log_x1', 'log_y1']);map_clear_scratch_layer(null,site_green_star);return false;" %>
+                </ul>
+              </li>
+            </ul>
+          </td>
+          <td class="td-l">Park</td>
+          <td colspan=2 class="td-d">
+             <input type="text" id="park1_name" name="park1_name" value='<%=(if @log.park1 then @log.park1.name else "" end)%>' readonly='true'>
+             <%= f.text_field :park1_id, :readonly => true, :style => 'display:none' %>
+          </td>
+          <td>
+            <ul  style="float: left;margin: 0" class="nav pull-left" id="menus">
+              <li id="fat-menu" class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                     Select <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><%= link_to "... from list", '/query?parkfield=park1',  :remote => true,  :onclick => "search_parks('park1')" %>
+                  <li><%= link_to "... from map", '#',   :onclick => "site_selectPlace('log_park1_id', 'park1_name', 'log_location1', 'log_x1', 'log_y1', null, null, site_green_star);return false;" %>
+                  <li><%= link_to "Clear", '#',  :onclick => "site_clear_element(['log_park1_id', 'park1_name', 'log_location1', 'log_x1', 'log_y1']);map_clear_scratch_layer(null,site_green_star);return false;" %>
+                </ul>
+              </li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td class="td-l">Island</td>
+          <td colspan=2 class="td-d">
+             <input type="text" id="island1_name" name="island1_name" value='<%=(if @log.island1 then @log.island1.name else "" end)%>' readonly='true'>
+             <%= f.text_field :island1_id, :readonly => true, :style => 'display:none' %>
+          </td>
+          <td>
+            <ul  style="float: left;margin: 0" class="nav pull-right" id="menus">
+              <li id="fat-menu" class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                     Select <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><%= link_to "... from list", '/query?islandfield=island1',  :remote => true,  :onclick => "search_islands('island1')" %>
+                  <li><%= link_to "... from map", '#',   :onclick => "site_selectPlace('log_island1_id', 'island1_name', 'log_location1', 'log_x1', 'log_y1', null, null, site_green_star);return false;" %>
+                  <li><%= link_to "Clear", '#',  :onclick => "site_clear_element(['log_island1_id', 'island1_name', 'log_location1', 'log_x1', 'log_y1']);map_clear_scratch_layer(null,site_green_star);return false;" %>
+                </ul>
+              </li>
+            </ul>
+          </td>
+          <td class="td-l">Summit</td>
+          <td colspan=2 class="td-d">
+             <input type="text" id="summit1_name" name="summit1_name" value='<%=(if @log.summit1 then @log.summit1.name else "" end)%>' readonly='true'>
+             <%= f.text_field :summit1_id, :readonly => true, :style => 'display:none' %>
+          </td>
+          <td>
+            <ul  style="float: left;margin: 0" class="nav pull-right" id="menus">
+              <li id="fat-menu" class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                     Select <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><%= link_to "... from list", '/query?summitfield=summit1',  :remote => true,  :onclick => "search_summits('summit1')" %>
+                  <li><%= link_to "... from map", '#',   :onclick => "site_selectPlace('log_summit1_id', 'summit1_name', 'log_location1', 'log_x1', 'log_y1', null, null, site_green_star);return false;" %>
+                  <li><%= link_to "Clear", '#',  :onclick => "site_clear_element(['log_summit1_id', 'summit1_name', 'log_location1', 'log_x1', 'log_y1']);map_clear_scratch_layer(null,site_green_star);return false;" %>
+                </ul>
+              </li>
+            </ul>
+          </td>
+        </tr>
+        <td colspan=8> <%= f.submit @submit_button, id: 'submit_button', class: "btn btn-small btn-primary btn-highlight" %></td>
+
+      </table>
+    <% end %>   
+    <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+    </div>
+
+<% if @edit then %>
+    <div class="erow">
+      <div class="sectiontitle_bold">Contact logs:</div>
+    </div>
+
+    <div class="erow">
+      <div class="controls rowtitle">
+        <button name="load" id="load" class="intext-btn" style="display:none">Load</button>
+        <button name="save" id="save" class="intext-btn btn btn-small btn-primary">Save Log</button>
+        <label style="display:none"><input type="checkbox" name="autosave" id="autosave" autocomplete="off">Autosave</label>
+      </div>
+      <div class="rowtext">
+        <pre id="grid1console" class="console">Enter your contacts in the table below. Click 'Save Log' when done.</pre>
+      </div>
+    </div>
+    <div class="erow">
+      <div id="grid1" class="hot"></div>
+    </div>
+<script type="text/javascript" charset="UTF-8">
+
+function ajax(url, method, params, callback) {
+  var obj;
+
+  try {
+    obj = new XMLHttpRequest();
+  } catch (e) {
+    try {
+      obj = new ActiveXObject("Msxml2.XMLHTTP");
+    } catch (e) {
+      try {
+        obj = new ActiveXObject("Microsoft.XMLHTTP");
+      } catch (e) {
+        alert("Your browser does not support Ajax.");
+        return false;
+      }
+    }
+  }
+  obj.onreadystatechange = function () {
+    if (obj.readyState == 4) {
+      callback(obj);
+    }
+  };
+  obj.open(method, url, true);
+  obj.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+  obj.setRequestHeader("Content-type", "application/json");
+  obj.send(params);
+
+  return obj;
+}
+var
+  $$ = function(id) {
+    return document.getElementById(id);
+  },
+  container = $$('grid1'),
+  exampleConsole = $$('grid1console'),
+  autosave = $$('autosave'),
+  load = $$('load'),
+  save = $$('save'),
+  autosaveNotification,
+  hot;
+
+function textRenderer(instance, td, row, col, prop, value, cellProperties) {
+Handsontable.renderers.TextRenderer.apply(this, arguments);
+  id=instance.getDataAtCell(row, 0);
+  if (id>0) {
+    if (!value || value == '') {
+      td.style.background = '#fcc';
+    }
+    else {
+      td.style.background = '';
+    }
+  }
+}
+function valueRenderer(instance, td, row, col, prop, value, cellProperties) {
+Handsontable.renderers.NumericRenderer.apply(this, arguments);
+  id=instance.getDataAtCell(row, 0);
+  if (id>0) {
+    if (!value || value == '') {
+      td.style.background = '#fcc';
+    }
+    else {
+      td.style.background = '';
+    }
+  }
+}
+
+var data2= <%=raw @contacts.to_json%>;
+var hot = new Handsontable(container, {
+  data: data2,
+//  colHeaders: ['Time','Callsign','QRP?', 'Port?', 'Mode','Freq','Name','Location','Sent: RST','Recd: RST', 'Id'],
+  colHeaders: ['Time', 'Id'],
+  columns: [
+{data: 'time', type: 'text'}, 
+//{data: 'callsign2', type: 'text'}, 
+//{data: 'is_qrp2', type: 'checkbox'}, 
+//{data: 'is_portable2', type: 'checkbox'}, 
+//{data: 'mode', type: 'dropdown', source: ['Phone', 'CW']}, 
+//{data: 'frequency', type: 'text'}, 
+//{data: 'name2', type: 'text'}, 
+//{data: 'loc_desc2', type: 'text'}, 
+//{data: 'signal1', type: 'numeric'}, 
+//{data: 'signal2', type: 'numeric'}, 
+{data: 'id', type: 'numeric',readOnly:true} ], 
+  startRows: 1,
+  minSpareRows: 1,
+  minSpareCols: 0,
+  enterMoves: {row: 0, col: 1},
+  maxCols: 17,
+  licenseKey: 'non-commercial-and-evaluation',
+  rowHeaders: false
+//  cells: function (row, col, prop) {
+//                var cellProperties = {};
+ //               if ((col==1)||(col==2)||(col==9)||(col==10)) { 
+//                  cellProperties.renderer = textRenderer;
+ //               }
+ ////               if ((col==11)||(col==12)||(col==13)||(col==14)) {
+ //                 cellProperties.renderer = valueRenderer;
+ //               }
+//
+//                return cellProperties;
+//        },
+//  afterChange: function (change, source) {
+//    if (source === 'loadData') {
+//      return; //don't save this change
+//    }
+//    exampleConsole.innerText  = 'Table has data that has not yet been saved';
+//    document.getElementById("submit_button").disabled = true
+// 
+//    if (!autosave.checked) {
+//      return;
+//    }
+//    clearTimeout(autosaveNotification);
+//    ajax('patch.json', 'POST', JSON.stringify({data: change}), function (data) {
+//      exampleConsole.innerText  = 'Autosaved (' + change.length + ' ' + 'cell' + (change.length > 1 ? 's' : '') + ')';
+//      autosaveNotification = setTimeout(function() {
+//        exampleConsole.innerText ='Changes will be autosaved';
+//      }, 1000);
+//    });
+//  }
+});
+// hot.updateSettings({
+//        hiddenColumns: {
+//          columns: [16],
+//          indicators: true
+//        }
+//      })
+Handsontable.dom.addEvent(load, 'click', function() {
+  ajax('load.json', 'GET', '', function(res) {
+    var data = JSON.parse(res.response);
+
+    hot.loadData(data.data);
+    exampleConsole.innerText = 'Data loaded';
+  });
+});
+
+Handsontable.dom.addEvent(save, 'click', function() {
+  // save all cell's data
+  ajax('/logs/<%=@log.id.to_s%>/save.json', 'POST', JSON.stringify({data: hot.getData()}), function (res) {
+    var data = JSON.parse(res.response);
+    result=hot.loadData(data);
+
+    if (!result) {
+      exampleConsole.innerText = 'Data saved';
+      document.getElementById("submit_button").disabled = false
+    }
+    else {
+      exampleConsole.innerText = 'Save error';
+    }
+  });
+});
+
+Handsontable.dom.addEvent(autosave, 'click', function() {
+  if (autosave.checked) {
+    exampleConsole.innerText = 'Changes will be autosaved';
+  }
+  else {
+    exampleConsole.innerText ='Changes will not be autosaved';
+  }
+});
+</script>
+<% else %>
+    <table>
+      <tr>
+        <th>Id</th>
+        <th>Time</th>
+        <th>Callsign</th>
+        <th>QRP?</th>
+        <th>Portable?</th>
+        <th>Backcountry?</th>
+        <th>DX?</th>
+        <th>Mode</th>
+        <th>Band</th>
+        <th>Name</th>
+        <th>Location</th>
+        <th colspan=2>Cypher Sent</th>
+        <th colspan=2>Cypher Rec'd</th>
+        <th>Points</th>
+      </tr>
+    </table>
+<% end %>
+
+
+  </div>
+</div>

@@ -74,16 +74,10 @@ def self.import
         ss.points=s["points"]
 
         ss.save
-        p=ss.find_park
-        if !p then p=ss.find_doc_park end
-        if p then ss.park_id=p.id end
-
-        i=ss.find_island
-        if i then ss.island_id = i.name_id end
-
-        ss.save           
-         end
+        a=Asset.add_sota_peak(ss)
+        a.add_links
       end end
+   end
   end 
 end
 end

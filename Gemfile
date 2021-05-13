@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 ruby '2.0.0'
 
+  gem 'roo'
   gem 'actionmailer', '4.0.5'
 
   gem 'actionpack', '4.0.5'
@@ -107,6 +108,8 @@ ruby '2.0.0'
   gem 'redis-namespace', '1.5.1'
 
   gem 'resque', '1.25.2'
+  gem 'resque-scheduler'
+
 
   gem 'rgeo', '0.3.20'
 

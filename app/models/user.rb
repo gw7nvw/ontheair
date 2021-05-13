@@ -1,4 +1,7 @@
 class User < ActiveRecord::Base
+  serialize :score, Hash
+  serialize :score_total, Hash
+
   attr_accessor :remeber_token, :activation_token, :reset_token
 
   before_save { if email then self.email = email.downcase end }
@@ -106,201 +109,133 @@ def authenticated?(attribute, token)
     end
   end
 
-  def huts
-    huts=self.huts_filtered(false, false)
+  def self.users_with_assets
+    callsigns=[]
+    contacts=Contact.where("asset1_codes is not null or asset2_codes is not null")
+    contacts.each do |c|
+      callsigns.push(c.callsign1) 
+      callsigns.push(c.callsign2) 
+    end
+    users=User.where(callsign: callsigns)
   end
 
-  def huts_activated_count(revisits)
-   huts=[]
+  def self.update_scores
+    users=User.all
+    users.each do |user|
+       puts user.callsign
+       user.update_score
+    end
+  end
+
+  def update_score
+    puts "got into model"
+    puts AssetType.first.to_json
+    AssetType.where(keep_score: true).each do |asset_type|
+       puts "loop"
+       puts self.callsign
+       self.score[asset_type.name]=self.assets_count_filtered(asset_type.name,false,false,false)
+       puts "back in main"
+       self.score_total[asset_type.name]=self.assets_count_filtered(asset_type.name,false,false,true)
+       puts "back in main"
+     end
+     puts "opit of loop"
+     success=self.save
+  end
+
+  def assets(at)
+    assets=self.assets_filtered(at,false, false)
+  end
+
+  def assets_activated_count(at,revisits)
+   assets=[]
    contacts=self.contacts_filtered(nil, nil)
    contacts.each do |c|
-       if c.hut1 and c.callsign1==self.callsign then
-         if revisits then huts.push(c.hut1.id.to_s+" "+c.localdate(nil).to_s)
-         else huts.push(c.hut1.id.to_s) end
+     c.asset1_codes.each do |code|
+       a=Asset.find_by(code: code)
+       if (a and a.asset_type==at and c.callsign1==self.callsign) then 
+         if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
+         else assets.push(a.code) end
        end
-       if c.hut2 and c.callsign2==self.callsign then
-         if revisits then huts.push(c.hut2.id.to_s+" "+c.localdate(nil).to_s)
-         else huts.push(c.hut2.id.to_s) end
+     end
+     c.asset2_codes.each do |code|
+       a=Asset.find_by(code: code)
+       if (a and a.asset_type==at and c.callsign2==self.callsign) then 
+         if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
+         else assets.push(a.code) end
        end
+     end
    end
-   huts.uniq.count
-   
+   assets.uniq.count
   end
 
-  def huts_chased_count(revisits)
-   huts=[]
+  def assets_chased_count(at,revisits)
+   assets=[]
    contacts=self.contacts_filtered(nil, nil)
    contacts.each do |c|
-       if c.hut1 and c.callsign2==self.callsign then
-         if revisits then huts.push(c.hut1.id.to_s+" "+c.localdate(nil).to_s)
-         else huts.push(c.hut1.id.to_s) end
+     c.asset1_codes.each do |code|
+       a=Asset.find_by(code: code)
+       if (a and a.asset_type==at and c.callsign2==self.callsign) then 
+         if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
+         else assets.push(a.code) end
        end
-       if c.hut2 and c.callsign1==self.callsign then
-         if revisits then huts.push(c.hut2.id.to_s+" "+c.localdate(nil).to_s)
-         else huts.push(c.hut2.id.to_s) end
+     end
+     c.asset2_codes.each do |code|
+       a=Asset.find_by(code: code)
+       if (a and a.asset_type==at and c.callsign1==self.callsign) then 
+         if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
+         else assets.push(a.code) end
        end
+     end
    end
-   huts.uniq.count
-
-  end
-  def parks_activated_count(revisits)
-   parks=[]
-   contacts=self.contacts_filtered(nil, nil)
-   contacts.each do |c|
-       if c.park1 and c.callsign1==self.callsign then
-         if revisits then parks.push(c.park1.id.to_s+" "+c.localdate(nil).to_s)
-         else parks.push(c.park1.id.to_s) end
-       end
-       if c.park2 and c.callsign2==self.callsign then
-         if revisits then parks.push(c.park2.id.to_s+" "+c.localdate(nil).to_s)
-         else parks.push(c.park2.id.to_s) end
-       end
-   end
-   parks.uniq.count
-
+   assets.uniq.count
   end
 
-  def parks_chased_count(revisits)
-   parks=[]
-   contacts=self.contacts_filtered(nil, nil)
-   contacts.each do |c|
-       if c.park1 and c.callsign2==self.callsign then
-         if revisits then parks.push(c.park1.id.to_s+" "+c.localdate(nil).to_s)
-         else parks.push(c.park1.id.to_s) end
-       end
-       if c.park2 and c.callsign1==self.callsign then
-         if revisits then parks.push(c.park2.id.to_s+" "+c.localdate(nil).to_s)
-         else parks.push(c.park2.id.to_s) end
-       end
-   end
-   parks.uniq.count
-
-  end
-
-  def islands_activated_count(revisits)
-   islands=[]
-   contacts=self.contacts_filtered(nil, nil)
-   contacts.each do |c|
-       if c.island1 and c.callsign1==self.callsign then
-         if revisits then islands.push(c.island1.id.to_s+" "+c.localdate(nil).to_s)
-         else islands.push(c.island1.id.to_s) end
-       end
-       if c.island2 and c.callsign2==self.callsign then
-         if revisits then islands.push(c.island2.id.to_s+" "+c.localdate(nil).to_s)
-         else islands.push(c.island2.id.to_s) end
-       end
-   end
-   islands.uniq.count
-
-  end
-
-  def islands_chased_count(revisits)
-   islands=[]
-   contacts=self.contacts_filtered(nil, nil)
-   contacts.each do |c|
-       if c.island1 and c.callsign2==self.callsign then
-         if revisits then islands.push(c.island1.id.to_s+" "+c.localdate(nil).to_s)
-         else islands.push(c.island1.id.to_s) end
-       end
-       if c.island2 and c.callsign1==self.callsign then
-         if revisits then islands.push(c.island2.id.to_s+" "+c.localdate(nil).to_s)
-         else islands.push(c.island2.id.to_s) end
-       end
-   end
-   islands.uniq.count
-
-  end
-
-
-  def hut_count_filtered(user_qrp, contact_qrp, revisits)
-   huts=[]
+  def assets_count_filtered(at,user_qrp, contact_qrp, revisits)
+   puts "DEBUG: in assewts_count_filtered"
+   assets=[]
    contacts=self.contacts_filtered(user_qrp, contact_qrp)
    contacts.each do |c|
-       if c.hut1 then 
-         if revisits then huts.push(c.hut1.id.to_s+" "+c.localdate(nil).to_s)
-         else huts.push(c.hut1.id.to_s) end
+     c.asset1_codes.each do |code|
+       a=Asset.find_by(code: code)
+       if (a and a.asset_type==at) then 
+         if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
+         else assets.push(a.code) end
        end
-       if c.hut2 then 
-         if revisits then huts.push(c.hut2.id.to_s+" "+c.localdate(nil).to_s)
-         else huts.push(c.hut2.id.to_s) end
+     end
+     c.asset2_codes.each do |code|
+       a=Asset.find_by(code: code)
+       if (a and a.asset_type==at) then 
+         if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
+         else assets.push(a.code) end
        end
+     end
    end
-   huts.uniq.count
+   puts "end of ACF"
+   puts assets.uniq.count
+   puts at
+   assets.uniq.count
   end
 
-  def huts_filtered(user_qrp, contact_qrp)
-   huts=[]
+  def assets_filtered(at, user_qrp, contact_qrp)
+   puts "DEBIG in asset count"
+   assets=[]
    contacts=self.contacts_filtered(user_qrp, contact_qrp)
    contacts.each do |c|
-       if c.hut1 then huts.push(c.hut1.id) end
-       if c.hut2 then huts.push(c.hut2.id) end
+     c.asset1_codes.each do |code|
+       a=Asset.find_by(code: code)
+       if (a and a.asset_type==at) then assets.push(a.code) end
+     end
+     c.asset2_codes.each do |code|
+       a=Asset.find_by(code: code)
+       if (a and a.asset_type==at) then assets.push(a.code) end
+     end
    end
 
-   huts=Hut.where(id: huts).order(:name)
+   puts "DEBIG end of  asset count"
+   puts at
+   assets=Asset.where(code: assets).order(:name)
   end
 
-  def parks
-    parks=self.parks_filtered(false, false)
-  end
-
-  def park_count_filtered(user_qrp, contact_qrp, revisits)
-   huts=[]
-   contacts=self.contacts_filtered(user_qrp, contact_qrp)
-   contacts.each do |c|
-       if c.park1 then
-         if revisits then huts.push(c.park1.id.to_s+" "+c.localdate(nil).to_s)
-         else huts.push(c.park1.id.to_s) end
-       end
-       if c.park2 then
-         if revisits then huts.push(c.park2.id.to_s+" "+c.localdate(nil).to_s)
-         else huts.push(c.park2.id.to_s) end
-       end
-   end
-   huts.uniq.count
-  end
-
-
-  def parks_filtered(user_qrp, contact_qrp)
-   parks=[]
-   contacts=self.contacts
-   contacts.each do |c|
-     if c.park1 then parks.push(c.park1.id) end
-     if c.park2 then parks.push(c.park2.id) end
-   end
-
-   parks=Park.where(id: parks).order(:name)
-  end
-  
-  def islands
-    islands=self.islands_filtered(false, false)
-  end
- 
-  def islands_filtered(user_qrp, contact_qrp)
-   islands=[]
-   contacts=self.contacts
-   contacts.each do |c|
-     if c.island1 then islands.push(c.island1.id) end
-     if c.island2 then islands.push(c.island2.id) end
-   end
-
-   islands=Island.where(id: islands).order(:name)
-  end
-
-  def island_count_filtered(user_qrp, contact_qrp, revisits)
-   huts=[]
-   contacts=self.contacts_filtered(user_qrp, contact_qrp)
-   contacts.each do |c|
-       if c.island1 then
-         if revisits then huts.push(c.island1.id.to_s+" "+c.localdate(nil).to_s)
-         else huts.push(c.island1.id.to_s) end
-       end
-       if c.island2 then
-         if revisits then huts.push(c.island2.id.to_s+" "+c.localdate(nil).to_s)
-         else huts.push(c.island2.id.to_s) end
-       end
-   end
-   huts.uniq.count
-  end
 
   def generate_membership_request
     as=AdminSettings.first
@@ -320,47 +255,47 @@ def authenticated?(attribute, token)
 
   def wwff_logs
    wwff_logs=[]
-   contacts1=Contact.where(callsign1: callsign)
-   contacts2=Contact.where(callsign2: callsign)
+   contacts1=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where callsign1 = '"+self.callsign+"') as sq where asset1_codes  like 'ZLP%%'" ]
+   contacts2=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where callsign1 = '"+self.callsign+"') as sq where asset1_codes  like 'ZLFF-%%'" ]
 
    parks=[]
    contacts1.each do |contact|
-     if contact.park1 and contact.park1.wwff_park then
-       parks.push(contact.park1)
-     end
+       puts contact.asset1_codes
+       p=Asset.find_by(code: contact.asset1_codes)
+       pp=p.linked_assets_by_type("wwff park")
+       if pp and pp.count>0 then
+         parks.push(docpark: p.code, wwffpark: pp.first.code, name: pp.first.name)
+       end
    end
    contacts2.each do |contact|
-     if contact.park2 and contact.park2.wwff_park then
-       parks.push(contact.park2)
-     end
+       pp=Asset.find_by(code: contact.asset1_codes)
+       p=pp.linked_assets_by_type("park")
+       if p and p.count>0 then
+         parks.push(docpark: p.first.code, wwffpark: pp.code, name: pp.name)
+       end
    end
-   parks=parks.uniq
+   parks=parks.uniq 
 
    parks.each do |park|
-     contacts1=Contact.where(callsign1: self.callsign, park1_id: park.id)
-     contacts2=Contact.where(callsign2: self.callsign, park2_id: park.id)
+     contacts1=Contact.where('callsign1 = ? and (? = ANY(asset1_codes) or ?= ANY(asset1_codes))',self.callsign, park[:docpark], park[:wwffpark])
 
-     contact_count=contacts1.count+contacts2.count
+     contact_count=contacts1.count
      callsigns=[]
      contacts=[]
      contacts1.each do |contact| callsigns.push({callsign: contact.callsign2,date: contact.date.to_date}) end
-     contacts2.each do |contact| callsigns.push({callsign: contact.callsign1,date: contact.date.to_date}) end
      callsigns=callsigns.uniq
      contacts_count=callsigns.count
 
      callsigns.each do |cs|
-       contacts1=Contact.where(callsign1: self.callsign, callsign2: cs[:callsign],date: cs[:date].beginning_of_day..cs[:date].end_of_day, park1_id: park.id)
+       puts "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+       puts park[:docpark]+" - "+ park[:wwffpark]+ " - "+cs[:callsign]+" - "+ cs[:date].to_s
+       puts "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+
+
+       contacts1=Contact.where('callsign1= ? and callsign2 = ? and date >= ? and date < ? and (? = ANY(asset1_codes) or ? = ANY(asset1_codes))',  self.callsign,  cs[:callsign], cs[:date].beginning_of_day,cs[:date].end_of_day, park[:docpark], park[:wwffpark])
        if contacts1 and contacts1.count>0 then 
          contacts.push(contacts1.first) 
          if contacts1.count>1 then puts "Dropping "+(contacts1.count-1).to_s+" "+contacts1.first.callsign1+" "+contacts1.first.callsign2+" "+contacts1.first.date.to_date.to_s end
-       else
-         contacts2=Contact.where(callsign2: self.callsign, callsign1: cs[:callsign],date: cs[:date].beginning_of_day..cs[:date].end_of_day, park2_id: park.id)
-         if contacts2.count>1 then puts "Dropping "+(contacts1.count-1).to_s+" "+contacts2.first.callsign2+" "+contacts2.first.callsign2+" "+contacts2.first.date.to_date.to_s end
-         if contacts2 and contacts2.count>0 then 
-           contacts.push(contacts2.first) 
-         else
-           puts "ERROR should not get here!"
-         end
        end
      end
      
@@ -371,41 +306,32 @@ def authenticated?(attribute, token)
 
   def sota_logs
    sota_logs=[]
-   contacts1=Contact.where(callsign1: callsign)
-   contacts2=Contact.where(callsign2: callsign)
+   contacts1=Contact.where(callsign1: self.callsign)
 
    summits=[]
    contacts1.each do |contact|
-     if contact.summit1 then
-       summits.push(contact.summit1)
-     end
-   end
-   contacts2.each do |contact|
-     if contact.summit2 then
-       summits.push(contact.summit2)
+     assets=contact.activator_asset_links
+     assets.each do |a|
+       if a and a.asset_type=="summit" then
+         summits.push(a)
+       end
      end
    end
    summits=summits.uniq
 
    summits.each do |summit| 
-     contacts1=Contact.where(callsign1: self.callsign, summit1_id: summit.short_code)
-     contacts2=Contact.where(callsign2: self.callsign, summit1_id: summit.short_code)
+     contacts1=Contact.where("callsign1 = ? and ? =ANY(asset1_codes)", self.callsign, summit.code )
      dates=[]
      contacts1.each do |contact|
-       dates.push(contact.date.to_date)
-     end
-     contacts2.each do |contact|
        dates.push(contact.date.to_date)
      end
      dates=dates.uniq
       
      dates.each do |date| 
-       contacts1=Contact.where(callsign1: self.callsign, summit1_id: summit.short_code, date: date.beginning_of_day..date.end_of_day)
-       contacts2=Contact.where(callsign2: self.callsign, summit2_id: summit.short_code, date: date.beginning_of_day..date.end_of_day)
-       contact_count=contacts1.count+contacts2.count
+       contacts1=Contact.where("callsign1 = ? and ? = ANY(asset1_codes) and date >= ? and date < ?", self.callsign,  summit.code, date.beginning_of_day,date.end_of_day)
+       contact_count=contacts1.count
        contacts=[]
        contacts1.each do |contact| contacts.push(contact) end
-       contacts2.each do |contact| contacts.push(contact) end
        sota_logs.push({summit: summit, date: date, count: contact_count, contacts: contacts.sort_by{|c| c.date}})  
      end
    end 
@@ -414,41 +340,42 @@ def authenticated?(attribute, token)
 
   def pota_logs
    pota_logs=[]
-   contacts1=Contact.where(callsign1: callsign)
-   contacts2=Contact.where(callsign2: callsign)
+
+   contacts1=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where callsign1 = '"+self.callsign+"') as sq where asset1_codes  like 'ZLP%%'" ]
+   contacts2=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where callsign1 = '"+self.callsign+"') as sq where asset1_codes  like 'ZL-%%'" ]
 
    parks=[]
    contacts1.each do |contact|
-     if contact.park1 and contact.park1.pota_park then
-       parks.push(contact.park1)
-     end
+       puts contact.asset1_codes
+       p=Asset.find_by(code: contact.asset1_codes)
+       pp=p.linked_assets_by_type("pota park")
+       if pp and pp.count>0 then 
+         parks.push(docpark: p.code, potapark: pp.first.code, name: pp.first.name)
+       end
    end
    contacts2.each do |contact|
-     if contact.park2 and contact.park2.pota_park then
-       parks.push(contact.park2)
-     end
+       pp=Asset.find_by(code: contact.asset1_codes)
+       p=pp.linked_assets_by_type("park")
+       if p and p.count>0 then 
+         parks.push(docpark: p.first.code, potapark: pp.code, name: pp.name)
+       end
    end
-   parks=parks.uniq
+   parks=parks.uniq 
 
    parks.each do |park| 
-     contacts1=Contact.where(callsign1: self.callsign, park1_id: park.id)
-     contacts2=Contact.where(callsign2: self.callsign, park2_id: park.id)
+     contacts1=Contact.where(" callsign1 = ? and (? = ANY(asset1_codes) or ? = ANY(asset1_codes))", self.callsign, park[:docpark], park[:potapark])
+ 
      dates=[]
      contacts1.each do |contact|
-       dates.push(contact.date.to_date)
-     end
-     contacts2.each do |contact|
        dates.push(contact.date.to_date)
      end
      dates=dates.uniq
       
      dates.each do |date| 
-       contacts1=Contact.where(callsign1: self.callsign, park1_id: park.id, date: date.beginning_of_day..date.end_of_day)
-       contacts2=Contact.where(callsign2: self.callsign, park2_id: park.id, date: date.beginning_of_day..date.end_of_day)
-       contact_count=contacts1.count+contacts2.count
+       contacts1=Contact.where(" callsign1 = ? and (? = ANY(asset1_codes) or ? = ANY(asset1_codes)) and date >= ? and date < ? ", self.callsign, park[:docpark], park[:potapark], date.beginning_of_day,date.end_of_day)
+       contact_count=contacts1.count
        contacts=[]
        contacts1.each do |contact| contacts.push(contact) end
-       contacts2.each do |contact| contacts.push(contact) end
        pota_logs.push({park: park, date: date, count: contact_count, contacts: contacts.sort_by{|c| c.date}})  
      end
    end 

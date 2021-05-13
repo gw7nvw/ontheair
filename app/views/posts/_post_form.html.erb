@@ -54,7 +54,7 @@ function startEdit() {
  
       <% if @topic.is_spot or @topic.is_alert then %>
         <b><%=@topic.name%></b><br>
-        <table>
+        <table id="main_table">
           <% if @topic.is_spot then %>
             <tr>
               <td>Operating callsign:</td>
@@ -69,31 +69,29 @@ function startEdit() {
             </tr>
           <% end %> 
           <tr>
-            <td>Hut:</td>
-            <td style="padding:0px; margin:0px;">
-              <div id="huts"><input id="post_hut" name="post[hut]" style="padding:0px; margin:0px;" type="text" class="typeahead" placeholder="Hut" value='<%=@post.hut%>'></div>
-            </td>
-            <td>Park:</td>
-            <td style="padding:0px; margin:0px;" colspan=2>
-              <div id="parks"><input id="post_park" name="post[park]" style="padding:0px; margin:0px;" type="text" class="typeahead" placeholder="Park" value='<%=@post.park%>'></div>
-            </td>
-          </tr>
-          <tr>
-            <td>Island:</td>
-            <td style="padding:0px; margin:0px;">
-              <div id="islands"><input id="post_island" name="post[island]" style="padding:0px; margin:0px;" type="text" class="typeahead" placeholder="Island" value='<%=@post.island%>'></div>
-            </td>
-            <td>Summit:</td>
-            <td style="padding:0px; margin:0px;" colspan=2>
-              <div id="summits"><input id="post_summit" name="post[summit]" style="padding:0px; margin:0px;" type="text" class="typeahead" placeholder="Summit" value='<%=@post.summit%>'></div>
-            </td>
-          </tr>
-          <tr>
             <td>Freq(s):</td>
             <td style="padding:0px; margin:0px;" ><%=   f.text_field :freq, :style =>"padding:0px; margin:0px;" %></td>
             <td>Mode(s):</td>
             <td style="padding:0px; margin:0px;" colspan=2><%=   f.text_field :mode, :style =>"padding:0px; margin:0px;" %></td>
           </tr>
+ <% count=0%>
+ <% while count<10 do %>
+          <tr id=row<%=count.to_s%> <%= if count>0 and (!@post.asset_codes[count] or @post.asset_codes[count]=='') then "style=display:none" end%>>
+            <td><%if count==0%>Operating from:<%end%></td>
+            <td>
+               <% @asset_type=Asset.get_asset_type_from_code(Asset.get_code_from_codename(@post.asset_codes[count])) %>
+               <%= collection_select( 'asset'+count.to_s+"_type", :name, AssetType.all.order(:display_name), :name, :display_name,{selected: @asset_type}, style: "margin-bottom: 0px;height: 24px;") %>
+            </td>
+            <td style="padding:0px; margin:0px;" colspan=3>
+      <div id="asset<%=count.to_s%>"><input id="post_asset<%=count.to_s%>" name="post[asset_codes[<%=count.to_s%>]]" style="padding:0px; margin:0px;" type="text" class="typeahead" placeholder="Type location" value='<%=@post.asset_codes[count]%>'></div>
+            </td>
+            <td>
+              <%=link_to "Add more", '#', class: "btn btn-small", id:  "addmore", :onclick => "addmore("+count.to_s+");return false;" %>
+
+            </td>
+          </tr>
+ <% count+=1 %>
+ <% end %>
         </table>
       <% end %>
       <span>
@@ -124,23 +122,31 @@ function startEdit() {
   <% end %>
 </div>
 <script>
-var huts = new Bloodhound({
+var assets=[]
+<% count=0; while count<10 do %>
+assets[<%=count%>] = new Bloodhound({
   datumTokenizer: Bloodhound.tokenizers.whitespace,
   queryTokenizer: Bloodhound.tokenizers.whitespace,
   remote: {
-    url: '/queries/hut?query=%QUERY',
-    wildcard: '%QUERY'
+    url: '/queries/asset?query=%QUERY',
+    wildcard: '%QUERY',
+    replace: function(url, uriEncodedQuery) {
+      val=document.getElementById("asset<%=count%>_type_name").value;
+      if (!val) return url.replace("%QUERY",uriEncodedQuery);
+      //correction here
+      return url.replace("%QUERY",uriEncodedQuery) + '&asset_type=' + encodeURIComponent(val);
+    },
   }
 });
 
-  huts.clearPrefetchCache();
-  huts.initialize();
+  assets[<%=count%>].clearPrefetchCache();
+  assets[<%=count%>].initialize();
 
-  $('#huts .typeahead').typeahead(null, {
-    name: 'huts',
-    source: huts
+  $("#asset<%=count%> .typeahead").typeahead(null, {
+    name: "assets<%=count%>",
+    source: assets[<%=count%>]
   });
-
+<% count+=1; end %>
 
 var parks = new Bloodhound({
   datumTokenizer: Bloodhound.tokenizers.whitespace,
@@ -194,5 +200,9 @@ var summits = new Bloodhound({
   });
 
   startEdit();
+
+function addmore(count) {
+  document.getElementById('row'+(count+1)).style="display:";
+}
 </script>
 

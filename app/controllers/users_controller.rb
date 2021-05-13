@@ -30,7 +30,7 @@ class UsersController < ApplicationController
     if(!(@user = User.where(callsign: params[:id]).first))
       redirect_to '/'
     else 
-      @contacts=Contact.find_by_sql [ "select * from contacts where (callsign1='"+@user.callsign+"' or callsign2='"+@user.callsign+"')" ]
+      @contacts=Contact.find_by_sql [ "select id, callsign1, callsign2, location1, location2 from contacts where (callsign1='"+@user.callsign+"' or callsign2='"+@user.callsign+"')" ]
     end
 
   end

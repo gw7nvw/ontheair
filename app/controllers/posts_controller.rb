@@ -11,6 +11,8 @@ def index
 end
 
 def show
+    @parameters=params_to_query
+
     @post=Post.find_by_id(params[:id])
     if !@post then 
       flash[:error]="Sorry - the topic or post that you tried to view no longer exists"
@@ -20,6 +22,8 @@ end
 
 
 def new
+    @parameters=params_to_query
+
     @post=Post.new
     @topic=Topic.find_by_id(params[:topic_id])
     t=Time.now.in_time_zone("Pacific/Auckland").strftime('%H:%M')
@@ -100,6 +104,8 @@ def update
          end
        else
          @post.assign_attributes(post_params)
+         pp=[];params[:post][:asset_codes].each do |p,k| if k and k.length>0 then pp.push(k) end end
+         @post.asset_codes=pp
          @post.site=""
          if @post.hut and @post.hut.length>0 then @post.is_hut=true; @post.site+="[Hut: "+@post.hut+"] " else @post.is_hut=false end
          if @post.park and @post.park.length>0 then @post.is_park=true; @post.site+="[Park: "+@post.park+"] "  else @post.is_park=false end
@@ -130,11 +136,12 @@ def create
     @topic=Topic.find_by_id(params[:topic_id])
     if signed_in? and @topic and (@topic.is_public or current_user.is_admin or (@topic.owner_id==current_user.id and @topic.is_owners)) then
       @post=Post.new(post_params)
+      pp=[];params[:post][:asset_codes].each do |p,k| if k and k.length>0 then pp.push(k) end end
+      @post.asset_codes=pp
       @post.site=""
-      if @post.hut and @post.hut.length>0 then @post.is_hut=true; @post.site+="[Hut: "+@post.hut+"] " else @post.is_hut=false end
-      if @post.park and @post.park.length>0 then @post.is_park=true; @post.site+="[Park: "+@post.park+"] "  else @post.is_park=false end
-      if @post.island and @post.island.length>0 then @post.is_island=true; @post.site+="[Island: "+@post.island+"] " else @post.is_island=false end
-      if @post.summit and @post.summit.length>0 then @post.is_summit=true; @post.site+="[Summit: "+@post.summit+"] " else @post.is_summit=false end
+      @post.asset_codes.each do |ac|
+        @post.site+=ac+" " 
+      end
       @post.created_by_id = current_user.id #current_user.id
       @post.updated_by_id = current_user.id #current_user.id
       if @topic.is_spot then 
@@ -180,7 +187,7 @@ end
 
   private
   def post_params
-    params.require(:post).permit(:title, :description, :image, :do_not_publish, :referenced_date, :referenced_time, :duration, :is_hut, :is_park, :is_island,:is_summit, :site, :freq, :mode, :hut, :park, :island, :summit, :callsign)
+    params.require(:post).permit(:title, :description, :image, :do_not_publish, :referenced_date, :referenced_time, :duration, :is_hut, :is_park, :is_island,:is_summit, :site, :freq, :mode, :hut, :park, :island, :summit, :callsign, :asset_codes)
   end
 
   def convert_to_text(html, line_length = 65, from_charset = 'UTF-8')
@@ -273,77 +280,81 @@ end
   def send_to_pnp(post_class, debug)
         if debug then dbtext="/DEBUG" else dbtext="" end
 
-          if @topic.is_alert then
+        if @topic.is_alert then
             if params[:post][:referenced_time] and params[:post][:referenced_time].length>0 then dayflag=false else dayflag=true end
             dt=(params[:post][:referenced_date]||"")+" "+(params[:post][:referenced_time]||"")
             if dt and dt.length>1 then 
-             if dayflag then
-               tt=dt.in_time_zone("UTC")
-             else
-               tt=dt.in_time_zone("Pacific/Auckland")
-               tt=tt.in_time_zone("UTC")
-             end
+              if dayflag then
+                tt=dt.in_time_zone("UTC")
+              else
+                tt=dt.in_time_zone("Pacific/Auckland")
+                tt=tt.in_time_zone("UTC")
+              end
             end
 
-            puts "sending alert to PnP"
+            puts "sending alert(s) to PnP"
             
-            site=""
-            if @post.hut and @post.hut!="" then site=@post.check_hut_code
-            elsif @post.park and @post.park!="" then site=@post.check_park_code
-            elsif @post.island and @post.island!="" then site=@post.check_island_code
+            @post.asset_codes.each do |ac|
+              code=ac.split(']')[0]
+              code=code.gsub('[','')
+              pnp_class=Asset.get_pnp_class_from_code(code)
+              if pnp_class and pnp_class!="" then
+                puts "sending alert to PnP"
+                params = {"actClass" => pnp_class,"actCallsign" => @post.updated_by_name,"actSite" => code,"actMode" => @post.mode,"actFreq" => @post.freq,"actComments" => convert_to_text(@post.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2","alDate" => if tt then tt.strftime('%Y-%m-%d') else "" end,"alTime" => if tt then tt.strftime('%H:%M') else "" end,"optDay" => if dayflag then "1" else "0" end} 
+                send_alert_to_pnp(params,dbtext)
+              end
             end
-            if site=="" then post_class="QRP" end
-            puts "ZLOTA site: "+site
-            if site!="" then params = {"actClass" => "ZLOTA","actCallsign" => @post.updated_by_name,"actSite" => site,"actMode" => @post.mode,"actFreq" => @post.freq,"actComments" => convert_to_text(@post.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2","alDate" => if tt then tt.strftime('%Y-%m-%d') else "" end,"alTime" => if tt then tt.strftime('%H:%M') else "" end,"optDay" => if dayflag then "1" else "0" end} end
-            if post_class=="QRP" then 
-              params = {"actClass" => "QRP","actCallsign" => @post.updated_by_name,"actSite" => @post.site,"actMode" => @post.mode,"actFreq" => @post.freq,"actComments" => convert_to_text(@post.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2","alDate" => if tt then tt.strftime('%Y-%m-%d') else "" end,"alTime" => if tt then tt.strftime('%H:%M') else "" end,"optDay" => if dayflag then "1" else "0" end}
+        end
+        if @topic.is_spot then
+            @post.asset_codes.each do |ac|
+              code=ac.split(']')[0]
+              code=code.gsub('[','')
+              pnp_class=Asset.get_pnp_class_from_code(code)
+              if pnp_class and pnp_class!="" then
+                params = {"actClass" => pnp_class,"actCallsign" => (@post.callsign||@post.updated_by_name),"actSite" => code,"mode" => @post.mode,"freq" => @post.freq,"comments" => convert_to_text(@post.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2"} 
+                puts "sending spot to PnP"
+                send_spot_to_pnp(params,dbtext)
+              end
             end
-            uri = URI('http://parksnpeaks.org/api/ALERT'+dbtext)
-            http=Net::HTTP.new(uri.host, uri.port)
-            req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
-            req.body = params.to_json
-            res = http.request(req)
+        end
+end
+
+def send_alert_to_pnp(params,dbtext)
+              uri = URI('http://parksnpeaks.org/api/SPOT'+dbtext)
+              http=Net::HTTP.new(uri.host, uri.port)
+              req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
+              req.body = params.to_json
+              res = http.request(req)
+#              flash[:error]="Sorry - sending spots to PnP not yet implemented"
+
+              if dbtext and dbtext.length>0 then
+                debugstart=res.body.index("INSERT")
+                if debugstart then
+                  flash[:success]=res.body[debugstart..-1]
+                end
+              end
+
+              puts res
+              puts res.body
+end
+
+def send_spot_to_pnp(params,dbtext)
+              uri = URI('http://parksnpeaks.org/api/SPOT'+dbtext)
+              http=Net::HTTP.new(uri.host, uri.port)
+              req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
+              req.body = params.to_json
+              res = http.request(req)
+#              flash[:error]="Sorry - sending spots to PnP not yet implemented"
   
-            puts res
-            puts res.body
-            if debug then
-              debugstart=res.body.index("INSERT")
-              if debugstart then 
-                flash[:success]=res.body[debugstart..-1]
+              if dbtext and dbtext.length>0 then
+                debugstart=res.body.index("INSERT")
+                if debugstart then 
+                  flash[:success]=res.body[debugstart..-1]
+                end
               end
-            end
-          end
-          if @topic.is_spot then
-            puts "sending spot to PnP"
-            site=""
-            if @post.hut and @post.hut!="" then site=@post.check_hut_code
-            elsif @post.park and @post.park!="" then site=@post.check_park_code
-            elsif @post.island and @post.island!="" then site=@post.check_island_code
-            end
-            if site=="" then post_class="QRP" end
-            puts "ZLOTA site: "+site
-            if site!="" then params = {"actClass" => "ZLOTA","actCallsign" => (@post.callsign||@post.updated_by_name),"actSite" => site,"mode" => @post.mode,"freq" => @post.freq,"comments" => convert_to_text(@post.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2"} end
-            if post_class=="QRP" then
-              params = {"actClass" => "QRP","actCallsign" => (@post.callsign||@post.updated_by_name),"actSite" => @post.site,"mode" => @post.mode,"freq" => @post.freq,"comments" => convert_to_text(@post.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2"}
-            end
-            uri = URI('http://parksnpeaks.org/api/SPOT'+dbtext)
-            http=Net::HTTP.new(uri.host, uri.port)
-            req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
-            req.body = params.to_json
-            res = http.request(req)
-#            flash[:error]="Sorry - sending spots to PnP not yet implemented"
+                
+              puts res
+              puts res.body
+end
 
-            if debug then
-              debugstart=res.body.index("INSERT")
-              if debugstart then 
-                flash[:success]=res.body[debugstart..-1]
-              end
-            end
-              
-            puts res
-            puts res.body
-          end
-
-
-  end
 end

@@ -1,34 +1,32 @@
 var site_map_size=1;
 var contacts_layer;
-var site_show_docland=false;
-var site_show_island=1;
-var site_show_huts=true;
-var site_show_summits=false;
+var site_show_polygon=true;
 var site_map_pinned=false;
 var site_show_controls=true;
 
 //callback variabkles
-var site_select_id_dest;
+var site_select_row;
+var site_select_code_dest;
 var site_select_name_dest;
 var site_select_loc_dest;
 var site_select_x_dest;
 var site_select_y_dest;
+var site_select_append=false;
 var site_current_style=null;
 var site_current_click_layer=null;
 
 //layers
-var parks_layer;
-var parks_simple_layer;
-var parks_very_simple_layer;
-var islands_layer;
-var islands_simple_layer;
-var islands_very_simple_layer;
-var islands_point_layer;
-var huts_layer;
-var summits_layer;
+var polygon_layer;
+var polygon_simple_layer;
+var polygon_very_simple_layer;
+var points_layer;
+var site_map_layers={}
+
 //styles
 var site_docland_style;
 var site_island_style;
+var site_lake_style;
+var site_lake_point_style;
 var site_island_point_style;
 var site_parks_style;
 var site_huts_style;
@@ -66,8 +64,6 @@ function site_init() {
     if(typeof(def_zoom)!='undefined') {
        map_zoom(def_zoom);
     }
-    site_toggle_huts(site_show_huts);
-    site_toggle_island(site_show_island);
 
   }
 }
@@ -121,6 +117,9 @@ function site_smaller_map() {
     document.getElementById('map_map').style.display="block";
     setTimeout( function() { map_map.updateSize(); }, 1000);
     map_map.updateSize();
+    if(typeof(hot)=="object") {
+       hot.render()
+    }
   }, 200);
 
   return false ;
@@ -157,6 +156,9 @@ function site_bigger_map() {
     document.getElementById('map_map').style.display="block";
     setTimeout( function() { map_map.updateSize(); }, 1000);
     map_map.updateSize();
+    if(typeof(hot)=="object") {
+       hot.render()
+    }
   }, 200);
   return false ;
 }
@@ -171,10 +173,7 @@ function reset_map_controllers(keep) {
      map_on_click_activate(map_navigate_on_click_callback);
      if (keep!=1) map_clear_scratch_layer();
      map_scratch_layer.setVisible(true);
-     site_toggle_docland(site_show_docland); 
-     site_toggle_island(site_show_island); 
-     site_toggle_huts(site_show_huts); 
-     site_toggle_summits(site_show_summits); 
+     // toggle visible layers to default
      map_map.updateSize();
 
 //set status icon to show click to navigate
@@ -189,33 +188,55 @@ function deactivate_all_click() {
   //set status icon to show blank
 }
 
+function site_polygon_style_function(feature, resoluton) {
+  if(feature.get('asset_type')=="island")  return site_island_style;
+  if(feature.get('asset_type')=="lake")  return site_lake_style;
+  if(feature.get('asset_type')=="park")  return site_docland_style_function(feature, resoluton);
+  if(feature.get('asset_type')=="pota park")  return site_pota_style;
+  if(feature.get('asset_type')=="wwff park")  return site_wwff_style;
+}
+
 function site_docland_style_function(feature, resoluton) {
-  if(feature.get('isdoc')=="t")  return site_docland_styles[1];
+  if(feature.get('category')=="DOC")  return site_docland_styles[1];
   return site_docland_styles[2];
 }
 
-function site_add_vector_layers() {
-  parks_layer=map_add_vector_layer("Parks", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/rg_maps/rg_map.map", "parks",site_docland_style_function,false,11,32);
-  parks_simple_layer=map_add_vector_layer("Parks Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/rg_maps/rg_map.map", "parks_simple",site_docland_style_function,false,8,11);
-  parks_very_simple_layer=map_add_vector_layer("Parks Very Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/rg_maps/rg_map.map", "parks_very_simple",site_docland_style_function,false,1,8);
-  islands_layer=map_add_vector_layer("Islands", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota.map", "islands",site_island_style,false,11,32);
-  islands_simple_layer=map_add_vector_layer("Islands Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota.map", "islands_simple",site_island_style,false,8,11);
-  islands_very_simple_layer=map_add_vector_layer("Islands Very Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota.map", "islands_very_simple",site_island_style,false,1,8);
-  islands_point_layer=map_add_vector_layer("Island Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota.map", "island_points",site_island_point_style,true,1,32);
-  huts_layer=map_add_vector_layer("Huts", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota.map", "huts",site_huts_style,true,1,32);
-  summits_layer=map_add_vector_layer("Summits", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota.map", "summits",site_summits_style,false,1,32);
-  contacts_layer=map_add_vector_layer("Contacts", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota.map", "contacts",site_contacts_style,false,1,32);
+function site_points_style_function(feature, resoluton) {
+  if(feature.get('asset_type')=="hut")  return site_huts_style;
+  if(feature.get('asset_type')=="lake")  return site_lake_point_style;
+  if(feature.get('asset_type')=="island")  return site_island_point_style;
+  if(feature.get('asset_type')=="summit")  return site_summits_style;
+  if(feature.get('asset_type')=="park")  return site_park_point_style;
+  if(feature.get('asset_type')=="pota park")  return site_pota_point_style;
+  if(feature.get('asset_type')=="wwff park")  return site_wwff_point_style;
+}
 
-  map_map.addLayer(parks_layer);
-  map_map.addLayer(parks_simple_layer);
-  map_map.addLayer(parks_very_simple_layer);
-  map_map.addLayer(islands_layer);
-  map_map.addLayer(islands_simple_layer);
-  map_map.addLayer(islands_very_simple_layer);
-  map_map.addLayer(islands_point_layer);
-  map_map.addLayer(huts_layer);
-  map_map.addLayer(summits_layer);
+
+function site_add_vector_layers() {
+  site_set_map_filters('polygon',[]);
+  polygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon",site_polygon_style_function,true,11,32,'polygon');
+  polygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_simple",site_polygon_style_function,true,8,11,'polygon');
+  polygon_very_simple_layer=map_add_vector_layer("Polygon Very Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_very_simple",site_polygon_style_function,true,1,8,'polygon');
+
+  site_set_map_filters('point',['hut','island','summit']);
+  points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,1,32,'point');
+  contacts_layer=map_add_vector_layer("Contacts", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "contacts",site_contacts_style,false,1,32);
+
+  map_map.addLayer(polygon_layer);
+  map_map.addLayer(polygon_simple_layer);
+  map_map.addLayer(polygon_very_simple_layer);
+  map_map.addLayer(points_layer);
   map_map.addLayer(contacts_layer);
+}
+
+function site_set_map_filters(filter, list) {
+  var filterstring="";
+  if(list.length>1) {filterstring="<OR>"};
+  list.forEach(function(element,index) { filterstring=filterstring+"<PropertyIsEqualTo><PropertyName>asset_type</PropertyName><Literal>"+element+"</Literal></PropertyIsEqualTo>";});
+  if(list.length>1) {filterstring=filterstring+"</OR>"};
+  if(list.length==0) {filterstring="<PropertyIsEqualTo><PropertyName>asset_type</PropertyName><Literal>donotmatch</Literal></PropertyIsEqualTo>"};
+  map_filters[filter]=filterstring;
+  site_map_layers[filter]=list;
 }
 
 function site_add_layers() {
@@ -230,11 +251,7 @@ function site_add_layers() {
 function site_add_controls() {
    if(site_show_controls) {
 
-        map_create_control("/assets/layers24.png","Select basemap",map_mapLayers,"mapLayers");
-        map_create_control("/assets/doc24.png","Show DOC land",site_toggle_docland,"mapDocland");
-        map_create_control("/assets/hut24.png","Show Huts",site_toggle_huts,"mapHuts");
-        map_create_control("/assets/island24.png","Show Islands",site_toggle_island,"mapIsland");
-        map_create_control("/assets/summit24.png","Show Summits",site_toggle_summits,"mapSummits");
+        map_create_control("/assets/layers24.png","Select layers",site_mapLayers,"mapLayers");
         map_create_control("/assets/cog24.png","Configure map",site_mapKey,"mapKey");
         map_create_control("/assets/pin24.png","Pin map (do not automatically recentre)",site_pinMap,"mapPin");
         map_create_control("/assets/target24.png","Centre map on current item",site_centreMap,"mapCentre");
@@ -243,7 +260,7 @@ function site_add_controls() {
 
 
 function site_init_styles() {
-  site_blue_dot=map_create_style("circle", 3, "#2222ff", "#22ffff", 1);
+  site_blue_dot=map_create_style("circle", 4, "#2222ff", "#22ffff", 1);
   site_red_circle=map_create_style("circle", 5, "#ff2222", "#880000", 1);
   site_green_circle=map_create_style("circle", 5, "#22ff22", "#008800", 1);
   site_purple_star=map_create_style("star", 10, "#8b008b", "#8b008b", 1);
@@ -254,104 +271,26 @@ function site_init_styles() {
   site_linz_style=map_create_style("", null, 'rgba(0,0,0,0)', "#550055", 2);
   site_parks_style=map_create_style("", null, 'rgba(256,140,0,0.4)', "#331f00", 2);
   site_island_style=map_create_style("", null, 'rgba(256,256,0,0.4)', "#ff8c00", 2);
+  site_lake_style=map_create_style("", null, 'rgba(0,128,255,0.4)', "#0066aa", 2);
   site_huts_style=map_create_style("circle", 3, "#2222ff", "#22ffff", 1);
-  site_island_point_style=map_create_style("triangle", 3, "#ff8c00", "#ff8c00", 1);
-  site_summits_style=map_create_style("triangle", 3, "#6c0dc4", "#6c0dc4", 1);
-  site_contacts_style=map_create_style("circle", 3, "#2222ff", "#22ffff", 1);
+  site_park_point_style=map_create_style("x", 6, "#00aa00", "#22dd22", 1);
+  site_pota_point_style=map_create_style("x", 6, "#770077", "#770077", 1);
+  site_wwff_point_style=map_create_style("x", 6, "#994499", "#994499", 1);
+  site_island_point_style=map_create_style("triangle", 4, "#ff8c00", "#ff8c00", 1);
+  site_lake_point_style=map_create_style("x", 6, "#0000ff", "#0000dd", 1);
+  site_summits_style=map_create_style("triangle", 4, "#6c0dc4", "#6c0dc4", 1);
+  site_contacts_style=map_create_style("circle", 4, "#2222ff", "#22ffff", 1);
   site_highlight_polygon=map_create_style("", null, 'rgba(128,0,0,0.6)', "#660000", 2);
   site_red_polygon=map_create_style("", null, 'rgba(256,0,0,0.6)', "#880000", 2);
   site_green_polygon=map_create_style("", null, 'rgba(0,256,0,0.6)', "#008800", 2);
+  site_pota_style=map_create_style('',0, 'rgba(128,0,128,0.4)', "#900090", 2);
+  site_wwff_style=map_create_style('',0, 'rgba(150,30,150,0.4)', "#901090", 2);
   site_docland_styles[1]=map_create_style('',0, 'rgba(0,128,0,0.4)', "#005500", 2);
   site_docland_styles[2]=map_create_style('',0, 'rgba(128,255,128,0.4)', "#20a020", 1);
 
 }
 
 
-function site_toggle_huts(show) {
-  if(typeof(show)=='undefined' || show==null) {
-    site_show_huts=!site_show_huts;
-    show=site_show_huts;
-  }
-  if (site_show_controls) {
-    if (show) {
-       document.getElementById("mapHuts").style.backgroundColor="#008800";
-    } else {
-       document.getElementById("mapHuts").style.backgroundColor="#ffffff";
-    }
-  }
-
-  map_toggle_layer_by_name(show,'Huts');
-}
-function site_toggle_summits(show) {
-  if(typeof(show)=='undefined' || show==null) {
-    site_show_summits=!site_show_summits;
-    show=site_show_summits;
-  }
-
-  if (site_show_controls) {
-  if (show) {
-     document.getElementById("mapSummits").style.backgroundColor="#008800";
-  } else {
-     document.getElementById("mapSummits").style.backgroundColor="#ffffff";
-  }
-  }
-
-  map_toggle_layer_by_name(show,'Summits');
-}
-
-function site_toggle_docland(show) {
-  if(typeof(show)=='undefined' || show==null) {
-    site_show_docland=!site_show_docland;
-    show=site_show_docland;
-  }
-
-  if (site_show_controls) {
-  if (show) {
-     document.getElementById("mapDocland").style.backgroundColor="#008800";
-  } else {
-     document.getElementById("mapDocland").style.backgroundColor="#ffffff";
-  }
-  }
-
-  map_toggle_layer_by_name(show,'Parks');
-  map_toggle_layer_by_name(show,'Parks Simple');
-  map_toggle_layer_by_name(show,'Parks Very Simple');
-}
-
-function site_toggle_island(show) {
-  if(typeof(show)=='undefined' || show==null) {
-    site_show_island=site_show_island+1;
-    if(site_show_island==3) site_show_island=0;
-    show=site_show_island;
-  } 
-  if(show>0) { 
-       showpoint=true;
-  } else {
-       showpoint=false;
-  }
-  if(show>1) { 
-       show=true;
-  } else {
-       show=false;
-  }
-
-  if (site_show_controls) {
-  if (show) {
-     document.getElementById("mapIsland").style.backgroundColor="#008800";
-  } else {
-     if (showpoint) {
-       document.getElementById("mapIsland").style.backgroundColor="#ffff00";
-     } else {
-       document.getElementById("mapIsland").style.backgroundColor="#ffffff";
-     }
-  }
-  }
-
-  map_toggle_layer_by_name(show,'Islands');
-  map_toggle_layer_by_name(show,'Islands Simple');
-  map_toggle_layer_by_name(show,'Islands Very Simple');
-  map_toggle_layer_by_name(showpoint,'Island Points');
-}
 
 function site_mapKey() {
         BootstrapDialog.show({
@@ -444,27 +383,25 @@ function drawBoundary(disable_icon, enable_icon, place_loc) {
   map_enable_draw("Polygon",site_highlight_polygon,place_loc, null, null  ,true);
 }
 
-function site_selectPlace(id_loc, name_loc, location_loc, x_loc, y_loc, disable_icon, enable_icon, style) {
+function site_selectPlace(row, code_loc, name_loc, location_loc, x_loc, y_loc, disable_icon, enable_icon, style, append,asset_type) {
   deactivate_all_click();
-  site_toggle_huts(true);
-  site_toggle_summits(false);
-  site_toggle_docland(false);
-  site_toggle_island(0);
   if(enable_icon!=null) document.getElementById(enable_icon).style.display="none";
   if(disable_icon!=null) document.getElementById(disable_icon).style.display="block";
 
   map_on_click_activate(site_select_point_on_click_callback);
 
-  site_select_id_dest=id_loc;
+  site_select_row=row;
+  site_select_code_dest=code_loc;
   site_select_name_dest=name_loc;
   site_select_loc_dest=location_loc;
   site_select_x_dest=x_loc;
   site_select_y_dest=y_loc;
-  site_current_click_layer='Huts';
+  site_current_click_layer=asset_type;
   site_current_style=style;
+  if(append==true) {site_select_append=true } else {site_select_append=false};
 }
 
-function site_selectSummit(id_loc, name_loc, location_loc, x_loc, y_loc, disable_icon, enable_icon, style) {
+function site_selectSummit(row, id_loc, name_loc, location_loc, x_loc, y_loc, disable_icon, enable_icon, style) {
   deactivate_all_click();
   site_toggle_huts(false);
   site_toggle_summits(true);
@@ -475,6 +412,7 @@ function site_selectSummit(id_loc, name_loc, location_loc, x_loc, y_loc, disable
 
   map_on_click_activate(site_select_point_on_click_callback);
 
+  site_select_row=row;;
   site_select_id_dest=id_loc;
   site_select_name_dest=name_loc;
   site_select_loc_dest=location_loc;
@@ -484,7 +422,7 @@ function site_selectSummit(id_loc, name_loc, location_loc, x_loc, y_loc, disable
   site_current_style=style;
 }
 
-function site_selectPark(id_loc, name_loc, disable_icon, enable_icon, style) {
+function site_selectPark(row, id_loc, name_loc, disable_icon, enable_icon, style) {
   deactivate_all_click();
   if(enable_icon!=null) document.getElementById(enable_icon).style.display="none";
   if(disable_icon!=null) document.getElementById(disable_icon).style.display="block";
@@ -496,6 +434,7 @@ function site_selectPark(id_loc, name_loc, disable_icon, enable_icon, style) {
 
   map_on_click_activate(site_select_point_on_click_callback);
 
+  site_select_row=row;
   site_select_id_dest=id_loc;
   site_select_name_dest=name_loc;
   site_select_loc_dest=null;
@@ -505,7 +444,7 @@ function site_selectPark(id_loc, name_loc, disable_icon, enable_icon, style) {
   site_current_style=style;
 }
 
-function site_selectIsland(id_loc, name_loc, disable_icon, enable_icon, style) {
+function site_selectIsland(row, id_loc, name_loc, disable_icon, enable_icon, style) {
   deactivate_all_click();
   if(enable_icon!=null) document.getElementById(enable_icon).style.display="none";
   if(disable_icon!=null) document.getElementById(disable_icon).style.display="block";
@@ -517,6 +456,7 @@ function site_selectIsland(id_loc, name_loc, disable_icon, enable_icon, style) {
 
   map_on_click_activate(site_select_point_on_click_callback);
 
+  site_select_row=row;;
   site_select_id_dest=id_loc;
   site_select_name_dest=name_loc;
   site_select_loc_dest=null;
@@ -542,7 +482,7 @@ function site_select_point_on_click_callback(evt) {
     var pixel = evt.pixel;
     var wktp = new ol.format.WKT;   //should be handled in map, not here
     var feature = map_map.forEachFeatureAtPixel(pixel, function(feature, layer) {
-      if(layer && layer.get('name').substr(0,site_current_click_layer.length)==site_current_click_layer) {
+      if((!site_current_click_layer||(feature.get('asset_type').substr(0,site_current_click_layer.length)==site_current_click_layer)) && feature.get('is_active')) {
          return feature;
       } else {
          return null;
@@ -550,12 +490,36 @@ function site_select_point_on_click_callback(evt) {
     });
     
     if(feature) {
+      debug_f=feature;
         //now copy it to where we want it 
-      if(site_select_name_dest!=null)  document.getElementById(site_select_name_dest).value=feature.get('name');
-      if(site_select_id_dest!=null)  document.getElementById(site_select_id_dest).value=feature.get('id');
-      if(site_select_loc_dest!=null) document.getElementById(site_select_loc_dest).value=wktp.writeFeature(feature, { dataProjection: 'EPSG:4326', featureProjection: 'EPSG:2193'});
-      if(site_select_x_dest!=null) document.getElementById(site_select_x_dest).value=feature.getGeometry().getCoordinates()[0];
-      if(site_select_y_dest!=null) document.getElementById(site_select_y_dest).value=feature.getGeometry().getCoordinates()[1];
+      if(site_select_row!=null) {
+        if(site_select_name_dest!=null) data2[site_select_row][site_select_name_dest]=feature.get('name');
+        data2[site_select_row]['loc_desc2']=feature.get('name');
+        if(site_select_code_dest!=null) data2[site_select_row][site_select_code_dest]=feature.get('code');
+        if(site_select_loc_dest!=null) data2[site_select_row][site_select_loc_dest]=wktp.writeFeature(feature, { dataProjection: 'EPSG:4326', featureProjection: 'EPSG:2193'});
+        if(site_select_x_dest!=null) data2[site_select_row][site_select_x_dest]=feature.getGeometry().getCoordinates()[0];
+        if(site_select_y_dest!=null) data2[site_select_row][site_select_y_dest]=feature.getGeometry().getCoordinates()[1];
+        hot.render();
+      } else {
+        if(site_select_append) {
+          if(site_select_name_dest!=null) {
+            names=document.getElementById(site_select_name_dest).innerHTML;
+            if(names.length>0) { names=names+"<br/>";}
+            document.getElementById(site_select_name_dest).innerHTML=names+"["+feature.get('code')+"] "+feature.get('name');
+          }
+          if(site_select_code_dest!=null) {
+            codes=document.getElementById(site_select_code_dest).value;
+            if(codes.length>0) { codes=codes+",";}
+            document.getElementById(site_select_code_dest).value=codes+feature.get('code');
+          }
+        } else {
+          if(site_select_name_dest!=null)  document.getElementById(site_select_name_dest).value=feature.get('name');
+          if(site_select_code_dest!=null)  document.getElementById(site_select_code_dest).value=feature.get('code');
+        }
+        if(site_select_loc_dest!=null) document.getElementById(site_select_loc_dest).value=wktp.writeFeature(feature, { dataProjection: 'EPSG:4326', featureProjection: 'EPSG:2193'});
+        if(site_select_x_dest!=null) document.getElementById(site_select_x_dest).value=feature.getGeometry().getCoordinates()[0];
+        if(site_select_y_dest!=null) document.getElementById(site_select_y_dest).value=feature.getGeometry().getCoordinates()[1];
+      }
       debug_f=feature;
       //now mark it on map
       if(site_current_style!=null) {
@@ -606,12 +570,31 @@ function linkHandler(entity_name) {
    });
 }
 
-function site_clear_element(ids) {
-  var length=ids.length;
+function site_clear_element(formids) {
+  var length=formids.length;
   for(var count=0;count<length;count++) {  
-    document.getElementById(ids[count]).value='';
+    document.getElementById(formids[count]).value='';
   }
 }
+function site_clear_html_element(htmlids) {
+  var length=htmlids.length;
+  for(var count=0;count<length;count++) {  
+    document.getElementById(htmlids[count]).innerHTML='';
+  }
+}
+
+function site_clear_elementData(row,cols) {
+  for (col = 0; col < cols.length; col++ ) {
+    if(Array.isArray(data2[row][cols[col]])) {
+      data2[row][cols[col]]=[];
+    } else {
+      data2[row][cols[col]]='';
+    }
+  }
+ hot.render();
+}
+
+
 
 function search_islands(field) {
         BootstrapDialog.show({
@@ -667,106 +650,78 @@ function search_parks(field) {
 function submit_search() {
    return false;
 }
-function select_park(field, id, name, loc) {
-  if (field=="park1") {
-    document.contactform.contact_park1_id.value=id;
-    document.contactform.park1_name.value=name;
-    map_clear_scratch_layer(null, site_green_polygon);
-    map_add_feature_from_wkt(loc,'EPSG:4326',site_green_polygon) ;
-  }
-  if (field=="park2") {
-    document.contactform.contact_park2_id.value=id;
-    document.contactform.park2_name.value=name;
-    map_clear_scratch_layer(null, site_red_polygon);
-    map_add_feature_from_wkt(loc,'EPSG:4326',site_red_polygon) ;
-  }
-  if (field=="park") {
-    document.hutform.hut_park_id.value=id;
-    document.hutform.park_name.value=name;
-    map_clear_scratch_layer(null, site_highlight_polygon);
-    map_add_feature_from_wkt(loc,'EPSG:4326',site_highlight_polygon);
-  }
-  return false;
-}
 
-function select_island(field, id, name, loc) {
-  if (field=="island1") {
-    document.contactform.contact_island1_id.value=id;
-    document.contactform.island1_name.value=name;
-    map_clear_scratch_layer(null, site_green_star);
-    map_add_feature_from_wkt(loc,'EPSG:4326',site_green_star) ;
+function select_asset(field, code, name, x, y, loc, child_codes, child_names) {
+  if (typeof(document.contactform)=="object")  { 
+     formname="contactform";
+     varprefix="contact_";
+  } 
+  if (typeof(document.logform)=="object")  { 
+     formname="logform";
+     varprefix="log_";
   }
-  if (field=="island2") {
-    document.contactform.contact_island2_id.value=id;
-    document.contactform.island2_name.value=name;
-    map_clear_scratch_layer(null, site_red_star);
-    map_add_feature_from_wkt(loc,'EPSG:4326',site_red_star) ;
+  if (field=='child') {
+     formname="childform";
+     varprefix="c_asset_link_";
   }
-  if (field=="island") {
-    document.hutform.hut_island_id.value=id;
-    document.hutform.island_name.value=name;
-    map_clear_scratch_layer(null, site_green_star);
-    map_add_feature_from_wkt(loc,'EPSG:4326',site_green_star);
+  if (field=='parent') {
+     formname="parentform";
+     varprefix="p_asset_link_";
   }
-  return false;
-}
 
-function select_summit(field, id, name, x, y, loc, park, park_name) {
-  if (field=="summit1") {
-    document.contactform.contact_summit1_id.value=id;
-    document.contactform.summit1_name.value=name;
-    document.contactform.contact_x1.value=x;
-    document.contactform.contact_y1.value=y;
-    document.contactform.contact_location1.value=loc;
-    document.contactform.contact_park1_id.value=park;
-    document.contactform.park1_name.value=park_name;
+  if (field=="asset") {
+    codes=document[formname][varprefix+"asset_codes"].value
+    if(codes=="{}") {codes="";} 
+    if(codes && codes.length>0) {codes=codes+","};
+    document[formname][varprefix+"asset_codes"].value=codes+code;
+    names=document.getElementById('asset_names').innerHTML;
+    if(names && names.length>0) {names=names+"<br/>"};
+    document.getElementById('asset_names').innerHTML=names+"["+code+"] "+name;
+    document[formname][varprefix+"x1"].value=x;
+    document[formname][varprefix+"y1"].value=y;
+    document[formname][varprefix+"location1"].value=loc;
+    //document[formname][varprefix+"child_codes"].value=child_codes;
+    //document.getElementsById["child_names"].innerHTML=child_names;
     map_clear_scratch_layer('Point', site_green_star);
     map_add_feature_from_wkt(loc,'EPSG:4326',site_green_star) ;
   }
-  if (field=="summit2") {
-    document.contactform.contact_summit2_id.value=id;
-    document.contactform.summit2_name.value=name;
-    document.contactform.contact_x2.value=x;
-    document.contactform.contact_y2.value=y;
-    document.contactform.contact_location2.value=loc;
-    document.contactform.contact_park2_id.value=park;
-    document.contactform.park2_name.value=park_name;
+  if (field=="child") {
+    document[formname][varprefix+"child_code"].value=code;
+    document[formname][varprefix+"child_name"].value=name;
     map_clear_scratch_layer('Point', site_red_star);
     map_add_feature_from_wkt(loc,'EPSG:4326',site_red_star) ;
   }
-  return false;
-}
-
-function select_hut(field, id, name, x, y, loc, park, park_name) {
-  if (field=="hut1") {
-    document.contactform.contact_hut1_id.value=id;
-    document.contactform.hut1_name.value=name;
-    document.contactform.contact_x1.value=x;
-    document.contactform.contact_y1.value=y;
-    document.contactform.contact_location1.value=loc;
-    document.contactform.contact_park1_id.value=park;
-    document.contactform.park1_name.value=park_name;
-    map_clear_scratch_layer('Point', site_green_star);
-    map_add_feature_from_wkt(loc,'EPSG:4326',site_green_star) ;
-  }
-  if (field=="hut2") {
-    document.contactform.contact_hut2_id.value=id;
-    document.contactform.hut2_name.value=name;
-    document.contactform.contact_x2.value=x;
-    document.contactform.contact_y2.value=y;
-    document.contactform.contact_location2.value=loc;
-    document.contactform.contact_park2_id.value=park;
-    document.contactform.park2_name.value=park_name;
+  if (field=="parent") {
+    document[formname][varprefix+"parent_code"].value=code;
+    document[formname][varprefix+"parent_name"].value=name;
     map_clear_scratch_layer('Point', site_red_star);
     map_add_feature_from_wkt(loc,'EPSG:4326',site_red_star) ;
+  }
+  if (field.substr(0,3)=="row") {
+    row=field.substr(4,1000)
+    if(data2[row]['asset2_codes']==null) {data2[row]['asset2_codes']=[code];} else {
+    codes=data2[row]['asset2_codes'].push(code) 
+ }
+    names=data2[row]['asset2_names']
+    if(names && names.length>0) {names=names+"\n"};
+    data2[row]['asset2_names']=names+"["+code+"] "+name;
+    data2[row]['location2']=loc;
+    data2[row]['x2']=x;
+    data2[row]['y2']=y;
+    //data2[row]['park2_id']=child_codes;
+    //data2[row]['park2_tn']=child_names;
+    //data2[row]['loc_desc2']=name+" ("+park_name+")"
+    map_clear_scratch_layer('Point', site_red_star);
+    map_add_feature_from_wkt(loc,'EPSG:4326',site_red_star) ;
+    hot.render();
   }
   return false;
 }
 
 
-function search_huts(field) {
+function search_assets(field) {
         BootstrapDialog.show({
-            title: "Select hut",
+            title: "Select",
             message: $('<div id="info_details2">Retrieving ...</div>'),
             size: "size-small"
         });
@@ -778,7 +733,7 @@ function search_huts(field) {
           },
           type: "GET",
           timeout: 20000,
-          url: "/query?hutfield="+field,
+          url: "/query?assetfield="+field,
           error: function() {
               document.getElementById("info_details2").innerHTML = 'Error contacting server';
           },
@@ -838,3 +793,71 @@ function search_summits(field) {
      document.contactform.contact_y1.value=y;
    }
 
+function site_mapLayers() {
+        BootstrapDialog.show({
+            title: "Select layers",
+            message: $('<div id="info_details2">Retrieving ...</div>'),
+            size: "size-small"
+        });
+
+        $.ajax({
+          beforeSend: function (xhr){
+            xhr.setRequestHeader("Content-Type","application/javascript");
+            xhr.setRequestHeader("Accept","text/javascript");
+          },
+          type: "GET",
+          timeout: 10000,
+          url: "/layerswitcher?baselayer="+map_current_layer+"&pointlayers=["+site_map_layers.point+"]&polygonlayers=["+site_map_layers.polygon+"]",
+          error: function() {
+              document.getElementById("info_details2").innerHTML = 'Error contacting server';
+          },
+          complete: function() {
+//              document.getElementById("page_status").innerHTML = '';
+          }
+
+        });
+
+}
+
+
+function site_toggle_vector_layers(filter, layer) {  
+  if(site_map_layers[filter].includes(layer)) {
+    for( var i = 0; i < site_map_layers[filter].length; i++){ 
+        if ( site_map_layers[filter][i] === layer) { 
+            site_map_layers[filter].splice(i, 1); 
+        }
+    }
+  } else {
+    site_map_layers[filter].push(layer);
+  }; 
+  site_set_map_filters(filter,site_map_layers[filter]);
+}
+
+function site_clear_vector_layers(filter, layer) { 
+  site_map_layers[filter]=[];
+}
+
+function site_set_vector_layers(filter, layer, value) { 
+  if(site_map_layers[filter].includes(layer)) {
+    for( var i = 0; i < site_map_layers[filter].length; i++){
+        if ( site_map_layers[filter][i] === layer) {
+            site_map_layers[filter].splice(i, 1);
+        }
+    }
+  } 
+ 
+  if(value) {
+    site_map_layers[filter].push(layer);
+  };
+
+  site_set_map_filters(filter,site_map_layers[filter]);
+}
+
+function site_refresh_layer(filter) {
+  if (filter=='point') {
+    setTimeout( function() { points_layer.getSource().clear(); }, 1000);
+  } else {
+    setTimeout( function() { polygon_layer.getSource().clear();polygon_simple_layer.getSource().clear();polygon_very_simple_layer.getSource().clear(); }, 1000);
+  };
+
+}

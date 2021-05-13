@@ -33,7 +33,7 @@
     <% logdays.each do |logday| %>
       <tr>
         <td><%=logday[:summit].name%></td>
-        <td><%=logday[:summit].short_code%></td>
+        <td><%=logday[:summit].code%></td>
         <td><%=logday[:date]%></td>
         <td><%=logday[:contacts].count%></td>
         <% 
@@ -42,7 +42,7 @@
              if !c.submitted_to_sota then submitted_to_sota=false end 
            end
         %>
-        <td><%=if !submitted_to_sota then  link_to "Sumbit Log", '/sota_logs/'+logday[:summit].short_code+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" else link_to "Resend Log", '/sota_logs/'+logday[:summit].short_code+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" end%></td>
+        <td><%=if !submitted_to_sota then  link_to "Sumbit Log", '/sota_logs/'+logday[:summit].safecode+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" else link_to "Resend Log", '/sota_logs/'+logday[:summit].safecode+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" end%></td>
       </tr>
     <% end%>
   </table>

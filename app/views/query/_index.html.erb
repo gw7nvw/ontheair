@@ -1,25 +1,35 @@
-  <% if params[:hutfield]=='hut2' then hutfield='hut2' else hutfield='hut1' end %>`
-<%= form_tag '/query?hutfield='+hutfield, :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
-  <div class="rowtitle">Find:</div>
-  <div class="rowtext">
-    <input type="text" name="searchtext" value='<%=@searchtext%>'/>
+  <% assetfield=params[:assetfield]
+     if assetfield=='' then assetfield='asset' end %>
+<%= form_tag '/query?assetfield='+assetfield, :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+  <div class="erow">
+    <div class="rowtitle">Type:</div>
+    <div class="rowtext">
+      <%= collection_select( :asset_type, :name, AssetType.all.order(:display_name), :name, :display_name,{default: @asset_type}) %>
+    </div>
+  </div>
+  <div class="erow">
+    <div class="rowtitle">Find:</div>
+    <div class="rowtext">
+      <input type="text" name="searchtext" value='<%=@searchtext%>'/>
+    </div>
   </div>
   <div class="buttonshort">
     <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');" %>
   </div>
+
 </form>
 
-<% if @huts and @huts.count>0 %>
-  <% if @huts.count>39 then %>
+<% if @assets and @assets.count>0 %>
+  <% if @assets.count>39 then %>
     <div class="erow">
     Your search returned more results than listed. Please refine
     </div>
   <% end %>
   <table>
-  <% @huts.each do |hut| %>
+  <% @assets.each do |asset| %>
     <tr>
       <td> 
-        <%= link_to hut.codename.to_s+(if(hut.park) then " ("+hut.park.codename+")" else "" end), '#', :id => 'hut_link'+hut.id.to_s, :onclick => "select_hut('"+hutfield+"', "+hut.id.to_s+", '"+hut.name+"', '"+hut.x.to_s+"', '"+hut.y.to_s+"', '"+hut.location.to_s+"', '"+(if hut.park then hut.park.id.to_s else '' end)+"', '"+(if hut.park then hut.park.name else '' end)+"');return(false);" %>
+        <%= link_to asset.codename.to_s+(if(asset.children and asset.children.count>0) then " ("+asset.children.first.codename+")" else "" end), '#', :id => 'asset_link'+asset.id.to_s, :onclick => "select_asset('"+assetfield+"', '"+asset.code+"', '"+asset.name+"', '"+asset.x.to_s+"', '"+asset.y.to_s+"', '"+asset.location.to_s+"', '"+(if asset.children then asset.children.map{|c| c.code}.to_s else '' end)+"', '"+(if asset.children then asset.children.map{|c| c.name}.to_s else '' end)+"');return(false);" %>
       </td>
     </tr>
   <% end %>

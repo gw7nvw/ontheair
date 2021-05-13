@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210411010647) do
+ActiveRecord::Schema.define(version: 20210513083703) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -23,6 +23,62 @@ ActiveRecord::Schema.define(version: 20210411010647) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  create_table "asset_links", force: true do |t|
+    t.string "parent_code"
+    t.string "child_code"
+  end
+
+  create_table "asset_photo_links", force: true do |t|
+    t.string   "asset_code"
+    t.string   "link_url"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "asset_types", force: true do |t|
+    t.string   "name"
+    t.string   "table_name"
+    t.boolean  "has_location"
+    t.boolean  "has_boundary"
+    t.string   "index_name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "display_name"
+    t.string   "fields"
+    t.string   "pnp_class"
+    t.boolean  "keep_score"
+  end
+
+  create_table "asset_web_links", force: true do |t|
+    t.string   "asset_code"
+    t.string   "url"
+    t.string   "link_class"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "assets", force: true do |t|
+    t.string   "asset_type"
+    t.string   "code"
+    t.string   "url"
+    t.string   "name"
+    t.boolean  "is_active"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.spatial  "boundary",     limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "location",     limit: {:srid=>4326, :type=>"point"}
+    t.string   "safecode"
+    t.string   "category"
+    t.boolean  "minor"
+    t.text     "description"
+    t.integer  "altitude"
+    t.integer  "createdBy_id"
+    t.integer  "ref_id"
+  end
+
+  add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
+  add_index "assets", ["code"], :name => "index_assets_on_code"
 
   create_table "award_user_links", force: true do |t|
     t.integer  "user_id"
@@ -60,7 +116,7 @@ ActiveRecord::Schema.define(version: 20210411010647) do
     t.boolean  "first_contact1",                                          default: true
     t.string   "loc_desc1"
     t.integer  "hut1_id"
-    t.integer  "park1_id"
+    t.string   "park1_id"
     t.integer  "x1"
     t.integer  "y1"
     t.integer  "altitude1"
@@ -74,7 +130,7 @@ ActiveRecord::Schema.define(version: 20210411010647) do
     t.boolean  "first_contact2",                                          default: true
     t.string   "loc_desc2"
     t.integer  "hut2_id"
-    t.integer  "park2_id"
+    t.string   "park2_id"
     t.integer  "x2"
     t.integer  "y2"
     t.integer  "altitude2"
@@ -100,6 +156,11 @@ ActiveRecord::Schema.define(version: 20210411010647) do
     t.boolean  "submitted_to_sota"
     t.string   "summit1_id"
     t.string   "summit2_id"
+    t.integer  "log_id"
+    t.string   "name1"
+    t.string   "name2"
+    t.string   "asset1_codes",                                            default: [],   array: true
+    t.string   "asset2_codes",                                            default: [],   array: true
   end
 
   create_table "hut_photo_links", force: true do |t|
@@ -128,6 +189,7 @@ ActiveRecord::Schema.define(version: 20210411010647) do
     t.datetime "updated_at"
     t.spatial  "location",         limit: {:srid=>4326, :type=>"point"}
     t.integer  "island_id"
+    t.string   "code"
   end
 
   create_table "island_polygons", force: true do |t|
@@ -222,6 +284,47 @@ ActiveRecord::Schema.define(version: 20210411010647) do
     t.spatial  "WKT",                    limit: {:srid=>4326, :type=>"point"}
     t.boolean  "is_active",                                                    default: true
     t.string   "general_link"
+    t.string   "code"
+  end
+
+  create_table "lakes", force: true do |t|
+    t.string  "name"
+    t.string  "code"
+    t.integer "topo50_fid"
+    t.spatial "boundary",   limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial "location",   limit: {:srid=>4326, :type=>"point"}
+  end
+
+  create_table "logs", force: true do |t|
+    t.string   "callsign1"
+    t.integer  "user1_id"
+    t.integer  "power1"
+    t.string   "signal1"
+    t.string   "transceiver1"
+    t.string   "antenna1"
+    t.string   "comments1"
+    t.boolean  "first_contact1",                                       default: true
+    t.string   "loc_desc1"
+    t.integer  "hut1_id"
+    t.integer  "park1_id"
+    t.integer  "x1"
+    t.integer  "y1"
+    t.integer  "altitude1"
+    t.datetime "date"
+    t.datetime "time"
+    t.string   "timezone"
+    t.float    "frequency"
+    t.string   "mode"
+    t.boolean  "is_active",                                            default: true
+    t.integer  "createdBy_id"
+    t.integer  "island1_id"
+    t.boolean  "is_qrp1"
+    t.boolean  "is_portable1"
+    t.string   "summit1_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.spatial  "location1",      limit: {:srid=>4326, :type=>"point"}
+    t.string   "asset_codes",                                          default: [],   array: true
   end
 
   create_table "maplayers", force: true do |t|
@@ -249,6 +352,7 @@ ActiveRecord::Schema.define(version: 20210411010647) do
     t.boolean  "is_mr"
     t.string   "owner"
     t.spatial  "location",     limit: {:srid=>4326, :type=>"point"}
+    t.string   "code"
   end
 
   create_table "places", force: true do |t|
@@ -345,9 +449,20 @@ ActiveRecord::Schema.define(version: 20210411010647) do
     t.string   "mailuser"
     t.boolean  "group_admin"
     t.string   "remember_token2"
+    t.string   "score"
+    t.string   "score_total"
   end
 
   add_index "users", ["remember_token"], :name => "index_users_on_remember_token"
+
+  create_table "web_link_classes", force: true do |t|
+    t.string   "name"
+    t.string   "display_name"
+    t.string   "url"
+    t.boolean  "is_active"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "wwff_parks", force: true do |t|
     t.string   "code"

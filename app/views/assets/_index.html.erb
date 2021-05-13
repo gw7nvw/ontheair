@@ -1,0 +1,109 @@
+
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   site_toggle_assets(<%=@asset_type.display_name%>)
+   document.title = 'ZL On The Air'
+   document.getElementById('logo').innerHTML='ZL On The Air'
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=link_to "Places", '/assets', remote: true,  :id => 'assets', :onclick => "linkHandler('assets')" %>
+     &nbsp;--&gt;&nbsp;
+     <b><%=@asset_type.display_name%></b>
+     </div>
+   <div id="controls">
+       <% if current_user and current_user.is_modifier %>
+            <%=  link_to "Add", '/assets/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('add')" %>
+       <% end %>
+       <% if current_user %>
+         <%=  link_to "Download", '/assets.csv?type='+@asset_type.name, class: "btn btn-small btn-primary"%>
+       <% end %>
+       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+   </div>
+</div>
+<div id="right_scroll">
+  <%= render 'flash' %>
+
+
+<%= form_tag '/assets', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+  <br/>
+  <div class="rowtitle">Type:</div>
+  <div class="rowtext">
+    <%= collection_select( :asset_type, :name, AssetType.all.order(:display_name), :name, :display_name,{default: @asset_type}) %>    
+  </div>
+  <div class="rowtitle">Find:</div>
+  <div class="rowtext">
+    <input type="text" name="searchtext" value='<%=@searchtext%>'/>
+  </div>
+  <div class="buttonshort">
+    <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small" %>
+    <%=  link_to "Clear", '/assets', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
+
+  </div>
+</form>
+
+<% if !@searchtext %>
+  Your search returned no results.
+
+<% else %>
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+  Your search returned <%=@count.to_s%> results.
+  <% if @count>99 then %>
+     This is more than can be displayed.  Please refine your search
+  <% end %>
+
+  <table class="places">
+      <tr>
+        <th>Type</th>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Related</th>
+        <th>Description</th>
+        <th style="text-align:center">
+          <%=render :partial => 'filter',  :locals => {:filtername => "active", :formname => "/assets"} %>
+          Active?
+        </th>
+   
+      </tr>
+    <% if @assets then @assets.each do |asset| %>
+      <tr>
+        <td><%=asset.type.display_name%></td>
+        <td><%=asset.code%></td>
+        <td>
+          <% if current_user and current_user.is_modifier %>
+             <span title="Click to edit row"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/assets/'+asset.safecode+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+          <% end %>
+          <%= link_to asset.name, '/assets/'+asset.safecode, remote: true, :id => 'asset_link_'+asset.id.to_s, :onclick => "linkHandler('asset_link_"+asset.id.to_s+"')" %>
+        </td>
+        <td>
+          <%if asset.children then %><ul style="list-style-type:none;padding:0;margin:0;"><% asset.children.each do |link|%>
+            <li><%= link_to link.codename, '/assets/'+link.safecode, remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></li>
+          <% end %></ul><% end %>
+        </td>
+        <td>
+            <%= asset.description %>
+        </td>
+
+        <td style="text-align:center"><%= check_box "asset", "is_active", {:checked => asset.is_active, :disabled => true} %></td>
+      </tr>
+    <% end end %>
+</table>
+</div>
+
+<% end %>
+<script>
+    if(site_map_size==0) { 
+       $('#actionbar').removeClass('span7');
+       $('#actionbar').addClass('span12');
+}
+</script>
