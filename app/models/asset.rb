@@ -4,6 +4,15 @@ class Asset < ActiveRecord::Base
  validates :code, presence: true, uniqueness: true
  validates :name, presence: true
 
+def boundary_simple
+   pp=Asset.find_by_sql [ "select id, ST_NPoints(boundary) as altitude from assets where id="+self.id.to_s ]
+   lenfactor=Math.sqrt(pp.first.altitude/10000)
+   rnd=0.000002*10**lenfactor
+   boundarys=Asset.find_by_sql [ 'select id, ST_AsText(ST_Simplify("boundary", '+rnd.to_s+')) as "boundary" from assets where id='+self.id.to_s ]  
+   boundary=boundarys.first.boundary
+   boundary
+end
+
 def x    
       if self.location
        fromproj4s= Projection.find_by_id(4326).proj4

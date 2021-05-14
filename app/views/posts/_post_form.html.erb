@@ -148,56 +148,6 @@ assets[<%=count%>] = new Bloodhound({
   });
 <% count+=1; end %>
 
-var parks = new Bloodhound({
-  datumTokenizer: Bloodhound.tokenizers.whitespace,
-  queryTokenizer: Bloodhound.tokenizers.whitespace,
-  remote: {
-    url: '/queries/park?query=%QUERY',
-    wildcard: '%QUERY'
-  }
-});
-
-  parks.clearPrefetchCache();
-  parks.initialize();
-
-  $('#parks .typeahead').typeahead(null, {
-    name: 'parks',
-    source: parks
-  });
-
-var islands = new Bloodhound({
-  datumTokenizer: Bloodhound.tokenizers.whitespace,
-  queryTokenizer: Bloodhound.tokenizers.whitespace,
-  remote: {
-    url: '/queries/island?query=%QUERY',
-    wildcard: '%QUERY'
-  }
-});
-
-  islands.clearPrefetchCache();
-  islands.initialize();
-
-  $('#islands .typeahead').typeahead(null, {
-    name: 'islands',
-    source: islands
-  });
-
-var summits = new Bloodhound({
-  datumTokenizer: Bloodhound.tokenizers.whitespace,
-  queryTokenizer: Bloodhound.tokenizers.whitespace,
-  remote: {
-    url: '/queries/summit?query=%QUERY',
-    wildcard: '%QUERY'
-  }
-});
-
-  summits.clearPrefetchCache();
-  summits.initialize();
-
-  $('#summits .typeahead').typeahead(null, {
-    name: 'summits',
-    source: summits
-  });
 
   startEdit();
 

@@ -190,6 +190,9 @@
 
 <script>
     place_init('<%=@asset.location%>',  0);
+    <% if @asset.boundary_simple then %>
+      place_init('<%=@asset.boundary_simple%>',  0,site_highlight_polygon);
+    <% end %>
     if(site_map_size==0) { 
        $('#actionbar').removeClass('span7');
        $('#actionbar').addClass('span12');

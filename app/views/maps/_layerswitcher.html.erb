@@ -8,6 +8,8 @@
     </li>
   <% end %>
 </ul>
+
+<div id="point_layers">
 <h2>Point Layers</h2>
 <% puts params[:pointlayers] %>
 <ul style="list-style-type:none;padding:0;margin:0;">
@@ -22,7 +24,9 @@
   <% end %>
 </ul>
 <%=  link_to "Apply", '#', class: "btn btn-small btn-primary", :onclick => "site_refresh_layer('point');return(false);" %>
+</div>
 
+<div id="polygon_layers">
 <h2>Polygon Layers</h2>
 <% puts params[:poygonlayers] %>
 <ul style="list-style-type:none;padding:0;margin:0;">
@@ -36,5 +40,6 @@
     <% end %>
   <% end %>
 </ul>
+</div>
 <%=  link_to "Apply", '#', class: "btn btn-small btn-primary", :onclick => "site_refresh_layer('polygon');return(false);" %>
 

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210513083703) do
+ActiveRecord::Schema.define(version: 20210514014300) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -115,8 +115,6 @@ ActiveRecord::Schema.define(version: 20210513083703) do
     t.string   "comments1"
     t.boolean  "first_contact1",                                          default: true
     t.string   "loc_desc1"
-    t.integer  "hut1_id"
-    t.string   "park1_id"
     t.integer  "x1"
     t.integer  "y1"
     t.integer  "altitude1"
@@ -129,8 +127,6 @@ ActiveRecord::Schema.define(version: 20210513083703) do
     t.string   "comments2"
     t.boolean  "first_contact2",                                          default: true
     t.string   "loc_desc2"
-    t.integer  "hut2_id"
-    t.string   "park2_id"
     t.integer  "x2"
     t.integer  "y2"
     t.integer  "altitude2"
@@ -145,8 +141,6 @@ ActiveRecord::Schema.define(version: 20210513083703) do
     t.datetime "updated_at"
     t.spatial  "location1",         limit: {:srid=>4326, :type=>"point"}
     t.spatial  "location2",         limit: {:srid=>4326, :type=>"point"}
-    t.integer  "island1_id"
-    t.integer  "island2_id"
     t.boolean  "is_qrp1"
     t.boolean  "is_portable1"
     t.boolean  "is_qrp2"
@@ -154,11 +148,7 @@ ActiveRecord::Schema.define(version: 20210513083703) do
     t.boolean  "submitted_to_pota"
     t.boolean  "submitted_to_wwff"
     t.boolean  "submitted_to_sota"
-    t.string   "summit1_id"
-    t.string   "summit2_id"
     t.integer  "log_id"
-    t.string   "name1"
-    t.string   "name2"
     t.string   "asset1_codes",                                            default: [],   array: true
     t.string   "asset2_codes",                                            default: [],   array: true
   end
@@ -181,14 +171,12 @@ ActiveRecord::Schema.define(version: 20210513083703) do
     t.float    "x"
     t.float    "y"
     t.integer  "altitude"
-    t.integer  "park_id"
     t.boolean  "is_active",                                              default: true
     t.boolean  "is_doc",                                                 default: true
     t.integer  "createdBy_id"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.spatial  "location",         limit: {:srid=>4326, :type=>"point"}
-    t.integer  "island_id"
     t.string   "code"
   end
 
@@ -287,14 +275,6 @@ ActiveRecord::Schema.define(version: 20210513083703) do
     t.string   "code"
   end
 
-  create_table "lakes", force: true do |t|
-    t.string  "name"
-    t.string  "code"
-    t.integer "topo50_fid"
-    t.spatial "boundary",   limit: {:srid=>4326, :type=>"multi_polygon"}
-    t.spatial "location",   limit: {:srid=>4326, :type=>"point"}
-  end
-
   create_table "logs", force: true do |t|
     t.string   "callsign1"
     t.integer  "user1_id"
@@ -305,8 +285,6 @@ ActiveRecord::Schema.define(version: 20210513083703) do
     t.string   "comments1"
     t.boolean  "first_contact1",                                       default: true
     t.string   "loc_desc1"
-    t.integer  "hut1_id"
-    t.integer  "park1_id"
     t.integer  "x1"
     t.integer  "y1"
     t.integer  "altitude1"
@@ -317,10 +295,8 @@ ActiveRecord::Schema.define(version: 20210513083703) do
     t.string   "mode"
     t.boolean  "is_active",                                            default: true
     t.integer  "createdBy_id"
-    t.integer  "island1_id"
     t.boolean  "is_qrp1"
     t.boolean  "is_portable1"
-    t.string   "summit1_id"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.spatial  "location1",      limit: {:srid=>4326, :type=>"point"}
@@ -395,8 +371,6 @@ ActiveRecord::Schema.define(version: 20210513083703) do
     t.string   "short_code"
     t.string   "alt"
     t.integer  "points"
-    t.integer  "park_id"
-    t.integer  "island_id"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.spatial  "location",    limit: {:srid=>4326, :type=>"point"}
@@ -430,19 +404,11 @@ ActiveRecord::Schema.define(version: 20210513083703) do
     t.boolean  "is_admin",             default: false
     t.boolean  "is_active",            default: true
     t.boolean  "is_modifier",          default: false
-    t.integer  "huts_bagged"
-    t.integer  "parks_bagged"
-    t.integer  "huts_first_bagged"
-    t.integer  "parks_first_bagged"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "reset_digest"
     t.datetime "reset_sent_at"
     t.integer  "timezone"
-    t.integer  "islands_bagged"
-    t.integer  "huts_bagged_total"
-    t.integer  "parks_bagged_total"
-    t.integer  "islands_bagged_total"
     t.boolean  "membership_requested"
     t.boolean  "membership_confirmed"
     t.string   "home_qth"

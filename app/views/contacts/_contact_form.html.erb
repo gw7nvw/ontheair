@@ -283,7 +283,6 @@
 <script>
     reset_map_controllers(); 
     deactivate_all_click();
-    site_toggle_huts(true);
     place_init('<%=@contact.location1%>', '', site_green_star);
     map_add_feature_from_wkt('<%=@contact.location2%>','EPSG:4326',site_red_star);
     if(site_map_size==0) { 

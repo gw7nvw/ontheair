@@ -30,7 +30,6 @@ def new
     d=Time.now.in_time_zone("Pacific/Auckland").strftime('%Y-%m-%d')
     if @topic.is_spot then @post.referenced_date=d end
     if @topic.is_spot then @post.referenced_time=t end
-
     if params[:title] then @post.title=params[:title] end
     if !@topic then 
       redirect_to '/'
@@ -39,10 +38,7 @@ def new
       op=Post.find_by_id(params[:op_id])
       if op then
         if op.callsign then @post.callsign=op.callsign else @post.callsign=op.updated_by_name end
-        @post.hut=op.hut
-        @post.park=op.park
-        @post.island=op.island
-        @post.summit=op.summit
+        @post.asset_codes=op.asset_codes
         @post.title=@post.callsign+" spotted portable" 
       end
     end
@@ -107,10 +103,10 @@ def update
          pp=[];params[:post][:asset_codes].each do |p,k| if k and k.length>0 then pp.push(k) end end
          @post.asset_codes=pp
          @post.site=""
-         if @post.hut and @post.hut.length>0 then @post.is_hut=true; @post.site+="[Hut: "+@post.hut+"] " else @post.is_hut=false end
-         if @post.park and @post.park.length>0 then @post.is_park=true; @post.site+="[Park: "+@post.park+"] "  else @post.is_park=false end
-         if @post.island and @post.island.length>0 then @post.is_island=true; @post.site+="[Island: "+@post.island+"] " else @post.is_island=false end
-         if @post.summit and @post.summit.length>0 then @post.is_summit=true; @post.site+="[Summit: "+@post.summit+"] " else @post.is_summit=false end
+         @post.asset_codes.each do |ac|
+           @post.site+=ac+" "
+         end
+
          @post.updated_by_id=current_user.id
          if @post.save then
 

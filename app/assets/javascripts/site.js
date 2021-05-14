@@ -4,6 +4,8 @@ var site_show_polygon=true;
 var site_map_pinned=false;
 var site_show_controls=true;
 
+var currZoom;
+
 //callback variabkles
 var site_select_row;
 var site_select_code_dest;
@@ -67,8 +69,28 @@ function site_init() {
     if(typeof(def_zoom)!='undefined') {
        map_zoom(def_zoom);
     }
-
+    currZoom = map_map.getView().getZoom();
+    map_map.on('moveend', function(e) {
+      var newZoom = map_map.getView().getZoom();
+      if (currZoom != newZoom) {
+        site_zoom_end_callback(); 
+        currZoom = newZoom;
+      }
+    });
   }
+}
+
+function site_zoom_end_callback() {
+  if(document.getElementById('polygon_layers')) {
+    if(map_map.getView().getZoom()<4) { document.getElementById('polygon_layers').style="color: #999999 !important; font-style: italic !important"; 
+    } else {
+      document.getElementById('polygon_layers').style="color: #000000; font-style: normal";
+    };
+    if(map_map.getView().getZoom()<2) { document.getElementById('point_layers').style="color: #999999 !important; font-style: italic !important"; 
+    } else {
+      document.getElementById('point_layers').style="color: #000000; font-style: normal";
+    };
+  };
 }
 
 function place_init(plloc, keep,style) 
@@ -217,17 +239,17 @@ function site_points_style_function(feature, resoluton) {
 
 function site_add_vector_layers() {
   site_set_map_filters('polygon',site_default_polygon_layers);
-  polygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon",site_polygon_style_function,true,11,32,'polygon');
-  polygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_simple",site_polygon_style_function,true,8,11,'polygon');
-  polygon_very_simple_layer=map_add_vector_layer("Polygon Very Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_very_simple",site_polygon_style_function,true,1,8,'polygon');
+  polygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon",site_polygon_style_function,true,12,32,'polygon');
+  polygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_simple",site_polygon_style_function,true,9,12,'polygon');
+//  polygon_very_simple_layer=map_add_vector_layer("Polygon Very Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_very_simple",site_polygon_style_function,true,8,9,'polygon');
 
   site_set_map_filters('point',site_default_point_layers);
-  points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,1,32,'point');
+  points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,7,32,'point');
   contacts_layer=map_add_vector_layer("Contacts", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "contacts",site_contacts_style,false,1,32);
 
   map_map.addLayer(polygon_layer);
   map_map.addLayer(polygon_simple_layer);
-  map_map.addLayer(polygon_very_simple_layer);
+//  map_map.addLayer(polygon_very_simple_layer);
   map_map.addLayer(points_layer);
   map_map.addLayer(contacts_layer);
 }
@@ -815,6 +837,9 @@ function site_mapLayers() {
               document.getElementById("info_details2").innerHTML = 'Error contacting server';
           },
           complete: function() {
+               site_zoom_end_callback();
+
+
 //              document.getElementById("page_status").innerHTML = '';
           }
 
@@ -860,7 +885,9 @@ function site_refresh_layer(filter) {
   if (filter=='point') {
     setTimeout( function() { points_layer.getSource().clear(); }, 1000);
   } else {
-    setTimeout( function() { polygon_layer.getSource().clear();polygon_simple_layer.getSource().clear();polygon_very_simple_layer.getSource().clear(); }, 1000);
+    setTimeout( function() { polygon_layer.getSource().clear();polygon_simple_layer.getSource().clear();
+      //polygon_very_simple_layer.getSource().clear();
+    }, 1000);
   };
 
 }

@@ -29,7 +29,14 @@
   <% @assets.each do |asset| %>
     <tr>
       <td> 
-        <%= link_to asset.codename.to_s+(if(asset.children and asset.children.count>0) then " ("+asset.children.first.codename+")" else "" end), '#', :id => 'asset_link'+asset.id.to_s, :onclick => "select_asset('"+assetfield+"', '"+asset.code+"', '"+asset.name+"', '"+asset.x.to_s+"', '"+asset.y.to_s+"', '"+asset.location.to_s+"', '"+(if asset.children then asset.children.map{|c| c.code}.to_s else '' end)+"', '"+(if asset.children then asset.children.map{|c| c.name}.to_s else '' end)+"');return(false);" %>
+        <%= link_to asset.codename.to_s, '#', :id => 'asset_link'+asset.id.to_s, :onclick => "select_asset('"+assetfield+"', '"+asset.code+"', '"+asset.name+"', '"+asset.x.to_s+"', '"+asset.y.to_s+"', '"+asset.location.to_s+"', '', '');return(false);" %>
+      </td>
+      <td>
+        <% if(asset.children and asset.children.count>0) then %>
+          <% asset.children.each do |a| %>
+            <%=link_to a.codename, '#', :id => 'assetc_link'+a.id.to_s, :onclick => "select_asset('"+assetfield+"', '"+a.code+"', '"+a.name+"', '"+a.x.to_s+"', '"+a.y.to_s+"', '"+a.location.to_s+"', '', '');return(false);" %><br/>
+          <% end %>
+        <% end %>
       </td>
     </tr>
   <% end %>

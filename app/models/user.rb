@@ -122,23 +122,16 @@ def authenticated?(attribute, token)
   def self.update_scores
     users=User.all
     users.each do |user|
-       puts user.callsign
        user.update_score
     end
   end
 
   def update_score
-    puts "got into model"
     puts AssetType.first.to_json
     AssetType.where(keep_score: true).each do |asset_type|
-       puts "loop"
-       puts self.callsign
        self.score[asset_type.name]=self.assets_count_filtered(asset_type.name,false,false,false)
-       puts "back in main"
        self.score_total[asset_type.name]=self.assets_count_filtered(asset_type.name,false,false,true)
-       puts "back in main"
      end
-     puts "opit of loop"
      success=self.save
   end
 
@@ -191,7 +184,6 @@ def authenticated?(attribute, token)
   end
 
   def assets_count_filtered(at,user_qrp, contact_qrp, revisits)
-   puts "DEBUG: in assewts_count_filtered"
    assets=[]
    contacts=self.contacts_filtered(user_qrp, contact_qrp)
    contacts.each do |c|
@@ -210,14 +202,10 @@ def authenticated?(attribute, token)
        end
      end
    end
-   puts "end of ACF"
-   puts assets.uniq.count
-   puts at
    assets.uniq.count
   end
 
   def assets_filtered(at, user_qrp, contact_qrp)
-   puts "DEBIG in asset count"
    assets=[]
    contacts=self.contacts_filtered(user_qrp, contact_qrp)
    contacts.each do |c|
@@ -231,8 +219,6 @@ def authenticated?(attribute, token)
      end
    end
 
-   puts "DEBIG end of  asset count"
-   puts at
    assets=Asset.where(code: assets).order(:name)
   end
 

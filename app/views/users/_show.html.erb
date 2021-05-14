@@ -1,7 +1,6 @@
 <script> 
    reset_map_controllers();
    document.getElementById("page_status").innerHTML = '';
-   site_toggle_huts(false);
 </script>
 
 <div id="actionbar" class="span7">
@@ -105,7 +104,7 @@
 
 
 <div class="erow">
-  <div class="sectiontitle">Contacts: <%=link_to @user.contacts.count.to_s+" (view)", '/contacts?user='+@user.callsign, remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %>,
+  <div class="sectiontitle">Contacts: <%=link_to @user.contacts.count.to_s+" (view)", '/contacts?user='+@user.callsign, remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %></div>
 </div>
 
 <div class="erow">
