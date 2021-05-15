@@ -40,6 +40,10 @@ class AssetsController < ApplicationController
 
 
   def index
+
+    if params[:id] then redirect_to '/assets/'+params[:id].gsub('/','_')
+    else
+
     @parameters=params_to_query
 
     index_prep()
@@ -47,6 +51,7 @@ class AssetsController < ApplicationController
       format.html
       format.js
       format.csv { send_data asset_to_csv(Asset.all), filename: "assets-#{Date.today}.csv" }
+    end
     end
   end
 

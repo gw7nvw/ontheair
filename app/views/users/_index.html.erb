@@ -27,9 +27,6 @@
     <tr>
       <th>Callsign</th>
       <th>Name</th>
-      <th>Huts</th>
-      <th>Parks</th>
-      <th>Islands</th>
       <th>Contacts</th>
       <th>Registered</th>
       <% if current_user and (current_user.is_admin) %>
@@ -56,9 +53,6 @@
         </td>
 
         <td><%= if user.firstname then user.firstname.capitalize else " " end+ " "+if user.lastname then user.lastname.capitalize else " " end%></td>
-        <td><%=user.huts_bagged%><%if user.huts_bagged!=user.huts_bagged_total then %><span style="color:grey"> (<%=user.huts_bagged_total%>)</span><%end%></td>
-        <td><%=user.parks_bagged%><%if user.parks_bagged!=user.parks_bagged_total then%><span style="color:grey"> (<%=user.parks_bagged_total%>)</span><%end%></td>
-        <td><%=user.islands_bagged%><%if user.islands_bagged!=user.islands_bagged_total then%><span style="color:grey"> (<%=user.islands_bagged_total%>)</span><%end%></td>
         <td><%=user.contacts.count%></td>
         <td style="text-align:center"><%= check_box "user", "activated", {:checked => user.activated, :disabled => true} %></td>
         <% if current_user and (current_user.is_admin) %>

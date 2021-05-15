@@ -121,7 +121,6 @@ def update
 
       @user.assign_attributes(user_params)
       if password and password.length>0 then
-        puts "got password"
         @user.password=password
         @user.password_confirmation=password_confirmation
       end

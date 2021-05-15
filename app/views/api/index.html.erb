@@ -1,0 +1,115 @@
+<h1>On the air API</h1>
+
+<h2>Assets</h2>
+
+<p><a href="/api/assets">/api/assets</a></p>
+
+<table>
+  <tr>
+    <th colspan=2>Request</th>
+  </tr>
+  <tr>
+    <th>field</th>
+    <th>description</th>
+  </tr>
+  <tr>
+    <td>asset_type</td>
+    <td>filter the report by asset_type. For valid values see 'name' in 'assettypes'</td>
+  </tr>
+  <tr>
+    <td>updated_since</td>
+    <td>filter the report to include only records updated since a specific date. Valid values are a timestamp or date in 'yyyy-mm-dd' format.</td>
+  </tr>
+  <tr>
+    <td>is_active</td>
+    <td>Set to any value to <i>include</i> expired or deleted records in the results</td>
+  </tr>
+  <tr>
+    <td>minor</td>
+    <td>Set to any value to <i>exclude</i> minor reserves (marginal strins and special purpise reserves</td>
+  </tr>
+
+</table>
+
+<table>
+  <tr>
+    <th colspan=2>Response</th>
+  </tr>
+
+  <tr>
+    <th>field</th>
+    <th>description</th>
+  </tr>
+  <tr>
+    <td>id</td>
+    <td>Internal ID</td>
+  </tr>
+  <tr>
+    <td>code</td>
+    <td>Unique code</td>
+  </tr>
+  <tr>
+    <td>name</td>
+    <td>Name</td>
+  </tr>
+  <tr>
+    <td>minor</td>
+    <td>true: Indicates a marginal strip or special-purpose reserve. Minor reserves are included in the site's search results by default.</td>
+  </tr>
+   <tr>
+    <td>is_active</td>
+    <td>true: current active record<br/>false: expired or deleted record</td>
+  <tr>
+    <td>location</td>
+    <td>WKT format location (EPSG:4326).<br/>For polygons this it the centroid (if that lies within the polygon) or an arbitrary point within the polygon</td>
+  </tr>
+</table>
+      
+<h2>AssetTypes</h2>
+
+<p><a href="/api/assettypes">/api/assettypes</a></p>
+
+<table>
+  <tr>
+    <th colspan=2>Request</th>
+  </tr>
+  <tr>
+    <th>field</th>
+    <th>description</th>
+  </tr>
+  <tr>
+    <td><i>none</i></td>
+    <td></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th colspan=2>Response</th>
+  </tr>
+
+  <tr>
+    <th>field</th>
+    <th>description</th>
+  </tr>
+  <tr>
+    <td>id</td>
+    <td>Internal ID</td>
+  </tr>
+  <tr>
+    <td>name</td>
+    <td>Name</td>
+  </tr>
+  <tr>
+    <td>display_name</td>
+    <td>Display name for this asset type on forms</td>
+  </tr>
+   <tr>
+    <td>pnp_class</td>
+    <td>Equivalent class on ParksNPeaks</td>
+  <tr>
+    <td>keep_score</td>
+    <td>true: asset types for which scores are tracked in 'ontheair.nz'</td>
+  </tr>
+</table>
+      

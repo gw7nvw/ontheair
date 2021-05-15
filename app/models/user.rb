@@ -1,6 +1,10 @@
 class User < ActiveRecord::Base
   serialize :score, Hash
   serialize :score_total, Hash
+  serialize :activated_count, Hash
+  serialize :activated_count_total, Hash
+  serialize :chased_count, Hash
+  serialize :chased_count_total, Hash
 
   attr_accessor :remeber_token, :activation_token, :reset_token
 
@@ -127,10 +131,13 @@ def authenticated?(attribute, token)
   end
 
   def update_score
-    puts AssetType.first.to_json
     AssetType.where(keep_score: true).each do |asset_type|
        self.score[asset_type.name]=self.assets_count_filtered(asset_type.name,false,false,false)
        self.score_total[asset_type.name]=self.assets_count_filtered(asset_type.name,false,false,true)
+       self.activated_count[asset_type.name]=self.assets_activated_count(asset_type.name,false)
+       self.activated_count_total[asset_type.name]=self.assets_activated_count(asset_type.name,true)
+       self.chased_count[asset_type.name]=self.assets_chased_count(asset_type.name,false)
+       self.chased_count_total[asset_type.name]=self.assets_chased_count(asset_type.name,true)
      end
      success=self.save
   end
@@ -246,7 +253,6 @@ def authenticated?(attribute, token)
 
    parks=[]
    contacts1.each do |contact|
-       puts contact.asset1_codes
        p=Asset.find_by(code: contact.asset1_codes)
        pp=p.linked_assets_by_type("wwff park")
        if pp and pp.count>0 then
@@ -273,9 +279,6 @@ def authenticated?(attribute, token)
      contacts_count=callsigns.count
 
      callsigns.each do |cs|
-       puts "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-       puts park[:docpark]+" - "+ park[:wwffpark]+ " - "+cs[:callsign]+" - "+ cs[:date].to_s
-       puts "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
 
        contacts1=Contact.where('callsign1= ? and callsign2 = ? and date >= ? and date < ? and (? = ANY(asset1_codes) or ? = ANY(asset1_codes))',  self.callsign,  cs[:callsign], cs[:date].beginning_of_day,cs[:date].end_of_day, park[:docpark], park[:wwffpark])
@@ -332,7 +335,6 @@ def authenticated?(attribute, token)
 
    parks=[]
    contacts1.each do |contact|
-       puts contact.asset1_codes
        p=Asset.find_by(code: contact.asset1_codes)
        pp=p.linked_assets_by_type("pota park")
        if pp and pp.count>0 then 

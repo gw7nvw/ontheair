@@ -17,13 +17,8 @@ include SessionsHelper
   if !user then  user = User.find_by(callsign: params[:session][:email].upcase) end
 
   if user && user.authenticate(password)
-       puts "*** authenticated *** "
       if user.activated?
-         puts "*** activated *** "
         sign_in user
-        puts "*** signed in ***"
-        puts current_user
-        puts current_user.callsign
         if params[:referring_url] then referring_url=params[:referring_url] else referring_url="/" end
         if params[:signin_x] and params[:signin_y] and params[:signin_zoom] then
           redirect_to referring_url+"?x="+params[:signin_x]+"&y="+params[:signin_y]+"&zoom="+params[:signin_zoom]

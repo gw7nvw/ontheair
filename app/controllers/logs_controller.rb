@@ -23,6 +23,7 @@ def save
         cle=Contact.find_by_id(rid)
       else
         cle=Contact.new
+        cle.createdBy_id=current_user.id
       end
       if row[2] then 
       cle.time=("%05.2f" % (((row[1]||"").gsub(/\D/,'').to_f)/100)).gsub('.',':')
@@ -53,9 +54,7 @@ def save
       cle.log_id=id
       cle.convert_to_utc(current_user)
 
-      if !cle.save then status=500; puts "error" else 
-         puts "good"  
-      end
+      if !cle.save then status=500; puts "error" end
       ids << cle.id
       end
      end
@@ -123,6 +122,7 @@ def editcontact
       columns=(Contact.column_names & Log.column_names) - ["id", "createdBy_id", "created_at", "updated_at"]
       @log=Log.new( Contact.first(:select => columns.join(",") ).attributes)
       @log.asset_codes=@contact.asset1_codes
+      @log.createdBy_id=current_user.id
       @log.save
       @contact.log_id=@log.id
       @contact.save
@@ -174,7 +174,7 @@ def create
     if params[:commit] then
       @log = Log.new(log_params)
       @log.asset_codes=params[:log][:asset_codes].gsub('{','').gsub('}','').split(',')
-
+      @log.createdBy_id=current_user.id
       if @log.save then
         @log.reload
         @id=@log.id
@@ -220,7 +220,6 @@ def update
       end
       @log.assign_attributes(log_params)
       @log.asset_codes=params[:log][:asset_codes].gsub('{','').gsub('}','').split(',')
-
       if @log.save then
         flash[:success] = "Log details updated"
         @user=User.find_by(callsign: @log.callsign1)

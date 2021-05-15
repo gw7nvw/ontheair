@@ -80,16 +80,19 @@
 
 <% AssetType.all.each do |at| %>
 
-  <% abs=@user.assets_count_filtered(at.name,false,false,false) %>
-  <% if abs>0 then %>
+  <% abs=@user.score[at.name] %>
+  <% if abs and abs>0 then %>
 
     <div class="erow">
-      <div class="sectiontitle"><%=at.name.capitalize.pluralize%> bagged: <%=abs%> <%=at.name.pluralize%> (on <%=@user.assets_count_filtered(at.name,false,false,true)%> activations)</br></div>
-    </div>
-
+      <div class="sectiontitle" style="margin-top: 12px;"><%=at.name.capitalize.pluralize%>:</div>
+      <ul><li> Bagged: <%=abs%> unique (<%=@user.score_total[at.name]%> total)</li>
+      <li>Chased: <%=@user.assets_chased_count(at.name,false)%> unique (<%=@user.assets_chased_count(at.name,true)%> total)</li>
+      <li>Activated: <%=@user.assets_activated_count(at.name,false)%> unique (<%=@user.assets_activated_count(at.name,true)%> total)</li>
+      </ul>
     <div id="erow">
-      <% @user.assets(at.name).each do |asset| %>
-        <%=link_to asset.name, '/assets/'+asset.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>,&nbsp
+      <% count=0; @user.assets(at.name).each do |asset|; count+=1 %>
+        <%= if count>1 then ', ' end %>
+        <%=link_to asset.name, '/assets/'+asset.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
 
       <% end %>
     </div>

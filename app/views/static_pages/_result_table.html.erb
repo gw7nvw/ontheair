@@ -12,7 +12,7 @@
     lastscore=99999999
     if @users then @users.sort_by { |u| u.score[@sortby]||0 }.reverse.each do |user| %>
       <% 
-         if (user.score[@sortby]||0)<lastscore then 
+         if (user.score[@sortby]||0)<(lastscore||0) then 
           position+=1
           lastscore=user.score[@sortby]
          end

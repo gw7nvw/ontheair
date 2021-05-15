@@ -234,7 +234,6 @@ def get_pota_alerts
         end
         if td and td.length>0 then
           values.push(td)
-          puts td
         end  
       end
     else

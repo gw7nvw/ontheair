@@ -40,7 +40,7 @@
       <table style="table-layout: fixed">
         <tr>
           <td class="td-l">Callsign</td>
-          <td colspan=2 class="td-d"> <%= f.text_field :callsign1%></td>
+          <td colspan=2 class="td-d"> <% if current_user.is_admin then %> <%= f.text_field :callsign1 %> <% else %> <%=f.text_field :callsign1, readonly: true%> <% end %></td>
           <td class="td-l">Date:</td>
           <td colspan=2 class="td-d"> <%= f.date_field :date%></td>
           <td class="td-l">QRP?</td>
@@ -289,6 +289,19 @@ Handsontable.dom.addEvent(autosave, 'click', function() {
     exampleConsole.innerText ='Changes will not be autosaved';
   }
 });
+Handsontable.hooks.add('afterCreateRow',newRowCallback);
+
+function newRowCallback() {
+   newrow=data2.length-2;
+   lastrow=newrow-1;
+   if(lastrow>=0) {
+     if(!data2[newrow]['mode']) {data2[newrow]['mode']=data2[lastrow]['mode']};
+     if(!data2[newrow]['frequency']) {data2[newrow]['frequency']=data2[lastrow]['frequency']};
+     if(!data2[newrow]['time']) {data2[newrow]['time']=data2[lastrow]['time']};
+   };
+   hot.render();
+
+}
 </script>
 <% else %>
     <table>

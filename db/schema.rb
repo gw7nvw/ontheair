@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210514014300) do
+ActiveRecord::Schema.define(version: 20210515054041) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -151,6 +151,8 @@ ActiveRecord::Schema.define(version: 20210514014300) do
     t.integer  "log_id"
     t.string   "asset1_codes",                                            default: [],   array: true
     t.string   "asset2_codes",                                            default: [],   array: true
+    t.string   "name1"
+    t.string   "name2"
   end
 
   create_table "hut_photo_links", force: true do |t|
@@ -399,11 +401,11 @@ ActiveRecord::Schema.define(version: 20210514014300) do
     t.string   "password_digest"
     t.string   "remember_token"
     t.string   "activation_digest"
-    t.boolean  "activated",            default: false
+    t.boolean  "activated",             default: false
     t.datetime "activated_at"
-    t.boolean  "is_admin",             default: false
-    t.boolean  "is_active",            default: true
-    t.boolean  "is_modifier",          default: false
+    t.boolean  "is_admin",              default: false
+    t.boolean  "is_active",             default: true
+    t.boolean  "is_modifier",           default: false
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "reset_digest"
@@ -417,6 +419,10 @@ ActiveRecord::Schema.define(version: 20210514014300) do
     t.string   "remember_token2"
     t.string   "score"
     t.string   "score_total"
+    t.string   "activated_count"
+    t.string   "activated_count_total"
+    t.string   "chased_count"
+    t.string   "chased_count_total"
   end
 
   add_index "users", ["remember_token"], :name => "index_users_on_remember_token"

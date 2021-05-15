@@ -18,7 +18,6 @@ def index
 
   @searchtext=params[:searchtext]
   if @searchtext then
-     puts ":"+@searchtext+":"
      @assets=Asset.find_by_sql [ "select * from assets where "+whereclause+" and (lower(name) like '%%"+@searchtext.downcase+"%%' or lower(code) like '%%"+@searchtext.downcase+"%%') order by name limit 40"]
   else
      @assets=[]

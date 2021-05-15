@@ -24,6 +24,9 @@ resources :users
 resources :posts, only: [:new, :create, :show, :edit, :update]
 get 'posts/:id/delete', to: 'posts#delete'
 match '/queries/asset', to: 'queries#asset',    via:'get'
+resources :api, only: [:index]
+match '/api/assets', to: 'api#asset',    via:'get'
+match '/api/assettypes', to: 'api#assettype',    via:'get'
 
 resources :sota_logs
 resources :pota_logs

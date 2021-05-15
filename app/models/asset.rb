@@ -6,11 +6,13 @@ class Asset < ActiveRecord::Base
 
 def boundary_simple
    pp=Asset.find_by_sql [ "select id, ST_NPoints(boundary) as altitude from assets where id="+self.id.to_s ]
-   lenfactor=Math.sqrt(pp.first.altitude/10000)
-   rnd=0.000002*10**lenfactor
-   boundarys=Asset.find_by_sql [ 'select id, ST_AsText(ST_Simplify("boundary", '+rnd.to_s+')) as "boundary" from assets where id='+self.id.to_s ]  
-   boundary=boundarys.first.boundary
-   boundary
+   if pp then 
+     lenfactor=Math.sqrt(pp.first.altitude/10000)
+     rnd=0.000002*10**lenfactor
+     boundarys=Asset.find_by_sql [ 'select id, ST_AsText(ST_Simplify("boundary", '+rnd.to_s+')) as "boundary" from assets where id='+self.id.to_s ]  
+     boundary=boundarys.first.boundary
+     boundary
+   else nil end
 end
 
 def x    
@@ -198,7 +200,6 @@ end
 def self.get_pnp_class_from_code(code)
   aa=Asset.assets_from_code(code)
   a=aa.first 
-  puts a[:type]
   pnp_class="QRP" 
   if a and a[:type] then 
      ac=AssetType.find_by(name: a[:type])
@@ -323,7 +324,7 @@ def self.add_islands
 end
 
 def self.add_lakes
- ls=Lake.all
+ ls=Lake.where(is_active: true)
  ls.each do |l|
     Asset.add_lake(l)
  end
@@ -543,9 +544,8 @@ end
 
     got_start=false
     page_string.each_line do |l|
-       if l["<h3>Photos</h3>"] then got_start=true; puts "got start"; puts l end
+       if l["<h3>Photos</h3>"] then got_start=true end
        if got_start and l["<img src"] then
-          puts l
           fs=l.split('"')
           if fs and fs[1] and fs[1]["img"] then
             link_url="https://hutbagger.co.nz"+fs[1]
