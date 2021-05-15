@@ -215,7 +215,7 @@ end
      if not user then
        user=User.create(callsign: callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
      end
-     if Rails.env.production? then Resque.enqueue(Scorer,user.callsign) else user.update_score end
+     if Rails.env.production? then user.outstanding=true;user.save;Resque.enqueue(Scorer) else user.update_score end
    end
    callsign=self.callsign2
    if callsign and callsign.length>0 then
@@ -223,7 +223,7 @@ end
      if not user then
        user=User.create(callsign: callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
      end
-     if Rails.env.production? then Resque.enqueue(Scorer,user.callsign) else user.update_score end
+     if Rails.env.production? then user.outstanding=true;user.save;Resque.enqueue(Scorer) else user.update_score end
    end
  end
 

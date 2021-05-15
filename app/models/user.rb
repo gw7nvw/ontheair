@@ -96,9 +96,8 @@ def authenticated?(attribute, token)
       contacts=Contact.find_by_sql [ "select * from contacts where callsign1='"+self.callsign+"' or callsign2='"+self.callsign+"' order by date, time"]
   end
 
-  def contacts_filtered(user_qrp, contact_qrp)
+  def filter_contacts(contacts,user_qrp, contact_qrp)
     fc=[]
-    contacts=self.contacts
     contacts.each do |c|
      if contact_qrp then
        if c.is_qrp1 and c.is_qrp2 then fc.push(c) end
@@ -111,6 +110,13 @@ def authenticated?(attribute, token)
        fc.push(c)
      end
     end
+    fc
+  end
+
+  def contacts_filtered(user_qrp, contact_qrp)
+    contacts=self.contacts
+    fc=filter_contacts(contacts,user_qrp, contact_qrp)
+    fc 
   end
 
   def self.users_with_assets
@@ -131,15 +137,16 @@ def authenticated?(attribute, token)
   end
 
   def update_score
+    scores=self.assets_count_all
     AssetType.where(keep_score: true).each do |asset_type|
-       self.score[asset_type.name]=self.assets_count_filtered(asset_type.name,false,false,false)
-       self.score_total[asset_type.name]=self.assets_count_filtered(asset_type.name,false,false,true)
-       self.activated_count[asset_type.name]=self.assets_activated_count(asset_type.name,false)
-       self.activated_count_total[asset_type.name]=self.assets_activated_count(asset_type.name,true)
-       self.chased_count[asset_type.name]=self.assets_chased_count(asset_type.name,false)
-       self.chased_count_total[asset_type.name]=self.assets_chased_count(asset_type.name,true)
-     end
-     success=self.save
+       self.score[asset_type.name]=scores[:bagged_count][asset_type.name]
+       self.score_total[asset_type.name]=scores[:bagged_count_total][asset_type.name]
+       self.activated_count[asset_type.name]=scores[:activated_count][asset_type.name]
+       self.activated_count_total[asset_type.name]=scores[:activated_count_total][asset_type.name]
+       self.chased_count[asset_type.name]=scores[:chased_count][asset_type.name]
+       self.chased_count_total[asset_type.name]=scores[:chased_count_total][asset_type.name]
+    end
+    success=self.save
   end
 
   def assets(at)
@@ -189,6 +196,73 @@ def authenticated?(attribute, token)
    end
    assets.uniq.count
   end
+
+  def assets_count_all
+
+   ats=AssetType.where("name != 'all'")
+   activated_total={}
+   activated={}
+   chased_total={}
+   chased={}
+   activated_count_total={}
+   activated_count={}
+   chased_count_total={}
+   chased_count={}
+   bagged_count_total={}
+   bagged_count={}
+
+   ats.each do |at|
+     activated[at.name]=[]
+     activated_total[at.name]=[]
+     chased[at.name]=[]
+     chased_total[at.name]=[]
+   end
+
+   contacts=Contact.where(callsign1: self.callsign)
+   contacts.each do |c|
+     c.asset1_codes.each do |code|
+       a=Asset.find_by(code: code)
+       if (a) then 
+         activated_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
+         activated[a.asset_type].push(a.code)
+       end
+     end
+     c.asset2_codes.each do |code|
+       a=Asset.find_by(code: code)
+       if (a) then 
+         chased_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
+         chased[a.asset_type].push(a.code)
+       end
+     end
+   end
+   contacts=Contact.where(callsign2: self.callsign)
+   contacts.each do |c|
+     c.asset2_codes.each do |code|
+       a=Asset.find_by(code: code)
+       if (a) then
+         activated_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
+         activated[a.asset_type].push(a.code)
+       end
+     end
+     c.asset1_codes.each do |code|
+       a=Asset.find_by(code: code)
+       if (a) then
+         chased_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
+         chased[a.asset_type].push(a.code)
+       end
+     end
+   end
+
+   ats.each do |at|
+     activated_count[at.name]=activated[at.name].uniq.count
+     activated_count_total[at.name]=activated_total[at.name].uniq.count
+     chased_count[at]=chased[at.name].uniq.count
+     chased_count_total[at.name]=chased_total[at.name].uniq.count
+     bagged_count[at.name]=(activated[at.name]+chased[at.name]).uniq.count
+     bagged_count_total[at.name]=(activated_total[at.name]+chased_total[at.name]).uniq.count
+   end
+   results={activated_count: activated_count, activated_count_total: activated_count_total, chased_count: chased_count, chased_count_total: chased_count_total, bagged_count: bagged_count, bagged_count_total: bagged_count_total}
+end
 
   def assets_count_filtered(at,user_qrp, contact_qrp, revisits)
    assets=[]

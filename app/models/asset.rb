@@ -7,7 +7,7 @@ class Asset < ActiveRecord::Base
 def boundary_simple
    pp=Asset.find_by_sql [ "select id, ST_NPoints(boundary) as altitude from assets where id="+self.id.to_s ]
    if pp then 
-     lenfactor=Math.sqrt(pp.first.altitude/10000)
+     lenfactor=Math.sqrt((pp.first.altitude||0)/10000)
      rnd=0.000002*10**lenfactor
      boundarys=Asset.find_by_sql [ 'select id, ST_AsText(ST_Simplify("boundary", '+rnd.to_s+')) as "boundary" from assets where id='+self.id.to_s ]  
      boundary=boundarys.first.boundary

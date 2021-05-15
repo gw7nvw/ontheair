@@ -1,12 +1,14 @@
 class Scorer
   @queue = :ontheair
 
-  def self.perform(callsign)   
+  def self.perform()   
     puts "SCORER: Got called"
-    u=User.find_by(callsign: callsign)
-    if u then 
-      puts "SCORER: Got user "+callsign
-      sleep 1
+    sleep 1
+    us=User.where(outstanding: true)
+    us.each do |u|
+      puts "SCORER: Got user "+u.callsign
+      u.outstanding=false
+      u.save
       u.update_score
     end
   end
