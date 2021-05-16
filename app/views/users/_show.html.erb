@@ -16,7 +16,7 @@
             <%=  link_to "Edit", '/users/'+@user.callsign+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
        <% end %>
        <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
-       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+       <%=render 'map_controls'%>
    </div>
 </div>
 
@@ -92,7 +92,7 @@
     <div id="erow">
       <% count=0; @user.assets(at.name).each do |asset|; count+=1 %>
         <%= if count>1 then ', ' end %>
-        <%=link_to asset.name, '/assets/'+asset.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+        <%=link_to asset.name, '/assets/'+asset.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
 
       <% end %>
     </div>
@@ -135,9 +135,5 @@
 
       <% count=count+1 %>
   <% end end %>
-  if(site_map_size==0) { 
-     $('#actionbar').removeClass('span7');
-     $('#actionbar').addClass('span12');
-  }
-
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>

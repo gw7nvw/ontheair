@@ -57,9 +57,10 @@ if( /Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent))
     </div>
   </form>
 
-    <%= render 'layouts/header' %>
-    <div id="main_page" class="container-fluid"> 
-    <div class="row-fluid">
+   <%= render 'layouts/header' %>
+   <div class="row-fluid">
+   <div id="main_page" class="container-fluid"> 
+   <div id="actionbar-full" class="span12"> </div>
     <div id="left_panel" class="span5"> 
       <%=render 'maps/map' %>
     </div> 

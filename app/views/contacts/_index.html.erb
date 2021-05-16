@@ -48,7 +48,7 @@ $(function () {
           %>
            <%=  link_to "Download", '/contacts.csv'+parmtext, class: "btn btn-small btn-primary"%>
        <% end %>
-       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+       <%=render 'map_controls'%>
    </div>
 </div>
 <div id="right_scroll">
@@ -58,6 +58,7 @@ $(function () {
 
 <div class="erow">Key: <div style="color:green">QRP</div>  <div style="text-decoration:underline">Home Station</div></div>
 <script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
   <% if @contacts then %>
 
    <%  @contacts.each do |contact| %>
@@ -78,8 +79,4 @@ $(function () {
   <% end %>
 
 <% end %>
-    if(site_map_size==0) { 
-       $('#actionbar').removeClass('span7');
-       $('#actionbar').addClass('span12');
-}
 </script>

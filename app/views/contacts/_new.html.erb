@@ -1,6 +1,6 @@
 <div class="fullform">
    <%= form_for @contact, remote: true, :html => {:name => 'contactform'} do |f| %>
-    <div id="actionbar-form" class="span7">
+    <div id="actionbar" class="span7">
        <div id="crumbs">
          <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
          &nbsp;--&gt;&nbsp;
@@ -39,10 +39,6 @@
 <script>
     reset_map_controllers(); 
     deactivate_all_click();
-    if(site_map_size==0) { 
-       $('#actionbar-form').removeClass('span7');
-       $('#actionbar-form').addClass('span12');
-    }
    document.title = '... On the Air'
    document.getElementById('logo').innerHTML='... On The Air'
 

@@ -1,6 +1,6 @@
 <div class="fullform">
    <%= form_for @asset, remote: true, :html => {:name => 'assetform'} do |f| %>
-    <div id="actionbar-form" class="span7">
+    <div id="actionbar" class="span7">
        <div id="crumbs">
          <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
          &nbsp;--&gt;&nbsp;
@@ -15,16 +15,12 @@
          <% end %>
        </div>
        <div id="controls">
-          <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-hightlight" %>
-          <%  if(@submit_button == "Save Changes" and current_user and current_user.is_admin) %>
-            <%= f.submit "Delete", confirm: "Delete asset: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>
-          <% end %>
           <% if params[:referring]=='index' or @asset.id==nil%>
             <%=  link_to "Cancel", '/assets', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
           <% else %>
             <%=  link_to "Cancel", '/assets/'+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
           <% end %>
-          <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+          <%=render 'map_controls'%>
        </div>
     </div>
 
@@ -80,18 +76,19 @@
       <% else %>
         <%= f.check_box :is_active, :readonly => true%><br/><br/>
       <% end %>
+      <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-hightlight" %>
+      <%  if(@submit_button == "Save Changes" and current_user and current_user.is_admin) %>
+        <%= f.submit "Delete", confirm: "Delete asset: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>
+      <% end %>
     </div>
   <% end %>
 </div>
 
 <script>
+    document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
     reset_map_controllers(); 
     place_init('<%=@asset.location%>', 0);
     deactivate_all_click();
-    if(site_map_size==0) { 
-       $('#actionbar-form').removeClass('span7');
-       $('#actionbar-form').addClass('span12');
-    }
 
 </script>
 

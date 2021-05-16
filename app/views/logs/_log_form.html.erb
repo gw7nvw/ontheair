@@ -14,7 +14,6 @@
      <% end %>
      </div>
    <div id="controls">
-       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
        <% if @log.id and (@log.callsign1==current_user.callsign or current_user.is_admin) then %>
           <%=  link_to "Delete", '/logs/'+@log.id.to_s+'/delete', class: "btn btn-small btn-primary", confirm: "Delete log: Are you sure?", :remote => true,  :onclick => "linkHandler('delete')"%>
        <% end %>
@@ -24,6 +23,7 @@
          <%=  link_to "Cancel", '/contacts/', class: 'btn btn-small btn-primary', :remote => true,  :onclick => "linkHandler('cancel')" %>
        <% end %>
        <%=  link_to "Index", '/contacts/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
+       <%=render 'map_controls'%>   
    </div>
 </div>
   <div id="right_scroll">
@@ -324,3 +324,6 @@ function newRowCallback() {
 
   </div>
 </div>
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>

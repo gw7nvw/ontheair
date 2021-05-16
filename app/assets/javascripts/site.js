@@ -121,13 +121,15 @@ function park_init(plloc,keep,cntloc) {
 }
 
 function site_smaller_map() {
-  document.getElementById('map_map').style.display="none";
+//  document.getElementById('map_map').style.display="none";
   if (site_map_size==1) {
     $('#left_panel').toggleClass('span5 span0');
     $('#right_panel').toggleClass('span7 span12');
     $('#actionbar').toggleClass('span7 span12');
     document.getElementById('left_panel').style.display="none";
     site_map_size=0;
+    document.getElementById('larger_map').style.display="contents";
+    document.getElementById('smaller_map').style.display="none";
   }
   if (site_map_size==2) {
     document.getElementById('right_panel').style.display="block";
@@ -135,6 +137,8 @@ function site_smaller_map() {
     $('#right_panel').toggleClass('span0 span7');
     $('#actionbar').toggleClass('span0 span7');
     site_map_size=1;
+    document.getElementById('larger_map').style.display="contents";
+    document.getElementById('smaller_map').style.display="contents";
   }
 
   setTimeout( function() {
@@ -160,21 +164,25 @@ function toggle_map() {
 }
 
 function site_bigger_map() {
-  document.getElementById('map_map').style.display="none";
   if (site_map_size==1) {
     $('#left_panel').toggleClass('span5 span12');
     $('#right_panel').toggleClass('span7 span0');
     $('#actionbar').toggleClass('span7 span0');
   setTimeout( function() {document.getElementById('right_panel').style.display="none";}, 100);
     site_map_size=2;
+    document.getElementById('larger_map').style.display="none";
+    document.getElementById('smaller_map').style.display="contents";
   }
 
   if (site_map_size==0) {
+   // document.getElementById('map_map').style.display="none";
     $('#left_panel').toggleClass('span0 span5');
     $('#right_panel').toggleClass('span12 span7');
     $('#actionbar').toggleClass('span12 span7');
-    document.getElementById('left_panel').style.display="block";
     site_map_size=1;
+    document.getElementById('left_panel').style.display="block";
+    document.getElementById('larger_map').style.display="contents";
+    document.getElementById('smaller_map').style.display="contents";
   }
   setTimeout( function() {
     map_map.updateSize();

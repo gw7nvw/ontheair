@@ -77,7 +77,9 @@ def codename
  "["+self.code+"] "+self.name
 end
 def type
-  AssetType.find_by(name: self.asset_type)
+  type=AssetType.find_by(name: self.asset_type)
+  if !type then  type=AssetType.find_by(name: 'all') end
+  type
 end
 
 def get_safecode
@@ -145,7 +147,7 @@ def self.assets_from_code(codes)
           asset[:external]=false
           asset[:code]=a.code
           asset[:type]=a.asset_type
-          asset[:title]=a.type.display_name
+          if a.type then asset[:title]=a.type.display_name else puts "ERROR: cannot find type "+a.asset_type end
       elsif code.match(/^[a-zA-Z]{1,2}-\d{4}/)  then
         #POTA
         if code[0..1].upcase=='VK' then
@@ -340,7 +342,7 @@ def self.add_lake(l)
     a.is_active=true
     a.name=l.name
     a.location=l.location
-    a.boundary=l.boundary
+   a.boundary=l.boundary
     a.ref_id=l.topo50_fid
     a.save
     puts a.code

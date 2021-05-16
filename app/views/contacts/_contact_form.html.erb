@@ -1,6 +1,6 @@
 <div class="fullform">
    <%= form_for @contact, remote: true, :html => {:name => 'contactform'} do |f| %>
-    <div id="actionbar-form" class="span7">
+    <div id="actionbar" class="span7">
        <div id="crumbs">
          <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
          &nbsp;--&gt;&nbsp;
@@ -24,7 +24,7 @@
           <% else %>
             <%=  link_to "Cancel", '/contacts/'+@contact.id.to_s, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
           <% end %>
-          <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+          <%=render 'map_controls'%>
        </div>
     </div>
 
@@ -281,14 +281,11 @@
 </div>
 
 <script>
+    document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
     reset_map_controllers(); 
     deactivate_all_click();
     place_init('<%=@contact.location1%>', '', site_green_star);
     map_add_feature_from_wkt('<%=@contact.location2%>','EPSG:4326',site_red_star);
-    if(site_map_size==0) { 
-       $('#actionbar-form').removeClass('span7');
-       $('#actionbar-form').addClass('span12');
-    }
 
 </script>
 

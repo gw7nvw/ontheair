@@ -13,7 +13,7 @@
      <b>WWFF Logs</b>
      </div>
    <div id="controls">
-       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+       <%=render 'map_controls'%>
    </div>
 </div>
 <div id="right_scroll">
@@ -46,8 +46,5 @@
 </div>
 
 <script>
-    if(site_map_size==0) { 
-       $('#actionbar').removeClass('span7');
-       $('#actionbar').addClass('span12');
-}
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>

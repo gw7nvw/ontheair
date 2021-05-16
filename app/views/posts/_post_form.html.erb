@@ -4,18 +4,10 @@
    document.title = '... On The Air'
    document.getElementById('logo').innerHTML='... On The Air'
 </script>
-<script type="text/javascript">
-   bkLib.onDomLoaded(startEdit);
-
-function startEdit() {
-  nicEditors.allTextAreas();
-  init();
-}
-</script>
 
 <div class="fullform">
   <%= form_for @post, remote: true, :html => {:name => 'postform'}  do |f| %>
-    <div id="actionbar-form" class="span7">
+    <div id="actionbar" class="span7">
       <div id="crumbs">
         <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
         &nbsp;--&gt;&nbsp;
@@ -31,19 +23,15 @@ function startEdit() {
         <% end %>
       </div>
       <div id="controls">
-        <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight" %>
         <% if @post.id %><% if params[:referring]=='index'%>
-          <%=  link_to "Cancel", '/posts', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
-        <% else %>
-          <%=  link_to "Cancel", '/posts/'+@post.id.to_s, class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+            <%=  link_to "Cancel", '/posts', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+          <% else %>
+            <%=  link_to "Cancel", '/posts/'+@post.id.to_s, class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
         <% end %> <% end %>
 
-        <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@post.created_by_id)) %>
-          <%= f.submit "Delete Post", confirm: "Delete post: Are you sure?", class: "btn btn-small btn-primary", id:  "deletebutton",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
-        <% end %>
+        <%=render 'map_controls'%>
       </div>
     </div>
-
     <%= render 'shared/error_messages' %>	
 
     <div id="right_scroll">
@@ -119,12 +107,16 @@ function startEdit() {
         <%= f.check_box :do_not_publish %>
       </div>
     <% end %>
+    <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight" %>
+    <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@post.created_by_id)) %>
+        <%= f.submit "Delete Post", confirm: "Delete post: Are you sure?", class: "btn btn-small btn-primary", id:  "deletebutton",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+    <% end %>
   <% end %>
 </div>
 <script>
-var assets=[]
+var assets=[];
 <% count=0; while count<10 do %>
-assets[<%=count%>] = new Bloodhound({
+  assets[<%=count%>] = new Bloodhound({
   datumTokenizer: Bloodhound.tokenizers.whitespace,
   queryTokenizer: Bloodhound.tokenizers.whitespace,
   remote: {
@@ -149,10 +141,11 @@ assets[<%=count%>] = new Bloodhound({
 <% count+=1; end %>
 
 
-  startEdit();
 
 function addmore(count) {
   document.getElementById('row'+(count+1)).style="display:";
 }
+document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+
 </script>
 

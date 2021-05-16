@@ -337,7 +337,8 @@ p {
 //        padding: 2.5px;
         position: fixed;
         margin-bottom: 10px;
-        margin-top: 12px;
+        margin-top: 24px;
+        margin-left: 0px;
 }
 
 .qsl_table {
@@ -502,7 +503,8 @@ html, body {
 }
 
 #map_map {
-        width: calc(100% - 15px);
+//        width: calc(100% - 15px);
+        width: 100%;
         height: calc(100% - 48px); 
         border: 0px;
         margin: 0px;
@@ -519,7 +521,8 @@ ul {
 #right_panel
 {
 	float: right;
-        margin-top: 12px;
+        margin-top: -8px;
+        margin-left: 0px;
 	height: auto;    
 }
 
@@ -536,7 +539,7 @@ ul {
      overflow: overlay;
 }
 
-#actionbar
+#actionbar-full
 {
      background-color: #4B0082;
      height: 32px;
@@ -544,7 +547,20 @@ ul {
      margin-left: 0px;
      padding-left: 8px;
      padding-right: 6px;
+     margin-top: -8px;
+     
 }
+#actionbar
+{
+     display: none !important;
+     background-color: #4B0082;
+     height: 32px;
+     position: fixed;
+     margin-left: 0px;
+     padding-left: 8px;
+     padding-right: 6px;
+}
+
 #actionbar-form
 {
      background-color: #4B0082;
@@ -833,32 +849,35 @@ input {
 
 #controls
 {
-     float: none;
+//     float: none;
 }
 #crumbs
 {
-     float: none;
+  margin-top: 1px !important;
+ //    float: none;
 }
 #right_scroll
 {
-     margin-top: 54px;
+//     margin-top: 54px;
 }
 #header
 {
-	height: 20px !important;
+//	height: 20px !important;
 }
 .navbar-inner 
 {
-   min-height: 20px !important;
+//   min-height: 20px !important;
 }
 .navbar .nav li {
-   line-height: 12px !important;
+//   line-height: 12px !important;
 }
 #left_panel {
-  margin-top: 4px !important;
+//  margin-top: 24px !important;
+//  margin-left: 0px;
 }
 #right_panel {
-  margin-top: 4px !important;
+//  margin-top: 4px !important;
+//  margin-left: 0px;
 }
 #our_logo {
   width: 0px;

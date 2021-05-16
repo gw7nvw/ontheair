@@ -18,7 +18,7 @@
             <%=  link_to "Edit", '/assets/'+@asset.safecode+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
        <% end %>
        <%=  link_to "Index", "/assets", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
-       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+       <%=render 'map_controls'%>
    </div>
 </div>
 <div id="right_scroll">
@@ -189,14 +189,11 @@
 <% end %>
 
 <script>
-    place_init('<%=@asset.location%>',  0);
+    document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+    place_init('<%=@asset.location%>',  0, site_purple_star);
     <% if @asset.boundary_simple then %>
-      place_init('<%=@asset.boundary_simple%>',  0,site_highlight_polygon);
+      place_init('<%=@asset.boundary_simple%>',  1,site_highlight_polygon);
     <% end %>
-    if(site_map_size==0) { 
-       $('#actionbar').removeClass('span7');
-       $('#actionbar').addClass('span12');
-    }
     function editlinks() {
       if (document.getElementById('showlinks').style.display=="none") {
         document.getElementById('showlinks').style.display="block";

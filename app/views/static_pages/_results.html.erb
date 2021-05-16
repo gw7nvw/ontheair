@@ -13,7 +13,7 @@
      <b>Results</b>
    </div>
    <div id="controls">
-      <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+     <%=render 'map_controls'%>
    </div>
 </div>
 
@@ -26,13 +26,10 @@
   <%=render 'result_table'%>
 
 <script>
+document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 if ($(window).width() < 960) {
         site_smaller_map();
       }
 
-    if(site_map_size==0) { 
-       $('#actionbar').removeClass('span7');
-       $('#actionbar').addClass('span12');
-}
 </script>
 

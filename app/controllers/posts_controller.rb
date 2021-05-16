@@ -90,7 +90,7 @@ def update
          if @post.destroy
            flash[:success] = "Post deleted, id:"+params[:id]
            @topic=topic     
-           @items=topic.items
+    #       @items=topic.items
            render 'topics/show'
 
          else

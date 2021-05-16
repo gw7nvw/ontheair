@@ -17,7 +17,7 @@
    <div id="controls">
        <%=  link_to "Index", "/assets", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
        <%=  link_to "Cancel", "/assets/"+@asset.safecode, class: "btn btn-small btn-primary", remote: true,  :id => 'asset', :onclick => "linkHandler('index')" %>
-       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+       <%=render 'map_controls'%>
    </div>
 </div>
 <div id="right_scroll">
@@ -124,10 +124,7 @@
 
 
 <script>
+    document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
     place_init('<%=@asset.location%>',  0);
-    if(site_map_size==0) { 
-       $('#actionbar').removeClass('span7');
-       $('#actionbar').addClass('span12');
-    }
 </script>
 

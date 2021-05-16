@@ -7,7 +7,7 @@
 
 <div class="fullform">
     <%= form_for(@user) do |f| %>
-      <div id="actionbar-form" class="span7">
+      <div id="actionbar" class="span7">
        <div id="crumbs">
          <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
          &nbsp;--&gt;&nbsp;
@@ -24,7 +24,6 @@
        </div>
 
        <div id="controls">
-          <%= f.submit @submit_button, onclick: "signupHandler();", class: "btn btn-small btn-primary btn-highlight" %>
           <% if @user.id %><% if params[:referring]=='index'%>
             <%=  link_to "Cancel", '/users', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
           <% else %>
@@ -35,7 +34,7 @@
             <%= f.submit "Delete", confirm: "Delete user: Are you sure?", class: "btn btn-small btn-primary", callsign: "delete", id:  "deletebutton", remote: true %>
           <% end %>
 
-          <%= link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+          <%=render 'map_controls'%>
        </div>
       </div>
 
@@ -85,17 +84,14 @@
       <%= f.label :password_confirmation, "Confirmation" %>
       <%= f.password_field :password_confirmation %>
 <div class="erow"><i>Password rules: any combination of letters and numbers. No spaces or extended characters</i></div>
+      <%= f.submit @submit_button, onclick: "signupHandler();", class: "btn btn-small btn-primary btn-highlight" %>
     </div>
 
 
     <% end %>
   </div>
 <script>
-    if(site_map_size==0) { 
-       $('#actionbar-form').removeClass('span7');
-       $('#actionbar-form').addClass('span12');
-    }
-
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>
 
 
