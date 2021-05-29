@@ -83,7 +83,14 @@
 
       <%= f.label :password_confirmation, "Confirmation" %>
       <%= f.password_field :password_confirmation %>
+
 <div class="erow"><i>Password rules: any combination of letters and numbers. No spaces or extended characters</i></div>
+
+      <%= f.label :pin, "PIN" %>
+      <%= f.text_field :pin %>
+
+<div class="erow"><i>PIN is for access to the SPOT/ALERT gateway from inreach/email. PIN rules: any 4-character combination of letters and numbers. No spaces or extended characters</i></div>
+
       <%= f.submit @submit_button, onclick: "signupHandler();", class: "btn btn-small btn-primary btn-highlight" %>
     </div>
 

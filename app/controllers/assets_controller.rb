@@ -1,5 +1,5 @@
 class AssetsController < ApplicationController
-  before_action :signed_in_user, only: [:edit, :update, :editgrid]
+  before_action :signed_in_user, only: [:edit, :update, :create, :new]
 
 
   def index_prep
@@ -59,8 +59,13 @@ class AssetsController < ApplicationController
     @newlink=AssetWebLink.new
     @parameters=params_to_query
     code=params[:id].gsub("_","/")
-    if(!(@asset = Asset.find_by(code: code)))
-      redirect_to '/'
+    code=code.upcase
+    @asset = Asset.find_by(code: code)
+    if(!@asset) then
+        @asset = Asset.find_by(old_code: code)
+        if(!@asset) then
+          redirect_to '/'
+        end
     end
     @newlink.asset_code=@asset.safecode
   end
@@ -77,8 +82,8 @@ class AssetsController < ApplicationController
     @asset = Asset.new
   end
 
- def create
-    if signed_in? and current_user.is_modifier then
+	 def create
+	    if signed_in? and current_user.is_modifier then
 
     @asset = Asset.new(asset_params)
 
@@ -157,7 +162,7 @@ def associations
 
 end
 
-  def assets_to_csv(items)
+  def asset_to_csv(items)
       require 'csv'
       csvtext=""
       if items and items.first then
@@ -173,7 +178,7 @@ end
 
   private
   def asset_params
-    params.require(:asset).permit(:id, :name, :description, :altitude, :assetbagger_link, :tramper_link, :doc_link, :routeguides_link, :general_link, :is_active, :is_doc, :park_id, :asset_type, :code)
+    params.require(:asset).permit(:id, :name, :description, :altitude, :is_active, :is_doc, :park_id, :asset_type, :code)
   end
 
   def convert_location_params(x,y)

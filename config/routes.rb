@@ -11,13 +11,14 @@ mount Resque::Server.new, at: "/resque"
 get "proxy" => "proxy#get", :as => "proxy"
 
 match '/about',   to: 'static_pages#about',   via: 'get'
+match '/help',   to: 'static_pages#help',   via: 'get'
 match '/results',   to: 'static_pages#results',   via: 'get'
 match '/spots',   to: 'static_pages#spots',   via: 'get'
 match '/alerts',   to: 'static_pages#alerts',   via: 'get'
 resources :sessions, only: [:new, :create, :destroy]
 resources :asset_web_links, only: [:create]
 resources :asset_links, only: [:create]
-get 'asset_web_links/:id/delete', to: 'asset_links#delete'
+get 'asset_web_links/:id/delete', to: 'asset_web_links#delete'
 get 'asset_links/:id/delete', to: 'asset_links#delete'
 resources :qsl, only: [:show]
 resources :users

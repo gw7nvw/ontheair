@@ -5,7 +5,7 @@ class ParksController < ApplicationController
   end
 
   def show
-     a=Asset.find_by(code: "ZLP/"+params[:id.to_s].rjust(7,'0'))
+     a=Asset.find_by(old_code: "ZLP/"+params[:id.to_s].rjust(7,'0'))
      if a then
        redirect_to '/assets/'+a.safecode
      else

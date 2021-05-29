@@ -338,7 +338,7 @@ function site_mapKey() {
             xhr.setRequestHeader("Accept","text/javascript");
           },
           type: "GET",
-          timeout: 10000,
+          timeout: 60000,
           url: "/legend?projection="+map_current_proj,
           error: function() {
               document.getElementById("info_details2").innerHTML = 'Error contacting server';
@@ -374,7 +374,7 @@ function site_navigate_to(url) {
             xhr.setRequestHeader("Accept","text/javascript");
           },
           type: "GET",
-          timeout: 20000,
+          timeout: 60000,
           url: '/'+url,
           complete: function() {
               /* complete also fires when error ocurred, so only clear if no error has been shown */
@@ -575,14 +575,14 @@ function linkHandler(entity_name) {
     $(function() {
      $.rails.ajax = function (options) {
        options.tryCount= (!options.tryCount) ? 0 : options.tryCount;0;
-       options.timeout = 20000*(options.tryCount+1);
+       options.timeout = 60000*(options.tryCount+1);
        options.retryLimit=0;
        options.complete = function(jqXHR, thrownError) {
          /* complete also fires when error ocurred, so only clear if no error has been shown */
          if(thrownError=="timeout") {
            this.tryCount++;
            document.getElementById("page_status").innerHTML = 'Retrying ...';
-           this.timeout=20000*this.tryCount;
+           this.timeout=60000*this.tryCount;
            if(this.tryCount<=this.retryLimit) {
              $.rails.ajax(this);
            } else {
@@ -642,7 +642,7 @@ function search_islands(field) {
             xhr.setRequestHeader("Accept","text/javascript");
           },
           type: "GET",
-          timeout: 20000,
+          timeout: 60000,
           url: "/queryisland?islandfield="+field,
           error: function() {
               document.getElementById("info_details2").innerHTML = 'Error contacting server';
@@ -668,7 +668,7 @@ function search_parks(field) {
             xhr.setRequestHeader("Accept","text/javascript");
           },
           type: "GET",
-          timeout: 20000,
+          timeout: 60000,
           url: "/querypark?parkfield="+field,
           error: function() {
               document.getElementById("info_details2").innerHTML = 'Error contacting server';
@@ -765,7 +765,7 @@ function search_assets(field) {
             xhr.setRequestHeader("Accept","text/javascript");
           },
           type: "GET",
-          timeout: 20000,
+          timeout: 60000,
           url: "/query?assetfield="+field,
           error: function() {
               document.getElementById("info_details2").innerHTML = 'Error contacting server';
@@ -791,7 +791,7 @@ function search_summits(field) {
             xhr.setRequestHeader("Accept","text/javascript");
           },
           type: "GET",
-          timeout: 20000,
+          timeout: 60000,
           url: "/querysummit?summitfield="+field,
           error: function() {
               document.getElementById("info_details2").innerHTML = 'Error contacting server';
@@ -839,7 +839,7 @@ function site_mapLayers() {
             xhr.setRequestHeader("Accept","text/javascript");
           },
           type: "GET",
-          timeout: 10000,
+          timeout: 60000,
           url: "/layerswitcher?baselayer="+map_current_layer+"&pointlayers=["+site_map_layers.point+"]&polygonlayers=["+site_map_layers.polygon+"]",
           error: function() {
               document.getElementById("info_details2").innerHTML = 'Error contacting server';

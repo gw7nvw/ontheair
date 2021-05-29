@@ -54,6 +54,12 @@
   <div class="rowtext">
     <input type="text" name="searchtext" value='<%=@searchtext%>'/>
   </div>
+  <% if current_user and (current_user.is_admin or current_user.is_modifier) then %>
+  <div class="rowtitle">Include inactive records:</div>
+  <div class="rowtext">
+    <input id="active" name="active" type="checkbox" value="0">
+  </div>
+  <% end %>
   <div class="buttonshort">
     <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small" %>
     <%=  link_to "Clear", '/assets', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
@@ -82,6 +88,7 @@
         <th>Type</th>
         <th>ID</th>
         <th>Name</th>
+        <th>Reg</th>
         <th>Related</th>
         <th>Description</th>
         <th style="text-align:center">
@@ -101,9 +108,14 @@
           <%= link_to asset.name, '/assets/'+asset.safecode, remote: true, :id => 'asset_link_'+asset.id.to_s, :onclick => "linkHandler('asset_link_"+asset.id.to_s+"')" %>
         </td>
         <td>
-          <%if asset.children then %><ul style="list-style-type:none;padding:0;margin:0;"><% asset.children.each do |link|%>
+            <%=asset.region%>
+        </td>
+        <td>
+          <ul style="list-style-type:none;padding:0;margin:0;">
+          <%if asset.children then %><% asset.children.each do |link|%>
             <li><%= link_to link.codename, '/assets/'+link.safecode, remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></li>
-          <% end %></ul><% end %>
+          <% end %><% end %>
+          </ul>
         </td>
         <td>
             <%= asset.description %>

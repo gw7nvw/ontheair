@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210515085623) do
+ActiveRecord::Schema.define(version: 20210528210841) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -28,6 +28,9 @@ ActiveRecord::Schema.define(version: 20210515085623) do
     t.string "parent_code"
     t.string "child_code"
   end
+
+  add_index "asset_links", ["child_code"], :name => "index_asset_links_on_child_code"
+  add_index "asset_links", ["parent_code"], :name => "index_asset_links_on_parent_code"
 
   create_table "asset_photo_links", force: true do |t|
     t.string   "asset_code"
@@ -50,6 +53,8 @@ ActiveRecord::Schema.define(version: 20210515085623) do
     t.boolean  "keep_score"
   end
 
+  add_index "asset_types", ["name"], :name => "index_asset_types_on_name"
+
   create_table "asset_web_links", force: true do |t|
     t.string   "asset_code"
     t.string   "url"
@@ -66,8 +71,8 @@ ActiveRecord::Schema.define(version: 20210515085623) do
     t.boolean  "is_active"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.spatial  "boundary",     limit: {:srid=>4326, :type=>"multi_polygon"}
-    t.spatial  "location",     limit: {:srid=>4326, :type=>"point"}
+    t.spatial  "boundary",      limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "location",      limit: {:srid=>4326, :type=>"point"}
     t.string   "safecode"
     t.string   "category"
     t.boolean  "minor"
@@ -75,10 +80,15 @@ ActiveRecord::Schema.define(version: 20210515085623) do
     t.integer  "altitude"
     t.integer  "createdBy_id"
     t.integer  "ref_id"
+    t.string   "land_district"
+    t.string   "master_code"
+    t.string   "region"
+    t.string   "old_code"
   end
 
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
   add_index "assets", ["code"], :name => "index_assets_on_code"
+  add_index "assets", ["safecode"], :name => "index_assets_on_safecode"
 
   create_table "award_user_links", force: true do |t|
     t.integer  "user_id"
@@ -155,6 +165,9 @@ ActiveRecord::Schema.define(version: 20210515085623) do
     t.string   "name2"
   end
 
+  add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"
+  add_index "contacts", ["callsign2"], :name => "index_contacts_on_callsign2"
+
   create_table "hut_photo_links", force: true do |t|
     t.integer  "hut_id"
     t.string   "url"
@@ -180,6 +193,7 @@ ActiveRecord::Schema.define(version: 20210515085623) do
     t.datetime "updated_at"
     t.spatial  "location",         limit: {:srid=>4326, :type=>"point"}
     t.string   "code"
+    t.string   "region"
   end
 
   create_table "island_polygons", force: true do |t|
@@ -272,9 +286,10 @@ ActiveRecord::Schema.define(version: 20210515085623) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.spatial  "WKT",                    limit: {:srid=>4326, :type=>"point"}
-    t.boolean  "is_active",                                                    default: true
+    t.boolean  "is_active",                                                            default: true
     t.string   "general_link"
     t.string   "code"
+    t.spatial  "boundary",               limit: {:srid=>4326, :type=>"multi_polygon"}
   end
 
   create_table "logs", force: true do |t|
@@ -322,15 +337,19 @@ ActiveRecord::Schema.define(version: 20210515085623) do
     t.string   "tramper_link"
     t.string   "general_link"
     t.text     "description"
-    t.boolean  "is_active",                                                  default: true
+    t.boolean  "is_active",                                                   default: true
     t.integer  "createdBy_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.spatial  "boundary",     limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary",      limit: {:srid=>4326, :type=>"multi_polygon"}
     t.boolean  "is_mr"
     t.string   "owner"
-    t.spatial  "location",     limit: {:srid=>4326, :type=>"point"}
+    t.spatial  "location",      limit: {:srid=>4326, :type=>"point"}
     t.string   "code"
+    t.integer  "master_id"
+    t.string   "dist_code"
+    t.string   "land_district"
+    t.string   "region"
   end
 
   create_table "places", force: true do |t|
@@ -355,6 +374,15 @@ ActiveRecord::Schema.define(version: 20210515085623) do
     t.integer  "createdBy_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "regions", force: true do |t|
+    t.string   "regc_code"
+    t.string   "sota_code"
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.spatial  "boundary",   limit: {:srid=>4326, :type=>"multi_polygon"}
   end
 
   create_table "sessions", force: true do |t|
@@ -424,8 +452,10 @@ ActiveRecord::Schema.define(version: 20210515085623) do
     t.string   "chased_count"
     t.string   "chased_count_total"
     t.boolean  "outstanding"
+    t.string   "pin"
   end
 
+  add_index "users", ["callsign"], :name => "index_users_on_callsign"
   add_index "users", ["remember_token"], :name => "index_users_on_remember_token"
 
   create_table "web_link_classes", force: true do |t|

@@ -8,7 +8,7 @@ def self.seed
   a=AssetType.create(name: 'summit', table_name: 'SotaPeak', has_location: true, has_boundary:false, index_name: 'summit_code', display_name: 'SOTA Summit', fields: "", pnp_class: "", keep_score: false)
   a=AssetType.create(name: 'pota park', table_name: 'PotaPark', has_location: true, has_boundary:true, index_name: 'reference', display_name: ' POTA Park', fields: "", pnp_class: "POTA", keep_score: false)
   a=AssetType.create(name: 'wwff park', table_name: 'WwffPark', has_location: true, has_boundary:true, index_name: 'code', display_name: 'WWFF Park', fields: "", pnp_class: "WWFF", keep_score: false)
-  a=AssetType.create(name: 'lake', table_name: 'Lake', has_location: true, has_boundary:true, index_name: 'code', display_name: 'Lake', fields: "", pnp_class: "ZLOTA", keep_score: true)
+  a=AssetType.create(name: 'lake', table_name: 'Lake', has_location: true, has_boundary:true, index_name: 'code', display_name: 'Lake', fields: "info_origin", pnp_class: "ZLOTA", keep_score: true)
 end
 
 end

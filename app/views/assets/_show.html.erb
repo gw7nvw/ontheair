@@ -25,7 +25,12 @@
    <%= render 'flash' %>
    <div class="erow" id="email">
       <div class="rowtitle"><%= "Id:" %></div>
-      <div class="rowtext"><%= @asset.code %></div>
+      <% url=@asset.get_external_url %>
+      <% if url then %> 
+        <div class="rowtext"><%= link_to @asset.code, url, target: "_blank" %><img src="/assets/external-link-symbol.png"></div>
+      <% else %>
+        <div class="rowtext"><%= @asset.code %></div>
+      <% end %>
    </div>
    <div class="erow" id="name">
       <div class="rowtitle"><%= "Name" %></div>
@@ -39,6 +44,14 @@
         <%= @asset.type.display_name %>
       </div>
    </div>
+<% if @asset.master_code then %>
+     <div class="erow" id="name">
+       <div class="rowtitle" style='color:#bb0000'>REPLACED BY</div>
+       <div class="rowtext"> 
+         <%= link_to @asset.master_code, '/assets/'+@asset.master_code.gsub('/','_'), remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+       </div>
+     </div>
+<% end %>
    <div class="erow" id="name">
       <div class="rowtitle"><%= "Description" %></div>
       <div class="rowtext"> 
@@ -59,6 +72,12 @@
           <% end %></ul><% end %>
       </div>
    </div>
+   <div class="erow" id="district">
+      <div class="rowtitle">Region</div>
+      <div class="rowtext"> 
+        <%=@asset.region_name%>
+      </div>
+   </div>
    <div class="erow" id="location">
       <div class="rowtitle"><%= "Location" %></div>
       <% if @asset.x and @asset.y %>
@@ -69,11 +88,17 @@
       <div class="rowtitle"><%= "DOC Asset?" %></div>
       <div class="textext"><%= if @asset.r_field("is_doc") then "Yes" else "No" end %></div>
    </div>
-   <div class="erow" id="email">
+   <div class="erow" id="email" <%= if @asset.is_active then "" else "style='color:#bb0000'" end%>>
       <div class="rowtitle"><%= "Active?" %></div>
       <div class="textext"><%= if @asset.is_active then "Yes" else "No" end %></div>
    </div>
-
+   <% if @asset.minor then %>
+   <div class="erow" id="email" style='color:#bb0000'>
+      <div class="rowtitle"><%= "Valid for OnTheAir?" %></div>
+      <div class="textext">No</div>
+   </div>
+   <% end %>
+`
    <div class="erow">
       <div class="hrline">
          <hr noshade size="4">
@@ -95,6 +120,7 @@
    
    <% end %>
   </div>
+  <% if signed_in? then %>
   <div id="editlinks" style="display:none">
     <table>
     <% @asset.web_links.each do |awl| %>
@@ -114,7 +140,7 @@
     <% end %>
   </table>
   </div>
-
+  <% end %>
   <div class="erow">
       <div class="hrline">
          <hr noshade size="4">

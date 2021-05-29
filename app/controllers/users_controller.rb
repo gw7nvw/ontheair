@@ -255,7 +255,7 @@ end
   private
 
     def user_params
-      params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :membership_requested, :membership_confirmed, :home_qth)
+      params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :membership_requested, :membership_confirmed, :home_qth, :pin)
     end
 
 

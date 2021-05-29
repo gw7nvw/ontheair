@@ -19,6 +19,7 @@
                   <li><%= link_to 'QRP.NZ', 'http://qrp.nz' %></li>
                   <li><%= link_to 'Home', root_path, remote: true, :id => 'home_link', :onclick => "linkHandler('home_link')"  %></li>
                   <li><%= link_to 'About', '/about', remote: true, :id => 'about_link', :onclick => "linkHandler('about_link')"  %></li>
+                  <li><%= link_to 'Help', '/help', remote: true, :id => 'about_link', :onclick => "linkHandler('about_link')"  %></li>
                   <% if signed_in? %>
                     <li><%= link_to "Users", '/users',  remote: true,  :id => 'users_link', :onclick => "linkHandler('users_link')"  %></li>
                   <% end %>

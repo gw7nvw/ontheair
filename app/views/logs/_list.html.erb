@@ -1,0 +1,52 @@
+  <div class="name_pagination"> <%= will_paginate(@logs) %></div>
+  <table class="places">
+      <tr>
+        <th></th>
+        <th>Callsign</th>
+        <th>Date</th>
+        <th>Location</th>
+        <th>QRP?</th>
+        <th>Portable?</th>
+        <th>Contacts</th>
+      </tr>
+    <% count=0
+       if @logs then @logs.each do |log| %>
+         <% count=Contact.where(log_id: log.id).count %>
+         <% if count>0 then %>
+          <tr>
+            <td>
+              <% if !@brief and current_user  and (current_user.callsign==log.callsign1 or current_user.is_admin) %>
+                <%= link_to 'Edit', '/logs/'+log.id.to_s+'/editlog?referring=index', remote: true, :id => 'editbutton'+log.id.to_s, :onclick => "linkHandler('editbutton"+log.id.to_s+"')" %><br/>
+              <% end %>
+              <%= link_to 'View', '/logs/'+log.id.to_s, remote: true, :id => 'log_link_'+log.id.to_s, :onclick => "linkHandler('log_link_"+log.id.to_s+"')" %>
+            </td>
+            <td> <%=link_to log.callsign1, '/users/'+log.callsign1, remote: true,  :id => 'user', :onclick => "linkHandler('user')"%> </td>
+            <td> <% if signed_in? then %><%= log.localdate(current_user)%> <% else %> <%= log.localdate(nil)%><% end %> </td>
+            <td>  <ul style="list-style-type:none;padding:0;margin:0;">
+              <% if log.asset_codes.count>0 then %>
+                <% log.asset_codes.each do |cal|%>
+                  <li>
+                    <%links=Asset.assets_from_code(cal)%>
+                    <% links.each do |link| %>
+                      <% if link[:external] then %>
+                        <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
+                      <% else %>
+                        <%=link_to link[:asset].codename, link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                      <% end %>
+                    <% end %>
+                  </li>
+                <% end %>
+              <% else %>
+                <%= log.loc_desc1 %> 
+              <% end %>
+            </ul></td>
+            <td> <%=if log.is_qrp1 then "Yes" else "no" end %></td>
+            <td> <%=if log.is_portable1 then "Yes" else "no" end %></td>
+            <td> <%=count %></td>
+          </tr>
+        <%count=count+1%>
+      <% end end %>
+    <% end %>
+  </table>
+  <div class="name_pagination"> <%= will_paginate(@logs) %></div>
+

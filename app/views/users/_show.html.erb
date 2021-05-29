@@ -50,6 +50,10 @@
    </div>
 
    <%     if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
+     <div class="erow" id="PIN">
+         PIN*: <%= @user.pin %>
+     </div>
+
      <div class="erow" id="email">
          Email: <%= @user.email %>
      </div>
@@ -72,6 +76,7 @@
      </div>
 </div>
 
+<p><i><br/>* PIN is used for access to the Inreach/Email SPOT / ALERT gateway.</i></p>
 <div class="erow">
    <div class="hrline">
       <hr noshade size="4">

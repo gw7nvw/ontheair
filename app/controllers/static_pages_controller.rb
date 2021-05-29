@@ -8,8 +8,8 @@ class StaticPagesController < ApplicationController
        @sortby=params[:sortby]
        if !@sortby or @sortby=='' then @sortby="hut" end
        @brief=true
-       @fullcontacts=Contact.find_by_sql [ " select * from contacts order by time desc limit 10 " ]
-       @contacts=@fullcontacts.paginate(:per_page => 20, :page => params[:page])
+       @fulllogs=Log.find_by_sql [ " select * from logs order by date desc " ]
+       @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
   end
 
   def results
@@ -20,6 +20,8 @@ class StaticPagesController < ApplicationController
        @static_page=true
        @sortby=params[:sortby]
        if !@sortby or @sortby=='' then @sortby="hut" end
+  end
+  def help
   end
 
   def about

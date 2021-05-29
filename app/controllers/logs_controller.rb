@@ -1,12 +1,29 @@
 class LogsController < ApplicationController
-#  before_action :signed_in_user, only: [:edit, :update, :editgrid]
+  before_action :signed_in_user, only: [:edit, :update, :create, :new]
+
 skip_before_filter :verify_authenticity_token, :only => [:save]
 
 def show
+  @log=Log.find_by_id(params[:id])
+  if !@log then 
+     redirtect_to '/contacts'
+  end
 end
 
 def load
 
+end
+
+def index
+  if signed_in? then callsign=current_user.callsign end
+  if signed_in? and current_user.is_admin then callsign=nil end
+  if params[:user] then callsign=params[:user].upcase end
+  whereclause="true"
+
+  if callsign then @fulllogs=Log.find_by_sql [ "select * from logs where callsign1='"+callsign+"' and "+whereclause+" order by date desc" ]
+  else @fulllogs=Log.find_by_sql [ "select * from logs where "+whereclause+" order by date desc" ]
+  end
+  @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
 end
 
 def save
@@ -47,7 +64,9 @@ def save
       cle.name2=row[9]
       cle.loc_desc2=row[10]
       cle.asset1_codes=log.asset_codes
+      if cle.asset1_codes==nil then cle.asset1_codes=['dummy'] end
       cle.asset2_codes=row[13]
+      if cle.asset2_codes==nil then cle.asset2_codes=['dummy'] end
       cle.location2=row[14]
       cle.x2=row[15]
       cle.y2=row[16]

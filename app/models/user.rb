@@ -8,9 +8,10 @@ class User < ActiveRecord::Base
 
   attr_accessor :remeber_token, :activation_token, :reset_token
 
-  before_save { if email then self.email = email.downcase end }
-  before_save { if timezone==nil then self.timezone=Timezone.first.id end }
+  before_save { if self.email then self.email = email.downcase end }
+  before_save { if self.timezone==nil then self.timezone=Timezone.first.id end }
   before_save { self.callsign = callsign.upcase }
+  before_save { if self.pin==nil or self.pin.length<4 then self.pin=self.callsign.chars.shuffle[0..3].join end; self.pin=self.pin[0..3] }
   before_create :create_remember_token
 
   VALID_NAME_REGEX = /\A[a-zA-Z\d\s]*\z/i

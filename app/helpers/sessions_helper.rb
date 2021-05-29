@@ -41,7 +41,6 @@ if ENV["RAILS_ENV"] == "production" then
 else
     remember_token = User.digest(cookies[:remember_token3])
 end
-    if remember_token then Rails.logger.info "Rec RT :"+remember_token end
     @current_user ||= User.find_by(remember_token2: remember_token)
   end
 end

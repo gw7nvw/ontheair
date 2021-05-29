@@ -13,8 +13,21 @@ class Log < ActiveRecord::Base
     asset_names=self.assets.map{|asset| "["+asset.code+"] "+asset.name}
     if !asset_names then asset_names="" end
     asset_names
-
   end
+
+ def localdate(currentuser)
+   t=nil
+   if currentuser then tz=Timezone.find_by_id(currentuser.timezone) else tz=Timezone.first end
+   cs=Contact.find_by_sql [ " select * from contacts where log_id ="+self.id.to_s+" order by time desc limit 1 " ]
+   c1=cs.first 
+   if c1 and c1.time then 
+       thetime=c1.time 
+       t=thetime.in_time_zone(tz.name).strftime('%Y-%m-%d') 
+   else
+       t=self.date.strftime('%Y-%m-%d')
+   end
+   t
+ end
 
   def assets
     if self.asset_codes then Asset.where(code: self.asset_codes) else [] end
@@ -60,5 +73,18 @@ def self.migrate_to_codes
     end
 end
 
+def self.migrate_to_distcodes
+  cs=Log.all
+  cs.each do |c|
+  codes=[]
+  c.asset_codes.each do |a|
+    asset=Asset.find_by(old_code: a)
+    if !asset then asset=Asset.find_by(code: a) end
+    if asset then codes.push(asset.code) else codes.push(a) end
+  end
+  c.asset_codes=codes
+  c.save
+  end
+end
 
 end

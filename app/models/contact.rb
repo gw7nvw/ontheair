@@ -30,24 +30,33 @@ class Contact < ActiveRecord::Base
 #  validates :mode,  presence: true
 
   def check_codes_in_location
-    if !asset1_codes or asset1_codes==[] then
+    if self.asset1_codes==nil or self.asset1_codes==[] then
       assets=Asset.assets_from_code(self.loc_desc1)
       self.asset1_codes=[]
       assets.each do |asset| 
         if asset and asset[:type]
-          self.asset1_codes.push(asset[:code])
+          if asset2_codes==[] then 
+            self.asset1_codes=["#{asset[:code].to_s}"]
+          else
+            self.asset1_codes.push("#{asset[:code]}")
+          end
         end
       end
     end
-    if !asset2_codes or asset2_codes==[] then
+    if self.asset2_codes==nil or self.asset2_codes==[] then
       assets=Asset.assets_from_code(self.loc_desc2)
       self.asset2_codes=[]
       assets.each do |asset| 
         if asset and asset[:type]
-          self.asset2_codes.push(asset[:code])
+          if asset2_codes==[] then 
+            self.asset2_codes=["#{asset[:code].to_s}"]
+          else
+            self.asset2_codes.push("#{asset[:code]}")
+          end
         end
       end
     end
+      
   end
 
  def location1_text
@@ -353,5 +362,27 @@ def self.migrate_to_codes
     end
 end
   
+def self.migrate_to_distcodes
+  cs=Contact.all
+  cs.each do |c|
+  codes=[]
+  puts c.asset1_codes 
+  puts c.asset2_codes 
+  c.asset1_codes.each do |a|
+    asset=Asset.find_by(old_code: a)
+    if !asset then asset=Asset.find_by(code: a) end
+    if asset then codes.push(asset.code) else codes.push(a) end
+  end
+  c.asset1_codes=codes
+  codes=[]
+  c.asset2_codes.each do |a|
+    asset=Asset.find_by(old_code: a)
+    if !asset then asset=Asset.find_by(code: a) end
+    if asset then codes.push(asset.code) else codes.push(a) end
+  end
+  c.asset2_codes=codes
+  c.save
+  end
+end
 
 end

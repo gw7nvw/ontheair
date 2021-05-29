@@ -1,0 +1,58 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.title = '... On the Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+
+$(function () {
+  $('#right_panel .pagination a').on('click', function () {
+    $.getScript(this.href);
+    return false;
+  });
+});
+
+$(function () {
+  $('#right_panel .pagination a').on('click', function () {
+    $.getScript(this.href);
+    return false;
+  });
+})
+
+</script>
+ 
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Logs <%=
+          if @user then "("+@user.callsign+")" end%></b>
+     </div>
+   <div id="controls">
+       <% if current_user  %>
+            <% if current_user.is_admin then %>
+              <%=  link_to "View All", '/logs/?all=true', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('all')" %>
+            <% end %>
+            <%=  link_to "Add Contacts", '/logs/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+       <% end %>
+       <% if current_user and ((@user and current_user.callsign==@user.callsign) or current_user.is_admin) %>
+          <% 
+            parmtext=""
+            params.each do |k, v|
+              parmtext+="&"+k.to_s+"="+v.to_s
+            end
+            if parmtext!="" then parmtext[0]="?" end
+          %>
+           <%=  link_to "Download", '/contacts.csv'+parmtext, class: "btn btn-small btn-primary"%>
+       <% end %>
+       <%=render 'map_controls'%>
+   </div>
+</div>
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <%= render 'list' %>
+</div>
+
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>
+

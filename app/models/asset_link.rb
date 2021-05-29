@@ -21,4 +21,12 @@ def child
   Asset.find_by(code: self.parent_code)
 end
 
+def self.prune
+   AssetLink.all.each do |al|
+     c=al.child
+     p=al.parent
+     if !c or !p or c.is_active==false or p.is_active==false then puts "PRUNE: "+al.id.to_s; al.destroy end
+   end
+end
+
 end

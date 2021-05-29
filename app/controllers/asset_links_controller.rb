@@ -1,4 +1,5 @@
 class AssetLinksController < ApplicationController
+before_action :signed_in_user
 
 def create
   if signed_in?  then

@@ -1,9 +1,32 @@
 class Park < ActiveRecord::Base
 
-  set_rgeo_factory_for_column(:boundary, RGeo::Geographic.spherical_factory(:srid => 4326, :proj4=> '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs', :has_z_coordinate => false))
+#  set_rgeo_factory_for_column(:boundary, RGeo::Geographic.spherical_factory(:srid => 4326, :proj4=> '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs', :has_z_coordinate => false))
 
+#single 7-digit sequence base don napalis_id
   def get_code
     code="ZLP/"+self.id.to_s.rjust(7,'0')
+  end
+
+#ZLP/XX-#### code based on region
+  def self.add_dist_codes
+     parks=Park.find_by_sql [ " select id,name,region from parks where dist_code='' or dist_code is null order by coalesce(ST_Area(boundary),0) desc" ]
+     parks.each do |p|
+       code=self.get_next_dist_code(p.region) 
+       ActiveRecord::Base.connection.execute("update parks set dist_code='"+code+"' where id="+p.id.to_s+";")
+       puts code +" - "+p.name
+     end 
+  end
+
+  def self.get_next_dist_code(region)
+    if !region or region=='' then region='ZZ' end
+    last_codes=Park.find_by_sql [ " select dist_code from parks where dist_code like 'ZLP/"+region+"-%%' and dist_code is not null order by dist_code desc limit 1;" ]
+    if last_codes and last_codes.count>0 and last_codes.first.dist_code then 
+      last_code=last_codes.first.dist_code
+    else 
+      last_code='ZLP/'+region+"-0000"
+    end
+    next_code=last_code[0..6]+(((last_code[7..10].to_i)+1).to_s.rjust(4,'0'))
+    next_code
   end
 
   def codename
@@ -12,7 +35,7 @@ class Park < ActiveRecord::Base
 
   def doc_park
     #dp=Docparks.find_by_id(self.id) 
-    dp=Crownparks.find_by(napalis_id: self.id) 
+    dp=Crownpark.find_by(napalis_id: self.id) 
   end
 
 
@@ -24,14 +47,46 @@ class Park < ActiveRecord::Base
     end
     true
   end
+
+
+
+
+def self.add_regions
+     count=0
+     a=Park.first_by_id
+     while a do
+       puts a.code+" "+count.to_s
+       count+=1
+       a.add_region
+       a=Park.next(a.id)
+     end
+end
+
+def add_region
+    if self.location then region=Region.find_by_sql [ %q{select id, sota_code, name from regions where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), "boundary");} ] else puts "ERROR: place without location. Name: "+self.name+", id: "+self.id.to_s end
+    if region and region.count>0 and self.region != region.first.sota_code then
+      ActiveRecord::Base.connection.execute("update parks set region='"+region.first.sota_code+"' where id="+self.id.to_s)
+    end
+
+end
  
-  def self.update_table
+  def self.merge_crownparks
+    count=0
+    hundreds=0
     #parks=Docparks.all
-    parks=Crownparks.all
+    parks=Crownpark.find_by_sql [ " select id from crownparks; " ]
     cc=0
     uc=0
 
-    parks.each do |park|
+    parks.each do |pid|
+      park=Crownpark.find_by_id(pid.id)
+      count+=1
+      if count>=100 then 
+          count=0
+          hundreds+=1
+          puts "Records: "+(hundreds*100).to_s
+      end
+
       #p=self.find_by_id(park.NaPALIS_ID)
       p=self.find_by_id(park.napalis_id)
       #create if needed
@@ -43,7 +98,7 @@ class Park < ActiveRecord::Base
 
       #update atrribtes
       #if park.Section=="S24_3_FIXED_MARGINAL_STRIP" or park.Local_Purp!=nil then
-      if park.section=="s.24(3) - Fixed Marginal Strip" or park.section== "s.23 - Local Purpose Reserve" or park.section=="s.22 - Government Purpose Reserve" or park.section=="s.176(1)(a) - Unoccupied Crown Land" then
+      if park.section=="s.24(3) - Fixed Marginal Strip" or park.section== "s.23 - Local Purpose Reserve" or park.section=="s.22 - Government Purpose Reserve" or park.section=="s.176(1)(a) - Unoccupied Crown Land" or park.name ilike '%%gravel%%' then
         p.is_mr=true
       else
         p.is_mr=false
@@ -53,11 +108,17 @@ class Park < ActiveRecord::Base
       else
         p.owner=park.ctrl_mg_vst
       end
-
+      p.is_active=park.is_active
+      p.master_id = park.master_id
+      p.boundary=park.WKT
+      if !p.location then p.location=p.calc_location end
+      if !p.code then p.code=p.get_code end
       p.save
       uc=uc+1
+      p.add_region
     end
-    Park.add_centroids
+
+
 
     puts "Created "+cc.to_s+" rows, updated "+uc.to_s+" rows"
     true
@@ -66,7 +127,7 @@ class Park < ActiveRecord::Base
   def all_boundary
    if self.boundary==nil then
        #boundarys=Docparks.find_by_sql [ 'select id, ST_AsText("WKT") as "WKT" from docparks where id='+self.id.to_s ] 
-       boundarys=Crownparks.find_by_sql [ 'select id, ST_AsText("WKT") as "WKT" from crownparks where napalis_id='+self.id.to_s ] 
+       boundarys=Crownpark.find_by_sql [ 'select id, ST_AsText("WKT") as "WKT" from crownparks where napalis_id='+self.id.to_s ] 
        if boundarys and boundarys.count>0 then boundary=boundarys.first.WKT else boundary=nil end
    else
      boundary=self.boundary
@@ -80,7 +141,7 @@ class Park < ActiveRecord::Base
      if self.boundary==nil then
        rnd=0.0002
        #boundarys=Docparks.find_by_sql [ 'select id, ST_AsText(ST_Simplify("WKT", '+rnd.to_s+')) as "WKT" from docparks where id='+self.id.to_s ] 
-       boundarys=Crownparks.find_by_sql [ 'select id, ST_AsText(ST_Simplify("WKT", '+rnd.to_s+')) as "WKT" from crownparks where napalis_id='+self.id.to_s ] 
+       boundarys=Crownpark.find_by_sql [ 'select id, ST_AsText(ST_Simplify("WKT", '+rnd.to_s+')) as "WKT" from crownparks where napalis_id='+self.id.to_s ] 
        if boundarys and boundarys.count>0 then boundary=boundarys.first.WKT else boundary=nil end
      else
        boundary=self.boundary
@@ -94,7 +155,7 @@ class Park < ActiveRecord::Base
    if self.id then
      if self.boundary==nil then
 #        locations=Docparks.find_by_sql [ 'select id, ST_Centroid("WKT") as "WKT" from docparks where id='+self.id.to_s ] 
-        locations=Crownparks.find_by_sql [ 'select id, CASE
+        locations=Crownpark.find_by_sql [ 'select id, CASE
                   WHEN (ST_ContainsProperly("WKT", ST_Centroid("WKT")))
                   THEN ST_Centroid("WKT")
                   ELSE ST_PointOnSurface("WKT")
@@ -105,7 +166,7 @@ class Park < ActiveRecord::Base
                   WHEN (ST_ContainsProperly(boundary, ST_Centroid(boundary)))
                   THEN ST_Centroid(boundary)
                   ELSE ST_PointOnSurface(boundary)
-                END AS location from parks where napalis_id='+self.id.to_s ] 
+                END AS location from parks where id='+self.id.to_s ] 
         if locations and locations.count>0 then location=locations.first.location else location=nil end
      end
    end
@@ -116,7 +177,7 @@ class Park < ActiveRecord::Base
    ops=[]
    ps=Park.all
    ps.each do |p| 
-     cps=Crownparks.where(:napalis_id => p.id)
+     cps=Crownpark.where(:napalis_id => p.id)
      if cps and cps.count>0 then
 
      else
@@ -174,9 +235,20 @@ class Park < ActiveRecord::Base
   def self.add_codes
      ps=Park.all
      ps.each do |p|
-       p.code=p.get_code
-       p.save
+       if !p.code then 
+         p.code=p.get_code
+         p.save
+       end
      end
   end
+
+def self.first_by_id
+  a=Park.where("id > ?",0).order(:id).first
+end
+
+
+def self.next(id)
+  a=Park.where("id > ?",id).order(:id).first
+end
    
 end

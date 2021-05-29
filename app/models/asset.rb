@@ -1,8 +1,10 @@
 class Asset < ActiveRecord::Base
 
- after_save :post_process
+# after_save :post_process
  validates :code, presence: true, uniqueness: true
  validates :name, presence: true
+
+
 
 def boundary_simple
    pp=Asset.find_by_sql [ "select id, ST_NPoints(boundary) as altitude from assets where id="+self.id.to_s ]
@@ -13,6 +15,12 @@ def boundary_simple
      boundary=boundarys.first.boundary
      boundary
    else nil end
+end
+
+def region_name
+  name=""
+  r=Region.find_by(sota_code: self.region)
+  if r then name=r.name.gsub('Region','') end
 end
 
 def x    
@@ -130,72 +138,28 @@ def linked_assets_by_type(asset_type)
   assets=Asset.where(:code => codes, :asset_type => asset_type)
 end
 
-def self.assets_from_code(codes)
-  assets=[]
-  if codes then 
-  code_arr=codes.split(',') 
-  code_arr.each do |code|
-    code=code.lstrip
-    asset={asset: nil, code: nil, name: nil, url: nil, external: nil, type: nil}
-    if code then
-      code=code.upcase
-      a=Asset.find_by(code: code)
-      if a then
-          asset[:asset]=a
-          asset[:url]=a.url
-          asset[:name]=a.name
-          asset[:external]=false
-          asset[:code]=a.code
-          asset[:type]=a.asset_type
-          if a.type then asset[:title]=a.type.display_name else puts "ERROR: cannot find type "+a.asset_type end
-      elsif code.match(/^[a-zA-Z]{1,2}-\d{4}/)  then
+def get_external_url
+    url=nil
+    code=self.code.lstrip
+    if code.match(/^[a-zA-Z]{1,2}-\d{4}/)  then
         #POTA
         if code[0..1].upcase=='VK' then
-          asset[:name]=code
-          asset[:url]='https://parksnpeaks.org/getPark.php?actPark='+code+'&submit=Process'
-          asset[:external]=true
-          asset[:code]=code
-          asset[:type]='park'
-          asset[:title]="POTA - VK"
+          url='https://parksnpeaks.org/getPark.php?actPark='+code+'&submit=Process'
         else
-          asset[:name]=code
-          asset[:url]='http://pota.us/#/parks/'+code
-          asset[:external]=true
-          asset[:code]=code
-          asset[:type]='park'
-          asset[:title]="POTA"
+          url='http://pota.us/#/parks/'+code
         end  
       elsif code.match(/^[a-zA-Z]{1,2}[fF]{2}-\d{4}/) then
         #WWFF
         if code[0..1].upcase=='VK' then
-          asset[:name]=code
-          asset[:url]='https://parksnpeaks.org/getPark.php?actPark='+code+'&submit=Process'
-          asset[:external]=true
-          asset[:code]=code
-          asset[:type]='park'
-            asset[:title]="WWFF - VK"
+          url='https://parksnpeaks.org/getPark.php?actPark='+code+'&submit=Process'
         else
-          asset[:name]=code
-          asset[:url]='http://wwff.co/directory/'
-          asset[:external]=true
-          asset[:code]=code
-          asset[:type]='park'
-          asset[:title]="WWFF"
+          url='http://wwff.co/directory/'
         end
       elsif code.match(/^[a-zA-Z]{1,2}\d\/[a-zA-Z]{2}-\d{3}/) then
         #SOTA
-        asset[:name]=code
-        asset[:url]="https://summits.sota.org.uk/summit/"+code
-        asset[:external]=true
-        asset[:code]=code
-        asset[:type]='summit'
-        asset[:title]="SOTA"
+        url="https://summits.sota.org.uk/summit/"+code
       end
-      assets.push(asset)
-   end 
-  end 
-  end
-  assets
+  url
 
 end
 
@@ -203,7 +167,7 @@ def self.get_pnp_class_from_code(code)
   aa=Asset.assets_from_code(code)
   a=aa.first 
   pnp_class="QRP" 
-  if a and a[:type] then 
+  if a and a[:type] and a[:external]==false then 
      ac=AssetType.find_by(name: a[:type])
      pnp_class=ac.pnp_class
   elsif a[:title][0..3]=="WWFF" then pnp_class="WWFF"
@@ -267,27 +231,186 @@ def self.url_from_code(code)
 end
 
 def self.add_parks
-  ps=Park.all
-  ps.each do |p|
-    a=Asset.find_by(asset_type: 'park', code: p.code)
-    if !a then a=Asset.new end
+  ps=Park.find_by_sql [ 'select id from parks;' ]
+  ps.each do |pid|
+    p=Park.find_by_id(pid)
+    a=Asset.find_by(asset_type: 'park', code: p.dist_code)
+    if !a then  a=Asset.find_by(asset_type: 'park', code: p.code) end
+    if !a then a=Asset.new;new=true;puts "New" else new=false end
     a.asset_type="park"
-    a.code=p.code
-    a.url='/parks/'+p.id.to_s
-    a.name=p.name_
-    a.description=p.description
-    a.is_active=p.is_active and not p.is_mr
-    a.boundary=p.boundary
-    if p.doc_park then 
-       a.boundary=p.doc_park.WKT 
+    a.code=p.dist_code
+    a.old_code=p.code
+    if p.master_id then
+       pp=Park.find_by_id(p.master_id)
+       a.master_code=pp.dist_code
     end
-    a.category=p.owner
+    a.safecode=a.code.gsub('/','_')
+    a.url='assets/'+a.safecode
+    a.name=p.name.gsub("'","''")
+    a.description=(p.description||"").gsub("'","''")
+    a.is_active=p.is_active and not p.is_mr
+    a.category=(p.owner||"").gsub("'","''")
     a.location=p.location
-    a.save
+    if new then a.save end
+    ActiveRecord::Base.connection.execute("update assets set code='"+a.code+"', old_code='"+a.old_code+"',master_code='"+(a.master_code||"")+"', safecode='"+a.safecode+"', url='"+a.url+"', name='"+a.name+"', description='"+(a.description||"")+"', is_active="+a.is_active.to_s+", category='"+(a.category||"")+"', location=(select location from parks where id="+p.id.to_s+"),  boundary=(select boundary from parks where id="+p.id.to_s+") where id="+a.id.to_s+";")
+
     puts a.code
   end 
   true
 end
+def self.assets_from_code(codes)
+  assets=[]
+  if codes then 
+  code_arr=codes.split(',') 
+  code_arr.each do |code|
+    code=code.lstrip
+    asset={asset: nil, code: nil, name: nil, url: nil, external: nil, type: nil}
+    if code then
+      code=code.upcase
+      a=Asset.find_by(code: code)
+      if a then
+          asset[:asset]=a
+          asset[:url]=a.url
+          asset[:name]=a.name
+          asset[:external]=false
+          asset[:code]=a.code
+          asset[:type]=a.asset_type
+          if !code.match(/ZL^[a-zA-Z]-./)  then
+             asset[:external_url]=a.get_external_url
+          end
+
+          if a.type then asset[:title]=a.type.display_name else puts "ERROR: cannot find type "+a.asset_type end
+      elsif thecode=code.match(/^[a-zA-Z]{1,2}-\d{4}/)  then
+        #POTA
+         puts "POTA"
+        if code[0..1].upcase=='VK' then
+          asset[:name]=code
+          asset[:url]='https://parksnpeaks.org/getPark.php?actPark='+thecode.to_s+'&submit=Process'
+          asset[:external]=true
+          asset[:code]=thecode
+          asset[:type]='park'
+          asset[:title]="POTA - VK"
+        else
+          asset[:name]=code
+          asset[:url]='http://pota.us/#/parks/'+thecode.to_s
+          asset[:external]=true
+          asset[:code]=thecode.to_s
+          asset[:type]='park'
+          asset[:title]="POTA"
+        end  
+      elsif thecode=code.match(/^[a-zA-Z]{1,2}[fF]{2}-\d{4}/) then
+        #WWFF
+         puts "WEFF"
+        puts thecode
+        if code[0..1].upcase=='VK' then
+          asset[:name]=code
+          asset[:url]='https://parksnpeaks.org/getPark.php?actPark='+thecode.to_s+'&submit=Process'
+          asset[:external]=true
+          asset[:code]=thecode.to_s
+          asset[:type]='park'
+            asset[:title]="WWFF - VK"
+        else
+          asset[:name]=code
+          asset[:url]='http://wwff.co/directory/'
+          asset[:external]=true
+          asset[:code]=thecode.to_s
+          asset[:type]='park'
+          asset[:title]="WWFF"
+        end
+      elsif thecode=code.match(/^[a-zA-Z]{1,2}\d\/[a-zA-Z]{2}-\d{3}/) then
+        #SOTA
+         puts "SOTA"
+        asset[:name]=code
+        asset[:url]="https://summits.sota.org.uk/summit/"+thecode.to_s
+        asset[:external]=true
+        asset[:code]=thecode.to_s
+        asset[:type]='summit'
+        asset[:title]="SOTA"
+      elsif thecode=code.match(/[a-zA-Z]{1,2}\d\/H[a-zA-Z]{2}-\d{3}/) then
+         puts "HEMA"
+        #HEMA
+        asset[:name]=code
+        asset[:url]='https://parksnpeaks.org/showAward.php?award=HEMA'
+        asset[:external]=true
+        asset[:code]=thecode.to_s
+        asset[:type]='summit'
+        asset[:title]="HEMA"
+      end
+      assets.push(asset)
+   end 
+  end 
+  end
+  assets
+
+end
+
+def self.get_pnp_class_from_code(code)
+  aa=Asset.assets_from_code(code)
+  a=aa.first 
+  pnp_class="QRP" 
+  if a and a[:type] and a[:external]==false then 
+     ac=AssetType.find_by(name: a[:type])
+     pnp_class=ac.pnp_class
+  elsif a[:title][0..3]=="WWFF" then pnp_class="WWFF"
+  elsif a[:title][0..3]=="POTA" then pnp_class="POTA"
+  end
+
+  pnp_class
+end
+
+def self.get_code_from_codename(codename)
+  if codename then code=codename.split(']')[0] else code='' end
+  code=code.gsub('[','').gsub(']','')
+end
+
+def self.get_asset_type_from_code(code)
+  a=Asset.assets_from_code(code)
+  if a and a.first and a.first[:type] then a.first[:type] else 'all' end
+end
+
+def self.url_from_code(code)
+  url=nil
+  external=false
+  if code[0..4]=="VKFF-" then
+    #wwff - VK
+    url="https://parksnpeaks.org/getPark.php?actPark="+code[0..8]+"&submit=Process"
+    external=true
+  elsif code[0..4]=="ZLFF-" then
+    #wwff - NZ
+    pp=WwffPark.find_by(code: code[0..8])
+    if pp then url="/parks/"+pp.napalis_id.to_s end
+  elsif code[0..2]=="ZL-" then
+    #POTA NZ
+    pp=PotaPark.find_by(reference: code[0..6])
+    if pp then url="/parks/"+pp.park_id.to_s end
+  elsif code[0..2]=="VK-" then
+    #POTA VK
+    url="https://parksnpeaks.org/getPark.php?actPark="+code[0..6]+"&submit=Process"
+    external=true
+  elsif code[0..3]=="ZLP/" then
+    #ZLOTA Park
+    park=Park.find_by(id: code[4..10])
+    if park then url="/parks/"+park.id.to_s end
+  elsif code[0..3]=="ZLH/" then
+    #ZLOTA hut
+    hut=Hut.find_by(id: code[4..7])
+    if hut then url="/huts/"+hut.id.to_s end
+  elsif code[0..3]=="ZLI/" then
+    #ZLOTA island
+    island=Island.find_by(id: code[4..8])
+    if island then url="/islands/"+island.id.to_s end
+  elsif code.scan(/ZL\d\//).length>0 then
+    #NZ SOTA
+    summit=SotaPeak.find_by(summit_code: code[0..9])
+    if summit then url="/summits/"+summit.short_code end
+  elsif code.scan(/VK\d\//).length>0 then
+    #VK SOTA
+    url="https://summits.sota.org.uk/summit/"+code[0..10]
+    external=true
+  end
+  {url: url, external: external}
+end
+
 def self.add_huts
   ps=Hut.all
   ps.each do |p|
@@ -313,7 +436,7 @@ def self.add_islands
     if !a then a=Asset.new end
     a.asset_type="island"
     a.code=p.code
-    a.url='/islands/'+p.id.to_s
+    a.url='asset/'+a.code
     a.name=p.name
     a.description=p.info_description
     a.is_active=p.is_active
@@ -424,6 +547,18 @@ def self.add_wwff_park(p)
     a
 end
 
+
+def self.add_regions
+     count=0
+     a=Asset.first_by_id
+     while a do
+       puts a.code+" "+count.to_s
+       count+=1
+       a.add_region
+       a=Asset.next(a.id)
+     end
+end
+
 def self.add_links
   as=Asset.find_by_sql [ " select id,code from assets " ]
   as.each do |aa|
@@ -469,28 +604,39 @@ def baggers
   users=User.where(callsign: callsigns+callsigns2).order(:callsign)
 end
 
+def add_region
+    if self.location then region=Region.find_by_sql [ %q{select id, sota_code, name from regions where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), "boundary");} ] else puts "ERROR: place without location. Name: "+self.name+", id: "+self.id.to_s end
+    if region and region.count>0 and self.region != region.first.sota_code then
+      ActiveRecord::Base.connection.execute("update assets set region='"+region.first.sota_code+"' where id="+self.id.to_s)
+    end
+
+end
 
 
 def add_links
-    linked_assets=Asset.find_by_sql [ %q{select b.id as id,b.code as code from assets a inner join assets b on ST_Within(a.location, b.boundary) where a.id = }+self.id.to_s ]
+    linked_assets=Asset.find_by_sql [ %q{select b.id as id,b.code as code, b.is_active as is_active from assets a inner join assets b on ST_Within(a.location, b.boundary)  where a.id = }+self.id.to_s ]
     linked_assets.each do |la|
-      dup=AssetLink.where(:parent_code=> self.code, :child_code => la.code)
-      if !dup or dup.count==0 and la!=self then
-        al=AssetLink.new
-        al.parent_code=self.code
-        al.child_code=la.code  
-        al.save
+      if la.is_active then
+        dup=AssetLink.where(:parent_code=> self.code, :child_code => la.code)
+        if (!dup or dup.count==0) and la.code!=self.code then
+          al=AssetLink.new
+          al.parent_code=self.code
+          al.child_code=la.code  
+          al.save
+        end
       end
   end
-    linked_assets=Asset.find_by_sql [ %q{select b.id as id, b.code as code from assets a inner join assets b on ST_Within(b.location, a.boundary) where a.id = }+self.id.to_s ]
+#    linked_assets=Asset.find_by_sql [ %q{ select b.code as code from assets a inner join assets b on b.is_active=true and ST_Within(b.location, a.boundary)  where a.id = }+self.id.to_s ]
+    linked_assets=ActiveRecord::Base.connection.execute( %q{ select b.code as code from assets a inner join assets b on b.is_active=true and ST_Within(b.location, a.boundary)  where a.id = }+self.id.to_s )
     linked_assets.each do |la|
-      dup=AssetLink.where(:parent_code=> self.code, :child_code => la.code)
-      if !dup or dup.count==0 and la!=self then
-        al=AssetLink.new
-        al.parent_code=self.code
-        al.child_code=la.code
-      end
-  end
+        dup=AssetLink.where(:parent_code=> la['code'], :child_code => self.code)
+        if (!dup or dup.count==0) and la['code']!=self.code  then
+          al=AssetLink.new
+          al.child_code=self.code
+          al.parent_code=la['code']
+          al.save
+        end
+    end
 end
 
 def post_process
@@ -564,6 +710,32 @@ end
      true
    end
   end
+
+  def self.add_centroids
+    a=Asset.first_by_id
+     while a do
+       if !a.location then
+         puts a.code
+         location=a.calc_location
+         if location then a.location=location; a.save; end
+       end
+       a=Asset.next(a.id)
+     end
+  end
+
+
+def calc_location
+   location=nil
+   if self.id then
+        locations=Asset.find_by_sql [ 'select id, CASE
+                  WHEN (ST_ContainsProperly(boundary, ST_Centroid(boundary)))
+                  THEN ST_Centroid(boundary)
+                  ELSE ST_PointOnSurface(boundary)
+                END AS location from assets where id='+self.id.to_s ]
+        if locations and locations.count>0 then location=locations.first.location else location=nil end
+   end
+   location
+end
 
 end
 

@@ -80,11 +80,11 @@
           <% end %>
         </td>
 
-        <td><%link=Asset.url_from_code(spot[:code])%>
-          <% if link[:external] then %>
-           <%=link_to spot[:code],link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
+        <td><%link=Asset.assets_from_code(spot[:code])%>
+          <% if link.first[:external] then %>
+           <%=link_to spot[:code],link.first[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
           <% else %>
-           <%=link_to spot[:code],link[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+           <%=link_to spot[:code],link.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
           <% end %>
         </td>
         <td><%=spot[:name]%></td>

@@ -1,0 +1,59 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.title = '... On the Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Help & Information</b>
+
+   </div>
+   <div id="controls">
+     <%=render 'map_controls'%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <div style="background-image: url('assets/hota-logo4.JPG'); background-size: cover;padding-bottom: 10px">
+    <h1>Help</h1>
+  </div>
+
+  <h2>Inreach / Email gateway for SPOTs and ALERTs</h2>
+  <p>Users of InReach can create spots and alerts on OnTheAir and ParksNPeaks from their InReach device whilst in the backcountry. This will also work from any device capable of sending an message to an email address. </p>
+  <p><b>To create a spot send an InReach message:</b></p>
+  <ul>
+    <li>To: spot@ontheair.nz</li>
+    <li>Containing a message like: ZL4NVW 1234 ZL1THH ZLH/0001 3.690 SSB Calling CQ now inr.ch</li>
+  </ul>
+  <p> Where ZL4NVW is your callsign, 1234 is your PIN (this is different to your password. Set your PIN in your profile)</p>
+  <p> Creates a spot for: ZL1THH 'calling CQ now' from ZLH/0001 on 3.690 SSB.  The inr.ch terminator (as also required by SOTA) is there to mark the end of your message, as inreach adds other information to the end of what you send. Note that the subject of the email is ignored.</p>
+
+  <p><b>To self-spot:</b></p>
+  <ul>
+    <li>To: spot@ontheair.nz</li>
+    <li>ZL4NVW 1234 ! ZLFF-0001 3.690 SSB On air in 5 mins inr.ch</li>
+  </ul>
+  <p>If you are spotting yourself you can replace the 'calling callsign' with !, as above</p>
+
+  <p><b>To create an alert:</b></p>
+  <ul>
+    <li>To: alert@ontheair.nz</li>
+    <li>ZL4NVW 1234 ! ZLFF-0002 3.690 SSB 2021-05-26 02:00 Time approx inr.ch</li>
+  </ul>
+  <p> Alerting: ZL4NVW will be in ZLFF-0002  3.690 SSB at 02:00 on 26/05/2021 <b>***UTC***</b>. You can specify a differenct callsign instead of '!' to alert for someone else.</p>
+<p><i>All spots and alerts for NZ entities will be notified on both OnTheAir and ParksNPeaks.  VK entities will only spot/alert on ParksNPeaks</i></p>
+<p><i>If the comment starts with 'test' or 'debug' then the spot / alert will be verified but not published</i></p>
+<script>
+document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+
+if ($(window).width() < 960) {
+        site_smaller_map();
+      }
+</script>
+

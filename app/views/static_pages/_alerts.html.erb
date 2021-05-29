@@ -70,11 +70,11 @@
             <%=alert[:activatingCallsign]%>
           <% end %>
         </td>
-        <td><%link=Asset.url_from_code(alert[:code])%>
-          <% if link[:external] then %>
-           <%=link_to alert[:code],link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png"> 
+        <td><%link=Asset.assets_from_code(alert[:code])%>
+          <% if link.first[:external] then %>
+           <%=link_to alert[:code],link.first[:url], target: "_blank"%><img src="/assets/external-link-symbol.png"> 
           <% else %>
-           <%=link_to alert[:code],link[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+           <%=link_to alert[:code],link.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
           <% end %>
         </td>
         <td><%=alert[:name]%></td>
