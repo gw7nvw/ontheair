@@ -44,7 +44,7 @@
         <%= @asset.type.display_name %>
       </div>
    </div>
-<% if @asset.master_code then %>
+<% if @asset.master_code and @asset.master_code!='' then %>
      <div class="erow" id="name">
        <div class="rowtitle" style='color:#bb0000'>REPLACED BY</div>
        <div class="rowtext"> 
@@ -84,21 +84,29 @@
         <div class="rowtext"> <%= "NZTM2000: "+@asset.x.round().to_s+", "+@asset.y.round().to_s %><% if @asset.r_field("altitude") %><%=" (alt: "+@asset.r_field("altitude").to_i.to_s+"m)"%> <% end %> </div>
       <% end %>
    </div>
-   <div class="erow" id="doc">
-      <div class="rowtitle"><%= "DOC Asset?" %></div>
-      <div class="textext"><%= if @asset.r_field("is_doc") then "Yes" else "No" end %></div>
+   <% if @asset.area then %>
+   <div class="erow" id="area">
+      <div class="rowtitle"><%= "Area" %></div>
+      <div class="textext"><%= (@asset.area/10000).round(2).to_s + " ha"%></div>
    </div>
+   <% end %>
+   <% if @asset.category then %>
+   <div class="erow" id="doc">
+      <div class="rowtitle"><%= "Administered by" %></div>
+      <div class="textext"><%=@asset.category%></div>
+   </div>
+   <% end %>
    <div class="erow" id="email" <%= if @asset.is_active then "" else "style='color:#bb0000'" end%>>
-      <div class="rowtitle"><%= "Active?" %></div>
+      <div class="rowtitle" <%= if @asset.is_active then "" else "style='color:#bb0000'" end%>><%= "Active?" %></div>
       <div class="textext"><%= if @asset.is_active then "Yes" else "No" end %></div>
    </div>
    <% if @asset.minor then %>
-   <div class="erow" id="email" style='color:#bb0000'>
-      <div class="rowtitle"><%= "Valid for OnTheAir?" %></div>
+   <div class="erow" id="email" style='color:#bb0000 !important'>
+      <div class="rowtitle" style='color:#bb0000'><%= "Valid for OnTheAir?" %></div>
       <div class="textext">No</div>
    </div>
    <% end %>
-`
+
    <div class="erow">
       <div class="hrline">
          <hr noshade size="4">

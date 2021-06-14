@@ -16,19 +16,22 @@
                    ...OnTheAir <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
-                  <li><%= link_to 'QRP.NZ', 'http://qrp.nz' %></li>
                   <li><%= link_to 'Home', root_path, remote: true, :id => 'home_link', :onclick => "linkHandler('home_link')"  %></li>
+                  <li class="divider"></li>
                   <li><%= link_to 'About', '/about', remote: true, :id => 'about_link', :onclick => "linkHandler('about_link')"  %></li>
                   <li><%= link_to 'Help', '/help', remote: true, :id => 'about_link', :onclick => "linkHandler('about_link')"  %></li>
+                  <li><%= link_to 'FAQ', '/faq', remote: true, :id => 'about_link', :onclick => "linkHandler('about_link')"  %></li>
+                  <li class="divider"></li>
                   <% if signed_in? %>
                     <li><%= link_to "Users", '/users',  remote: true,  :id => 'users_link', :onclick => "linkHandler('users_link')"  %></li>
                   <% end %>
+                  <li><%= link_to 'QRP.NZ', 'http://qrp.nz' %></li>
                 </ul>
 
                 <li><%= link_to "Places", '/assets',  remote: true,  :id => 'places_link', :onclick => "linkHandler('places_link')"  %></li>
                 <li><%= link_to "Results", '/results',  remote: true,  :id => 'results_link', :onclick => "linkHandler('results_link')"  %></li>
               <% if signed_in? %>
-                <li><%= link_to "My Contacts", '/contacts',  remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')"  %></li>
+                <li><%= link_to "My Logs", '/logs',  remote: true,  :id => 'logs_link', :onclick => "linkHandler('logs_link')"  %></li>
               <% end %>
                 <li><%= link_to "Spots", '/spots',  remote: true,  :id => 'spots_link', :onclick => "linkHandler('spots_link')"  %></li>
                 <li><%= link_to "Alerts", '/alerts',  remote: true,  :id => 'alerts_link', :onclick => "linkHandler('alerts_link')"  %></li>
@@ -41,6 +44,8 @@
                 </a>
                 <ul class="dropdown-menu">
                   <li><%= link_to "Profile", '/users/'+current_user.callsign, remote: true, :id => 'profile_link', :onclick => "linkHandler('profile_link')" %></li>
+                  <li class="divider"></li>
+                  <li><%= link_to "My Contacts", '/contacts',  remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')"  %></li>
                   <li class="divider"></li>
                   <li><%= link_to "SOTA Logs", '/sota_logs', remote: true, :id => 'sota_link', :onclick => "linkHandler('sota_link')" %></li>
                   <li class="divider"></li>

@@ -10,6 +10,9 @@ class StaticPagesController < ApplicationController
        @brief=true
        @fulllogs=Log.find_by_sql [ " select * from logs order by date desc " ]
        @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
+
+       @items=Item.where(:topic_id => 4, :item_type => "post").order(:created_at).reverse[0..1]
+
   end
 
   def results
@@ -22,6 +25,10 @@ class StaticPagesController < ApplicationController
        if !@sortby or @sortby=='' then @sortby="hut" end
   end
   def help
+     @items=Item.where(topic_id: HELP_TOPIC).order(:created_at).reverse
+  end
+  def faq
+     @items=Item.where(topic_id: FAQ_TOPIC).order(:created_at).reverse
   end
 
   def about

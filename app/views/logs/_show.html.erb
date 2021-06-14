@@ -3,7 +3,7 @@
    <div id="crumbs">
      <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler('home')" %>
      &nbsp;--&gt;&nbsp;
-     Logs
+     <%=link_to "Logs", '/logs', :remote => true,  :onclick => "linkHandler('logs')" %>
      &nbsp;--&gt;&nbsp;
      <%= @log.id.to_s %>
      </div>
@@ -11,7 +11,7 @@
        <% if current_user and @log.id and (@log.callsign1==current_user.callsign or current_user.is_admin) then %>
           <%=  link_to "Edit", '/logs/'+@log.id.to_s+'/edit', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('edit')"%>
        <% end %>
-       <%=  link_to "Index", '/contacts/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
+       <%=  link_to "Index", '/logs/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
        <%=render 'map_controls'%>   
    </div>
 </div>
@@ -51,7 +51,22 @@
           <td>
           </td>
           <td colspan=4 class="td-d">
-             <div id="asset_names" name="asset_names"><%=raw(@log.asset_code_names.join("<br/>"))%></div>
+            <ul style="list-style-type:none;padding:0;margin:0;">
+              <% if @log.asset_codes.count>0 then %>
+                <% @log.asset_codes.each do |cal|%>
+                  <li>
+                    <%links=Asset.assets_from_code(cal)%>
+                    <% links.each do |link| %>
+                      <% if link[:external] then %>
+                        <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
+                      <% else %>
+                        <%=link_to link[:asset].codename, link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                      <% end %>
+                    <% end %>
+                  </li>
+                <% end %>
+              <% end %>
+            </ul>
           </td>
         </tr>
       </table>
@@ -95,7 +110,7 @@
                     <% if link[:external] then %>
                       <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
                     <% else %>
-                      <%=link_to link[:asset].codename, link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                      <%=link_to link[:asset].codename, '/'+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
                     <% end %>
                   <% end %>
                 </li>

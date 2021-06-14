@@ -99,6 +99,11 @@ def send_to_pnp(debug,topic,idate,itime,tzname)
               code=ac.split(']')[0]
               code=code.gsub('[','')
               pnp_class=Asset.get_pnp_class_from_code(code)
+              #hack to remove once PnP updated to new codes
+#              if code[0..2]=="ZLP" or code[0..2]=="ZLH" or code[0..2]=="ZLI" then 
+#                 aa=Asset.find_by(code: code)
+#                 code=aa.old_code
+#              end
               if pnp_class and pnp_class!="" then
                 puts "sending alert to PnP"
                 params = {"actClass" => pnp_class,"actCallsign" => self.updated_by_name,"actSite" => code,"actMode" => self.mode,"actFreq" => self.freq,"actComments" => convert_to_text(self.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2","alDate" => if tt then tt.strftime('%Y-%m-%d') else "" end,"alTime" => if tt then tt.strftime('%H:%M') else "" end,"optDay" => if dayflag then "1" else "0" end}
@@ -111,6 +116,10 @@ def send_to_pnp(debug,topic,idate,itime,tzname)
               code=ac.split(']')[0]
               code=code.gsub('[','')
               pnp_class=Asset.get_pnp_class_from_code(code)
+#              if code[0..2]=="ZLP" or code[0..2]=="ZLH" or code[0..2]=="ZLI" then 
+#                 aa=Asset.find_by(code: code)
+#                 if aa then code=aa.old_code end
+#              end
               if pnp_class and pnp_class!="" then
                 params = {"actClass" => pnp_class,"actCallsign" => (self.callsign||self.updated_by_name),"actSite" => code,"mode" => self.mode,"freq" => self.freq,"comments" => convert_to_text(self.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2"}
                 puts "sending spot to PnP"

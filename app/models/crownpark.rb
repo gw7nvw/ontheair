@@ -21,26 +21,31 @@ def self.ecan_import(file)
   end
  
   h.each do |park|
-  p=Crownparks.new
+  p=Crownpark.new
   p.name=park["COMMON_NAM"]
   p.WKT=park["WKT"]
   p.reserve_type="Regional park"
   p.start_date=park["DATE_CREAT"]
   p.recorded_area=park["Shape_Area"].to_d/10000
+  
   p.save
   puts "Added crownpark :"+p.id.to_s+" - "+p.name
   end
 end
 
 def self.my_import(file)
-  count=0
-  CSV.foreach(file, :headers => true) do |row|
-    h=row.to_hash
-    h.shift
-    self.create!(h)
-    puts count
-    count+=1
-  end
+  #conn=Crownpark.get_custom_connection("cps",'crownparks','mbriggs','littledog')
+#cat filename | sed 's/MULTIP/SRID=4326; MULTIP/g' > filename2
+#copy crownparks("WKT",napalis_id,start_date,name,recorded_area,overlays,reserve_type,legislation,section,reserve_purpose,ctrl_mg_vst) from '/home/mbriggs/protected-areas.csv' DELIMITER ',' CSV HEADER;
+
+#  count=0
+#  CSV.foreach(file, :headers => true) do |row|
+#    h=row.to_hash
+#    h.shift
+#    self.create!(h)
+#    puts count
+#    count+=1
+#  end
 end
 
 
@@ -48,43 +53,48 @@ def self.merge_nearby
 #  ActiveRecord::Base.connection.execute("update crownparks set master_id=id where master_id is null;")
   count=0
   hundreds=0
-  conn=Crownpark.get_custom_connection("cps",'crownparks','mbriggs','littledog')
-  ls=Crownpark.where(is_active: true)
+#  conn=Crownpark.get_custom_connection("cps",'crownparks','mbriggs','littledog')
+  ls=Crownpark.where(is_active:true).order(:id)
+  puts ls.count
   ls.each do |l|
      l.reload
      count+=1
-    if l.is_active and l.name and l.name.length>0  then
-      if count>=100 then
+        print '#'; $stdout.flush
+     if count>=100 then
          count=0
          hundreds+=1
          puts "Count: "+(hundreds*100).to_s
-      end
-
+     end
+     if l.is_active and l.name and l.name.length>0  then
       ls=Crownpark.find_by_sql [ %q{ SELECT cp2.id from crownparks cp1 
        inner join crownparks cp2
-       ON cp2.is_active=true and (cp2.name = cp1.name) and cp2.id != cp1.id and ST_DWithin(cp1."WKT",cp2."WKT", 1, false) 
+       ON cp2.is_active=true and (cp2.name = cp1.name) and cp2.id != cp1.id and ST_DWithin(cp1."WKT",cp2."WKT", 20000, false) 
        where cp1.id= }+l.id.to_s+%q{;} ]
        
-
-      if ls and ls.count>0 then
-        #print '#'; $stdout.flush
+      if ls!=nil and ls.count>0 then
         comb=nil
         ids=ls.map{ |l2| l2.id }.join(',')
         ids=ids+","+l.id.to_s
-        puts ids
         ids.split(',').each do |l2|
           areas=Crownpark.find_by_sql [ %q{ select ST_Area("WKT") as id from crownparks where id in (}+l2+%q{); } ]
           puts "Areas before merge: "+areas.first.id.to_s
         end
 
         ls.each do |ll|
+          ActiveRecord::Base.connection.execute(%q{update crownparks set is_active=false, master_id=}+l.id.to_s+" where id="+ll.id.to_s+";" )
           l2=Crownpark.find_by_id(ll) 
-          l2.is_active=false
-          l2.master_id=l.id;
-          l2.save
+#          l2.is_active=false
+#          l2.master_id=l.id;
+#          l2.save
           puts "Merged and deleted "+(l2.name||"unnamed")+" "+l2.id.to_s+" as duplicate of "+(l.name||"unnamed")+l.id.to_s
         end
-        conn.execute(%q{update crownparks set "WKT"=(select st_multi(ST_CollectionExtract(st_collect("WKT"),3)) as "WKT" from crownparks where id in (}+ids+%q{)) where id=}+l.id.to_s+%q{; } )
+        ActiveRecord::Base.connection.execute(%q{update crownparks set "WKT"=(select st_multi(ST_CollectionExtract(st_collect("WKT"),3)) as "WKT" from crownparks where id in (}+ids+%q{)) where id=}+l.id.to_s+%q{; } )
+        badids=Crownpark.find_by_sql [ ' select id from crownparks where id='+l.id.to_s+' and ST_IsValid("WKT")=false; ' ]  
+        if badids and badids.count>0 then
+            puts "Created invalid geometry"
+            ActiveRecord::Base.connection.execute( 'update crownparks set "WKT"=st_multi(ST_CollectionExtract(ST_MakeValid("WKT"),3)) where id='+badids.first.id.to_s+';')
+        end
+        
 
         areas=Crownpark.find_by_sql [ %q{ select ST_Area("WKT") as id from crownparks where id in (}+l.id.to_s+%q{); } ]
         puts "Area after merge: "+areas.first.id.to_s
@@ -93,6 +103,15 @@ def self.merge_nearby
 
   end
   true
+end
+
+def self.fix_invalid_polygons
+    ids=Crownpark.find_by_sql [ ' select id from crownparks where ST_IsValid("WKT")=false; ' ]
+    ids.each do |id|
+      puts id.id
+      ActiveRecord::Base.connection.execute( 'update crownparks set "WKT"=st_multi(ST_CollectionExtract(ST_MakeValid("WKT"),3)) where id='+id.id.to_s+';')
+    end
+
 end
 
 private

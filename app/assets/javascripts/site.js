@@ -736,6 +736,7 @@ function select_asset(field, code, name, x, y, loc, child_codes, child_names) {
     codes=data2[row]['asset2_codes'].push(code) 
  }
     names=data2[row]['asset2_names']
+    if(names=='null'||name=='undefined') {names=""};
     if(names && names.length>0) {names=names+"\n"};
     data2[row]['asset2_names']=names+"["+code+"] "+name;
     data2[row]['location2']=loc;

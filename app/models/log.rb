@@ -1,4 +1,6 @@
 class Log < ActiveRecord::Base
+  validates :callsign1,  presence: true, length: { maximum: 50 }
+
   belongs_to :createdBy, class_name: "User"
   after_save { update_contacts }
   #attr_accessor :asset_names
@@ -10,8 +12,8 @@ class Log < ActiveRecord::Base
   end
 
   def asset_code_names
-    asset_names=self.assets.map{|asset| "["+asset.code+"] "+asset.name}
-    if !asset_names then asset_names="" end
+    if self.asset_codes then asset_names=self.asset_codes.map{|ac| asset=Asset.assets_from_code(ac).first; "["+asset[:code]+"] "+asset[:name]} else asset_names=[] end
+    if !asset_names then asset_names=[] end
     asset_names
   end
 
@@ -85,6 +87,222 @@ def self.migrate_to_distcodes
   c.asset_codes=codes
   c.save
   end
+end
+
+def self.import(filestr,user)
+  logs=[]
+  count=0
+  # remove header
+  if filestr["<EOH>"] or filestr["<eoh>"] then
+    logbody=filestr.split(/<EOH>|<eoh>/)[1]
+  else
+    logbody=filestr
+  end
+
+  # check for <eor>
+  if logbody["<eor>"] or logbody["<EOR>"] then 
+     #ech record terminated by <eor>
+     lines=logbody.split(/<EOR>|<eor>/) 
+  else
+     #if no <eor> then assume one record per line
+     lines=logbody.lines
+  end
+
+  lines.each do |line|
+     contact=Contact.new
+     protolog=Log.new
+     logid=nil
+     timestr=nil
+     contact.asset1_codes=[]
+     contact.asset2_codes=[]
+     contact.timezone=Timezone.find_by(name: "UTC").id
+     #get date fro this line
+     if line.upcase['QSO_DATE'] then
+       #prefetch date
+       date=line.upcase.split('<QSO_DATE')[1].split('>')[1][0..7]
+       #prefetch assets codes
+       locarr=[]
+
+       line.split("<").each do |parm|
+         if parm and parm.length>0 then
+           key=parm.split('>')[0]
+           key=key.split(':')[0]
+           len=key.split(':')[1]
+           value=parm.split('>')[1]
+           if len then value=value[0..len-1] end
+           case (key.downcase)
+ 
+           when "station_callsign"
+              callsign=value.strip
+              #remove suffix
+              if callsign['/'] then callsign=Log.remove_suffix(callsign) end
+              protolog.callsign1=callsign
+              contact.callsign1=callsign
+           when "qso_date"
+              protolog.date=value.strip
+              contact.date=value.strip
+           when "my_sota_ref"
+              values=value.split(',')
+              values.each do |val|
+                protolog.asset_codes.push(val.strip)
+                contact.asset1_codes.push(val.strip)
+                protolog.is_portable1=true
+                contact.is_portable1=true
+              end
+           when "my_sig_info"
+              values=value.split(',')
+              values.each do |val|
+                protolog.asset_codes.push(val.strip)
+                contact.asset1_codes.push(val.strip)
+                protolog.is_portable1=true
+                contact.is_portable1=true
+              end
+           when "comment"
+                protolog.comments1=value.gsub(/\r/,'').gsub(/\n/,'')
+                contact.comments1=value.gsub(/\r/,'').gsub(/\n/,'')
+           when "my_antenna"
+                protolog.antenna1=value.gsub(/\r/,'').gsub(/\n/,'')
+                contact.antenna1=value.gsub(/\r/,'').gsub(/\n/,'')
+           when "my_rig"
+                protolog.transceiver1=value.gsub(/\r/,'').gsub(/\n/,'')
+                contact.transceiver1=value.gsub(/\r/,'').gsub(/\n/,'')
+           when "my_lat"
+              pos=Log.degs_from_deg_min_sec(value)
+              contact.y1=pos
+              protolog.y1=pos
+           when "my_long"
+              pos=Log.degs_from_deg_min_sec(value)
+              contact.x1=pos
+              protolog.x1=pos
+           when "my_city"
+              contact.loc_desc1=value.strip
+              protolog.loc_desc1=value.strip
+           when "tx_pwr"
+              contact.power1=value.strip
+              protolog.power1=value.strip
+              if value.strip.to_f<=10 then 
+                contact.is_qrp1=true
+                protolog.is_qrp1=true
+              end
+           when "band"
+              contact.frequency=Contact.band_to_freq(value.strip)
+           when "freq"
+              contact.frequency=value.strip
+           when "rst_sent"
+              contact.signal2=value.strip
+           when "rst_rcvd"
+              contact.signal1=value.strip
+           when "time_on"
+              timestr=value.strip.gsub(':','')
+           when "time_off"
+              timestr=value.strip.gsub(':','')
+           when "lat"
+              pos=Log.degs_from_deg_min_sec(value)
+              contact.y2=pos
+           when "long"
+              pos=Log.degs_from_deg_min_sec(value)
+              contact.x2=pos
+           when "mode"
+              contact.mode=value.strip
+           when "name"
+              contact.name2=value.strip
+           when "call"
+              callsign=value.strip
+              #remove suffix
+              if callsign['/'] then callsign=Log.remove_suffix(callsign) end
+              contact.callsign2=callsign
+           when "qth"
+              contact.loc_desc2=value.strip
+           when "rx_pwr"
+              contact.power2=value.strip
+              if value.strip.to_f<=10 then 
+                contact.is_qrp2=true
+              end
+           when "sota_ref"
+              values=value.split(',')
+              values.each do |val|
+                contact.asset2_codes.push(val.strip)
+                contact.is_portable2=true
+              end
+           when "sig_info"
+              values=value.split(',')
+              values.each do |val|
+                contact.asset2_codes.push(val.strip)
+                contact.is_portable2=true
+              end
+           end
+          end #end of if
+       end
+       logs.each do |log|
+          puts "IMPORT: testing"
+          puts log.callsign1, protolog.callsign1, log.callsign1==protolog.callsign1
+          puts log.date,protolog.date,log.date==protolog.date
+          puts log.asset_codes,protolog.asset_codes,log.asset_codes == protolog.asset_codes
+          if log.callsign1==protolog.callsign1 and log.date==protolog.date and log.asset_codes == protolog.asset_codes then 
+                  logid=log.id
+                  puts "IMPORT: matched"
+          end
+       end
+       if !logid then
+         puts "IMPORT: creating new log"
+         count=logs.count
+         lstr=protolog.to_json
+         logs[count]=Log.new(JSON.parse(lstr))
+         logs[count].save
+         logs[count].reload
+         logid=logs[count].id
+       end 
+
+       contact.log_id=logid
+       puts "IMPORT: save contact"
+       puts contact.to_json
+       cstr=contact.to_json
+       c=JSON.parse(cstr)
+       contact=Contact.new(c)
+       if timestr then contact.time=protolog.date.strftime("%Y-%m-%d")+" "+timestr[0..1]+":"+timestr[2..3] end
+       if contact.callsign1 and !contact.save then 
+         puts "IMPORT: save contact failed"
+         return(logs)
+       end 
+     end  #end of parms.each 
+  end #end of lines.each 
+   puts "IMPORT: clean exit"
+  logs
+end
+
+def self.degs_from_deg_min_sec(value)
+    negative=false
+    value=value.gsub(/\r/,'').gsub(/\n/,'')
+    if value[0].upcase=="S" or value[0].upcase=="W" then
+       negative=true
+       value=value[1..-1]
+    end
+    if value.match(/^\d{1,3} \d{1,3} \d{1}./) then
+      deg=value.split(' ')[0]
+      min=value.split(' ')[1]
+      sec=value.split(' ')[2]
+      pos=deg.to_f+(min.to_f/60)+(sec.to_f)/3600
+    elsif value.match(/^\d{1,3} \d{1,3}\../) then
+      deg=value.split(' ')[0]
+      min=value.split(' ')[1]
+      pos=deg.to_f+(min.to_f/60)
+    else
+      pos=value.to_f
+    end
+    if negative then pos=-pos end
+
+  pos
+end
+
+def self.remove_suffix(callsign)
+  #try each part and choose longest
+  theseg=nil
+  maxlen=0
+  segs=callsign.split('/')
+  segs.each do |seg| 
+    if seg.length>maxlen then theseg=seg;maxlen=seg.length end
+  end
+  theseg
 end
 
 end

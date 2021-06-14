@@ -13,7 +13,7 @@
 </div>
    <div id="controls">
      <% if current_user  %>
-       <%=  link_to "Add Spot", "/posts/new?topic_id=35", class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=  link_to "Add Spot", "/posts/new?topic_id="+SPOT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
      <% end %>
      <%=render 'map_controls'%>
    </div>
@@ -21,7 +21,7 @@
 
 <div id="right_scroll">
   <%= render 'flash' %>
-  <h2><a href="https://qrp.nz/topics/35">Going portable spots</a></h2>
+  <h2><a href="https://qrp.nz/topics/<%=SPOT_TOPIC.to_s%>">Going portable spots</a></h2>
   <table class="users">
     <tr>
       <th>Date</th>

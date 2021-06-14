@@ -4,7 +4,7 @@
       <th>Position</th>
       <th>Callsign</th>
       <% AssetType.where("keep_score = true").each do |asset_type| %>
-        <th <%=if asset_type.name == @sortby then 'style=background-color:#33ff22 !important' end%>><u><%= link_to asset_type.display_name,'/assets?type='+asset_type.name, remote: true, :onclick => "linkHandler('"+asset_type.name+"')"%> <%=link_to "v", "/?sortby="+asset_type.name, remote: true, onclick: "linkHandler('default_order')", :style => if asset_type.name ==@sortby then "color: #000000" else "color: #ffffff" end %></u></th>
+        <th <%=if asset_type.name == @sortby then 'style=background-color:#33ff22 !important' end%>><u><%= link_to asset_type.display_name,'/assets?type='+asset_type.name, remote: true, :onclick => "linkHandler('"+asset_type.name+"')"%> <%=link_to "v", "?sortby="+asset_type.name, remote: true, onclick: "linkHandler('default_order')", :style => if asset_type.name ==@sortby then "color: #000000" else "color: #ffffff" end %></u></th>
       <% end %>
     </tr>
 

@@ -68,6 +68,54 @@ end
      end
   end
 
+#ZLI/XX-#### code based on region
+  def self.add_dist_codes
+     islands=Island.find_by_sql [ " select * from islands where dist_code='' or dist_code is null order by name" ]
+     islands.each do |p|
+       code=self.get_next_dist_code(p.region)
+       p.dist_code=code
+       p.save
+       puts code +" - "+p.name
+     end
+  end
+
+  def self.get_next_dist_code(region)
+    if !region or region=='' then region='ZZ' end
+    last_codes=Island.find_by_sql [ " select dist_code from islands where dist_code like 'ZLI/"+region+"-%%' and dist_code is not null order by dist_code desc limit 1;" ]
+    if last_codes and last_codes.count>0 and last_codes.first.dist_code then
+      last_code=last_codes.first.dist_code
+    else
+      last_code='ZLI/'+region+"-000"
+    end
+    next_code=last_code[0..6]+(((last_code[7..9].to_i)+1).to_s.rjust(3,'0'))
+    next_code
+  end
+
+def self.add_regions
+     count=0
+     isls=Island.all
+     isls.each do |a|
+       if a.region==nil or a.region=="" then
+         count+=1
+         a.add_region
+         if a.region==nil then puts a.code+" "+count.to_s+" "+(a.region||"null")+" "+a.name+" "+a.WKT.as_text end
+       end
+     end
+end
+
+def add_region
+      if self.WKT then region=Region.find_by_sql [ %q{ SELECT * 
+       FROM regions dp
+       WHERE ST_DWithin(ST_GeomFromText('}+self.WKT.as_text+%q{', 4326), boundary, 100000, false) 
+       ORDER BY ST_Distance(ST_GeomFromText('}+self.WKT.as_text+%q{', 4326), boundary) LIMIT 50; } ]
+      else puts "ERROR: place without location. Name: "+self.name+", id: "+self.id.to_s end
+
+    if region and region.count>0 then #and self.region != region.first.sota_code then
+      self.region=region.first.sota_code
+      self.save
+    end
+end
+
 def self.get_polygons
   ls=Island.where(is_active: true)
   ls.each do |l|
@@ -148,6 +196,16 @@ def self.import
     #i.save
   end; true
 end
+
+def self.first_by_id
+  a=Island.where("id > ? and is_active=true",0).order(:id).first
+end
+
+
+def self.next(id)
+  a=Island.where("id > ? and is_active=true",id).order(:id).first
+end
+
 
 end
 

@@ -28,6 +28,10 @@
       <div class="rowtitle"><%= "Contact Id:" %></div>
       <div class="rowtext"><%= @contact.id.to_s %></div>
    </div>
+   <div class="erow" id="email">
+      <div class="rowtitle"><%= "Log Id:" %></div>
+      <div class="rowtext"><%= if @contact.log_id then link_to @contact.log_id.to_s, '/logs/'+@contact.log_id.to_s, remote: true,  :id => 'log', :onclick => "linkHandler('log')" end %></div>
+   </div>
    <div class="erow" id="name">
       <div class="rowtitle"><%= "Callsign 1" %></div>
       <div class="rowtext"><%=link_to @contact.callsign1, '/users/'+@contact.callsign1, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
@@ -101,8 +105,12 @@
          </div>
        <% else %>
          <div class="erow" id="name">
+           <% if link[:asset] then %>
            <div class="rowtitle"><%=link[:asset].type.display_name%></div>
            <div class="rowtext"> <%=link_to link[:asset].codename, '/'+link[:asset].url,remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+           <% else %>
+           <div class="rowtext">Asset no longer exists <%=cal%></div>
+           <% end %>
          </div>
        <% end %>
      <% end %>
@@ -177,8 +185,12 @@
          </div>
        <% else %>
          <div class="erow" id="name">
+           <% if link[:asset] then %>
            <div class="rowtitle"><%=link[:asset].type.display_name%></div>
            <div class="rowtext"> <%=link_to link[:asset].codename, '/'+link[:asset].url,remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+           <% else %>
+           <div class="rowtext">Asset no longer exists <%=cal%></div>
+           <% end %>
          </div>
        <% end %>
      <% end %>

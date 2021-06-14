@@ -96,6 +96,9 @@ def authenticated?(attribute, token)
   def contacts
       contacts=Contact.find_by_sql [ "select * from contacts where callsign1='"+self.callsign+"' or callsign2='"+self.callsign+"' order by date, time"]
   end
+  def logs
+      logs=Log.find_by_sql [ "select * from logs where callsign1='"+self.callsign+"' order by date"]
+  end
 
   def filter_contacts(contacts,user_qrp, contact_qrp)
     fc=[]
@@ -158,20 +161,20 @@ def authenticated?(attribute, token)
    assets=[]
    contacts=self.contacts_filtered(nil, nil)
    contacts.each do |c|
-     c.asset1_codes.each do |code|
+     if c.asset1_codes then c.asset1_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a and a.asset_type==at and c.callsign1==self.callsign) then 
          if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
          else assets.push(a.code) end
-       end
+       end end
      end
-     c.asset2_codes.each do |code|
+     if c.asset2_codes then c.asset2_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a and a.asset_type==at and c.callsign2==self.callsign) then 
          if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
          else assets.push(a.code) end
        end
-     end
+     end end
    end
    assets.uniq.count
   end
@@ -180,20 +183,20 @@ def authenticated?(attribute, token)
    assets=[]
    contacts=self.contacts_filtered(nil, nil)
    contacts.each do |c|
-     c.asset1_codes.each do |code|
+     if c.asset1_codes then c.asset1_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a and a.asset_type==at and c.callsign2==self.callsign) then 
          if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
          else assets.push(a.code) end
        end
-     end
-     c.asset2_codes.each do |code|
+     end end
+     if c.asset2_codes then c.asset2_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a and a.asset_type==at and c.callsign1==self.callsign) then 
          if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
          else assets.push(a.code) end
        end
-     end
+     end end
    end
    assets.uniq.count
   end
@@ -221,37 +224,37 @@ def authenticated?(attribute, token)
 
    contacts=Contact.where(callsign1: self.callsign)
    contacts.each do |c|
-     c.asset1_codes.each do |code|
+     if c.asset1_codes then c.asset1_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a) then 
          activated_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
          activated[a.asset_type].push(a.code)
        end
-     end
-     c.asset2_codes.each do |code|
+     end end
+     if c.asset2_codes then c.asset2_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a) then 
          chased_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
          chased[a.asset_type].push(a.code)
        end
-     end
+     end end
    end
    contacts=Contact.where(callsign2: self.callsign)
    contacts.each do |c|
-     c.asset2_codes.each do |code|
+     if c.asset2_codes then c.asset2_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a) then
          activated_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
          activated[a.asset_type].push(a.code)
        end
-     end
-     c.asset1_codes.each do |code|
+     end end
+     if c.asset1_codes then c.asset1_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a) then
          chased_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
          chased[a.asset_type].push(a.code)
        end
-     end
+     end end
    end
 
    ats.each do |at|
@@ -269,20 +272,20 @@ end
    assets=[]
    contacts=self.contacts_filtered(user_qrp, contact_qrp)
    contacts.each do |c|
-     c.asset1_codes.each do |code|
+     if c.asset1_codes then c.asset1_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a and a.asset_type==at) then 
          if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
          else assets.push(a.code) end
        end
-     end
-     c.asset2_codes.each do |code|
+     end end
+     if c.asset2_codes then c.asset2_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a and a.asset_type==at) then 
          if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
          else assets.push(a.code) end
        end
-     end
+     end end
    end
    assets.uniq.count
   end

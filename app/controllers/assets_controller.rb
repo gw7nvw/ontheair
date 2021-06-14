@@ -28,7 +28,7 @@ class AssetsController < ApplicationController
 
     @searchtext=params[:searchtext] || ""
     if params[:searchtext] then
-       whereclause=whereclause+" and (lower(name) like '%%"+@searchtext.downcase+"%%' or lower(code) like '%%"+@searchtext.downcase+"%%')"
+       whereclause=whereclause+" and (unaccent(lower(name)) like '%%"+@searchtext.downcase+"%%' or lower(code) like '%%"+@searchtext.downcase+"%%')"
     end
 
     @assets=Asset.find_by_sql [ 'select * from assets where '+whereclause+' order by name limit 100' ]
@@ -58,13 +58,15 @@ class AssetsController < ApplicationController
   def show
     @newlink=AssetWebLink.new
     @parameters=params_to_query
-    code=params[:id].gsub("_","/")
+    code=(params[:id]||"").gsub("_","/")
     code=code.upcase
     @asset = Asset.find_by(code: code)
-    if(!@asset) then
+    if(@asset==nil) then
         @asset = Asset.find_by(old_code: code)
-        if(!@asset) then
-          redirect_to '/'
+        if(@asset==nil) then
+          flash[:error]="Sorry - "+code+" does not exist in our database"
+          redirect_to '/assets'
+          return true
         end
     end
     @newlink.asset_code=@asset.safecode

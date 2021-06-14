@@ -3,6 +3,7 @@ class ApplicationController < ActionController::Base
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
 before_filter :set_cache_headers
+  before_filter :log_visit
 
   include SessionsHelper
   include RgeoHelper
@@ -11,6 +12,18 @@ before_filter :set_cache_headers
       redirect_to signin_url+"?referring_url="+URI.escape(request.fullpath), notice: "Please sign in." unless signed_in?
   end
 
+  def log_visit
+   if request.env["HTTP_USER_AGENT"].match(/\(.*https?:\/\/.*\)/) then
+      Rails.logger.info "BOT: "+request.remote_ip
+   else
+      Rails.logger.info request.env["HTTP_USER_AGENT"]
+      if signed_in? then
+        Rails.logger.info "USER: "+current_user.callsign+" - "+request.remote_ip
+      else
+      Rails.logger.info "USER: "+request.remote_ip
+      end
+   end
+  end
   def set_cache_headers
     response.headers["Cache-Control"] = "no-cache, no-store, max-age=0, must-revalidate"
     response.headers["Pragma"] = "no-cache"

@@ -55,7 +55,7 @@ def self.add_regions
      count=0
      a=Park.first_by_id
      while a do
-       puts a.code+" "+count.to_s
+       #puts a.code+" "+count.to_s
        count+=1
        a.add_region
        a=Park.next(a.id)
@@ -63,9 +63,19 @@ def self.add_regions
 end
 
 def add_region
-    if self.location then region=Region.find_by_sql [ %q{select id, sota_code, name from regions where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), "boundary");} ] else puts "ERROR: place without location. Name: "+self.name+", id: "+self.id.to_s end
-    if region and region.count>0 and self.region != region.first.sota_code then
-      ActiveRecord::Base.connection.execute("update parks set region='"+region.first.sota_code+"' where id="+self.id.to_s)
+      if self.location then region=Region.find_by_sql [ %q{ SELECT * 
+       FROM regions dp
+       WHERE ST_DWithin(ST_GeomFromText('}+self.location.as_text+%q{', 4326), boundary, 20000, false) 
+       ORDER BY ST_Distance(ST_GeomFromText('}+self.location.as_text+%q{', 4326), boundary) LIMIT 50; } ]
+      else puts "ERROR: place without location. Name: "+self.name+", id: "+self.id.to_s end
+
+    if region and region.count>0 and (not (self.region==nil or self.region=="")) and self.region!=region.first.sota_code  then
+       puts "Not overwriting mismatched regions: "+self.code+" "+self.name+" "+self.region+" "+region.first.sota_code
+    end
+
+    if region and region.count>0 and (self.region==nil or self.region=="")  then
+      ActiveRecord::Base.connection.execute("update parks set region='"+region.first.sota_code+"', dist_code=null where id="+self.id.to_s)
+      puts "updating record "+self.id.to_s+" "+self.name
     end
 
 end
@@ -98,7 +108,7 @@ end
 
       #update atrribtes
       #if park.Section=="S24_3_FIXED_MARGINAL_STRIP" or park.Local_Purp!=nil then
-      if park.section=="s.24(3) - Fixed Marginal Strip" or park.section== "s.23 - Local Purpose Reserve" or park.section=="s.22 - Government Purpose Reserve" or park.section=="s.176(1)(a) - Unoccupied Crown Land" or park.name ilike '%%gravel%%' then
+      if park.section=="s.24(3) - Fixed Marginal Strip" or park.section== "s.23 - Local Purpose Reserve" or park.section=="s.22 - Government Purpose Reserve" or park.section=="s.176(1)(a) - Unoccupied Crown Land" or park.name.upcase["GRAVEL"] then
         p.is_mr=true
       else
         p.is_mr=false
@@ -110,12 +120,20 @@ end
       end
       p.is_active=park.is_active
       p.master_id = park.master_id
-      p.boundary=park.WKT
       if !p.location then p.location=p.calc_location end
       if !p.code then p.code=p.get_code end
-      p.save
+      pa=Park.find_by_sql [ "select ST_Area(boundary)  as area from parks where id="+p.id.to_s ]
+      cpa=Crownpark.find_by_sql [ 'select ST_Area("WKT") as area from crownparks where id='+park.id.to_s ]
+      if pa.first.area != cpa.first.area then
+        print "#"; $stdout.flush
+        p.boundary=park.WKT
+        p.save
+      else
+        print "."; $stdout.flush
+        ActiveRecord::Base.connection.execute("update parks set id="+p.id.to_s+", name='"+p.name.gsub("'","''")+"', is_mr="+p.is_mr.to_s+", owner='"+p.owner.gsub("'","''")+"', is_active="+p.is_active.to_s+", master_id="+(if p.master_id then p.master_id.to_s else "null" end)+", location=ST_GeomFromText('"+(p.location||"").as_text+"', 4326), code='"+p.code+"' where id="+p.id.to_s) 
+      end
       uc=uc+1
-      p.add_region
+      #p.add_region
     end
 
 

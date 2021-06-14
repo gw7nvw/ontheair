@@ -75,7 +75,7 @@
         <%= f.check_box :membership_confirmed %>
       <% end %>
  
-      <%= f.label :timezone %>
+      <%= f.label :timezone, 'Timezone you will use in logs, spots, etc' %>
       <%= collection_select( :user, :timezone, Timezone.all.order(:name), :id, :name, {}) %></td>
 
       <%= f.label :password %>

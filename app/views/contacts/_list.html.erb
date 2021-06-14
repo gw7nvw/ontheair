@@ -43,7 +43,11 @@
                   <% if link[:external] then %>
                     <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
                   <% else %>
-                    <%=link_to link[:asset].codename, link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                    <% if link[:asset] then %>
+                    <%=link_to link[:asset].codename, '/'+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                    <% else %>
+                      Asset no lnger exists: <%=cal%>
+                    <% end %>
                   <% end %>
                 <% end %>
               </li>
@@ -59,9 +63,14 @@
                 <%links=Asset.assets_from_code(cal)%>
                 <% links.each do |link| %>
                   <% if link[:external] then %>
+
                     <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
                   <% else %>
-                    <%=link_to link[:asset].codename, link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                    <% if link[:asset] then %>
+                      <%=link_to link[:asset].codename, '/'+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                    <% else %>
+                      <div class="rowtext">Asset no longer exists <%=cal%></div>
+                    <% end %>
                   <% end %>
                 <% end %>
               </li>

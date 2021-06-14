@@ -3,10 +3,10 @@
    <div id="crumbs">
      <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler('home')" %>
      &nbsp;--&gt;&nbsp;
-     Logs
+     <%=link_to "Logs", '/logs', :remote => true,  :onclick => "linkHandler('logs')" %>
      &nbsp;--&gt;&nbsp;
      <% if @log then %>
-       <%= @log.id.to_s %>
+       <%=link_to @log.id.to_s, '/logs/'+@log.id.to_s, :remote => true,  :onclick => "linkHandler('log')" %>
        &nbsp;--&gt;&nbsp;
        <b>Edit</b>
      <% else %>
@@ -18,11 +18,11 @@
           <%=  link_to "Delete", '/logs/'+@log.id.to_s+'/delete', class: "btn btn-small btn-primary", confirm: "Delete log: Are you sure?", :remote => true,  :onclick => "linkHandler('delete')"%>
        <% end %>
        <% if @log.id then %>
-          <%=  link_to "Cancel", '/contacts', class: 'btn btn-small btn-primary', :remote => true,  :onclick => "linkHandler('cancel')"%>
+          <%=  link_to "Cancel", '/logs/'+@log.id.to_s, class: 'btn btn-small btn-primary', :remote => true,  :onclick => "linkHandler('cancel')"%>
        <% else %>
-         <%=  link_to "Cancel", '/contacts/', class: 'btn btn-small btn-primary', :remote => true,  :onclick => "linkHandler('cancel')" %>
+         <%=  link_to "Cancel", '/logs/', class: 'btn btn-small btn-primary', :remote => true,  :onclick => "linkHandler('cancel')" %>
        <% end %>
-       <%=  link_to "Index", '/contacts/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
+       <%=  link_to "Index", '/logs/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
        <%=render 'map_controls'%>   
    </div>
 </div>
@@ -58,7 +58,7 @@
         <tr>
         </tr>
         <tr>
-          <td class="td-l">Location</td>
+          <td class="td-l">Description</td>
           <td colspan=2 class="td-d"> <%= f.text_field :loc_desc1%></td>
           <td>
             <ul style="float: left;margin: 0" class="nav pull-left" id="menus">
@@ -204,7 +204,7 @@ var data2= <%=raw @contacts.to_json(methods: [:timetext, :asset2_names])%>;
 <% puts @contacts.to_json(methods: [:timetext, :asset2_names])%>
 var hot = new Handsontable(container, {
   data: data2,
-  colHeaders: ['id','Time','Callsign','QRP', 'Port', 'Mode','Freq','Snt RST','Rcd RST','Name','Location','', 'codes', 'name', 'Id','loc','x','y'],
+  colHeaders: ['id','Time','Callsign','QRP', 'Port', 'Mode','Frq (MHz)','Snt RST','Rcd RST','Name','Description','', 'codes', 'name', 'Id','loc','x','y'],
   columns: [
 {data: 'id', type: 'numeric',readOnly:true} , 
 {data: 'timetext', type: 'text', renderer: reqTextRenderer},  
@@ -312,7 +312,7 @@ function newRowCallback() {
         <th>QRP?</th>
         <th>Portable?</th>
         <th>Mode</th>
-        <th>Freq</th>
+        <th>Freq (MHz)</th>
         <th>Name</th>
         <th>Location</th>
         <th>RST Sent</th>

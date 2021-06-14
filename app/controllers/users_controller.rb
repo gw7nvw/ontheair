@@ -37,7 +37,7 @@ class UsersController < ApplicationController
 
   def new
     @user = User.new
-
+    @user.timezone=Timezone.find_by(name: 'UTC').id
   end
 
  def create
@@ -251,6 +251,42 @@ end
      csvtext
    end
   end
+
+  def add
+  @user=current_user
+  if current_user and current_user.is_admin or current_user.group_admin then @user = User.where(callsign: params[:id]).first end
+  @topic=Topic.find_by_id(params[:topic_id])
+
+  if @user and @topic then
+    utl=UserTopicLink.new
+    utl.user_id=@user.id
+    utl.topic_id=@topic.id
+    utl.mail=true
+    utl.save
+  else
+    flash[:error] = "Error locating user or topic specified"
+  end
+  @topics=Topic.where(is_active=true)
+  render 'show'
+
+  end
+
+  def delete
+  @user=current_user
+  if current_user and current_user.is_admin then @user = User.where(callsign: params[:id]).first end
+  @topic=Topic.find_by_id(params[:topic_id])
+
+  if @user and @topic then
+    utls=UserTopicLink.find_by_sql [ "select * from user_topic_links where user_id="+@user.id.to_s+" and topic_id="+@topic.id.to_s ]
+    utls.each do |utl|
+     utl.destroy
+    end
+  else
+    flash[:error] = "Error locating user or topic specified"
+  end
+  @topics=Topic.where(is_active=true)
+  render 'show'
+end
 
   private
 

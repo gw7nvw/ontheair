@@ -12,6 +12,7 @@ get "proxy" => "proxy#get", :as => "proxy"
 
 match '/about',   to: 'static_pages#about',   via: 'get'
 match '/help',   to: 'static_pages#help',   via: 'get'
+match '/faq',   to: 'static_pages#faq',   via: 'get'
 match '/results',   to: 'static_pages#results',   via: 'get'
 match '/spots',   to: 'static_pages#spots',   via: 'get'
 match '/alerts',   to: 'static_pages#alerts',   via: 'get'
@@ -22,12 +23,17 @@ get 'asset_web_links/:id/delete', to: 'asset_web_links#delete'
 get 'asset_links/:id/delete', to: 'asset_links#delete'
 resources :qsl, only: [:show]
 resources :users
+get 'users/:id/add', to: 'users#add'
+get 'users/:id/delete', to: 'users#delete'
+
 resources :posts, only: [:new, :create, :show, :edit, :update]
 get 'posts/:id/delete', to: 'posts#delete'
 match '/queries/asset', to: 'queries#asset',    via:'get'
 resources :api, only: [:index]
 match '/api/assets', to: 'api#asset',    via:'get'
 match '/api/assettypes', to: 'api#assettype',    via:'get'
+match '/api/assetlinks', to: 'api#assetlink',    via:'get'
+match '/api/logs', to: 'api#logs_post',    via:'post'
 
 resources :sota_logs
 resources :pota_logs
@@ -37,6 +43,8 @@ match "/wwff_logs/:id/send", :to => "wwff_logs#send_email", :as => "wwff_send_lo
 
 match "/logs/:id/save", :to => "logs#save", :as => "log_save_data", :via => "post"
 match "/logs/:id/load", :to => "logs#load", :as => "log_load_data", :via => "get"
+ get 'logs/upload', to: 'logs#upload'
+ post 'logs/upload', to: 'logs#savefile'
 resources :logs
  get 'logs/:id/delete', to: 'logs#delete'
 

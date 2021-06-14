@@ -11,11 +11,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210528210841) do
+ActiveRecord::Schema.define(version: 20210613055316) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "postgis"
+  enable_extension "postgres_fdw"
+  enable_extension "unaccent"
 
   create_table "admin_settings", force: true do |t|
     t.string   "qrpnz_email"
@@ -84,6 +86,7 @@ ActiveRecord::Schema.define(version: 20210528210841) do
     t.string   "master_code"
     t.string   "region"
     t.string   "old_code"
+    t.float    "area"
   end
 
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
@@ -168,6 +171,24 @@ ActiveRecord::Schema.define(version: 20210528210841) do
   add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"
   add_index "contacts", ["callsign2"], :name => "index_contacts_on_callsign2"
 
+  create_table "crownparks", force: true do |t|
+    t.spatial "WKT",             limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.integer "napalis_id"
+    t.string  "start_date"
+    t.string  "name"
+    t.string  "recorded_area"
+    t.string  "overlays"
+    t.string  "reserve_type"
+    t.string  "legislation"
+    t.string  "section"
+    t.string  "reserve_purpose"
+    t.string  "ctrl_mg_vst"
+    t.boolean "is_active"
+    t.integer "master_id"
+  end
+
+  add_index "crownparks", ["WKT"], :name => "docparks_wkt_index", :spatial => true
+
   create_table "hut_photo_links", force: true do |t|
     t.integer  "hut_id"
     t.string   "url"
@@ -194,6 +215,7 @@ ActiveRecord::Schema.define(version: 20210528210841) do
     t.spatial  "location",         limit: {:srid=>4326, :type=>"point"}
     t.string   "code"
     t.string   "region"
+    t.string   "dist_code"
   end
 
   create_table "island_polygons", force: true do |t|
@@ -290,6 +312,7 @@ ActiveRecord::Schema.define(version: 20210528210841) do
     t.string   "general_link"
     t.string   "code"
     t.spatial  "boundary",               limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.string   "dist_code"
   end
 
   create_table "logs", force: true do |t|
@@ -421,6 +444,15 @@ ActiveRecord::Schema.define(version: 20210528210841) do
     t.datetime "updated_at"
   end
 
+  create_table "uploads", force: true do |t|
+    t.string   "doc_file_name"
+    t.string   "doc_content_type"
+    t.integer  "doc_file_size"
+    t.datetime "doc_updated_at"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "users", force: true do |t|
     t.string   "callsign"
     t.string   "email"
@@ -453,6 +485,7 @@ ActiveRecord::Schema.define(version: 20210528210841) do
     t.string   "chased_count_total"
     t.boolean  "outstanding"
     t.string   "pin"
+    t.boolean  "allow_pnp_login"
   end
 
   add_index "users", ["callsign"], :name => "index_users_on_callsign"

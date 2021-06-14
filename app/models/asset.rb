@@ -212,11 +212,11 @@ def self.url_from_code(code)
     if park then url="/parks/"+park.id.to_s end
   elsif code[0..3]=="ZLH/" then
     #ZLOTA hut
-    hut=Hut.find_by(id: code[4..7])
+    hut=Hut.find_by(id: code[4..9])
     if hut then url="/huts/"+hut.id.to_s end
   elsif code[0..3]=="ZLI/" then
     #ZLOTA island
-    island=Island.find_by(id: code[4..8])
+    island=Island.find_by(id: code[4..9])
     if island then url="/islands/"+island.id.to_s end
   elsif code.scan(/ZL\d\//).length>0 then
     #NZ SOTA
@@ -351,8 +351,8 @@ def self.get_pnp_class_from_code(code)
   if a and a[:type] and a[:external]==false then 
      ac=AssetType.find_by(name: a[:type])
      pnp_class=ac.pnp_class
-  elsif a[:title][0..3]=="WWFF" then pnp_class="WWFF"
-  elsif a[:title][0..3]=="POTA" then pnp_class="POTA"
+  elsif a[:title] and a[:title][0..3]=="WWFF" then pnp_class="WWFF"
+  elsif a[:title] and a[:title][0..3]=="POTA" then pnp_class="POTA"
   end
 
   pnp_class
@@ -435,7 +435,8 @@ def self.add_islands
     a=Asset.find_by(asset_type: 'island', code: p.code)
     if !a then a=Asset.new end
     a.asset_type="island"
-    a.code=p.code
+    a.code=p.code_dist
+    a.old_code=p.code
     a.url='asset/'+a.code
     a.name=p.name
     a.description=p.info_description
@@ -735,6 +736,15 @@ def calc_location
         if locations and locations.count>0 then location=locations.first.location else location=nil end
    end
    location
+end
+
+def self.add_areas
+    ActiveRecord::Base.connection.execute( " update assets set area=ST_Area(ST_Transform(boundary,2193)) where boundary is not null")
+end
+
+def self.fix_invalid_polygons
+    ActiveRecord::Base.connection.execute( "update assets set boundary=st_multi(ST_CollectionExtract(ST_MakeValid(boundary),3)) where id in (select id from assets where ST_IsValid(boundary)=false);")
+
 end
 
 end

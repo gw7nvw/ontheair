@@ -1,16 +1,46 @@
 class LogsController < ApplicationController
   before_action :signed_in_user, only: [:edit, :update, :create, :new]
 
-skip_before_filter :verify_authenticity_token, :only => [:save]
+skip_before_filter :verify_authenticity_token, :only => [:save, :savefile]
 
 def show
   @log=Log.find_by_id(params[:id])
   if !@log then 
-     redirtect_to '/contacts'
+     redirect_to '/logs'
   end
 end
 
 def load
+
+end
+
+def upload
+    @upload = Upload.new
+end
+
+def savefile
+    @upload = Upload.new(upload_params)
+
+    success=@upload.save
+
+
+    if success then
+      logfile=File.read(@upload.doc.path)
+      logs=Log.import(logfile, current_user)
+      puts logs
+      logs.each do |log| puts log.to_json end
+      if logs and logs.count>0 and logs.first.id then
+        @log=logs.first
+        flash[:success]="Uploaded "+logs.count.to_s+" days/QTHs of contacts into "+logs.count.to_s+" logs. Showing first" 
+        redirect_to '/logs/'+logs.first.id.to_s
+      else  
+         flash[:error]=logs.map{|log| log.errors.full_messages.join(',')}.join(',')
+         render 'upload'
+      end
+    else
+      flash[:error]="Error creating file - "+@upload.errors.full_messages.join(',')
+      render 'upload'
+    end
 
 end
 
@@ -64,9 +94,9 @@ def save
       cle.name2=row[9]
       cle.loc_desc2=row[10]
       cle.asset1_codes=log.asset_codes
-      if cle.asset1_codes==nil then cle.asset1_codes=['dummy'] end
+      if cle.asset1_codes==nil then cle.asset1_codes=[''] end
       cle.asset2_codes=row[13]
-      if cle.asset2_codes==nil then cle.asset2_codes=['dummy'] end
+      if cle.asset2_codes==nil then cle.asset2_codes=[''] end
       cle.location2=row[14]
       cle.x2=row[15]
       cle.y2=row[16]
@@ -120,8 +150,9 @@ def new
 
     @log.callsign1=current_user.callsign
     @log.asset_codes=nil
-    tz=Timezone.find_by_id(current_user.timezone)
-    @log.date=Time.now.in_time_zone(tz.name).to_date.to_s
+    @tz=Timezone.find_by_id(current_user.timezone)
+    @log.date=Time.now.in_time_zone(@tz.name).to_date.to_s
+    @log.timezone=@tz.id
   else
     redirect_to '/'
   end
@@ -223,7 +254,7 @@ def delete
        flash[:success]="Log deleted"
      end
     
-     redirect_to '/contacts/'
+     redirect_to '/logs/'
    end
   else
     redirect_to '/'
@@ -279,5 +310,9 @@ private
   def log_params
       params.require(:log).permit(:id, :callsign1, :user1_id, :power1, :signal1, :transceiver1, :antenna1, :comments1, :location1, :park1, :date, :time, :timezone,  :frequency, :mode, :loc_desc1,:x1, :y1, :altitude1, :location1,  :is_active, :hut1_id, :park1_id, :island1_id, :is_qrp1, :is_portable1, :summit1_id, :asset_codes)
 end
+
+  def upload_params
+    params.require(:upload).permit(:doc)
+  end
 
 end

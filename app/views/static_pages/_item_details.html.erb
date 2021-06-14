@@ -1,0 +1,4 @@
+<% if item.item_type=="post" then %>
+  <% @post=item.end_item %>
+  <%=if @post then render 'posts/post_details' end%>
+<% end %>

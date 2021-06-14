@@ -1,0 +1,40 @@
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     Logs
+     &nbsp;--&gt;&nbsp;
+     Upload
+     </div>
+   <div id="controls">
+       <%=  link_to "Index", '/contacts/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
+       <%=render 'map_controls'%>
+   </div>
+</div>
+<div id="right_scroll">
+  <div class="fullform">
+    <%= render 'flash' %>
+    <%= render 'shared/error_messages' %>
+    <div style='color:#ff0000'><p><i>This is a new experimental feature. Logs use a wide range of different parameters and this has not yet been tested with the full range of logging software. Feel free to try it out but please check your logs once uploaded and if necessary edt them.  Please report any issues to admin@ontheair.nz.  We currently support 1 activation per log or 1 day of chaser data per log.</i></p></div>
+    <div class="erow">
+    <p>Select your log and click the 'Upload' button. Logs must be in ADIF format</p>
+    <%  @submit_button = "Upload log" %>
+    <%= render 'flash' %>
+
+    <div class="fullform">
+       <%= form_for @upload, :remote => true, url: '/logs/upload', :html => {:name => 'hutform'} do |f| %>
+        <%= render 'shared/error_messages' %>
+        <div id="right_scroll">
+
+          <div class="erow">
+             <div class="sectiontitle25">Filename:</div>
+          </div>
+          <%= f.file_field :doc %>
+
+          <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-hightlight" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

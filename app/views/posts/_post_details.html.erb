@@ -1,19 +1,12 @@
  <div class="bordered_box">
    <div class="box_header">
-      <p><div class="sectiontitle"><%=link_to @post.title, '/topics/'+@post.topic.url+'?title='+@post.title.html_safe.gsub("#","%23")%></div>
+      <p><div class="sectiontitle"><%=@post.title%></div>
       </p>
       <p>
-      <%= link_to @post.updated_by_name, '/users/'+@post.updated_by_name %>
+      <%= link_to @post.updated_by_name, '/users/'+@post.updated_by_name,remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
       <%=if @post.updated_at > @post.created_at then " updated in " else " posted in " end %> 
-      <%=if @post.topic then link_to @post.topic.name, '/topics/'+@post.topic.url else "??" end %> on 
-      <%=@post.updated_at.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d %H:%M")%>
-      <% if current_user and (current_user.id==@post.created_by_id or current_user.is_admin) then %>
-        <%=  link_to "Edit", '/posts/'+@post.id.to_s+'/edit', class: 'link_to',remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
-        <%= link_to "Delete", '/posts/'+@post.id.to_s+'/delete', confirm: "Delete post: Are you sure?", class: 'link_to',remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
-      <% end %>
-      <% if current_user and (current_user.is_admin or (@post.topic.is_public or (@post.topic.is_owners and current_user.id == @post.topic.owner_id))) %>
-        <%= link_to "Spot", '/posts/new?topic_id=35&op_id='+@post.id.to_s, class: "link_to",remote: true,  :id => 'spot', :onclick => "linkHandler('spot')" %>
-      <% end %>
+      <%=if @post.topic then @post.topic.name else "??" end %> on 
+      <%=@post.updated_at.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d")%>
       </p>
       <% if @post.referenced_date then %>
         <p>

@@ -10,7 +10,7 @@
    <div id="crumbs">
      <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
      &nbsp;--&gt;&nbsp;
-     <b>Help & Information</b>
+     Frequently Asked Questions<b></b>
 
    </div>
    <div id="controls">
@@ -21,7 +21,7 @@
 <div id="right_scroll">
   <%= render 'flash' %>
   <div style="background-image: url('assets/hota-logo4.JPG'); background-size: cover;padding-bottom: 10px">
-    <h1>Help</h1>
+    <h1>FAQ</h1>
   </div>
   <% @items.each do |item| %>
     <% @post=item.end_item%>

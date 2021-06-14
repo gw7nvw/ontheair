@@ -16,7 +16,7 @@
           <tr>
             <td>
               <% if !@brief and current_user  and (current_user.callsign==log.callsign1 or current_user.is_admin) %>
-                <%= link_to 'Edit', '/logs/'+log.id.to_s+'/editlog?referring=index', remote: true, :id => 'editbutton'+log.id.to_s, :onclick => "linkHandler('editbutton"+log.id.to_s+"')" %><br/>
+                <%= link_to 'Edit', '/logs/'+log.id.to_s+'/edit?referring=index', remote: true, :id => 'editbutton'+log.id.to_s, :onclick => "linkHandler('editbutton"+log.id.to_s+"')" %><br/>
               <% end %>
               <%= link_to 'View', '/logs/'+log.id.to_s, remote: true, :id => 'log_link_'+log.id.to_s, :onclick => "linkHandler('log_link_"+log.id.to_s+"')" %>
             </td>

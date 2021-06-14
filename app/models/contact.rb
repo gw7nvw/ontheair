@@ -19,7 +19,7 @@ class Contact < ActiveRecord::Base
   before_save { self.callsign1 = callsign1.upcase }
   before_save { self.callsign2 = callsign2.upcase }
   before_save { self.check_codes_in_location }
-  after_save { self.update_scores }
+#  after_save { self.update_scores }
   before_destroy { self.update_scores }
 
   validates :callsign1,  presence: true, length: { maximum: 50 }
@@ -30,7 +30,7 @@ class Contact < ActiveRecord::Base
 #  validates :mode,  presence: true
 
   def check_codes_in_location
-    if self.asset1_codes==nil or self.asset1_codes==[] then
+    if self.asset1_codes==nil or self.asset1_codes==[] or self.asset1_codes==[""] then
       assets=Asset.assets_from_code(self.loc_desc1)
       self.asset1_codes=[]
       assets.each do |asset| 
@@ -43,7 +43,7 @@ class Contact < ActiveRecord::Base
         end
       end
     end
-    if self.asset2_codes==nil or self.asset2_codes==[] then
+    if self.asset2_codes==nil or self.asset2_codes==[] or self.asset2_codes==[""] then
       assets=Asset.assets_from_code(self.loc_desc2)
       self.asset2_codes=[]
       assets.each do |asset| 
@@ -150,6 +150,7 @@ end
      if self.frequency>=0.501 and self.frequency<=0.504 then band="560m" end
      if self.frequency>=1.8 and self.frequency<=2 then band="160m" end
      if self.frequency>=3.5 and self.frequency<=4 then band="80m" end
+     if self.frequency>=5.351 and self.frequency<=5.367 then band="60m" end
      if self.frequency>=7 and self.frequency<=7.3 then band="40m" end
      if self.frequency>=10.1 and self.frequency<=10.15 then band="30m" end
      if self.frequency>=14.0 and self.frequency<=14.35 then band="20m" end
@@ -176,6 +177,41 @@ end
      if self.frequency>=241000 and self.frequency<=250000 then band="1mm" end
    end
    band
+ end
+
+ def self.band_to_freq(band)
+   band=band.downcase
+   frequency=nil
+     if band=="2190m" then frequency=0.136  end
+     if band=="560m" then frequency=0.501  end
+     if band=="160m" then frequency=1.8 end
+     if band=="80m" then frequency=3.5 end
+     if band=="60m" then frequency=5.3515 end
+     if band=="40m" then frequency=7 end 
+     if band=="30m" then frequency=10.1 end 
+     if band=="20m" then frequency=14.0 end 
+     if band=="17m" then frequency=18.068 end
+     if band=="15m" then frequency=21.0  end
+     if band=="12m" then frequency=24.89 end
+     if band=="10m" then frequency=28.0 end
+     if band=="6m" then frequency=50  end
+     if band=="4m" then frequency=70  end
+     if band=="2m" then frequency=144 end
+     if band=="1.25m" then frequency=222  end
+     if band=="70cm" then frequency=420  end
+     if band=="33cm" then frequency=902 end
+     if band=="23cm" then frequency=1240  end
+     if band=="13cm" then frequency=2300 end
+     if band=="9cm" then frequency=3300  end
+     if band=="6cm" then frequency=5650  end
+     if band=="3cm" then frequency=10000 end
+     if band=="1.25cm" then frequency=24000 end 
+     if band=="6mm" then frequency=47000 end 
+     if band=="4mm"  then frequency=75500 end
+     if band=="2.5mm" then frequency=119980 end
+     if band=="2mm" then frequency=142000 end
+     if band=="1mm" then frequency=241000 end
+   frequency
  end
 
  def user1

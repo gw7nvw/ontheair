@@ -76,7 +76,51 @@
      </div>
 </div>
 
-<p><i><br/>* PIN is used for access to the Inreach/Email SPOT / ALERT gateway.</i></p>
+<%     if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
+  <p><i><br/>* PIN is used for access to the Inreach/Email SPOT / ALERT gateway.</i></p>
+<% end %>
+
+<div class="erow">
+   <div class="hrline">
+      <hr noshade size="4">
+   </div>
+</div>
+
+<% if current_user and (@user==current_user or current_user.is_admin or current_user.group_admin) then %>
+   <p>Select the topics for which you would like to receive emails of any new posts</p>
+   <table>
+     <tr>
+        <th>Topic</th>
+        <th>Email</th>
+        <th>&nbsp;</th>
+     </tr>
+       <tr>
+         <% topic=Topic.find_by_id(SPOT_TOPIC) %>
+         <td> SPOTS </td>
+         <td> <%=if topic.subscribed(@user) then "Yes" else "No" end %></td>
+<% if topic.subscribed(@user) then %>
+         <td> <%=  link_to "Delete", '/users/'+@user.callsign+'/delete?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'delete_spot', :onclick => "linkHandler('delete_spot')"  %> </td>
+<% else %>
+         <td> <%=  link_to "Add", '/users/'+@user.callsign+'/add?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'add_spot', :onclick => "linkHandler('add_spot')"  %> </td>
+<% end %>
+       <tr>
+       <tr>
+         <% topic=Topic.find_by_id(ALERT_TOPIC) %>
+         <td> ALERTS </td>
+         <td> <%=if topic.subscribed(@user) then "Yes" else "No" end %></td>
+<% if topic.subscribed(@user) then %>
+         <td> <%=  link_to "Delete", '/users/'+@user.callsign+'/delete?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'delete__alert', :onclick => "linkHandler('delete_alert')"  %> </td>
+<% else %>
+         <td> <%=  link_to "Add", '/users/'+@user.callsign+'/add?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'add_alert', :onclick => "linkHandler('add_alert')"  %> </td>
+     <% end %>
+   </table>
+<div class="erow">
+   <div class="hrline">
+      <hr noshade size="4">
+   </div>
+</div>
+<% end %>
+
 <div class="erow">
    <div class="hrline">
       <hr noshade size="4">
@@ -113,6 +157,7 @@
 
 <div class="erow">
   <div class="sectiontitle">Contacts: <%=link_to @user.contacts.count.to_s+" (view)", '/contacts?user='+@user.callsign, remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %></div>
+  <div class="sectiontitle">Logs: <%=link_to @user.logs.count.to_s+" (view)", '/logs?user='+@user.callsign, remote: true,  :id => 'logs', :onclick => "linkHandler('logs')" %></div>
 </div>
 
 <div class="erow">

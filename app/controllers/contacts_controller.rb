@@ -40,7 +40,7 @@ class ContactsController < ApplicationController
      end
      @fullcontacts=cs
     end
- @contacts=@fullcontacts.paginate(:per_page => 20, :page => params[:page]) 
+ @contacts=(@fullcontacts||[]).paginate(:per_page => 20, :page => params[:page]) 
   end
   
   def index
