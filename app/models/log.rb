@@ -19,7 +19,7 @@ class Log < ActiveRecord::Base
 
  def localdate(currentuser)
    t=nil
-   if currentuser then tz=Timezone.find_by_id(currentuser.timezone) else tz=Timezone.first end
+   if currentuser then tz=Timezone.find_by_id(currentuser.timezone) else tz=Timezone.find_by(name: 'UTC') end
    cs=Contact.find_by_sql [ " select * from contacts where log_id ="+self.id.to_s+" order by time desc limit 1 " ]
    c1=cs.first 
    if c1 and c1.time then 

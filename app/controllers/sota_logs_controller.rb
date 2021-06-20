@@ -42,9 +42,9 @@ def show
     sota_log[:contacts].each do |contact|
       other_summit_code=nil
       other_callsign=contact.callsign2
-      if contact.find_asset1_by_type('summit') and contact.find_asset1_by_type('summit').code==summit.code then
+      if contact.find_asset1_by_type('summit') and contact.find_asset1_by_type('summit')[:code]==summit.code then
         if contact.find_asset2_by_type('summit') then 
-          other_summit_code=contact.find_asset2_by_type('summit').code
+          other_summit_code=contact.find_asset2_by_type('summit')[:code]
         end
       end
       if contact.band.length>0 and contact.adif_mode.length>0 and contact.time and contact.time.strftime("%H%M").length==4 then

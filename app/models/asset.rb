@@ -288,33 +288,33 @@ def self.assets_from_code(codes)
           asset[:url]='https://parksnpeaks.org/getPark.php?actPark='+thecode.to_s+'&submit=Process'
           asset[:external]=true
           asset[:code]=thecode
-          asset[:type]='park'
+          asset[:type]='pota park'
           asset[:title]="POTA - VK"
         else
           asset[:name]=code
           asset[:url]='http://pota.us/#/parks/'+thecode.to_s
           asset[:external]=true
           asset[:code]=thecode.to_s
-          asset[:type]='park'
+          asset[:type]='pota park'
           asset[:title]="POTA"
         end  
       elsif thecode=code.match(/^[a-zA-Z]{1,2}[fF]{2}-\d{4}/) then
         #WWFF
-         puts "WEFF"
+         puts "WWFF"
         puts thecode
         if code[0..1].upcase=='VK' then
           asset[:name]=code
           asset[:url]='https://parksnpeaks.org/getPark.php?actPark='+thecode.to_s+'&submit=Process'
           asset[:external]=true
           asset[:code]=thecode.to_s
-          asset[:type]='park'
+          asset[:type]='wwff park'
             asset[:title]="WWFF - VK"
         else
           asset[:name]=code
           asset[:url]='http://wwff.co/directory/'
           asset[:external]=true
           asset[:code]=thecode.to_s
-          asset[:type]='park'
+          asset[:type]='wwff park'
           asset[:title]="WWFF"
         end
       elsif thecode=code.match(/^[a-zA-Z]{1,2}\d\/[a-zA-Z]{2}-\d{3}/) then

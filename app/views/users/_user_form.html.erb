@@ -59,22 +59,6 @@
       <%= f.label "Home QTH" %>
       <%= f.text_field :home_qth %>
 
-      <% if(@submit_button != "Save Changes") %>
-        <% if (!@user.membership_confirmed and !@user.membership_requested)  then %>
-          <div class="erow"><div class="sectiontext">Join the QRPers NZ group?
-          <%= f.check_box :membership_requested %></div></div>
-          <small>Group membership is optional and is not required for HOTA participation or website access.  Membership allows you to <a href="https://qrp.nz/topics/13-about-nz-qrpers-group" target="blank"> take part in group events </a> and receive group newsletters. By requesting membership you are accepting the QRPers NZ <a href="https://qrp.nz/topics/21-nz-qrpers-group-code-of-conduct" target="blank"> code of conduct </a>. You can also request membership at a later date by using the link under your profile on this site.</small>
-        <% end %>
-      <% end %>
-
-      <% if  current_user and current_user.is_admin and @submit_button == "Save Changes" then %>
-        <%= f.label :membership_requested %>
-        <%= f.check_box :membership_requested %>
-
-        <%= f.label :membership_confirmed %>
-        <%= f.check_box :membership_confirmed %>
-      <% end %>
- 
       <%= f.label :timezone, 'Timezone you will use in logs, spots, etc' %>
       <%= collection_select( :user, :timezone, Timezone.all.order(:name), :id, :name, {}) %></td>
 

@@ -2,7 +2,7 @@ class Post < ActiveRecord::Base
 #include ActionView::Helpers::PostsHelper
 include PostsHelper
 
-#    establish_connection "qrp"
+    establish_connection "qrp"
     require 'htmlentities'
 
 def updated_by_name

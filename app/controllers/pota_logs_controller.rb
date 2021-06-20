@@ -42,9 +42,9 @@ def show
       other_park=nil
       other_callsign=contact.callsign2
       if pp=contact.find_asset2_by_type('pota park') then
-        other_park_code=pp.code
+        other_park_code=pp[:code]
       elsif p=contact.find_asset2_by_type('park') then
-        las=p.linked_assets_by_type('pota park')
+        if p[:asset] then las=p[:asset].linked_assets_by_type('pota park') end
         if las and las.count>0 then other_park_code=las.first.code end
       end
 
@@ -81,8 +81,8 @@ def send_email
   if current_user and (current_user.is_admin or current_user.callsign==callsign) then
       show
       # Sends activation email.
-      #UserMailer.pota_log_submission(@user,@park,@logdate,@filename,@pota_log,@address).deliver
-      UserMailer.pota_log_submission(@user,@park,@logdate,@filename,@pota_log,"mattbriggs@yahoo.com").deliver
+      UserMailer.pota_log_submission(@user,@park,@logdate,@filename,@pota_log,@address).deliver
+      #UserMailer.pota_log_submission(@user,@park,@logdate,@filename,@pota_log,"mattbriggs@yahoo.com").deliver
       @contacts.each do |contact|
         contact.submitted_to_pota=true
         contact.save

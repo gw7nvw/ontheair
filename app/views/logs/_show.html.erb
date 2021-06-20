@@ -36,7 +36,7 @@
         </tr>
         <tr>
           <td class="td-l">Timezone:</td>
-          <td colspan=2 class="td-d"><%= if current_user then current_user.timezonename else Timezone.first.name end %></td>
+          <td colspan=2 class="td-d"><%= if current_user then current_user.timezonename else Timezone.find_by(name: 'UTC').name end %></td>
           <td class="td-l">Power:</td>
           <td colspan=2 class="td-d"> <%= @log.power1%></td>
 

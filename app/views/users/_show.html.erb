@@ -62,14 +62,6 @@
          Home QTH: <%= @user.home_qth %>
      </div>
 
-     <div class="erow" id="membership_requested">
-         NZ QRPers group member:
-         <% if @user.membership_confirmed then %> Yes <% elsif @user.membership_requested then %> Application sent <% else %> No <% end %>
-         <% if !@user.membership_requested and !@user.membership_confirmed and @user == current_user %>
-            <%=  link_to "Request Membership", "http://qrp.nz/qrpnzmembers/new?referring=hota", class: "btn btn-small btn-primary" %>
-         <% end %>
-     </div>
-
    <%end%>
      <div class="erow" id="email">
          Timezone: <%= @user.timezonename %>
@@ -134,9 +126,9 @@
 
     <div class="erow">
       <div class="sectiontitle" style="margin-top: 12px;"><%=at.name.capitalize.pluralize%>:</div>
-      <ul><li> Bagged: <%=abs%> unique (<%=@user.score_total[at.name]%> total)</li>
-      <li>Chased: <%=@user.assets_chased_count(at.name,false)%> unique (<%=@user.assets_chased_count(at.name,true)%> total)</li>
-      <li>Activated: <%=@user.assets_activated_count(at.name,false)%> unique (<%=@user.assets_activated_count(at.name,true)%> total)</li>
+      <ul><li> Bagged: <%=abs%> unique </li>
+      <li>Chased: <%=@user.chased_count[at.name]%> unique (<%=@user.chased_count_total[at.name]%> total)</li>
+      <li>Activated: <%=@user.activated_count[at.name]%> unique (<%=@user.activated_count_total[at.name]%> total)</li>
       </ul>
     <div id="erow">
       <% count=0; @user.assets(at.name).each do |asset|; count+=1 %>

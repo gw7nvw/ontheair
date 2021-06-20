@@ -51,7 +51,7 @@
           <% end %>
           <% if @topic.is_alert then %>
             <tr>
-              <td>On air from:</td>
+              <td>On air from: (<%=@tz.name%>)</td>
               <td style="padding:0px; margin:0px;"><%=   f.date_field :referenced_date, :style =>"padding:0px; margin:0px;" %></td><td style="padding:0px; margin:0px;"><%=   f.time_field :referenced_time, :style =>"padding:0px; margin:0px;" %></td>
               <td>Trip length (days):</td><td style="padding:0px; margin:0px;"> <%=   f.text_field :duration, :style =>"padding:0px; margin:0px;" %></td>
             </tr>

@@ -1,37 +1,52 @@
+<% if !@max_len then @max_len=1000 end%>
+<% if @scoreby=="activated" then 
+   scorefield="activated_count_total"
+   elsif @scoreby=="chased" then
+   scorefield="chased_count_total"
+   else
+   scorefield="score"
+   @scoreby="bagged" 
+end%>
+<% if !@sortby then @sortby="park" end%>
 
-  <table class="users">
+<table>
+  <tr>
+    <th <%=if @scoreby == 'bagged' then 'style=background-color:#33ff22 !important' end%>><%=link_to 'Bagged v','?scoreby=bagged&sortby='+@sortby, remote: true,:onclick => "linkHandler('bagged')"%></th>
+    <th <%=if @scoreby == 'activated' then 'style=background-color:#33ff22 !important' end%>><%=link_to 'Activated v','?scoreby=activated&sortby='+@sortby, remote: true,:onclick => "linkHandler('activated')"%></th>
+    <th <%=if @scoreby == 'chased' then 'style=background-color:#33ff22 !important' end%>><%=link_to 'Chased v','?scoreby=chased&sortby='+@sortby, remote: true,:onclick => "linkHandler('chased')"%></th>
+  </tr>
+</table>
+  <table>
     <tr>
       <th>Position</th>
       <th>Callsign</th>
       <% AssetType.where("keep_score = true").each do |asset_type| %>
-        <th <%=if asset_type.name == @sortby then 'style=background-color:#33ff22 !important' end%>><u><%= link_to asset_type.display_name,'/assets?type='+asset_type.name, remote: true, :onclick => "linkHandler('"+asset_type.name+"')"%> <%=link_to "v", "?sortby="+asset_type.name, remote: true, onclick: "linkHandler('default_order')", :style => if asset_type.name ==@sortby then "color: #000000" else "color: #ffffff" end %></u></th>
+        <th <%=if asset_type.name == @sortby then 'style=background-color:#33ff22 !important' end%>><%=link_to asset_type.display_name+" v", "?scoreby="+@scoreby+"&sortby="+asset_type.name, remote: true, onclick: "linkHandler('default_order')" %></th>
       <% end %>
     </tr>
 
     <% position=0    
-    lastscore=99999999
-    if @users then @users.sort_by { |u| u.score[@sortby]||0 }.reverse.each do |user| %>
-      <% 
-         if (user.score[@sortby]||0)<(lastscore||0) then 
-          position+=1
-          lastscore=user.score[@sortby]
-         end
-      %>
-      <tr>
-        <td>
-          <%= position.to_s %>
-        </td>
-        <td>
-          <%= link_to user.callsign.upcase, '/users/'+user.callsign, remote: true, :id => 'user_link_'+user.id.to_s, :style => (if not user.activated then 'color:grey' else '' end), :onclick => "linkHandler('user_link_"+user.id.to_s+"')" %>
-        </td>
-        <% AssetType.where("keep_score = true").each do |asset_type| %>
-          <td><%=user.score[asset_type.name].to_s%><%if user.score_total[asset_type.name]!=user.score[asset_type.name] then %><span style="color:grey"> (<%=user.score_total[asset_type.name].to_s%>)</span><%end%></td>
-        <% end %>
-      </tr>
+    lastscore=99999999 %>
+    <% if @users then  @users.sort_by { |u| u[scorefield][@sortby]||0 }.reverse.each do |user| %>
+      <% if position<@max_len then %>
+        <% 
+           if (user.score[@sortby]||0)<(lastscore||0) then 
+            position+=1
+            lastscore=user.score[@sortby]
+           end
+        %>
+        <tr>
+          <td>
+            <%= position.to_s %>
+          </td>
+          <td>
+            <%= link_to user.callsign.upcase, '/users/'+user.callsign, remote: true, :id => 'user_link_'+user.id.to_s, :style => (if not user.activated then 'color:grey' else '' end), :onclick => "linkHandler('user_link_"+user.id.to_s+"')" %>
+          </td>
+          <% AssetType.where("keep_score = true").each do |asset_type| %>
+            <td><%=user[scorefield][asset_type.name].to_s%></td>
+          <% end %>
+        </tr>
+      <% end %>
     <% end end  %>
   </table>
-</div>
-<div class="erow">
-Key to scores: </br>
-  Number of unique locations bagged <span style="color:grey">(total number of activations)</span>
 </div>

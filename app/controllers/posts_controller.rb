@@ -11,6 +11,10 @@ def index
 end
 
 def show
+    tzid=3
+    if current_user then tzid=current_user.timezone end
+    @tz=Timezone.find(tzid)
+
     @parameters=params_to_query
 
     @post=Post.find_by_id(params[:id])
@@ -26,8 +30,9 @@ def new
 
     @post=Post.new
     @topic=Topic.find_by_id(params[:topic_id])
-    t=Time.now.in_time_zone("Pacific/Auckland").strftime('%H:%M')
-    d=Time.now.in_time_zone("Pacific/Auckland").strftime('%Y-%m-%d')
+    @tz=Timezone.find_by_id(current_user.timezone||3)
+    t=Time.now.in_time_zone(@tz.name).strftime('%H:%M')
+    d=Time.now.in_time_zone(@tz.name).strftime('%Y-%m-%d')
     if @topic.is_spot then @post.referenced_date=d end
     if @topic.is_spot then @post.referenced_time=t end
     if params[:title] then @post.title=params[:title] end
@@ -45,11 +50,14 @@ def new
 end
 
 def edit
+    @tz=Timezone.find_by_id(current_user.timezone||3)
     if params[:referring] then @referring=params[:referring] end
 
     if(!(@post = Post.where(id: params[:id]).first))
       redirect_to '/'
     end
+    @post.referenced_time=@post.referenced_time.in_time_zone(@tz.name).strftime('%H:%M')
+    @post.referenced_date=@post.referenced_date.in_time_zone(@tz.name).strftime('%Y-%m-%d')
     @topic=Topic.find_by_id(@post.topic_id)
 end
 
@@ -80,6 +88,7 @@ def delete
 end
 
 def update
+ @tz=Timezone.find_by_id(current_user.timezone||3)
  if signed_in?  then
     @post=Post.find_by_id(params[:id])
     topic=@post.topic
@@ -100,6 +109,10 @@ def update
          end
        else
          @post.assign_attributes(post_params)
+         if topic.is_alert then 
+           @post.referenced_time=(params[:post][:referenced_date]+' '+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC')
+           @post.referenced_date=(params[:post][:referenced_date]+' '+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC')
+         end
          pp=[];params[:post][:asset_codes].each do |p,k| if k and k.length>0 then pp.push(k) end end
          @post.asset_codes=pp
          @post.site=""
@@ -128,10 +141,12 @@ def update
 end
 
 def create
+    @tz=Timezone.find_by_id(current_user.timezone||3)
     if params[:debug] then debug=true else debug=false end
     @topic=Topic.find_by_id(params[:topic_id])
     if signed_in? and @topic and (@topic.is_public or current_user.is_admin or (@topic.owner_id==current_user.id and @topic.is_owners)) then
       @post=Post.new(post_params)
+
       pp=[];params[:post][:asset_codes].each do |p,k| if k and k.length>0 then pp.push(k) end end
       @post.asset_codes=pp
       @post.site=""
@@ -140,11 +155,18 @@ def create
       end
       @post.created_by_id = current_user.id #current_user.id
       @post.updated_by_id = current_user.id #current_user.id
+      if @topic.is_alert then
+        @post.referenced_time=(params[:post][:referenced_date]+" "+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC')
+        @post.referenced_date=(params[:post][:referenced_date]+" "+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC')
+      end
+
       if @topic.is_spot then 
        
-        @post.referenced_time=Time.now.in_time_zone("Pacific/Auckland").strftime('%H:%M')
+#        @post.referenced_time=Time.now.strftime('%H:%M')
+        @post.referenced_time=Time.now
+        @post.referenced_date=Time.now
 
-        @post.referenced_date=Time.now.in_time_zone("Pacific/Auckland").strftime('%Y-%m-%d')
+#        @post.referenced_date=Time.now.strftime('%Y-%m-%d')
       end
       @topic.last_updated = Time.now
 
@@ -163,9 +185,13 @@ def create
 
         if params[:pnp]=="on" then 
             res=@post.send_to_pnp(debug,@topic,params[:post][:referenced_date],params[:post][:referenced_time],nil)
-            debugstart=res.body.index("INSERT")
-            if debugstart then
-              flash[:success]=res.body[debugstart..-1]
+            if res and res!="" then
+              debugstart=res.body.index("INSERT")
+              if debugstart then
+                flash[:success]=res.body[debugstart..-1]
+              end
+            else
+              flash[:error]="Failed to send to PnP. Did you specify a valid place, frequency, mode & callsign?"
             end
         end
        

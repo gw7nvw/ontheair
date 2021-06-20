@@ -42,9 +42,9 @@ def show
       other_park=nil
       other_callsign=contact.callsign2
       if pp=contact.find_asset2_by_type('wwff park') then
-        other_park_code=pp.code
+        other_park_code=pp[:code]
       elsif p=contact.find_asset2_by_type('park') then
-        las=p.linked_assets_by_type('wwff park')
+        if p[:asset] then las=p[:asset].linked_assets_by_type('wwff park') end
         if las and las.count>0 then other_park_code=las.first.code end
       end
 

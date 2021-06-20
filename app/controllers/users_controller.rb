@@ -66,20 +66,12 @@ class UsersController < ApplicationController
     @user.is_modifier=false
     @user.activated_at=Time.now()
 
-    # Don't mark membership requested until T&Cs accepted on next screen 
-    membership_requested=user.membership_requested
-    if !existing_user then @user.membership_requested=false end
-
     if @user.save
       @user.reload
       sign_in @user
 
       flash[:success] = "Welcome to the Huts on the Air"
-      if membership_requested then
-        redirect_to 'http://qrp.nz/qrpnzmembers/new?referring=hota'
-      else
-        redirect_to '/users/'+@user.callsign
-      end
+      redirect_to '/users/'+@user.callsign
     else
 #      key = OpenSSL::PKey::RSA.new(1024)
 #      @public_modulus  = key.public_key.n.to_s(16)
@@ -165,77 +157,6 @@ def update
 end
 
 
-#editgrid handlers
-
-  def data
-            users = User.all.order(:callsign)
-
-            render :json => {
-                 :total_count => users.length,
-                 :pos => 0,
-                 :rows => users.map do |user|
-                 {
-                   :id => user.id,
-                   :data => [user.id,user.callsign,user.firstname,user.lastname,user.email,user.is_admin,user.is_modifier, user.is_active, user.activated, user.membership_confirmed]
-                 }
-                 end
-            }
-  end
-
-def db_action
-  if signed_in? and current_user.is_admin then
-    @mode = params["!nativeeditor_status"]
-    id = params['c0']
-    callsign = params['c1']
-    firstname = params['c2']
-    lastname = params['c3']
-    email = params['c4']
-    is_admin = params['c5']
-    is_modifier = params['c6']
-    is_active = params['c7']
-    activated = params['c8']
-    membership_confirmed = params['c9']
-
-    @id = params["gr_id"]
-
-    case @mode
-
-    when "inserted"
-        user = User.create :callsign => callsign, :firstname => firstname,:lastname => lastname, :email => email, :is_admin => is_admin, :is_modifier => is_modifier, :is_active => is_active, :activated => activated, :membership_confirmed => membership_confirmed
-       if user then
-          @tid = user.id
-       else
-          @mode="error"
-          @tid=nil
-       end
-
-
-    when "deleted"
-        if User.find(@id).destroy then
-          @tid = @id
-        else
-          @mode="error"
-          @tid=nil
-       end
-
-   when "updated"
-        @user = User.find(@id)
-        @user.callsign = callsign
-        @user.firstname = firstname
-        @user.lastname = lastname
-        @user.email = email
-        @user.is_admin = is_admin
-        @user.is_modifier = is_modifier
-        @user.is_active = is_active
-        @user.activated = activated
-        @user.membership_confirmed = membership_confirmed
-        if !@user.save then @mode="error" end
-
-        @tid = @id
-    end
-  end
-end
-
   def users_to_csv(items)
     if signed_in? and current_user.is_admin then
       require 'csv'
@@ -291,7 +212,7 @@ end
   private
 
     def user_params
-      params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :membership_requested, :membership_confirmed, :home_qth, :pin)
+      params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin)
     end
 
 

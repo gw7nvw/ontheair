@@ -1,29 +1,39 @@
 class StaticPagesController < ApplicationController
   def home
+      tzid=3
+      if current_user then tzid=current_user.timezone end
+      @tz=Timezone.find(tzid)
+
       @parameters=params_to_query
 
       @users=User.users_with_assets
 
-       @static_page=true
-       @sortby=params[:sortby]
-       if !@sortby or @sortby=='' then @sortby="hut" end
-       @brief=true
-       @fulllogs=Log.find_by_sql [ " select * from logs order by date desc " ]
-       @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
+      @scoreby=params[:scoreby] 
+      if !@scoreby or @scoreby=='' then @scoreby="bagged" end
 
-       @items=Item.where(:topic_id => 4, :item_type => "post").order(:created_at).reverse[0..1]
+      @static_page=true
+      @sortby=params[:sortby]
+      if !@sortby or @sortby=='' then @sortby="hut" end
+      @brief=true
+      @fulllogs=Log.find_by_sql [ " select * from logs order by date desc " ]
+      @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
+
+      @items=Item.where(:topic_id => 4, :item_type => "post").order(:created_at).reverse[0..1]
 
   end
 
   def results
       @parameters=params_to_query
+      @scoreby=params[:scoreby] 
+      if !@scoreby or @scoreby=='' then @scoreby="bagged" end
 
       @users=User.users_with_assets
 
-       @static_page=true
-       @sortby=params[:sortby]
-       if !@sortby or @sortby=='' then @sortby="hut" end
+      @static_page=true
+      @sortby=params[:sortby]
+      if !@sortby or @sortby=='' then @sortby="hut" end
   end
+
   def help
      @items=Item.where(topic_id: HELP_TOPIC).order(:created_at).reverse
   end
@@ -35,6 +45,10 @@ class StaticPagesController < ApplicationController
   end
 
   def spots
+      tzid=3
+      if current_user then tzid=current_user.timezone end
+      @tz=Timezone.find(tzid)
+
       url="https://api2.sota.org.uk/api/spots/50/all%7Cssb?client=sotawatch&user=anon"
       spots=JSON.parse(open(url).read)
       if spots then
@@ -70,8 +84,8 @@ class StaticPagesController < ApplicationController
       @all_spots=[]
       zlvk_sota_spots.each do |spot|
          @all_spots.push({
-           date: if spot["timeStamp"].to_datetime then spot["timeStamp"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d") else "" end,
-           time: if spot["timeStamp"].to_datetime then spot["timeStamp"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%H:%M") else "" end,
+           date: if spot["timeStamp"].to_datetime then spot["timeStamp"].to_datetime.in_time_zone(@tz.name).strftime("%Y-%m-%d") else "" end,
+           time: if spot["timeStamp"].to_datetime then spot["timeStamp"].to_datetime.in_time_zone(@tz.name).strftime("%H:%M") else "" end,
            callsign: spot["callsign"],
            activatorCallsign: spot["activatorCallsign"],
            code: spot["associationCode"]+"/"+spot["summitCode"],
@@ -85,8 +99,8 @@ class StaticPagesController < ApplicationController
 
       zlvk_pota_spots.each do |spot|
          @all_spots.push({     
-           date: if spot["spotTime"].to_datetime then spot["spotTime"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d") else "" end,
-           time: if spot["spotTime"].to_datetime then spot["spotTime"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%H:%M") else "" end,
+           date: if spot["spotTime"].to_datetime then spot["spotTime"].to_datetime.in_time_zone(@tz.name).strftime("%Y-%m-%d") else "" end,
+           time: if spot["spotTime"].to_datetime then spot["spotTime"].to_datetime.in_time_zone(@tz.name).strftime("%H:%M") else "" end,
            callsign: spot["spotter"],
            activatorCallsign: spot["activator"],
            code: spot["reference"],
@@ -99,8 +113,8 @@ class StaticPagesController < ApplicationController
       pnp_spots.each do |spot|
        if spot["WWFFid"][0..1]=="VK" or spot["WWFFid"][0..1]=="ZL" or spot["actLocation"][0..1]=="VK" or spot["actLocation"][0..1]=="ZL" or spot["actCallsign"][0..1]=="ZL" or spot["actCallsign"][0..1]=="VK" then 
          @all_spots.push({     
-           date: if spot["actTime"].to_datetime then spot["actTime"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d") else "" end,
-           time: if spot["actTime"].to_datetime then spot["actTime"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%H:%M") else "" end,
+           date: if spot["actTime"].to_datetime then spot["actTime"].to_datetime.in_time_zone(@tz.name).strftime("%Y-%m-%d") else "" end,
+           time: if spot["actTime"].to_datetime then spot["actTime"].to_datetime.in_time_zone(@tz.name).strftime("%H:%M") else "" end,
            callsign: spot["actSpoter"],
            activatorCallsign: spot["actCallsign"],
            code: if spot["WWFFid"] and spot["WWFFid"].length>0 then spot["WWFFid"] else spot["actLocation"] end,
@@ -118,6 +132,10 @@ class StaticPagesController < ApplicationController
   end
 
   def alerts
+      tzid=3
+      if current_user then tzid=current_user.timezone end
+      @tz=Timezone.find(tzid)
+
       url="https://api2.sota.org.uk/api/alerts/12?client=sotawatch&user=anon"
       alerts=JSON.parse(open(url).read)
       if alerts then
@@ -151,7 +169,7 @@ class StaticPagesController < ApplicationController
       @all_alerts=[]
       zlvk_sota_alerts.each do |alert|
         @all_alerts.push({
-          starttime: if alert["dateActivated"].to_datetime then alert["dateActivated"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d %H:%M") else "" end,
+          starttime: if alert["dateActivated"].to_datetime then alert["dateActivated"].to_datetime.in_time_zone(@tz.name).strftime("%Y-%m-%d %H:%M") else "" end,
           activatingCallsign: alert["activatingCallsign"],
           code: alert["associationCode"]+"/"+alert["summitCode"],
           name: alert["summitDetails"],
@@ -162,7 +180,7 @@ class StaticPagesController < ApplicationController
      end
      zlvk_pota_alerts.each do |alert|
        @all_alerts.push({
-          starttime: if alert["Start Date"].to_datetime then alert["Start Date"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d %H:%M")+(if alert["End Date"].to_datetime then " to "+alert["End Date"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d %H:%M") else "" end) else "" end,
+          starttime: if alert["Start Date"].to_datetime then alert["Start Date"].to_datetime.in_time_zone(@tz.name).strftime("%Y-%m-%d %H:%M")+(if alert["End Date"].to_datetime then " to "+alert["End Date"].to_datetime.in_time_zone(@tz.name).strftime("%Y-%m-%d %H:%M") else "" end) else "" end,
           activatingCallsign: alert["Activator"],
           code: alert["Reference"],
           name: alert["Park Name"],
@@ -174,7 +192,7 @@ class StaticPagesController < ApplicationController
 
      pnp_alerts.each do |alert|
        @all_alerts.push({
-          starttime: if alert["alTime"].to_datetime then alert["alTime"].to_datetime.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d %H:%M") + ( if alert["alDay"]=="1" then " (Day)" elsif alert["alDay"]=="2" then " (Morning)" elsif alert["alDay"]=="3" then " (Afternoon)" elsif alert["alDay"]=="4" then " (Evening)" elsif alert["alDay"]=="5" then " (Overnight)"  else "" end) else "" end,
+          starttime: if alert["alTime"].to_datetime then alert["alTime"].to_datetime.in_time_zone(@tz.name).strftime("%Y-%m-%d %H:%M") + ( if alert["alDay"]=="1" then " (Day)" elsif alert["alDay"]=="2" then " (Morning)" elsif alert["alDay"]=="3" then " (Afternoon)" elsif alert["alDay"]=="4" then " (Evening)" elsif alert["alDay"]=="5" then " (Overnight)"  else "" end) else "" end,
           activatingCallsign: alert["CallSign"],
           code: if alert["WWFFID"] and alert["WWFFID"].length>0 then alert["WWFFID"] else alert["Location"] end,
           name: alert["Location"],

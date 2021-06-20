@@ -21,11 +21,11 @@
 
 <div id="right_scroll">
   <%= render 'flash' %>
-  <h2><a href="https://qrp.nz/topics/<%=ALERT_TOPIC.to_s%>">Going portable alerts</a></h2>
+  <h2>Going portable alerts</h2>
   <table class="users">
     <tr>
       <th>Date</th>
-      <th>Time (NZ)</th>
+      <th>Time (<%=@tz.name%>)</th>
       <th>For (days)</th>
       <th>Callsign</th>
       <th>Location</th>
@@ -36,8 +36,8 @@
     <tr>
       <% us=User.find_by(id: post.created_by_id) %>
         <% if us then u=us.callsign else u="" end %>
-        <td><%=if post.referenced_date then link_to post.referenced_date.strftime("%Y-%m-%d"),'/posts/'+post.id.to_s, remote: true,  :id => 'home', :onclick => "linkHandler('home')"  end%></td>
-        <td><%=if post.referenced_time then post.referenced_time.strftime("%H:%M") end%></td>
+        <td><%=if post.referenced_date then link_to post.referenced_date.in_time_zone(@tz.name).strftime("%Y-%m-%d"),'/posts/'+post.id.to_s, remote: true,  :id => 'home', :onclick => "linkHandler('home')"  end%></td>
+        <td><%=if post.referenced_time then post.referenced_time.in_time_zone(@tz.name).strftime("%H:%M") end%></td>
         <td><%=if post.duration then post.duration.to_s end%></td>
         <td><%=u%></td>
         <td><%=post.site%></td>
@@ -51,7 +51,7 @@
   <table class="users">
     <tr>
       <th>Type</th>
-      <th>Time (NZ)</th>
+      <th>Time (<%=@tz.name%>)</th>
       <th>Callsign</th>
       <th>Code</th>
       <th>Name</th>

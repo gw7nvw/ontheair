@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210613055316) do
+ActiveRecord::Schema.define(version: 20210619010441) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -315,6 +315,16 @@ ActiveRecord::Schema.define(version: 20210613055316) do
     t.string   "dist_code"
   end
 
+  create_table "items", force: true do |t|
+    t.integer  "topic_id"
+    t.string   "item_type"
+    t.integer  "item_id"
+    t.integer  "created_by_id"
+    t.integer  "updated_by_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "logs", force: true do |t|
     t.string   "callsign1"
     t.integer  "user1_id"
@@ -378,6 +388,39 @@ ActiveRecord::Schema.define(version: 20210613055316) do
   create_table "places", force: true do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "posts", force: true do |t|
+    t.string   "title"
+    t.text     "description"
+    t.integer  "created_by_id"
+    t.integer  "updated_by_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "filename"
+    t.string   "image_file_name"
+    t.string   "image_content_type"
+    t.integer  "image_file_size"
+    t.datetime "image_updated_at"
+    t.boolean  "do_not_publish"
+    t.datetime "referenced_datetime"
+    t.datetime "referenced_date"
+    t.datetime "referenced_time"
+    t.integer  "duration"
+    t.string   "site"
+    t.string   "code"
+    t.string   "mode"
+    t.string   "freq"
+    t.boolean  "is_hut"
+    t.boolean  "is_park"
+    t.boolean  "is_island"
+    t.boolean  "is_summit"
+    t.string   "hut"
+    t.string   "park"
+    t.string   "island"
+    t.string   "summit"
+    t.string   "callsign"
+    t.string   "asset_codes",         default: [], array: true
   end
 
   create_table "pota_parks", force: true do |t|
@@ -444,11 +487,38 @@ ActiveRecord::Schema.define(version: 20210613055316) do
     t.datetime "updated_at"
   end
 
+  create_table "topics", force: true do |t|
+    t.string   "name"
+    t.text     "description"
+    t.integer  "owner_id"
+    t.boolean  "is_public"
+    t.boolean  "is_owners"
+    t.datetime "last_updated"
+    t.integer  "created_by_id"
+    t.integer  "updated_by_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.boolean  "is_members_only"
+    t.boolean  "date_required"
+    t.boolean  "allow_mail"
+    t.boolean  "duration_required"
+    t.boolean  "is_alert"
+    t.boolean  "is_spot"
+  end
+
   create_table "uploads", force: true do |t|
     t.string   "doc_file_name"
     t.string   "doc_content_type"
     t.integer  "doc_file_size"
     t.datetime "doc_updated_at"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "user_topic_links", force: true do |t|
+    t.integer  "user_id"
+    t.integer  "topic_id"
+    t.boolean  "mail"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

@@ -9,7 +9,7 @@ class User < ActiveRecord::Base
   attr_accessor :remeber_token, :activation_token, :reset_token
 
   before_save { if self.email then self.email = email.downcase end }
-  before_save { if self.timezone==nil then self.timezone=Timezone.first.id end }
+  before_save { if self.timezone==nil then self.timezone=Timezone.find_by(name: 'UTC').id end }
   before_save { self.callsign = callsign.upcase }
   before_save { if self.pin==nil or self.pin.length<4 then self.pin=self.callsign.chars.shuffle[0..3].join end; self.pin=self.pin[0..3] }
   before_create :create_remember_token
@@ -157,49 +157,6 @@ def authenticated?(attribute, token)
     assets=self.assets_filtered(at,false, false)
   end
 
-  def assets_activated_count(at,revisits)
-   assets=[]
-   contacts=self.contacts_filtered(nil, nil)
-   contacts.each do |c|
-     if c.asset1_codes then c.asset1_codes.each do |code|
-       a=Asset.find_by(code: code)
-       if (a and a.asset_type==at and c.callsign1==self.callsign) then 
-         if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
-         else assets.push(a.code) end
-       end end
-     end
-     if c.asset2_codes then c.asset2_codes.each do |code|
-       a=Asset.find_by(code: code)
-       if (a and a.asset_type==at and c.callsign2==self.callsign) then 
-         if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
-         else assets.push(a.code) end
-       end
-     end end
-   end
-   assets.uniq.count
-  end
-
-  def assets_chased_count(at,revisits)
-   assets=[]
-   contacts=self.contacts_filtered(nil, nil)
-   contacts.each do |c|
-     if c.asset1_codes then c.asset1_codes.each do |code|
-       a=Asset.find_by(code: code)
-       if (a and a.asset_type==at and c.callsign2==self.callsign) then 
-         if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
-         else assets.push(a.code) end
-       end
-     end end
-     if c.asset2_codes then c.asset2_codes.each do |code|
-       a=Asset.find_by(code: code)
-       if (a and a.asset_type==at and c.callsign1==self.callsign) then 
-         if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
-         else assets.push(a.code) end
-       end
-     end end
-   end
-   assets.uniq.count
-  end
 
   def assets_count_all
 
@@ -227,7 +184,7 @@ def authenticated?(attribute, token)
      if c.asset1_codes then c.asset1_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a) then 
-         activated_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
+         activated_total[a.asset_type].push(a.code+" "+c.date.strftime('%Y'))
          activated[a.asset_type].push(a.code)
        end
      end end
@@ -244,13 +201,15 @@ def authenticated?(attribute, token)
      if c.asset2_codes then c.asset2_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a) then
-         activated_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
+         #Activatons count once per year
+         activated_total[a.asset_type].push(a.code+" "+c.date.strftime('%Y'))
          activated[a.asset_type].push(a.code)
        end
      end end
      if c.asset1_codes then c.asset1_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a) then
+         #Chases count once per day
          chased_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
          chased[a.asset_type].push(a.code)
        end
@@ -260,7 +219,7 @@ def authenticated?(attribute, token)
    ats.each do |at|
      activated_count[at.name]=activated[at.name].uniq.count
      activated_count_total[at.name]=activated_total[at.name].uniq.count
-     chased_count[at]=chased[at.name].uniq.count
+     chased_count[at.name]=chased[at.name].uniq.count
      chased_count_total[at.name]=chased_total[at.name].uniq.count
      bagged_count[at.name]=(activated[at.name]+chased[at.name]).uniq.count
      bagged_count_total[at.name]=(activated_total[at.name]+chased_total[at.name]).uniq.count
@@ -268,27 +227,6 @@ def authenticated?(attribute, token)
    results={activated_count: activated_count, activated_count_total: activated_count_total, chased_count: chased_count, chased_count_total: chased_count_total, bagged_count: bagged_count, bagged_count_total: bagged_count_total}
 end
 
-  def assets_count_filtered(at,user_qrp, contact_qrp, revisits)
-   assets=[]
-   contacts=self.contacts_filtered(user_qrp, contact_qrp)
-   contacts.each do |c|
-     if c.asset1_codes then c.asset1_codes.each do |code|
-       a=Asset.find_by(code: code)
-       if (a and a.asset_type==at) then 
-         if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
-         else assets.push(a.code) end
-       end
-     end end
-     if c.asset2_codes then c.asset2_codes.each do |code|
-       a=Asset.find_by(code: code)
-       if (a and a.asset_type==at) then 
-         if revisits then assets.push(a.code+" "+c.localdate(nil).to_s)
-         else assets.push(a.code) end
-       end
-     end end
-   end
-   assets.uniq.count
-  end
 
   def assets_filtered(at, user_qrp, contact_qrp)
    assets=[]
@@ -304,25 +242,10 @@ end
      end
    end
 
+
    assets=Asset.where(code: assets).order(:name)
   end
 
-
-  def generate_membership_request
-    as=AdminSettings.first
-    if as then 
-      qrpnz_email=as.qrpnz_email 
-    
-      if self.is_active and self.email then 
-          puts "We should generate an email to "+qrpnz_email+" requesting membership"
-          UserMailer.membership_request(self,qrpnz_email).deliver 
-          puts "We should generate an email to "+self.callsign+" confirming membership request"
-          UserMailer.membership_request_notification(self,qrpnz_email).deliver 
-      end
-    else
-      puts "ERROR: No QRPNZ admin email defined."
-    end
-  end
 
   def wwff_logs
    wwff_logs=[]

@@ -21,16 +21,39 @@
     <h1>ZL ... On The Air</h1>
   </div>
 
+<table style='table-layout:fixed'>
+  <tr>
+    <% AssetType.where("name != 'all'").each do |at| %>
+      <th><%=link_to at.display_name.pluralize, '/assets/?type='+at.name,remote: true,:onclick => "linkHandler('"+at.name+"')", :style=>'color:#fff' %></th>
+    <% end %>
+  </th>
+</table>
+
   <h2>What's New</h2>
     <% @items.each do |item| %>
        <%=render :partial => 'item_details',  :locals => {:item => item} %>
     <% end%>
+  <h2>Top ten</h2>
 
+  <div class="erow">
+     <div class="hrline">
+        <hr noshade size="4">
+     </div>
+  </div>
+
+  <% @max_len=10%>
   <%=render 'result_table'%>
 
-<div class="sectiontitle"><br/><br/>Recent actvity<br/><br/></div>
+  <div class="erow">
+     <div class="hrline">
+        <hr noshade size="4">
+     </div>
+  </div>
 
-<%=render 'logs/list' %>
+  <div class="sectiontitle"><br/><br/>Recent actvity<br/><br/></div>
+
+  <%=render 'logs/list' %>
+
 <script>
 document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 if ($(window).width() < 960) {

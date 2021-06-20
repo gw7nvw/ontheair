@@ -1,6 +1,6 @@
 Hello <%= @user.callsign %>
 
-New <%=@item.item_type%> on QRP.NZ in the topic "<%=@item.topic.name%>" 
+New <%=@item.item_type%> on ontheair.nz in the topic "<%=@item.topic.name%>" 
 
 ===
 
@@ -18,8 +18,8 @@ Subject: <%=@item.end_item.title%>
 
 ===
 
-<%="Visit http://qrp.nz"+@item.end_item_path+" to view the full post"%>
+<%="Visit http://ontheair.nz/posts/"+@item.end_item.id.to_s+" to view the full post"%>
 
 ===
 
-You are subscribed to receive emails of new posts on QRP.NZ on this topic.  To unsubscribe visit http://qrp.nz/ - sign in and update your profile. You can also unsubscribe by emailing me: admin@qrp.nz 
+You are subscribed to receive emails of new posts on ontheair.nz on this topic.  To unsubscribe visit http://ontheair.nz/ - sign in and update your profile. You can also unsubscribe by emailing me: admin@ontheair.nz 

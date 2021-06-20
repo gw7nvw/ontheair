@@ -19,7 +19,7 @@ class Contact < ActiveRecord::Base
   before_save { self.callsign1 = callsign1.upcase }
   before_save { self.callsign2 = callsign2.upcase }
   before_save { self.check_codes_in_location }
-#  after_save { self.update_scores }
+  after_save { self.update_scores }
   before_destroy { self.update_scores }
 
   validates :callsign1,  presence: true, length: { maximum: 50 }
@@ -234,21 +234,21 @@ end
 
  def localdate(current_user)
    t=nil
-   if current_user then tz=Timezone.find_by_id(current_user.timezone) else tz=Timezone.first end
+   if current_user then tz=Timezone.find_by_id(current_user.timezone) else tz=Timezone.find_by(name: 'UTC') end
    if self.time then t=self.time.in_time_zone(tz.name).strftime('%Y-%m-%d') end
    t
  end
 
  def localtime(current_user)
    t=nil
-   if current_user then tz=Timezone.find_by_id(current_user.timezone) else tz=Timezone.first end
+   if current_user then tz=Timezone.find_by_id(current_user.timezone) else tz=Timezone.find_by(name: 'UTC') end
    if self.time then t=self.time.in_time_zone(tz.name).strftime('%H:%M') end
    t
  end
 
  def localtimezone(current_user)
    t=nil 
-   if current_user then tz=Timezone.find_by_id(current_user.timezone) else tz=Timezone.first end
+   if current_user then tz=Timezone.find_by_id(current_user.timezone) else tz=Timezone.find_by(name: 'UTC') end
    if self.time then t=self.time.in_time_zone(tz.name).strftime('%Z') end
    t
  end
@@ -331,20 +331,23 @@ end
  end
   def convert_to_utc(current_user)
     if self.time and self.date then
-        if current_user then tz=Timezone.find_by_id(current_user.timezone) else tz=Timezone.first end
+        if current_user then tz=Timezone.find_by_id(current_user.timezone) else tz=Timezone.find_by(name: 'UTC') end
         t=(self.date.strftime('%Y-%m-%d')+" "+self.time.strftime('%H:%M')).in_time_zone(tz.name)
         self.date=t.in_time_zone('UTC').strftime('%Y-%m-%d')
         self.time=t.in_time_zone('UTC')
-        self.timezone=Timezone.where(:name => 'UTC').first.id
+        self.timezone=Timezone.find_by(:name => 'UTC').id
     end
   end
 
 def find_asset1_by_type(asset_type)
-  asset1=nil
-  assets=self.activator_asset_links
-  assets.each do |asset|
-    if asset and asset.asset_type==asset_type then
-      asset1=asset
+ asset1=nil
+  asset_codes=self.asset1_codes
+  asset_codes.each do |asset_code|
+    if asset_code then
+       asset=Asset.assets_from_code(asset_code)
+       if asset and asset.count>0 and asset.first[:type]==asset_type then
+          asset1=asset.first
+       end
     end
   end
   asset1
@@ -353,10 +356,13 @@ end
 
 def find_asset2_by_type(asset_type)
   asset2=nil
-  assets=self.chaser_asset_links
-  assets.each do |asset|
-    if asset and asset.asset_type==asset_type then
-      asset2=asset
+  asset_codes=self.asset2_codes
+  asset_codes.each do |asset_code|
+    if asset_code then 
+       asset=Asset.assets_from_code(asset_code)
+       if asset and asset.count>0 and asset.first[:type]==asset_type then
+          asset2=asset.first
+       end
     end
   end
   asset2
