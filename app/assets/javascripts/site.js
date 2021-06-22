@@ -900,3 +900,13 @@ function site_refresh_layer(filter) {
   };
 
 }
+
+function expand_div(divname) {
+     if (document.getElementById(divname).style.display == 'block') {
+       document.getElementById(divname).style.display = 'none';
+     } else {
+       document.getElementById(divname).style.display = 'block';
+     };
+  return(false);
+}
+

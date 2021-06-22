@@ -35,9 +35,15 @@ class StaticPagesController < ApplicationController
   end
 
   def help
+      tzid=3
+      if current_user then tzid=current_user.timezone end
+      @tz=Timezone.find(tzid)
      @items=Item.where(topic_id: HELP_TOPIC).order(:created_at).reverse
   end
   def faq
+      tzid=3
+      if current_user then tzid=current_user.timezone end
+      @tz=Timezone.find(tzid)
      @items=Item.where(topic_id: FAQ_TOPIC).order(:created_at).reverse
   end
 

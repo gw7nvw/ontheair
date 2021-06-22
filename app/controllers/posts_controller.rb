@@ -56,8 +56,10 @@ def edit
     if(!(@post = Post.where(id: params[:id]).first))
       redirect_to '/'
     end
-    @post.referenced_time=@post.referenced_time.in_time_zone(@tz.name).strftime('%H:%M')
-    @post.referenced_date=@post.referenced_date.in_time_zone(@tz.name).strftime('%Y-%m-%d')
+    if @post.referenced_time then 
+      @post.referenced_time=@post.referenced_time.in_time_zone(@tz.name).strftime('%H:%M')
+      @post.referenced_date=@post.referenced_date.in_time_zone(@tz.name).strftime('%Y-%m-%d')
+    end
     @topic=Topic.find_by_id(@post.topic_id)
 end
 
@@ -113,7 +115,7 @@ def update
            @post.referenced_time=(params[:post][:referenced_date]+' '+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC')
            @post.referenced_date=(params[:post][:referenced_date]+' '+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC')
          end
-         pp=[];params[:post][:asset_codes].each do |p,k| if k and k.length>0 then pp.push(k) end end
+         pp=[];if params[:post][:asset_codes] then params[:post][:asset_codes].each do |p,k| if k and k.length>0 then pp.push(k) end end end
          @post.asset_codes=pp
          @post.site=""
          @post.asset_codes.each do |ac|
@@ -147,7 +149,7 @@ def create
     if signed_in? and @topic and (@topic.is_public or current_user.is_admin or (@topic.owner_id==current_user.id and @topic.is_owners)) then
       @post=Post.new(post_params)
 
-      pp=[];params[:post][:asset_codes].each do |p,k| if k and k.length>0 then pp.push(k) end end
+      pp=[];if params[:post][:asset_codes] then params[:post][:asset_codes].each do |p,k| if k and k.length>0 then pp.push(k) end end end
       @post.asset_codes=pp
       @post.site=""
       @post.asset_codes.each do |ac|

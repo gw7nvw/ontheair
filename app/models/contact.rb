@@ -19,6 +19,7 @@ class Contact < ActiveRecord::Base
   before_save { self.callsign1 = callsign1.upcase }
   before_save { self.callsign2 = callsign2.upcase }
   before_save { self.check_codes_in_location }
+  before_save { self.remove_suffix }
   after_save { self.update_scores }
   before_destroy { self.update_scores }
 
@@ -284,10 +285,6 @@ end
    c.comments2=self.comments1
    c.loc_desc1=self.loc_desc2
    c.loc_desc2=self.loc_desc1
-   c.hut1_id=self.hut2_id
-   c.hut2_id=self.hut1_id
-   c.park1_id=self.park2_id
-   c.park2_id=self.park1_id
    c.x1=self.x2
    c.x2=self.x1
    c.y1=self.y2
@@ -296,15 +293,14 @@ end
    c.altitude2=self.altitude1
    c.location1=self.location2
    c.location2=self.location1
-   c.island1_id=self.island2_id
-   c.island2_id=self.island1_id
    c.is_qrp1=self.is_qrp2
    c.is_qrp2=self.is_qrp1
    c.is_portable1=self.is_portable2
    c.is_portable2=self.is_portable1
    c.user1_id=self.user2_id
    c.user2_id=self.user1_id
-  
+   c.asset1_codes=self.asset2_codes 
+   c.asset2_codes=self.asset1_codes 
    c
  end
 
@@ -425,6 +421,11 @@ def self.migrate_to_distcodes
   c.asset2_codes=codes
   c.save
   end
+end
+
+def remove_suffix
+  if self.callsign1['/'] then self.callsign1=Log.remove_suffix(self.callsign1) end
+  if self.callsign2['/'] then self.callsign2=Log.remove_suffix(self.callsign2) end
 end
 
 end

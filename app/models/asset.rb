@@ -65,6 +65,18 @@ def self.get_next_code(asset_type)
   newcode
 end
 
+def first_activated
+ cs=Contact.find_by_sql [ ' select * from contacts where ? = ANY(asset1_codes) or ? = ANY(asset2_codes) order by date, time limit 1 ', self.code, self.code ]
+ if cs and cs.count>0 then 
+   c=cs.first 
+   if c.asset2_codes.include?(self.code) then 
+      c=c.reverse
+   end
+ else 
+  c=nil 
+ end
+ c 
+end
 
 def r_field(name)
   if self.record and self.record.respond_to? name then
@@ -280,6 +292,7 @@ def self.assets_from_code(codes)
           end
 
           if a.type then asset[:title]=a.type.display_name else puts "ERROR: cannot find type "+a.asset_type end
+          if asset[:url][0]!='/' then asset[:url]='/'+asset[:url] end
       elsif thecode=code.match(/^[a-zA-Z]{1,2}-\d{4}/)  then
         #POTA
          puts "POTA"

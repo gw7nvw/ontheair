@@ -119,23 +119,41 @@
    </div>
 </div>
 
-<% AssetType.all.each do |at| %>
+<% assets=@user.assets_all %>
+<% AssetType.where(keep_score: true).each do |at| %>
 
-  <% abs=@user.score[at.name] %>
-  <% if abs and abs>0 then %>
+  <% if (assets[:a][at.name] and assets[:a][at.name].count>0) or (assets[:c][at.name] and assets[:c][at.name].count>0) then %>
 
     <div class="erow">
       <div class="sectiontitle" style="margin-top: 12px;"><%=at.name.capitalize.pluralize%>:</div>
-      <ul><li> Bagged: <%=abs%> unique </li>
-      <li>Chased: <%=@user.chased_count[at.name]%> unique (<%=@user.chased_count_total[at.name]%> total)</li>
-      <li>Activated: <%=@user.activated_count[at.name]%> unique (<%=@user.activated_count_total[at.name]%> total)</li>
-      </ul>
-    <div id="erow">
-      <% count=0; @user.assets(at.name).each do |asset|; count+=1 %>
-        <%= if count>1 then ', ' end %>
-        <%=link_to asset.name, '/assets/'+asset.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+      <ul>
+        <li><a href="#" class="link_to" remote=true onclick='expand_div("bagged_<%=at.name%>");return(false);'> Bagged: <%=(assets[:a][at.name]+assets[:c][at.name]).uniq.count%> unique <b class="caret" style="vertical-align: middle"></b> </a></li>
+        <div style="display:none" id="bagged_<%=at.name%>">
+          <% as=Asset.where("code in ('"+(assets[:a][at.name]+assets[:c][at.name]).uniq.join("','")+"')") %>
+          <% count=0; as.order(:name).each do |a|; count+=1 %>
+            <%= if count>1 then ', ' end %>
+            <%=link_to a.name, '/assets/'+a.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+          <% end %>
+        </div>
 
-      <% end %>
+        <li><a href="#" class="link_to" remote=true onclick='expand_div("chased_<%=at.name%>");return(false);'> Chased: <%=assets[:c][at.name].uniq.count%> unique (<%=assets[:ct][at.name].uniq.count%> total) <b class="caret" style="vertical-align: middle"></b> </a></li>
+        <div style="display:none" id="chased_<%=at.name%>">
+          <% as=Asset.where("code in ('"+assets[:c][at.name].uniq.join("','")+"')") %>
+          <% count=0; as.order(:name).each do |a|; count+=1 %>
+            <%= if count>1 then ', ' end %>
+            <%=link_to a.name, '/assets/'+a.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+          <% end %>
+        </div>
+  
+        <li><a href="#" class="link_to" remote=true onclick='expand_div("activated<%=at.name%>");return(false);'> Activated: <%=assets[:a][at.name].uniq.count%> unique (<%=assets[:at][at.name].uniq.count%> total) <b class="caret" style="vertical-align: middle"></b> </a></li>
+          <div style="display:none" id="activated<%=at.name%>">
+          <% as=Asset.where("code in ('"+assets[:a][at.name].uniq.join("','")+"')") %>
+          <% count=0; as.order(:name).each do |a|; count+=1 %>
+            <%= if count>1 then ', ' end %>
+            <%=link_to a.name, '/assets/'+a.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+          <% end %>
+        </div>
+      </ul>
     </div>
   <% end %>
 <% end %>

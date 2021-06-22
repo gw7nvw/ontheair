@@ -106,6 +106,14 @@
       <div class="textext">No</div>
    </div>
    <% end %>
+   <% c=@asset.first_activated %>
+   <% if c then %>
+     <div class="erow" id="doc">
+       <div class="rowtitle"><%= "First activation" %></div>
+       <div class="textext"><%=link_to c.callsign1+' -> '+c.callsign2+c.time.strftime(' (%Y-%m-%d)'), c, remote: true, :onclick => "linkHandler('first')" %></div>
+     </div>
+   <% end %>
+
 
    <div class="erow">
       <div class="hrline">

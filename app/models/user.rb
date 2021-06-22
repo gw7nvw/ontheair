@@ -11,6 +11,7 @@ class User < ActiveRecord::Base
   before_save { if self.email then self.email = email.downcase end }
   before_save { if self.timezone==nil then self.timezone=Timezone.find_by(name: 'UTC').id end }
   before_save { self.callsign = callsign.upcase }
+  
   before_save { if self.pin==nil or self.pin.length<4 then self.pin=self.callsign.chars.shuffle[0..3].join end; self.pin=self.pin[0..3] }
   before_create :create_remember_token
 
@@ -161,16 +162,34 @@ def authenticated?(attribute, token)
   def assets_count_all
 
    ats=AssetType.where("name != 'all'")
-   activated_total={}
-   activated={}
-   chased_total={}
-   chased={}
    activated_count_total={}
    activated_count={}
    chased_count_total={}
    chased_count={}
    bagged_count_total={}
    bagged_count={}
+
+
+   cs=self.assets_all
+
+   ats.each do |at|
+     activated_count[at.name]=cs[:a][at.name].uniq.count
+     activated_count_total[at.name]=cs[:at][at.name].uniq.count
+     chased_count[at.name]=cs[:c][at.name].uniq.count
+     chased_count_total[at.name]=cs[:ct][at.name].uniq.count
+     bagged_count[at.name]=(cs[:a][at.name]+cs[:c][at.name]).uniq.count
+     bagged_count_total[at.name]=(cs[:at][at.name]+cs[:ct][at.name]).uniq.count
+   end
+   results={activated_count: activated_count, activated_count_total: activated_count_total, chased_count: chased_count, chased_count_total: chased_count_total, bagged_count: bagged_count, bagged_count_total: bagged_count_total}
+end
+
+  def assets_all
+
+   ats=AssetType.where("name != 'all'")
+   activated_total={}
+   activated={}
+   chased_total={}
+   chased={}
 
    ats.each do |at|
      activated[at.name]=[]
@@ -183,14 +202,14 @@ def authenticated?(attribute, token)
    contacts.each do |c|
      if c.asset1_codes then c.asset1_codes.each do |code|
        a=Asset.find_by(code: code)
-       if (a) then 
+       if (a) then
          activated_total[a.asset_type].push(a.code+" "+c.date.strftime('%Y'))
          activated[a.asset_type].push(a.code)
        end
      end end
      if c.asset2_codes then c.asset2_codes.each do |code|
        a=Asset.find_by(code: code)
-       if (a) then 
+       if (a) then
          chased_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
          chased[a.asset_type].push(a.code)
        end
@@ -215,18 +234,9 @@ def authenticated?(attribute, token)
        end
      end end
    end
+  {a: activated, at: activated_total, c: chased, ct: chased_total}
 
-   ats.each do |at|
-     activated_count[at.name]=activated[at.name].uniq.count
-     activated_count_total[at.name]=activated_total[at.name].uniq.count
-     chased_count[at.name]=chased[at.name].uniq.count
-     chased_count_total[at.name]=chased_total[at.name].uniq.count
-     bagged_count[at.name]=(activated[at.name]+chased[at.name]).uniq.count
-     bagged_count_total[at.name]=(activated_total[at.name]+chased_total[at.name]).uniq.count
-   end
-   results={activated_count: activated_count, activated_count_total: activated_count_total, chased_count: chased_count, chased_count_total: chased_count_total, bagged_count: bagged_count, bagged_count_total: bagged_count_total}
-end
-
+  end
 
   def assets_filtered(at, user_qrp, contact_qrp)
    assets=[]
@@ -370,6 +380,8 @@ end
    end 
   pota_logs
   end
+
+
   private
 
     def create_remember_token
@@ -379,5 +391,6 @@ end
     def downcase_email
       self.email = email.downcase
     end
+
 
 end

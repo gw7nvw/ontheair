@@ -1,3 +1,13 @@
+<% if @topic then topic=@topic else topic=@post.topic end %>
+<%if (!topic.is_spot) and (!topic.is_alert) then %>
+  <script type="text/javascript">
+     bkLib.onDomLoaded(startEdit);
+  
+    function startEdit() {
+      nicEditors.allTextAreas();
+    }
+  </script>
+<% end %>
 <script>
    reset_map_controllers();
    document.getElementById("page_status").innerHTML = '';
@@ -147,5 +157,8 @@ function addmore(count) {
 }
 document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 
+<% if (!topic.is_spot) and (!topic.is_alert) then %>
+  startEdit();
+<% end %>
 </script>
 

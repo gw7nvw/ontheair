@@ -8,6 +8,8 @@ def show
   if !@log then 
      redirect_to '/logs'
   end
+  @parameters=params_to_query
+
 end
 
 def load
@@ -54,6 +56,8 @@ def index
   else @fulllogs=Log.find_by_sql [ "select * from logs where "+whereclause+" order by date desc" ]
   end
   @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
+  @parameters=params_to_query
+
 end
 
 def save
@@ -135,6 +139,8 @@ def save
 end
 
 def new
+  @parameters=params_to_query
+
   @no_map=true
   if signed_in? then
     @log=Log.new

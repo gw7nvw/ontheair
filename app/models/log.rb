@@ -2,6 +2,7 @@ class Log < ActiveRecord::Base
   validates :callsign1,  presence: true, length: { maximum: 50 }
 
   belongs_to :createdBy, class_name: "User"
+  before_save { remove_suffix }
   after_save { update_contacts }
   #attr_accessor :asset_names
 
@@ -292,6 +293,10 @@ def self.degs_from_deg_min_sec(value)
     if negative then pos=-pos end
 
   pos
+end
+
+def remove_suffix
+  if self.callsign1['/'] then self.callsign1=Log.remove_suffix(self.callsign1) end
 end
 
 def self.remove_suffix(callsign)
