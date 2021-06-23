@@ -27,14 +27,14 @@ class AssetsController < ApplicationController
     @asset_type=AssetType.find_by(name: asset_type)
 
     @searchtext=params[:searchtext] || ""
-    if params[:searchtext] then
+    if params[:searchtext] and params[:searchtext]!="" then
        whereclause=whereclause+" and (unaccent(lower(name)) like '%%"+@searchtext.downcase+"%%' or lower(code) like '%%"+@searchtext.downcase+"%%')"
     end
 
-    @assets=Asset.find_by_sql [ 'select * from assets where '+whereclause+' order by name limit 100' ]
+    @assets=Asset.find_by_sql [ 'select id,name,code,asset_type,url,is_active,safecode,category,minor,description,region from assets where id in (select id from assets where '+whereclause+' order by name limit 100)' ]
     counts=Asset.find_by_sql [ 'select count(id) as id from assets where '+whereclause ]
+    #counts=0;
     if counts and counts.first then @count=counts.first.id else @count=0 end
-    #@users=User.where("assets_bagged is not null and assets_bagged>0").order(:assets_bagged).reverse 
 
   end
 

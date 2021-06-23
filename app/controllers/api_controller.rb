@@ -1,6 +1,8 @@
 class ApiController < ApplicationController
 include PostsHelper
 
+require 'rexml/document'
+
 skip_before_filter :verify_authenticity_token
 
 def index
@@ -43,6 +45,7 @@ end
 
 def asset
     whereclause="true"
+    base_filename="assets"
 
     if not params[:is_active] then
       whereclause="is_active is true"
@@ -54,6 +57,7 @@ def asset
 
     if params[:asset_type] and params[:asset_type]!='' and params[:asset_type]!='all' then
       asset_type=params[:asset_type]
+      base_filename=params[:asset_type].strip
     end
 
     if params[:updated_since] then 
@@ -69,13 +73,13 @@ def asset
        whereclause=whereclause+" and (lower(name) like '%%"+@searchtext.downcase+"%%' or lower(code) like '%%"+@searchtext.downcase+"%%')"
     end
 
-
-    @assets=Asset.find_by_sql [ "select id, asset_type, code, name,location,minor,is_active,region,created_at, updated_at,old_code,area from assets where "+whereclause ] 
+    @assets=Asset.find_by_sql [ "select id, url, asset_type, code, name,location,altitude,minor,is_active,region,created_at, updated_at,old_code,area from assets where "+whereclause ] 
 
     respond_to do |format|
       format.js { render json: @assets.to_json()}
       format.html { render json: @assets.to_json()}
-      format.csv { send_data asset_to_csv(@assets), filename: "assets-#{Date.today}.csv" }
+      format.csv { send_data asset_to_csv(@assets), filename: "#{base_filename}-#{Date.today}.csv" }
+      format.gpx { send_data asset_to_gpx(@assets), filename: "#{base_filename}-#{Date.today}.gpx" }
     end
 
 end
@@ -148,4 +152,23 @@ def api_authenticate(params)
 end
 
 
+def asset_to_gpx(assets)
+   xml = REXML::Document.new
+   gpx = xml.add_element 'gpx', {'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
+     'xmlns' => 'http://www.topografix.com/GPX/1/0',
+     'xsi:schemaLocation' => 'http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd',
+     'version' => '1.0', 'creator' => 'http://routeguides.co.nz/'}
+
+   assets.each do |a|
+     if a.location then
+       wpt = gpx.add_element 'wpt'
+       wpt.add_element('url').add REXML::Text.new('https://ontheair.nz/'+a.url)
+       wpt.add_attributes({'lat' => a.location.y.to_s, 'lon' => a.location.x.to_s})
+       wpt.add_element('ele').add(REXML::Text.new(a.altitude.to_s))
+       wpt.add_element('name').add(REXML::Text.new(a.name+" ("+a.code+")"+if(a.r_field('points')) then " ["+a.r_field('points').to_s+"]" else "" end))
+     end
+   end
+
+   xml
+end
 end
