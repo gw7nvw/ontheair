@@ -275,11 +275,12 @@ def self.assets_from_code(codes)
   if codes then 
   code_arr=codes.split(',') 
   code_arr.each do |code|
+    code=code.gsub('[','').gsub(']','')
     code=code.lstrip
     asset={asset: nil, code: nil, name: nil, url: nil, external: nil, type: nil}
     if code then
       code=code.upcase
-      a=Asset.find_by(code: code)
+      a=Asset.find_by(code: code.split(' ')[0])
       if a then
           asset[:asset]=a
           asset[:url]=a.url

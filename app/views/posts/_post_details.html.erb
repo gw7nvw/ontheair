@@ -21,8 +21,23 @@
 
         </p>
       <% end %>
-      <% if @post.site and @post.site.length>0 then %>
-        <p><%=@post.site%></p>
+      <% if @post.asset_codes and @post.asset_codes.count>0 %>
+        <p>
+          <% @post.asset_codes.each do |code| %>
+            <% asset=Asset.assets_from_code(code) %>
+            <% if asset and asset.count>0 and asset.first[:code]!=nil then %>
+              <% if asset.first[:external] then %>
+                <%=link_to "["+asset.first[:code]+"] ",asset.first[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">&nbsp
+              <% else %>
+               <%=link_to "["+asset.first[:code]+"} "+asset.first[:name],asset.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>&nbsp;
+              <% end %>
+            <% end %>
+          <% end %>
+        </p> 
+      <% elsif @post.site and @post.site.length>0 %> 
+        <p>
+          <%=@post.site%>
+        </p>
       <% end %>
       <%if (@post.freq and @post.freq.length>0) or (@post.mode and @post.mode.length>0) then%><p><%=@post.freq%> - <%=@post.mode%></p><% end %> 
    </div>
