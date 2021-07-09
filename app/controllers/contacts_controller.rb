@@ -56,7 +56,7 @@ class ContactsController < ApplicationController
 
   def show
     @parameters=params_to_query
-    if(!(@contact = Contact.find_by_id(params[:id].to_i)))
+    if(!(@contact = Contact.find_by_id(params[:id].to_i.abs)))
       redirect_to '/'
     end
   end

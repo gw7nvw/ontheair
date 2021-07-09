@@ -72,24 +72,34 @@
             <td>Mode(s):</td>
             <td style="padding:0px; margin:0px;" colspan=2><%=   f.text_field :mode, :style =>"padding:0px; margin:0px;" %></td>
           </tr>
- <% count=0%>
- <% while count<10 do %>
-          <tr id=row<%=count.to_s%> <%= if count>0 and (!@post.asset_codes[count] or @post.asset_codes[count]=='') then "style=display:none" end%>>
-            <td><%if count==0%>Operating from:<%end%></td>
+          <tr>
+            <td>Operating from:</td>
             <td>
-               <% @asset_type=Asset.get_asset_type_from_code(Asset.get_code_from_codename(@post.asset_codes[count])) %>
-               <%= collection_select( 'asset'+count.to_s+"_type", :name, AssetType.all.order(:display_name), :name, :display_name,{selected: @asset_type}, style: "margin-bottom: 0px;height: 24px;") %>
-            </td>
-            <td style="padding:0px; margin:0px;" colspan=3>
-      <div id="asset<%=count.to_s%>"><input id="post_asset<%=count.to_s%>" name="post[asset_codes[<%=count.to_s%>]]" style="padding:0px; margin:0px;" type="text" class="typeahead" placeholder="Type location" value='<%=@post.asset_codes[count]%>'></div>
-            </td>
-            <td>
-              <%=link_to "Add more", '#', class: "btn btn-small", id:  "addmore", :onclick => "addmore("+count.to_s+");return false;" %>
-
-            </td>
+             <% asset_code_names=@post.asset_code_names.join("<br/>")%>
+             <% @post.asset_codes=@post.asset_codes.join(',') %>
+             <%= f.text_field :asset_codes, :placeholder => 'Enter code', :style => 'display:block' %>
+             <%= f.text_field :x1, :readonly => true, :style => 'display:none' %>
+             <%= f.text_field :y1, :readonly => true, :style => 'display:none' %>
+             <%= f.text_field :location1, :readonly => true, :style => 'display:none' %>
+          </td>
+          <td>
+            <ul style="float: left;margin: 0" class="nav pull-left" id="menus">
+              <li id="fat-menu" class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                     Or select place<b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><%= link_to "... from list", '/query?assetfield=asset', :remote => true,  :onclick => "search_assets('asset')" %>
+                  <li><%= link_to "... from map", '#',  :onclick => "site_selectPlace(null,'post_asset_codes', 'asset_names', 'x1', 'y1', 'location1', null, null, site_green_star,true);return false;" %>
+                  <li><%= link_to "Clear", '#',  :onclick => "site_clear_element(['post_asset_codes', 'post_location1', 'post_x1', 'post_y1']);site_clear_html_element(['asset_names']);map_clear_scratch_layer(null,site_green_star);return false;" %>
+                </ul>
+              </li>
+            </ul>
+          </td>
+          <td>
+             <div id="asset_names" name="asset_names"><%=raw(asset_code_names)%></div>
+          </td>
           </tr>
- <% count+=1 %>
- <% end %>
         </table>
       <% end %>
       <span>
@@ -124,33 +134,6 @@
   <% end %>
 </div>
 <script>
-var assets=[];
-<% count=0; while count<10 do %>
-  assets[<%=count%>] = new Bloodhound({
-  datumTokenizer: Bloodhound.tokenizers.whitespace,
-  queryTokenizer: Bloodhound.tokenizers.whitespace,
-  remote: {
-    url: '/queries/asset?query=%QUERY',
-    wildcard: '%QUERY',
-    replace: function(url, uriEncodedQuery) {
-      val=document.getElementById("asset<%=count%>_type_name").value;
-      if (!val) return url.replace("%QUERY",uriEncodedQuery);
-      //correction here
-      return url.replace("%QUERY",uriEncodedQuery) + '&asset_type=' + encodeURIComponent(val);
-    },
-  }
-});
-
-  assets[<%=count%>].clearPrefetchCache();
-  assets[<%=count%>].initialize();
-
-  $("#asset<%=count%> .typeahead").typeahead(null, {
-    name: "assets<%=count%>",
-    source: assets[<%=count%>]
-  });
-<% count+=1; end %>
-
-
 
 function addmore(count) {
   document.getElementById('row'+(count+1)).style="display:";

@@ -272,20 +272,23 @@ end
        p=Asset.find_by(code: contact.asset1_codes)
        pp=p.linked_assets_by_type("wwff park")
        if pp and pp.count>0 then
-         parks.push(docpark: p.code, wwffpark: pp.first.code, name: pp.first.name)
+         parks.push(wwffpark: pp.first.code, name: pp.first.name)
        end
    end
    contacts2.each do |contact|
        pp=Asset.find_by(code: contact.asset1_codes)
        p=pp.linked_assets_by_type("park")
        if p and p.count>0 then
-         parks.push(docpark: p.first.code, wwffpark: pp.code, name: pp.name)
+         parks.push(wwffpark: pp.code, name: pp.name)
        end
    end
    parks=parks.uniq 
 
    parks.each do |park|
-     contacts1=Contact.where('callsign1 = ? and (? = ANY(asset1_codes) or ?= ANY(asset1_codes))',self.callsign, park[:docpark], park[:wwffpark])
+     pp=Asset.find_by(code: park[:wwffpark]);
+     dps=pp.linked_assets_by_type("park");
+     dpcodes=dps.map{|dp| dp.code}
+     contacts1=Contact.where(" callsign1 = ? and (? = ANY(asset1_codes) or (array[?]::varchar[] && asset1_codes))", self.callsign, park[:wwffpark], dpcodes)
 
      contact_count=contacts1.count
      callsigns=[]
@@ -297,14 +300,14 @@ end
      callsigns.each do |cs|
 
 
-       contacts1=Contact.where('callsign1= ? and callsign2 = ? and date >= ? and date < ? and (? = ANY(asset1_codes) or ? = ANY(asset1_codes))',  self.callsign,  cs[:callsign], cs[:date].beginning_of_day,cs[:date].end_of_day, park[:docpark], park[:wwffpark])
+       contacts1=Contact.where('callsign1= ? and callsign2 = ? and date >= ? and date < ? and ((array[?]::varchar[] && asset1_codes) or ? = ANY(asset1_codes))',  self.callsign,  cs[:callsign], cs[:date].beginning_of_day,cs[:date].end_of_day, dpcodes, park[:wwffpark])
        if contacts1 and contacts1.count>0 then 
          contacts.push(contacts1.first) 
          if contacts1.count>1 then puts "Dropping "+(contacts1.count-1).to_s+" "+contacts1.first.callsign1+" "+contacts1.first.callsign2+" "+contacts1.first.date.to_date.to_s end
        end
      end
      
-     wwff_logs.push({park: park, count: contact_count, contacts: contacts.sort_by{|c| c.date}})
+     wwff_logs.push({park: park, count: contacts_count, contacts: contacts.sort_by{|c| c.date}})
    end
   wwff_logs
   end
@@ -354,20 +357,24 @@ end
        p=Asset.find_by(code: contact.asset1_codes)
        pp=p.linked_assets_by_type("pota park")
        if pp and pp.count>0 then 
-         parks.push(docpark: p.code, potapark: pp.first.code, name: pp.first.name)
+         parks.push(potapark: pp.first.code, name: pp.first.name)
        end
    end
    contacts2.each do |contact|
        pp=Asset.find_by(code: contact.asset1_codes)
        p=pp.linked_assets_by_type("park")
        if p and p.count>0 then 
-         parks.push(docpark: p.first.code, potapark: pp.code, name: pp.name)
+         parks.push(potapark: pp.code, name: pp.name)
        end
    end
    parks=parks.uniq 
 
    parks.each do |park| 
-     contacts1=Contact.where(" callsign1 = ? and (? = ANY(asset1_codes) or ? = ANY(asset1_codes))", self.callsign, park[:docpark], park[:potapark])
+     pp=Asset.find_by(code: park[:potapark]);
+     dps=pp.linked_assets_by_type("park");
+     dpcodes=dps.map{|dp| dp.code}
+     puts dpcodes;
+     contacts1=Contact.where(" callsign1 = ? and (? = ANY(asset1_codes) or (array[?]::varchar[] && asset1_codes))", self.callsign, park[:potapark], dpcodes)
  
      dates=[]
      contacts1.each do |contact|
@@ -376,7 +383,7 @@ end
      dates=dates.uniq
       
      dates.each do |date| 
-       contacts1=Contact.where(" callsign1 = ? and (? = ANY(asset1_codes) or ? = ANY(asset1_codes)) and date >= ? and date < ? ", self.callsign, park[:docpark], park[:potapark], date.beginning_of_day,date.end_of_day)
+       contacts1=Contact.where(" callsign1 = ? and ((array[?]::varchar[] && asset1_codes) or ? = ANY(asset1_codes)) and date >= ? and date < ? ", self.callsign, dpcodes, park[:potapark], date.beginning_of_day,date.end_of_day)
        contact_count=contacts1.count
        contacts=[]
        contacts1.each do |contact| contacts.push(contact) end

@@ -84,7 +84,7 @@ class AssetsController < ApplicationController
     @asset = Asset.new
   end
 
-	 def create
+ def create
 	    if signed_in? and current_user.is_modifier then
 
     @asset = Asset.new(asset_params)
@@ -115,6 +115,11 @@ class AssetsController < ApplicationController
   if signed_in? and current_user.is_modifier then
     if params[:delete] then
       asset = Asset.find_by_id(params[:id])
+      als=AssetLink.where(parent_code: asset.code)
+      als.destroy_all
+      als=AssetLink.where(child_code: asset.code)
+      als.destroy_all
+
       if asset and asset.destroy
         flash[:success] = "Asset deleted, id:"+params[:id]
         index_prep()

@@ -34,8 +34,12 @@
 
       <div class="sectiontitle">Asset Code</div>
       <%if current_user and current_user.is_admin %><%= f.text_field :code %><%else%><%= f.text_field :code, readonly: true %><% end %>
+
       <div class="sectiontitle">Asset Type</div>
       <%= f.collection_select( :asset_type, AssetType.where("name != 'all'").order(:name), :name, :display_name) %>
+
+      <div class="sectiontitle">Region</div>
+      <%= f.collection_select( :name, Region.all.order(:name), :sota_code, :name,{selected: @asset.region, include_blank: 'None'}, style: "margin-bottom: 0px;height: 24px;") %>
 
       <div class="sectiontitle">Name</div>
       <%= f.text_field :name %>

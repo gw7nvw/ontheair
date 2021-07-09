@@ -2,6 +2,10 @@ class Post < ActiveRecord::Base
 #include ActionView::Helpers::PostsHelper
 include PostsHelper
 
+attr_accessor :x1
+attr_accessor :y1
+attr_accessor :location1
+
 #    establish_connection "qrp"
     require 'htmlentities'
 
@@ -9,6 +13,24 @@ def updated_by_name
   user=User.find_by_id(self.updated_by_id)
   if user then user.callsign else "" end
 end
+
+  def assets
+    if self.asset_codes then Asset.where(code: self.asset_codes) else [] end
+  end
+
+
+  def asset_names
+    asset_names=self.assets.map{|asset| asset.name}
+    if !asset_names then asset_names="" end
+    asset_names
+  end
+
+  def asset_code_names
+    if self.asset_codes then asset_names=self.asset_codes.map{|ac| asset=Asset.assets_from_code(ac).first; "["+asset[:code]+"] "+asset[:name]} else asset_names=[] end
+    if !asset_names then asset_names=[] end
+    asset_names
+  end
+
 
 def check_hut_code
   hut_code=""

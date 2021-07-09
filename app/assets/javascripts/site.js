@@ -689,6 +689,10 @@ function select_asset(field, code, name, x, y, loc, child_codes, child_names) {
      formname="contactform";
      varprefix="contact_";
   } 
+  if (typeof(document.postform)=="object")  { 
+     formname="postform";
+     varprefix="post_";
+  }
   if (typeof(document.logform)=="object")  { 
      formname="logform";
      varprefix="log_";
@@ -705,6 +709,7 @@ function select_asset(field, code, name, x, y, loc, child_codes, child_names) {
   if (field=="asset") {
     codes=document[formname][varprefix+"asset_codes"].value
     if(codes=="{}") {codes="";} 
+    if(codes=="[]") {codes="";} 
     if(codes && codes.length>0) {codes=codes+","};
     document[formname][varprefix+"asset_codes"].value=codes+code;
     names=document.getElementById('asset_names').innerHTML;

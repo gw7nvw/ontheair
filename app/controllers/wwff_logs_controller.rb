@@ -32,6 +32,10 @@ def show
     pls.each do |pl|
       if pl[:park][:wwffpark]==params[:id]  then wwff_log=pl end
     end 
+
+
+
+    puts wwff_log[:contacts].count
   
     park=Asset.find_by(code: params[:id])
   

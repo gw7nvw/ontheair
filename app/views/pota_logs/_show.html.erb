@@ -1,4 +1,17 @@
-Please check that the following log is correct, and click the <b>Send Log</b> button to submit it to POTA.
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>POTA Logs</b>
+     </div>
+   <div id="controls">
+     <%=render 'map_controls'%>
+   </div>
+</div>
+<div class="erow">
+<br/>
+<br/>
+<p>Please check that the following log is correct, and click the <b>Send Log</b> button to submit it to POTA.</p>
 <br/>
 <br/>
 Filename: <%=@filename%><br/>
@@ -13,3 +26,8 @@ Invalid contacts rejected: <%=@invalid_contacts.count%><br/>
 <% end %>
 <%=link_to "Send Log", '/pota_logs/'+@park.safecode+"/send?date="+@logdate+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
 <%=link_to "Cancel", '/pota_logs?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
+</div>
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>
+

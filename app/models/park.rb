@@ -268,5 +268,29 @@ end
 def self.next(id)
   a=Park.where("id > ?",id).order(:id).first
 end
-   
+
+def self.add_ak_parks
+  ps=AkMaps.all
+  ps.each do |park|
+    if park.code and park.code!='' then p=Park.find_by(dist_code: park.code) else p=nil end
+    if !p then p=Park.new; puts "New park" end
+    p.name=park.name
+    p.boundary=park.WKT
+    p.dist_code=park.code
+    p.is_active=true
+    p.is_mr=false
+    p.owner="Auckland Regional Council"
+    p.location=park.location 
+    p.save
+    p.add_region
+    p.reload
+    if p.dist_code==nil or p.dist_code=="" then
+      p.dist_code=Park.get_next_dist_code(p.region)
+      p.save
+    end
+    puts "Added park :"+p.id.to_s+" - "+p.name
+  end
 end
+
+end
+   

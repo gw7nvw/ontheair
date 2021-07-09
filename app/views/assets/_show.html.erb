@@ -110,7 +110,7 @@
    <% if c then %>
      <div class="erow" id="doc">
        <div class="rowtitle"><%= "First activation" %></div>
-       <div class="textext"><%=link_to c.callsign1+' -> '+c.callsign2+c.time.strftime(' (%Y-%m-%d)'), c, remote: true, :onclick => "linkHandler('first')" %></div>
+       <div class="textext"><%=link_to c.callsign1+' -> '+c.callsign2+c.time.strftime(' (%Y-%m-%d)'), '/contacts/'+c.id.to_s, remote: true, :onclick => "linkHandler('first')" %></div>
      </div>
    <% end %>
 

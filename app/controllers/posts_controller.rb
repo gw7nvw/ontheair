@@ -111,15 +111,17 @@ def update
          end
        else
          @post.assign_attributes(post_params)
+         @post.asset_codes=params[:post][:asset_codes].gsub('{','').gsub('}','').split(',')
+
+         @post.site=""
+         @post.asset_codes.each do |ac|
+          assets=Asset.assets_from_code(ac)
+          @post.site+=(if assets and assets.count>0 then assets.first[:name] else "" end)+" ["+ac+"] "
+        end
+
          if topic.is_alert then 
            @post.referenced_time=(params[:post][:referenced_date]+' '+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC')
            @post.referenced_date=(params[:post][:referenced_date]+' '+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC')
-         end
-         pp=[];if params[:post][:asset_codes] then params[:post][:asset_codes].each do |p,k| if k and k.length>0 then pp.push(k) end end end
-         @post.asset_codes=pp
-         @post.site=""
-         @post.asset_codes.each do |ac|
-           @post.site+=ac+" "
          end
 
          @post.updated_by_id=current_user.id
@@ -148,12 +150,14 @@ def create
     @topic=Topic.find_by_id(params[:topic_id])
     if signed_in? and @topic and (@topic.is_public or current_user.is_admin or (@topic.owner_id==current_user.id and @topic.is_owners)) then
       @post=Post.new(post_params)
+      if params[:post][:asset_codes] then 
+         @post.asset_codes=params[:post][:asset_codes].gsub('{','').gsub('}','').split(',')
+      end
 
-      pp=[];if params[:post][:asset_codes] then params[:post][:asset_codes].each do |p,k| if k and k.length>0 then pp.push(k) end end end
-      @post.asset_codes=pp
       @post.site=""
       @post.asset_codes.each do |ac|
-        @post.site+=ac+" " 
+        assets=Asset.assets_from_code(ac)
+        @post.site+=(if assets and assets.count>0 then assets.first[:name] else "" end)+" ["+ac+"] " 
       end
       @post.created_by_id = current_user.id #current_user.id
       @post.updated_by_id = current_user.id #current_user.id

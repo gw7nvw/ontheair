@@ -13,7 +13,7 @@ class StaticPagesController < ApplicationController
 
       @static_page=true
       @sortby=params[:sortby]
-      if !@sortby or @sortby=='' then @sortby="hut" end
+      if !@sortby or @sortby=='' then @sortby="park" end
       @brief=true
       @fulllogs=Log.find_by_sql [ " select * from logs order by date desc " ]
       @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
@@ -31,7 +31,7 @@ class StaticPagesController < ApplicationController
 
       @static_page=true
       @sortby=params[:sortby]
-      if !@sortby or @sortby=='' then @sortby="hut" end
+      if !@sortby or @sortby=='' then @sortby="park" end
   end
 
   def help

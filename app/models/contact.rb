@@ -301,6 +301,7 @@ end
    c.user2_id=self.user1_id
    c.asset1_codes=self.asset2_codes 
    c.asset2_codes=self.asset1_codes 
+   c.id=-self.id
    c
  end
 

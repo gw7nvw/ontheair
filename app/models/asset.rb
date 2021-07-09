@@ -3,8 +3,18 @@ class Asset < ActiveRecord::Base
 # after_save :post_process
  validates :code, presence: true, uniqueness: true
  validates :name, presence: true
+ before_validation { self.assign_calculated_fields }
+ after_save {self.add_links}
 
-
+def assign_calculated_fields
+  if self.code==nil or self.code=="" then
+    self.code=Asset.get_next_code(self.asset_type,self.region)
+    self.safecode=self.code.gsub('/','_')
+  end
+  self.url='/assets/'+self.safecode
+  #add links
+#  self.add_links
+end
 
 def boundary_simple
    pp=Asset.find_by_sql [ "select id, ST_NPoints(boundary) as altitude from assets where id="+self.id.to_s ]
@@ -49,18 +59,30 @@ def y
      else nil end
 end
 
-def self.get_next_code(asset_type)
+def self.get_next_code(asset_type, region)
   newcode=nil
+  use_region=true
   if asset_type=='hut' then prefix='ZLH/' end
   if asset_type=='park' then prefix='ZLP/' end
   if asset_type=='island' then prefix='ZLI/' end
+  if asset_type=='lake' then prefix='ZLL/'; use_region=false end
 
   if prefix then 
-    last_asset=Asset.where(:asset_type => asset_type).order(:code).last
-    codestring=last_asset.code[3..-1]
-    codenumber=codestring.to_i
-    codenumber+=1
-    newcode=prefix+(codenumber.to_s.rjust(codestring.length,'0'))
+    if use_region and region and region!="" then
+      last_asset=Asset.where("code like '"+prefix+region+"-%%'").order(:code).last
+      puts last_asset
+      codestring=last_asset.code[7..-1]
+       codenumber=codestring.to_i
+       codenumber+=1
+       newcode=prefix+region+'-'+(codenumber.to_s.rjust(codestring.length,'0'))
+    else
+      last_asset=Asset.where(:asset_type => asset_type).order(:code).last
+      codestring=last_asset.code[3..-1]
+       codenumber=codestring.to_i
+       codenumber+=1
+       newcode=prefix+(codenumber.to_s.rjust(codestring.length,'0'))
+    end
+
   end
   newcode
 end
@@ -253,8 +275,10 @@ def self.add_parks
     a.code=p.dist_code
     a.old_code=p.code
     if p.master_id then
-       pp=Park.find_by_id(p.master_id)
-       a.master_code=pp.dist_code
+       cp=Crownpark.find_by_id(p.master_id)
+       if cp then pp=Park.find_by_id(cp.napalis_id)  else pp=nil end
+       if pp then a.master_code=pp.dist_code 
+       else puts "ERROR: failed to find park "+p.master_id.to_s+" master for "+p.dist_code+" "+p.name; p.master_id=nil; a.master_code=nil; end
     end
     a.safecode=a.code.gsub('/','_')
     a.url='assets/'+a.safecode
@@ -264,7 +288,7 @@ def self.add_parks
     a.category=(p.owner||"").gsub("'","''")
     a.location=p.location
     if new then a.save end
-    ActiveRecord::Base.connection.execute("update assets set code='"+a.code+"', old_code='"+a.old_code+"',master_code='"+(a.master_code||"")+"', safecode='"+a.safecode+"', url='"+a.url+"', name='"+a.name+"', description='"+(a.description||"")+"', is_active="+a.is_active.to_s+", category='"+(a.category||"")+"', location=(select location from parks where id="+p.id.to_s+"),  boundary=(select boundary from parks where id="+p.id.to_s+") where id="+a.id.to_s+";")
+    ActiveRecord::Base.connection.execute("update assets set code='"+a.code+"', old_code='"+(a.old_code||"")+"',master_code='"+(a.master_code||"")+"', safecode='"+a.safecode+"', url='"+a.url+"', name='"+a.name+"', description='"+(a.description||"")+"', is_active="+a.is_active.to_s+", category='"+(a.category||"")+"', location=(select location from parks where id="+p.id.to_s+"),  boundary=(select boundary from parks where id="+p.id.to_s+") where id="+a.id.to_s+";")
 
     puts a.code
   end 
