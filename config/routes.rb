@@ -25,6 +25,7 @@ resources :qsl, only: [:show]
 resources :users
 get 'users/:id/add', to: 'users#add'
 get 'users/:id/delete', to: 'users#delete'
+get 'images/:id/delete', to: 'images#delete'
 
 resources :posts, only: [:new, :create, :show, :edit, :update]
 get 'posts/:id/delete', to: 'posts#delete'

@@ -194,7 +194,7 @@
 
   <div class="sectiontitle_bold" style="margin-bottom: 4px">Photos of this place on  <%=link_to "Hut  Bagger", @asset.hutbagger_link.url, class: 'link_to'%>:</div>
   <div class="erow">
-    <% if !@asset.photos or @asset.photos.count==0 %>
+    <% if !@asset.photo_count==0 %>
       <p><i>No photos have been uploaded. Visit <%=link_to "hutbagger.co.nz", @asset.hutbagger_link.url, target: "_blank"%> to add one.</i></p>
     <% end %>
     <div class="photo-bar">
@@ -202,6 +202,11 @@
       <% @asset.photos.each do |photo| %>
         <span>
          <%=link_to (image_tag(photo.link_url.gsub(/large/,'small'))), @asset.hutbagger_link.url, :class => "photo", :target=>"_blank"%>
+        </span>
+      <% end %>
+      <% @asset.posted_photos.each do |photo| %>
+        <span>
+         <%=link_to (image_tag(photo.link_url.gsub(/large/,'small'))), 'posts/'+photo.post_id.to_s, :class => "photo", :remote=>true, :onclick => "linkHandler('edit')" %>
         </span>
       <% end %>
      </div>

@@ -75,7 +75,11 @@
 
 <div class="erow"><i>PIN is for access to the SPOT/ALERT gateway from inreach/email only. PIN rules: any 4-character combination of letters and numbers. No spaces or extended characters. InReach may send messages containing your PIN across the internet as unencrypted plain-text or display them to others with access to your InReach web portal. Do not reuse PINs you use elsewhere.</i></div> 
 
+<div>
       <%= f.submit @submit_button, onclick: "signupHandler();", class: "btn btn-small btn-primary btn-highlight" %>
+</div>
+
+<div class="erow"><small><i>By registering to this site you are agreeing to our privacy and security policy. Details are available on the <%=link_to 'About', '/about', target: '_blank'%> page</i></small></div>
     </div>
 
 

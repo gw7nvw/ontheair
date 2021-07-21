@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210707025114) do
+ActiveRecord::Schema.define(version: 20210713051123) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -223,6 +223,21 @@ ActiveRecord::Schema.define(version: 20210707025114) do
     t.string   "code"
     t.string   "region"
     t.string   "dist_code"
+  end
+
+  create_table "images", force: true do |t|
+    t.string   "title"
+    t.text     "description"
+    t.string   "filename"
+    t.string   "image_file_name"
+    t.string   "image_content_type"
+    t.integer  "image_file_size"
+    t.datetime "image_updated_at"
+    t.integer  "created_by_id"
+    t.integer  "updated_by_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "post_id"
   end
 
   create_table "island_polygons", force: true do |t|
@@ -511,6 +526,7 @@ ActiveRecord::Schema.define(version: 20210707025114) do
     t.boolean  "duration_required"
     t.boolean  "is_alert"
     t.boolean  "is_spot"
+    t.boolean  "allow_attachments"
   end
 
   create_table "uploads", force: true do |t|

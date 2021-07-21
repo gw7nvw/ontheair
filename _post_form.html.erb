@@ -15,36 +15,35 @@
    document.getElementById('logo').innerHTML='... On The Air'
 </script>
 
-<div class="fullform">
-  <%= form_for @post, remote: true, :html => {:name => 'postform'}  do |f| %>
-    <div id="actionbar" class="span7">
-      <div id="crumbs">
-        <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
-        &nbsp;--&gt;&nbsp;
-        <%if @topic.id==1 then %><b><%=link_to "Alerts", "/alerts", remote: true,  :id => 'alerts', :onclick => "linkHandler('alerts')"%></b><% end%>
-        <%if @topic.id==35 then %><b><%=link_to "Spots", "/spots", remote: true,  :id => 'spots', :onclick => "linkHandler('spots')"%></b><% end%>
-        &nbsp;--&gt;&nbsp;
-        <%if @post.id%>
-          <b><%=link_to @post.title, '/posts/'+@post.id.to_s%></b>
-          &nbsp;--&gt;&nbsp;
-          <b>Edit</b>
-        <% else %>
-          <b>New</b>
-        <% end %>
-      </div>
-      <div id="controls">
-        <% if @post.id %><% if params[:referring]=='index'%>
-            <%=  link_to "Cancel", '/posts', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
-          <% else %>
-            <%=  link_to "Cancel", '/posts/'+@post.id.to_s, class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
-        <% end %> <% end %>
+<div id="actionbar" class="span7">
+  <div id="crumbs">
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <%if @topic.id==1 then %><b><%=link_to "Alerts", "/alerts", remote: true,  :id => 'alerts', :onclick => "linkHandler('alerts')"%></b><% end%>
+    <%if @topic.id==35 then %><b><%=link_to "Spots", "/spots", remote: true,  :id => 'spots', :onclick => "linkHandler('spots')"%></b><% end%>
+    &nbsp;--&gt;&nbsp;
+    <%if @post.id%>
+      <b><%=link_to @post.title, '/posts/'+@post.id.to_s%></b>
+      &nbsp;--&gt;&nbsp;
+      <b>Edit</b>
+    <% else %>
+      <b>New</b>
+    <% end %>
+  </div>
+  <div id="controls">
+    <% if @post.id %><% if params[:referring]=='index'%>
+        <%=  link_to "Cancel", '/posts', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+      <% else %>
+        <%=  link_to "Cancel", '/posts/'+@post.id.to_s, class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+    <% end %> <% end %>
 
-        <%=render 'map_controls'%>
-      </div>
-    </div>
-    <%= render 'shared/error_messages' %>	
+    <%=render 'map_controls'%>
+  </div>
+</div>
 
-    <div id="right_scroll">
+<div id="right_scroll">
+  <div class="fullform">
+    <%= form_for @post, remote: true, :html => {:name => 'postform'}  do |f| %>
       <%=hidden_field_tag(:topic_id, @topic.id)%>
       <%= render 'flash' %>
       <%= render 'shared/error_messages' %>
@@ -112,8 +111,9 @@
         <span id="descrSpan">
           <%= f.text_area :description %>
         </span>
-      </div>      
-   
+      </div>
+
+
       <% if topic.is_spot or topic.is_alert then %>
         <span>
           Publish on Parks n Peaks
@@ -127,7 +127,6 @@
         <% end %>
       <% end %>
       <%  if(@submit_button != "Save Changes" and current_user and current_user.is_admin) %>
-
         <div class="erow">
           <%=f.label "Check to supress emails of this post" %> 
           <%= f.check_box :do_not_publish %>
@@ -139,10 +138,11 @@
           <div class="erow"><div class="sectiontitle">Attachments:</div></div>
           <div class="erow" id="filename_form" style="display:none">
             <div class="sectiontitle25">Filename:</div>
-            <%= f.file_field :image %>
+              <%= f.file_field :image %>
+            </div>
           </div>
           <div id="link_div">
-            <u><i><a href="#" onclick="show_div('filename_form');hide_div('link_div');return(false);">Attach picture</a></i></u>
+            <u><i><a href="#" onclick="show_div('filename_form');hide_div('link_div');return(false);">Attach file</a></i></u>
           </div>
           <% if @post.files %>
             <% @post.files.each do |uf| %>
@@ -166,24 +166,23 @@
             <% end %>
           <% end %>
         </div>
-      <% end %>
+      <% end %>      
 
-      <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight" %>
-      <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@post.created_by_id)) %>
-        <%= f.submit "Delete Post", confirm: "Delete post: Are you sure?", class: "btn btn-small btn-primary", id:  "deletebutton",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
-      <% end %>
-   </div>
-  <% end %>
+      <div class="erow">
+        <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight" %>
+        <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@post.created_by_id)) %>
+          <%= f.submit "Delete Post", confirm: "Delete post: Are you sure?", class: "btn btn-small btn-primary", id:  "deletebutton",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
 </div>
+
 <script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 
-function addmore(count) {
-  document.getElementById('row'+(count+1)).style="display:";
-}
-document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
-
-<% if (!topic.is_spot) and (!topic.is_alert) then %>
-  startEdit();
-<% end %>
+  <% if (!topic.is_spot) and (!topic.is_alert) then %>
+    startEdit();
+  <% end %>
 </script>
 

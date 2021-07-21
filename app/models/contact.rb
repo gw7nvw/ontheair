@@ -400,7 +400,13 @@ def self.migrate_to_codes
       contact.save
     end
 end
-  
+ 
+def self.get_by_p2p(callsign,asset1,asset2,date)
+  contact=Contact.find_by("callsign1='#{callsign}' and '#{asset1}'=ANY(asset1_codes) and '#{asset2}'=ANY(asset2_codes) and date>='#{date}'::date and date<('#{date}'::date+'1 day'::interval)")
+  if !contact then contact=Contact.find_by("callsign2='#{callsign}' and '#{asset1}'=ANY(asset2_codes) and '#{asset2}'=ANY(asset1_codes) and date>='#{date}'::date and date<('#{date}'::date+'1 day'::interval)") end
+  contact
+end 
+
 def self.migrate_to_distcodes
   cs=Contact.all
   cs.each do |c|

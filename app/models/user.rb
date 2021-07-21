@@ -148,7 +148,11 @@ def authenticated?(attribute, token)
 
   def update_score
     scores=self.assets_count_all
-    AssetType.where(keep_score: true).each do |asset_type|
+    ats=AssetType.where(keep_score: true)
+    qrp=AssetType.new
+    qrp.name="qrp"
+    ats << qrp
+    ats.each do |asset_type|
        self.score[asset_type.name]=scores[:bagged_count][asset_type.name]
        self.score_total[asset_type.name]=scores[:bagged_count_total][asset_type.name]
        self.activated_count[asset_type.name]=scores[:activated_count][asset_type.name]
@@ -156,8 +160,34 @@ def authenticated?(attribute, token)
        self.chased_count[asset_type.name]=scores[:chased_count][asset_type.name]
        self.chased_count_total[asset_type.name]=scores[:chased_count_total][asset_type.name]
     end
+
+    self.score["p2p"]=self.get_p2p_all.count
     success=self.save
   end
+
+  def get_p2p_all
+    #all activations I make that are ZLOTA to /P
+    p2p=[]
+    contacts1=Contact.find_by_sql [ "select c1.time as time, c1.date as date, c1.id as id, c1.callsign1 as callsign1, c1.callsign2 as callsign2, unnest(c1.asset1_codes) as asset1_code, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.callsign1='#{self.callsign}'; " ]
+    contacts2=Contact.find_by_sql [ "select c1.time as time, c1.date as date, c1.id as id, c1.callsign1 as callsign1, c1.callsign2 as callsign2, unnest(c1.asset1_codes) as asset1_code, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.callsign2='#{self.callsign}'; " ]
+
+    contacts1.each do |c|
+        a=Asset.find_by(code: c.asset1_code)
+        if !a then a=Asset.find_by(code: c.asset2_code) end
+        if (a and a.type.keep_score) and c.asset1_code!="" and c.asset2_code!="" then
+          p2p.push(c.asset1_code.split(' ')[0]+" "+c.asset2_code.split(' ')[0]+" "+c.localdate(nil).to_s)
+        end
+    end
+    contacts2.each do |c|
+        a=Asset.find_by(code: c.asset2_code)
+        if !a then a=Asset.find_by(code: c.asset1_code) end
+        if (a and a.type.keep_score) and c.asset1_code!="" and c.asset2_code!="" then
+          p2p.push(c.asset2_code.split(' ')[0]+" "+c.asset1_code.split(' ')[0]+" "+c.localdate(nil).to_s)
+        end
+      end 
+    p2p.uniq
+  end
+
 
   def assets(at)
     assets=self.assets_filtered(at,false, false)
@@ -167,13 +197,16 @@ def authenticated?(attribute, token)
   def assets_count_all
 
    ats=AssetType.where("name != 'all'")
+   qrp=AssetType.new
+   qrp.name='qrp'
+   ats << qrp
+
    activated_count_total={}
    activated_count={}
    chased_count_total={}
    chased_count={}
    bagged_count_total={}
    bagged_count={}
-
 
    cs=self.assets_all
 
@@ -191,10 +224,17 @@ end
   def assets_all
 
    ats=AssetType.where("name != 'all'")
+   qrp=AssetType.new
+   qrp.name='qrp'
+   ats << qrp
    activated_total={}
    activated={}
    chased_total={}
    chased={}
+   qrp_activated=[]
+   qrp_chased=[]
+   qrp_activated_total=[]
+   qrp_chased_total=[]
 
    ats.each do |at|
      activated[at.name]=[]
@@ -208,6 +248,10 @@ end
      if c.asset1_codes then c.asset1_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a) then
+         if a.type.keep_score==true and c.is_qrp1==true then 
+           activated_total['qrp'].push(a.code+" "+c.date.strftime('%Y')) 
+           activated['qrp'].push(a.code)
+         end
          activated_total[a.asset_type].push(a.code+" "+c.date.strftime('%Y'))
          activated[a.asset_type].push(a.code)
        end
@@ -215,6 +259,10 @@ end
      if c.asset2_codes then c.asset2_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a) then
+         if a.type.keep_score==true and c.is_qrp1==true then 
+           chased_total['qrp'].push(a.code+" "+c.localdate(nil).to_s) 
+           chased['qrp'].push(a.code) 
+         end
          chased_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
          chased[a.asset_type].push(a.code)
        end
@@ -226,6 +274,11 @@ end
        a=Asset.find_by(code: code)
        if (a) then
          #Activatons count once per year
+         if a.type.keep_score==true and c.is_qrp2==true then 
+           activated_total['qrp'].push(a.code+" "+c.date.strftime('%Y')) 
+           activated['qrp'].push(a.code) 
+         end
+
          activated_total[a.asset_type].push(a.code+" "+c.date.strftime('%Y'))
          activated[a.asset_type].push(a.code)
        end
@@ -233,6 +286,11 @@ end
      if c.asset1_codes then c.asset1_codes.each do |code|
        a=Asset.find_by(code: code)
        if (a) then
+         if a.type.keep_score==true and c.is_qrp2==true then 
+           chased_total['qrp'].push(a.code+" "+c.localdate(nil).to_s) 
+           chased['qrp'].push(a.code) 
+         end
+
          #Chases count once per day
          chased_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
          chased[a.asset_type].push(a.code)

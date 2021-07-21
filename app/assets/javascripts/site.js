@@ -915,3 +915,10 @@ function expand_div(divname) {
   return(false);
 }
 
+function show_div(div) {
+   document.getElementById(div).style.display="block";
+}
+function hide_div(div) {
+   document.getElementById(div).style.display="none";
+}
+

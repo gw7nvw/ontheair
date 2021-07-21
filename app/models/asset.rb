@@ -206,6 +206,8 @@ def self.get_pnp_class_from_code(code)
      pnp_class=ac.pnp_class
   elsif a[:title][0..3]=="WWFF" then pnp_class="WWFF"
   elsif a[:title][0..3]=="POTA" then pnp_class="POTA"
+  elsif a[:title][0..3]=="HEMA" then pnp_class="HEMA"
+  elsif a[:title][0..4]=="SiOTA" then pnp_class="SiOTA"
   end
 
   pnp_class
@@ -219,49 +221,6 @@ end
 def self.get_asset_type_from_code(code)
   a=Asset.assets_from_code(code)
   if a and a.first and a.first[:type] then a.first[:type] else 'all' end
-end
-
-def self.url_from_code(code)
-  url=nil
-  external=false
-  if code[0..4]=="VKFF-" then
-    #wwff - VK
-    url="https://parksnpeaks.org/getPark.php?actPark="+code[0..8]+"&submit=Process"
-    external=true
-  elsif code[0..4]=="ZLFF-" then
-    #wwff - NZ
-    pp=WwffPark.find_by(code: code[0..8])
-    if pp then url="/parks/"+pp.napalis_id.to_s end
-  elsif code[0..2]=="ZL-" then
-    #POTA NZ
-    pp=PotaPark.find_by(reference: code[0..6])
-    if pp then url="/parks/"+pp.park_id.to_s end
-  elsif code[0..2]=="VK-" then
-    #POTA VK
-    url="https://parksnpeaks.org/getPark.php?actPark="+code[0..6]+"&submit=Process"
-    external=true
-  elsif code[0..3]=="ZLP/" then
-    #ZLOTA Park
-    park=Park.find_by(id: code[4..10])
-    if park then url="/parks/"+park.id.to_s end
-  elsif code[0..3]=="ZLH/" then
-    #ZLOTA hut
-    hut=Hut.find_by(id: code[4..9])
-    if hut then url="/huts/"+hut.id.to_s end
-  elsif code[0..3]=="ZLI/" then
-    #ZLOTA island
-    island=Island.find_by(id: code[4..9])
-    if island then url="/islands/"+island.id.to_s end
-  elsif code.scan(/ZL\d\//).length>0 then
-    #NZ SOTA
-    summit=SotaPeak.find_by(summit_code: code[0..9])
-    if summit then url="/summits/"+summit.short_code end
-  elsif code.scan(/VK\d\//).length>0 then
-    #VK SOTA
-    url="https://summits.sota.org.uk/summit/"+code[0..10]
-    external=true
-  end
-  {url: url, external: external}
 end
 
 def self.add_parks
@@ -318,14 +277,32 @@ def self.assets_from_code(codes)
 
           if a.type then asset[:title]=a.type.display_name else puts "ERROR: cannot find type "+a.asset_type end
           if asset[:url][0]!='/' then asset[:url]='/'+asset[:url] end
+      elsif thecode=code.match(/^[a-zA-Z]{1,2}\d\/H[a-zA-Z]{2}-\d{3}/) then
+        #HEMA
+         puts "HEMA"
+          asset[:name]=code
+          asset[:url]='https://parksnpeaks.org/showAward.php?award=HEMA'
+          asset[:external]=true
+          asset[:code]=thecode.to_s
+          asset[:type]='hump'
+          asset[:title]="HEMA"
+      elsif thecode=code.match(/^VK-[a-zA-Z]{3}\d{1}/)  then
+        #SiOTA
+         puts "SiOTA"
+          asset[:name]=code
+          asset[:url]='https://www.silosontheair.com/silos/#'+thecode.to_s
+          asset[:external]=true
+          asset[:code]=thecode.to_s
+          asset[:type]='silo'
+          asset[:title]="SiOTA"
       elsif thecode=code.match(/^[a-zA-Z]{1,2}-\d{4}/)  then
         #POTA
-         puts "POTA"
+        puts "POTA"
         if code[0..1].upcase=='VK' then
           asset[:name]=code
           asset[:url]='https://parksnpeaks.org/getPark.php?actPark='+thecode.to_s+'&submit=Process'
           asset[:external]=true
-          asset[:code]=thecode
+          asset[:code]=thecode.to_s
           asset[:type]='pota park'
           asset[:title]="POTA - VK"
         else
@@ -382,72 +359,7 @@ def self.assets_from_code(codes)
 
 end
 
-def self.get_pnp_class_from_code(code)
-  aa=Asset.assets_from_code(code)
-  a=aa.first 
-  pnp_class="QRP" 
-  if a and a[:type] and a[:external]==false then 
-     ac=AssetType.find_by(name: a[:type])
-     pnp_class=ac.pnp_class
-  elsif a[:title] and a[:title][0..3]=="WWFF" then pnp_class="WWFF"
-  elsif a[:title] and a[:title][0..3]=="POTA" then pnp_class="POTA"
-  end
 
-  pnp_class
-end
-
-def self.get_code_from_codename(codename)
-  if codename then code=codename.split(']')[0] else code='' end
-  code=code.gsub('[','').gsub(']','')
-end
-
-def self.get_asset_type_from_code(code)
-  a=Asset.assets_from_code(code)
-  if a and a.first and a.first[:type] then a.first[:type] else 'all' end
-end
-
-def self.url_from_code(code)
-  url=nil
-  external=false
-  if code[0..4]=="VKFF-" then
-    #wwff - VK
-    url="https://parksnpeaks.org/getPark.php?actPark="+code[0..8]+"&submit=Process"
-    external=true
-  elsif code[0..4]=="ZLFF-" then
-    #wwff - NZ
-    pp=WwffPark.find_by(code: code[0..8])
-    if pp then url="/parks/"+pp.napalis_id.to_s end
-  elsif code[0..2]=="ZL-" then
-    #POTA NZ
-    pp=PotaPark.find_by(reference: code[0..6])
-    if pp then url="/parks/"+pp.park_id.to_s end
-  elsif code[0..2]=="VK-" then
-    #POTA VK
-    url="https://parksnpeaks.org/getPark.php?actPark="+code[0..6]+"&submit=Process"
-    external=true
-  elsif code[0..3]=="ZLP/" then
-    #ZLOTA Park
-    park=Park.find_by(id: code[4..10])
-    if park then url="/parks/"+park.id.to_s end
-  elsif code[0..3]=="ZLH/" then
-    #ZLOTA hut
-    hut=Hut.find_by(id: code[4..7])
-    if hut then url="/huts/"+hut.id.to_s end
-  elsif code[0..3]=="ZLI/" then
-    #ZLOTA island
-    island=Island.find_by(id: code[4..8])
-    if island then url="/islands/"+island.id.to_s end
-  elsif code.scan(/ZL\d\//).length>0 then
-    #NZ SOTA
-    summit=SotaPeak.find_by(summit_code: code[0..9])
-    if summit then url="/summits/"+summit.short_code end
-  elsif code.scan(/VK\d\//).length>0 then
-    #VK SOTA
-    url="https://summits.sota.org.uk/summit/"+code[0..10]
-    external=true
-  end
-  {url: url, external: external}
-end
 
 def self.add_huts
   ps=Hut.all
@@ -711,6 +623,20 @@ end
 def photos
    ps=AssetPhotoLink.where(asset_code: self.code) 
 end
+
+def posted_photos
+  posts=Post.where(asset_id: self.id)
+  images=[]
+  posts.each do |post|
+    images=images.concat(post.images)
+  end   
+  images 
+end
+
+def photo_count
+  self.photos.count+self.posted_photos.count
+end
+
 
   def self.find_all_hutbagger_photos
      a=Asset.first_by_id

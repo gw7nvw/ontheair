@@ -3,6 +3,7 @@ require "uri"
 require "net/http"
 
 before_action :signed_in_user, only: [:delete, :create, :update, :new, :edit]
+skip_before_filter :verify_authenticity_token, :only => [:create, :update]
 
 def index
 ##    @fullposts=Post.all.order(:last_updated)
@@ -69,7 +70,13 @@ def delete
     topic=@post.topic
     if @post and (current_user.is_admin or (current_user.id==@post.created_by_id)) then
       @item=@post.item
-      @item.destroy
+      if @item then @item.destroy end
+      @post.files.each do |f|
+         f.destroy
+      end
+      @post.images.each do |f|
+         f.destroy
+      end
 
       if @post.destroy
         flash[:success] = "Post deleted, id:"+params[:id]
@@ -111,7 +118,7 @@ def update
          end
        else
          @post.assign_attributes(post_params)
-         @post.asset_codes=params[:post][:asset_codes].gsub('{','').gsub('}','').split(',')
+         if params[:post][:asset_codes] then @post.asset_codes=params[:post][:asset_codes].gsub('{','').gsub('}','').split(',') end
 
          @post.site=""
          @post.asset_codes.each do |ac|
@@ -126,6 +133,22 @@ def update
 
          @post.updated_by_id=current_user.id
          if @post.save then
+           isimage=@post.is_image
+           isfile=@post.is_file
+           if isimage then
+             @image=Image.new
+             @image.image=File.open(@post.image.path,'rb')
+             @image.post_id=@post.id
+             if not @image.save then
+                  flash[:error]=""
+                  @image.errors.full_messages.each do |e|
+                     flash[:error]+=e
+                     puts e
+                  end
+             end
+             @post.image=nil
+             @post.save
+           end
 
            flash[:success] = "Post updated"
 
@@ -178,6 +201,25 @@ def create
 
       if debug or (!debug and @post.save) then
         if !debug then 
+        isimage=@post.is_image
+        isfile=@post.is_file
+        if isimage then
+          puts "*****************************ISIMAGE**************************"
+          @image=Image.new
+          @image.image=File.open(@post.image.path,'rb')
+          @image.post_id=@post.id
+          if not @image.save then
+                  flash[:error]=""
+                  @image.errors.full_messages.each do |e|
+                     flash[:error]+=e
+                     puts e
+                  end
+          end
+          @post.image=nil
+          @post.save
+          end
+
+
           item=Item.new
           item.topic_id=@topic.id
           item.item_type="post"
