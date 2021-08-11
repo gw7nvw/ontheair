@@ -73,7 +73,7 @@ def show
     callnumber=@user.callsign.gsub(/[^0-9]/, '').first 
     @address=""
     if callnumber then 
-      @address="k.duffy@xtra.co.nz"
+      @address="simmopa@iprimus.com.au"
     end
     @logdate=params[:date]
     @park=park

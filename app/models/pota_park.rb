@@ -98,4 +98,62 @@ def self.migrate_to_assets
   end
 end
 
+def self.add_boundaries_from_assets
+  pps=Asset.find_by_sql [ " select id,name,code from assets where asset_type='pota park'  and boundary is null order by name; " ]
+  pps.each do |pp|
+       puts "Updating "+pp.name
+       als=AssetLink.where(parent_code: pp.code)
+       al=nil
+       if als.count>0 then
+         if als.count>1 then
+           count=0
+           validcount=0
+           lastvalid=nil
+           als.each do 
+              if als[count].child.asset_type=="park" and als[count].child.is_active=true then
+                puts count.to_s+": "+als[count].child.name
+                validcount+=1
+                lastvalid=count 
+              end
+              count+=1
+           end
+           if validcount>1 then
+             puts "Please select park or 'C'ancel:"
+             select=gets.chomp
+             if select!='C' then al=als[select.to_i] else al=nil end
+           elsif validcount==1 then
+             al=als[lastvalid]
+           else
+             al=nil
+           end
+             
+         else
+           al=als.first
+         end
+         if al then
+           puts "... from "+al.child.name
+           ActiveRecord::Base.connection.execute("update assets set boundary=(select boundary from assets where id="+al.child.id.to_s+") where id="+pp.id.to_s+";")
+           #puts "update assets set boundary=select(boundary from assets where id="+al.child.id.to_s+") where id="+pp.id.to_s+";"
+         end
+       end
+
+  end
 end
+
+def self.add_regions
+  pps=Asset.find_by_sql [ " select id,region,location,name,code from assets where asset_type='pota park'  order by name; " ]
+  pps.each do |pp|
+    puts pp.name
+    pp.add_region
+  end   
+end
+
+def self.add_pota_links
+  pps=Asset.find_by_sql [ " select id,name,code from assets where asset_type='pota park'  order by name; " ]
+  pps.each do |pp|
+    puts pp.name
+    pp.add_links
+  end   
+end
+end
+

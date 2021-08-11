@@ -80,7 +80,7 @@ def delete
 
       if @post.destroy
         flash[:success] = "Post deleted, id:"+params[:id]
-        redirect_to '/' 
+        redirect_to '/topics/'+topic.id.to_s 
       else
         flash[:error] = "Failed to delete post"
         edit()
@@ -109,7 +109,7 @@ def update
            flash[:success] = "Post deleted, id:"+params[:id]
            @topic=topic     
     #       @items=topic.items
-           render 'topics/show'
+           redirect_to '/topics/'+topic.id.to_s
 
          else
            flash[:error] = "Failed to delete post"
@@ -180,7 +180,7 @@ def create
       @post.site=""
       @post.asset_codes.each do |ac|
         assets=Asset.assets_from_code(ac)
-        @post.site+=(if assets and assets.count>0 then assets.first[:name] else "" end)+" ["+ac+"] " 
+        @post.site+=(if assets and assets.count>0 then assets.first[:name]||"" else "" end)+" ["+ac+"] " 
       end
       @post.created_by_id = current_user.id #current_user.id
       @post.updated_by_id = current_user.id #current_user.id
@@ -199,27 +199,12 @@ def create
       end
       @topic.last_updated = Time.now
 
+
       if debug or (!debug and @post.save) then
+        if @topic.is_spot or @topic.is_alert then
+           @post.add_map_image
+        end
         if !debug then 
-        isimage=@post.is_image
-        isfile=@post.is_file
-        if isimage then
-          puts "*****************************ISIMAGE**************************"
-          @image=Image.new
-          @image.image=File.open(@post.image.path,'rb')
-          @image.post_id=@post.id
-          if not @image.save then
-                  flash[:error]=""
-                  @image.errors.full_messages.each do |e|
-                     flash[:error]+=e
-                     puts e
-                  end
-          end
-          @post.image=nil
-          @post.save
-          end
-
-
           item=Item.new
           item.topic_id=@topic.id
           item.item_type="post"

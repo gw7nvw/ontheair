@@ -11,23 +11,23 @@
         </div>
           <nav>
             <ul class="nav pull-right" id="menus">
+                <li><%= link_to '...OnTheAir', root_path, remote: true, :id => 'home_link', :onclick => "linkHandler('home_link')"  %></li>
                 <li id="fat-menu" class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                   ...OnTheAir <b class="caret"></b>
-                </a>
-                <ul class="dropdown-menu">
-                  <li><%= link_to 'Home', root_path, remote: true, :id => 'home_link', :onclick => "linkHandler('home_link')"  %></li>
-                  <li class="divider"></li>
-                  <li><%= link_to 'About', '/about', remote: true, :id => 'about_link', :onclick => "linkHandler('about_link')"  %></li>
-                  <li><%= link_to 'Help', '/help', remote: true, :id => 'about_link', :onclick => "linkHandler('about_link')"  %></li>
-                  <li><%= link_to 'FAQ', '/faq', remote: true, :id => 'about_link', :onclick => "linkHandler('about_link')"  %></li>
-                  <li class="divider"></li>
-                  <% if signed_in? %>
-                    <li><%= link_to "Users", '/users',  remote: true,  :id => 'users_link', :onclick => "linkHandler('users_link')"  %></li>
-                  <% end %>
-                </ul>
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                     Info <b class="caret"></b>
+                  </a>
+                  <ul class="dropdown-menu">
+                    <li><%= link_to 'About', '/about', remote: true, :id => 'about_link', :onclick => "linkHandler('about_link')"  %></li>
+                    <li class="divider"></li>
+                    <%Topic.all.order(:name).each do |topic|%>
+                      <li><%= link_to topic.name, '/topics/'+topic.id.to_s, remote: true, :id => 'about_link', :onclick => "linkHandler('about_link')"  %></li>
+                    <% end %>
+                  </ul>
+                </li>
+
 
                 <li><%= link_to "Places", '/assets',  remote: true,  :id => 'places_link', :onclick => "linkHandler('places_link')"  %></li>
+                <li><%= link_to "Recent", '/recent',  remote: true,  :id => 'recent_link', :onclick => "linkHandler('recent_link')"  %></li>
                 <li><%= link_to "Results", '/results',  remote: true,  :id => 'results_link', :onclick => "linkHandler('results_link')"  %></li>
               <% if signed_in? %>
                 <li><%= link_to "My Logs", '/logs',  remote: true,  :id => 'logs_link', :onclick => "linkHandler('logs_link')"  %></li>
@@ -59,7 +59,10 @@
                   <li class="divider"></li>                  
                   <% if current_user.mailuser and current_user.mailuser.length>0 then %>
                     <li><%= link_to "Mail"+mail, '/webmail' %></li>
+                    <li class="divider"></li>                  
                   <% end %>
+                  <li><%= link_to "Users", '/users',  remote: true,  :id => 'users_link', :onclick => "linkHandler('users_link')"  %></li>
+                  <li class="divider"></li>                  
 
                   <li>
                     <%= link_to "Sign out", signout_path, method: "delete" %>

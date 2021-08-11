@@ -18,7 +18,7 @@ def parent
 end
 
 def child
-  Asset.find_by(code: self.parent_code)
+  Asset.find_by(code: self.child_code)
 end
 
 def self.prune

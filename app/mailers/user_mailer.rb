@@ -60,7 +60,10 @@ class UserMailer < ActionMailer::Base
   end
   def subscriber_mail(item,user)
     @user=user
-    @item=item
+    @item=item 
+    if @item.end_item.image_content_type then
+      attachments['map.jpg'] = File.read(@item.end_item.image.path)
+    end
     if user and user.email then
       mail to: user.email, subject: "ontheair.nz: New post from "+@item.end_item.updated_by_name+" in your followed topics"
     end

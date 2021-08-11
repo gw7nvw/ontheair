@@ -44,7 +44,7 @@
                     <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
                   <% else %>
                     <% if link[:asset] then %>
-                    <%=link_to link[:asset].codename, '/'+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                    <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
                     <% else %>
                       Asset no lnger exists: <%=cal%>
                     <% end %>
@@ -67,7 +67,7 @@
                     <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
                   <% else %>
                     <% if link[:asset] then %>
-                      <%=link_to link[:asset].codename, '/'+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                      <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
                     <% else %>
                       <div class="rowtext">Asset no longer exists <%=cal%></div>
                     <% end %>

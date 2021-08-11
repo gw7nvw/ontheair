@@ -1,0 +1,2 @@
+if (window.history.pushState!=null) window.history.pushState(null, 'QRP.NZ | <%@mtitle%>', '/<%=@ptitle%>/<%=params[:id]%>');
+$('#right_panel').html("<%= escape_javascript(render(:partial => 'topics/new')).html_safe %>");

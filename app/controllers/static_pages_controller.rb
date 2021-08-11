@@ -21,10 +21,14 @@ class StaticPagesController < ApplicationController
       @fulllogs=Log.find_by_sql [ " select * from logs order by date desc " ]
       @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
 
-      @items=Item.where(:topic_id => 4, :item_type => "post").order(:created_at).reverse[0..1]
+      @items=Item.where(:topic_id => 4, :item_type => "post").order(:created_at).reverse[0..0]
 
   end
 
+  def recent
+      @fulllogs=Log.find_by_sql [ " select * from logs order by date desc " ]
+      @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
+  end
   def results
       @parameters=params_to_query
       @scoreby=params[:scoreby] 

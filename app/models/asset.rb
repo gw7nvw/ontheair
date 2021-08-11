@@ -11,7 +11,7 @@ def assign_calculated_fields
     self.code=Asset.get_next_code(self.asset_type,self.region)
     self.safecode=self.code.gsub('/','_')
   end
-  self.url='/assets/'+self.safecode
+  self.url='assets/'+self.safecode
   #add links
 #  self.add_links
 end
@@ -267,6 +267,7 @@ def self.assets_from_code(codes)
       if a then
           asset[:asset]=a
           asset[:url]=a.url
+          if a[:url][0]=='/' then a[:url]=a[:url][1..-1] end
           asset[:name]=a.name
           asset[:external]=false
           asset[:code]=a.code
@@ -457,6 +458,7 @@ def self.add_pota_park(p)
     if !a then a=Asset.new end
     a.asset_type="pota park"
     a.code=p.reference
+    a.safecode=p.reference.gsub('/','_')
     if p.park then
       a.url='/parks/'+p.park.id.to_s
       a.is_active=p.park.is_active

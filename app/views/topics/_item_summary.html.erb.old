@@ -1,0 +1,14 @@
+              <% if item.end_item then%>
+                 <div class="bordered_box">
+                   <div class="box_header">
+                      <p><div class="sectiontitle"><%= link_to item.end_item.title, item.end_item_path%></div></p>
+                      <p>
+                      <%= link_to item.end_item.updated_by_name, '/users/'+item.end_item.updated_by_name %>
+                      <%=if item.end_item.updated_at > item.end_item.created_at then " updated in " else " posted in " end %>
+                      <%=link_to item.end_item.topic.name, '/topics/'+item.end_item.topic.id.to_s%> on
+                      <%=item.end_item.updated_at.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d %H:%M")%>
+                      </p>
+                   </div>
+                </div>
+             <% end %>
+

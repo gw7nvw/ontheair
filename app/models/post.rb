@@ -1,6 +1,7 @@
 class Post < ActiveRecord::Base
 #include ActionView::Helpers::PostsHelper
 include PostsHelper
+include MapHelper
 has_attached_file :image,
 :path => ":rails_root/public/system/:attachment/:id/:basename_:style.:extension",
 :url => "/system/:attachment/:id/:basename_:style.:extension"
@@ -46,6 +47,34 @@ end
     asset_names
   end
 
+def add_map_image
+  location=nil
+  if self.asset_codes then
+    point_loc=nil
+    poly_loc=nil
+    self.asset_codes.each do |ac|
+      a=Asset.find_by(code: ac)
+      if a and a.type.has_boundary then 
+        if a.location then poly_loc={x: a.x, y: a.y} end
+      else
+        if a and a.location then point_loc={x: a.x, y: a.y} end
+      end
+    end
+    if point_loc then location=point_loc else location=poly_loc end
+  end
+ 
+  if location then
+    filename=get_map(location[:x], location[:y], 9, "map_"+self.id.to_s) 
+#    filename=get_map_zoomed(location[:x], location[:y], 7,15, "map_"+self.id.to_s) 
+    begin
+      self.image=File.open(filename,'rb')
+      self.save
+      system("rm #{filename}")
+    rescue
+      puts "SAVEMAP: ERROR"
+    end
+  end
+end
 
 def images
   if self.id then images=Image.where(post_id: self.id) else [] end
@@ -153,3 +182,4 @@ end
 
 
 end
+

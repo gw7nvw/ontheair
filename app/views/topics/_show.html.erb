@@ -1,0 +1,109 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.title = '... On The Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+  $(function () {
+    $('#right_panel .pagination a').on('click', function () {
+      $.getScript(this.href);
+      return false;
+    });
+  });
+</script>
+
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  "Topics", '/topics',  remote: true,  :id => 'topics', :onclick => "linkHandler('topics')"%>
+     &nbsp;--&gt;&nbsp;
+     <% if params[:title] then %>
+       <b><%= link_to @topic.name, @topic.url %></b>
+       &nbsp;--&gt;&nbsp;
+       <b>Subject: <%=params[:title]%></b>
+     <% else %>
+       <b><%= @topic.name %></b>
+     <% end %>  
+</div>
+   <div id="controls">
+       <% if current_user and (current_user.is_admin or (@topic.is_public or (@topic.is_owners and current_user.id == @topic.owner_id))) %>
+            <%=  link_to "New post", '/posts/new/?topic_id='+@topic.url, class: "btn btn-small btn-primary",  remote: true,  :id => 'new', :onclick => "linkHandler('new')"%>
+       <% end %>
+       <% if current_user and (current_user.is_admin or (current_user.id == @topic.owner_id)) %>
+            <%=  link_to "Edit Topic", '/topics/'+@topic.url+'/edit', class: "btn btn-small btn-primary",  remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
+       <% end %>
+       <%=  link_to "Index", "/topics", class: "btn btn-small btn-primary",  remote: true,  :id => 'index', :onclick => "linkHandler('index')"%>
+       <%=render 'map_controls'%>
+   </div>
+</div>
+
+
+<div id="right_scroll">
+   <%= render 'flash' %>
+
+
+<% if params[:title] then %>
+   <div class="sectiontitle" id="page_title">
+     <%=  link_to @topic.name, '/topics/'+@topic.url,  remote: true,  :id => 'topic', :onclick => "linkHandler('topic')" %> 
+     &nbsp;--&gt;&nbsp;
+     Subject: <%=params[:title]%>
+     <br/>
+     <br/>
+   </div>
+
+<% else %>
+   <div class="sectiontitle" id="page_title">
+     <%=  link_to @topic.name, '/topics/'+@topic.url,  remote: true,  :id => 'topic', :onclick => "linkHandler('topic')" %> <br/>
+     <br/>
+   </div>
+
+   <div class="erow" id="description">
+      <%= raw (@topic.description).gsub(/(?<=<style type=\"text\/css\">).+(?=<\/style>)/m,'') %>
+   </div>
+  
+   <div class="erow" id="description">
+      <p><i><br/><%=if @watch_count==nil then "No" end %><%=@watch_count.to_s+" users are watching this topic"%></i></p>
+   </div>
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+   <div class="erow"><i>
+   <% if @topic.is_public then  %>
+      Public topic open to all users.
+   <% elsif @topic.is_owners then  %>
+      Private topic. Only <%=@topic.owner_callsign%> can post to this topic.  
+   <% else %>
+      News feed run by the site administrator(s).
+   <% end %>
+   <% if @topic.is_members_only then %>
+      You must be a registered member to view posts to this topic.
+   <% end %>
+   </i></div>
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+<% end %>
+  <h2>Latest posts</h2>
+<% if (@topic.is_members_only and current_user) or !@topic.is_members_only then %>
+  <div class="name_pagination"> <%= will_paginate(@items) %></div>
+  <% @items.each do |item| %>
+    <%=render :partial => 'topics/item_details',  :locals => {:item => item, :topic=>@topic} %>
+  <% end %>
+  <div class="name_pagination"> <%= will_paginate(@items) %></div>
+<% else %>
+  <div style="color:red"><i>Please <%=link_to "sign in", signin_path,  remote: true,  :id => 'signin', :onclick => "linkHandler('signin')"%> or <%=link_to "sign up", signup_path,  remote: true,  :id => 'signup', :onclick => "linkHandler('signup')" %> to view posts in this topic</i></div>
+<% end %>`
+</div>
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>
+

@@ -1,0 +1,17 @@
+<% if item.item_type=="post" then %>
+  <% @post=item.post %>
+  <%=if @post then render 'posts/post_details' end%>
+<% elsif item.item_type=="image" then %>
+  <% @image=item.image %>
+  <%=if @image then render 'images/image_details' end%>
+<% elsif item.item_type=="file" then %>
+  <% @uploadedfile=item.file %>
+  <%=if @uploadedfile then render 'files/file_details' end%>
+<% elsif item.item_type=="hota" then %>
+  <% @contact=HotaPost.find_by_id(item.item_id) %>
+  <%=if @contact then  render 'topics/hota_details' end %>
+<% elsif item.item_type=="topic" then %>
+  <% puts "got subtopic" %>
+  <% @subtopic=item.subtopic %>
+  <%=if @subtopic then render 'topics/topic_details' end%>
+<% end %>

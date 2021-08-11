@@ -29,11 +29,12 @@
   </th>
 </table>
 
-  <h2>What's New</h2>
+  <h2><%=link_to "What's New", '/topics/4',  remote: true,:onclick => "linkHandler('more')"%></h2>
     <% @items.each do |item| %>
        <%=render :partial => 'item_details',  :locals => {:item => item} %>
     <% end%>
-  <h2>Top ten</h2>
+
+  <h2><%=link_to "Top ten", '/results',  remote: true,:onclick => "linkHandler('results')"%></h2>
 
   <div class="erow">
      <div class="hrline">

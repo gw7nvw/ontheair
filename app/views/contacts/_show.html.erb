@@ -107,7 +107,7 @@
          <div class="erow" id="name">
            <% if link[:asset] then %>
            <div class="rowtitle"><%=link[:asset].type.display_name%></div>
-           <div class="rowtext"> <%=link_to link[:asset].codename, link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+           <div class="rowtext"> <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
            <% else %>
            <div class="rowtext">Asset no longer exists <%=cal%></div>
            <% end %>
@@ -187,7 +187,7 @@
          <div class="erow" id="name">
            <% if link[:asset] then %>
            <div class="rowtitle"><%=link[:asset].type.display_name%></div>
-           <div class="rowtext"> <%=link_to link[:asset].codename, link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+           <div class="rowtext"> <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
            <% else %>
            <div class="rowtext">Asset no longer exists <%=cal%></div>
            <% end %>

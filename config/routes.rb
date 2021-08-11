@@ -14,6 +14,7 @@ match '/about',   to: 'static_pages#about',   via: 'get'
 match '/help',   to: 'static_pages#help',   via: 'get'
 match '/faq',   to: 'static_pages#faq',   via: 'get'
 match '/results',   to: 'static_pages#results',   via: 'get'
+match '/recent',   to: 'static_pages#recent',   via: 'get'
 match '/spots',   to: 'static_pages#spots',   via: 'get'
 match '/alerts',   to: 'static_pages#alerts',   via: 'get'
 resources :sessions, only: [:new, :create, :destroy]
@@ -28,6 +29,7 @@ get 'users/:id/delete', to: 'users#delete'
 get 'images/:id/delete', to: 'images#delete'
 
 resources :posts, only: [:new, :create, :show, :edit, :update]
+resources :topics, only: [:index, :new, :create, :show, :edit, :update]
 get 'posts/:id/delete', to: 'posts#delete'
 match '/queries/asset', to: 'queries#asset',    via:'get'
 resources :api, only: [:index]
