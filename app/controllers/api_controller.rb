@@ -32,7 +32,23 @@ def assetlink
         format.html { render json: AssetLink.where(parent_code: id).to_json }
         format.csv { send_data asset_to_csv(AssetLink.where(parent_code: id)), filename: "assetlinks-#{Date.today}.csv" }
       end
-  end
+    end
+
+  elsif params[:asset_type] and params[:children] then
+    assetLinks=AssetLink.find_by_sql [ " select al.* from asset_links al inner join assets a on a.code = al.child_code where a.asset_type='#{params[:asset_type]}'; " ] 
+    respond_to do |format|
+      format.js { render json: assetLinks.to_json }
+      format.html { render json: assetLinks.to_json }
+      format.csv { send_data asset_to_csv(assetLinks), filename: "assetlinks-#{Date.today}.csv" }
+    end
+
+  elsif params[:asset_type]
+    assetLinks=AssetLink.find_by_sql [ " select al.* from asset_links al inner join assets a on a.code = al.parent_code where a.asset_type='#{params[:asset_type]}'; " ] 
+    respond_to do |format|
+      format.js { render json: assetLinks.to_json }
+      format.html { render json: assetLinks.to_json }
+      format.csv { send_data asset_to_csv(assetLinks), filename: "assetlinks-#{Date.today}.csv" }
+    end
 
   else
     respond_to do |format|
