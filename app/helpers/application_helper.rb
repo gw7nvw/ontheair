@@ -74,7 +74,7 @@ module ApplicationHelper
     # no more than two consecutive spaces
     txt.gsub!(/ {2,}/, " ")
 
-    txt = word_wrap(txt, line_length)
+#    txt = word_wrap(txt, line_length)
 
     # remove linefeeds (\r\n and \r -> \n)
     txt.gsub!(/\r\n?/, "\n")

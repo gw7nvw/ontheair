@@ -320,10 +320,12 @@ end
   end
 
 
-  def wwff_logs
+  def wwff_logs(resubmit)
+   if resubmit==true then resubmit_str="" else resubmit_str=" and submitted_to_wwff is not true" end
    wwff_logs=[]
-   contacts1=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where callsign1 = '"+self.callsign+"') as sq where asset1_codes  like 'ZLP%%'" ]
-   contacts2=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where callsign1 = '"+self.callsign+"') as sq where asset1_codes  like 'ZLFF-%%'" ]
+   puts "resubmit: "+resubmit_str
+   contacts1=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where callsign1 = '"+self.callsign+"'"+resubmit_str+") as sq where asset1_codes  like 'ZLP%%'" ]
+   contacts2=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where callsign1 = '"+self.callsign+"'"+resubmit_str+") as sq where asset1_codes  like 'ZLFF-%%'" ]
 
    parks=[]
    contacts1.each do |contact|
@@ -346,7 +348,7 @@ end
      pp=Asset.find_by(code: park[:wwffpark]);
      dps=pp.linked_assets_by_type("park");
      dpcodes=dps.map{|dp| dp.code}
-     contacts1=Contact.where(" callsign1 = ? and (? = ANY(asset1_codes) or (array[?]::varchar[] && asset1_codes))", self.callsign, park[:wwffpark], dpcodes)
+     contacts1=Contact.where(" callsign1 = ? and (? = ANY(asset1_codes) or (array[?]::varchar[] && asset1_codes))"+resubmit_str, self.callsign, park[:wwffpark], dpcodes)
 
      contact_count=contacts1.count
      callsigns=[]
@@ -358,7 +360,7 @@ end
      callsigns.each do |cs|
 
 
-       contacts1=Contact.where('callsign1= ? and callsign2 = ? and date >= ? and date < ? and ((array[?]::varchar[] && asset1_codes) or ? = ANY(asset1_codes))',  self.callsign,  cs[:callsign], cs[:date].beginning_of_day,cs[:date].end_of_day, dpcodes, park[:wwffpark])
+       contacts1=Contact.where('callsign1= ? and callsign2 = ? and date >= ? and date < ? and ((array[?]::varchar[] && asset1_codes) or ? = ANY(asset1_codes))'+resubmit_str,  self.callsign,  cs[:callsign], cs[:date].beginning_of_day,cs[:date].end_of_day, dpcodes, park[:wwffpark])
        if contacts1 and contacts1.count>0 then 
          contacts.push(contacts1.first) 
          if contacts1.count>1 then puts "Dropping "+(contacts1.count-1).to_s+" "+contacts1.first.callsign1+" "+contacts1.first.callsign2+" "+contacts1.first.date.to_date.to_s end

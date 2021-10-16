@@ -2,7 +2,8 @@ class WwffLogsController < ApplicationController
   before_action :signed_in_user, only: [:index, :show, :send_email]
 
 def index
-    @parameters=params_to_query
+  @parameters=params_to_query
+  if params[:resubmit]=='true' then @resubmit=true else @resubmit=false end
 
   callsign=""
   if current_user then callsign=current_user.callsign end
@@ -16,7 +17,9 @@ def index
 end
 
 def show
-    @parameters=params_to_query
+  if params[:resubmit]=='true' then @resubmit=true else @resubmit=false end
+
+  @parameters=params_to_query
   if current_user then callsign=current_user.callsign else callsign="" end 
   if params[:user] then callsign=params[:user].upcase end
   if current_user and (current_user.is_admin or current_user.callsign==callsign) then
@@ -27,7 +30,7 @@ def show
      redirect_to '/'
     end
 
-    pls=@user.wwff_logs
+    pls=@user.wwff_logs(@resubmit)
     wwff_log=nil
     pls.each do |pl|
       if pl[:park][:wwffpark]==params[:id]  then wwff_log=pl end
@@ -41,7 +44,8 @@ def show
   
     @wwff_log=""
     @invalid_contacts=[]
-    @contacts=wwff_log[:contacts]
+    @contacts=wwff_log[:contacts]  
+    lastdate='19000101'
     wwff_log[:contacts].each do |contact|
       other_park=nil
       other_callsign=contact.callsign2
@@ -53,12 +57,14 @@ def show
       end
 
       if contact.band.length>0 and contact.adif_mode.length>0 and contact.time and contact.time.strftime("%H%M").length==4 then
+        qsodate=contact.date.strftime("%Y%m%d")
+        if qsodate>lastdate then lastdate=qsodate end
         @wwff_log+="<call:"+other_callsign.length.to_s+">"+other_callsign
         @wwff_log+="<station_callsign:"+@user.callsign.length.to_s+">"+@user.callsign
         @wwff_log+="<operator:"+@user.callsign.length.to_s+">"+@user.callsign
         @wwff_log+="<band:"+contact.band.length.to_s+">"+contact.band
         @wwff_log+="<mode:"+contact.adif_mode.length.to_s+">"+contact.adif_mode
-        @wwff_log+="<qso_date:8>"+contact.date.strftime("%Y%m%d")
+        @wwff_log+="<qso_date:8>"+qsodate
         @wwff_log+="<time_on:4>"+contact.time.strftime("%H%M")
         @wwff_log+="<my_sig:4>WWFF"
         @wwff_log+="<my_sig_info:"+park.code.length.to_s+">"+park.code
@@ -69,7 +75,7 @@ def show
         @invalid_contacts.push(contact)
       end
     end
-    @filename=@user.callsign+"@"+park.code+".adi" 
+    @filename=@user.callsign+"@"+park.code+"_"+lastdate+".adi" 
     callnumber=@user.callsign.gsub(/[^0-9]/, '').first 
     @address=""
     if callnumber then 

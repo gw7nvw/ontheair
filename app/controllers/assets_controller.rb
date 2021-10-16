@@ -92,7 +92,8 @@ class AssetsController < ApplicationController
     convert_location_params(params[:asset][:x], params[:asset][:y])
 
     @asset.createdBy_id=current_user.id
-    if @asset.code==nil or @asset.code=="" then   @asset.code=Asset.get_next_code(@asset.asset_type) end
+    if !@asset.region then @asset.region=@asset.add_region end
+    if @asset.code==nil or @asset.code=="" then   @asset.code=Asset.get_next_code(@asset.asset_type, @asset.region) end
       if @asset.save
           @asset.reload
           @asset.find_hutbagger_photos

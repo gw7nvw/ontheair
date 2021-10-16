@@ -37,7 +37,9 @@ def show
   
     @pota_log=""
     @invalid_contacts=[]
+    @duplicate_contacts=[]
     @contacts=pota_log[:contacts]
+    callsigns=[]
     pota_log[:contacts].each do |contact|
       other_park=nil
       other_callsign=contact.callsign2
@@ -48,7 +50,8 @@ def show
         if las and las.count>0 then other_park_code=las.first.code end
       end
 
-      if contact.band.length>0 and contact.adif_mode.length>0 and contact.time and contact.time.strftime("%H%M").length==4 then
+      if contact.band.length>0 and contact.adif_mode.length>0 and contact.time and contact.time.strftime("%H%M").length==4 and not ((callsigns.include? other_callsign) and (not other_park_code))  then
+        callsigns.push(other_callsign)
         @pota_log+="<call:"+other_callsign.length.to_s+">"+other_callsign
         @pota_log+="<station_callsign:"+@user.callsign.length.to_s+">"+@user.callsign
         @pota_log+="<band:"+contact.band.length.to_s+">"+contact.band
@@ -59,7 +62,11 @@ def show
         if other_park_code then @pota_log+="<sig_info:"+other_park_code.length.to_s+">"+other_park_code end
         @pota_log+="<eor>\n"
       else 
-        @invalid_contacts.push(contact)
+        if ((callsigns.include? other_callsign) and (not other_park_code)) then 
+          @duplicate_contacts.push(contact)
+        else 
+          @invalid_contacts.push(contact)
+        end
       end
     end
     @filename=@user.callsign+"@"+park.code+"-"+params[:date]+".adi" 

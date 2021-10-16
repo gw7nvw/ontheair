@@ -47,7 +47,8 @@ class UserMailer < ActionMailer::Base
     @address=email
     attachments[filename] = {:mime_type => 'text/plain',
                                    :content => log }
-    mail from: "admin@ontheair.nz", to: user.email, cc: user.email, bcc: "admin@ontheair.nz", subject: "WWFF log from "+user.callsign, reply_to: user.email
+    mail from: "admin@ontheair.nz", to: @address, cc: user.email, bcc: "admin@ontheair.nz", subject: "WWFF log from "+user.callsign, reply_to: user.email
+#    mail from: "admin@ontheair.nz", to: user.email, cc: user.email, bcc: "admin@ontheair.nz", subject: "WWFF log from "+user.callsign, reply_to: user.email
   end
 
   def pota_log_submission(user,park,logdate,filename,log,email)

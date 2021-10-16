@@ -13,7 +13,12 @@
      <b>WWFF Logs</b>
      </div>
    <div id="controls">
-       <%=render 'map_controls'%>
+     <% if @resubmit==true %>
+     <%=  link_to "Hide Submitted", '/wwff_logs/?user='+@user.callsign+'&resubmit=false', class: "btn btn-small btn-primary", remote: true, :id => 'resubmit', :onclick => "linkHandler('resubmit')" %>
+     <% else %>
+     <%=  link_to "Show Submitted", '/wwff_logs/?user='+@user.callsign+'&resubmit=true', class: "btn btn-small btn-primary", remote: true, :id => 'resubmit', :onclick => "linkHandler('resubmit')" %>
+     <% end %>
+     <%=render 'map_controls'%>
    </div>
 </div>
 <div id="right_scroll">
@@ -25,7 +30,7 @@
       <th>Contacts</th> 
       <th></th>
     </tr>
-    <% logdays=@user.wwff_logs %>
+    <% logdays=@user.wwff_logs(@resubmit) %>
     <% if logdays then logdays.sort_by!{|hsh| hsh[:date]}.reverse! end%>
     <% logdays.each do |logday| %>
       <tr>
@@ -39,7 +44,7 @@
            end
         %>
 
-        <td><%=if !submitted_to_wwff then  link_to "Sumbit Log", '/wwff_logs/'+logday[:park][:wwffpark]+"?user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" else link_to "Resend Log", '/wwff_logs/'+logday[:park][:wwffpark]+"?user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" end%></td>
+        <td><%=if !submitted_to_wwff then  link_to "Sumbit Log", '/wwff_logs/'+logday[:park][:wwffpark]+"?user="+@user.callsign+"&resubmit="+@resubmit.to_s, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" else link_to "Resend Log", '/wwff_logs/'+logday[:park][:wwffpark]+"?user="+@user.callsign+"&resubmit="+@resubmit.to_s, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" end%></td>
       </tr>
     <% end%>
   </table>

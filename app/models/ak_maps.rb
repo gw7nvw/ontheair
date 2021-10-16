@@ -17,6 +17,38 @@ def self.boundary_import(file)
 end
 
 
+def self.regional_park_import(file)
+  h=[]
+  CSV.foreach(file, :headers => true) do |row|
+    h.push(row.to_hash)
+  end
+
+  h.each do |park|
+  p=Asset.find_by(name: park["SiteName"], asset_type: 'park')
+  if !p then 
+     p=Asset.new
+     p.name=park["SiteName"]
+     puts "Added AKpark :"+p.name
+  else
+     puts "Updated AKpark :"+p.name
+  end
+  p.boundary=park["WKT"]
+  p.asset_type="park"
+  p.region='AK'
+  if p.code==nil then
+    p.code=Asset.get_next_code('park','AK')
+    puts  p.code
+  end
+  p.safecode=p.code.gsub('/','_')
+  p.url='assets/'+p.safecode
+  p.is_active=true
+  p.category='Auckland Regional Council'
+  p.location=p.calc_location
+ 
+  p.save
+  end
+end
+
 def self.get_centroids
    as=AkMaps.all
      as.each do |a|

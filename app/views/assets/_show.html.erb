@@ -57,13 +57,22 @@
       <div class="rowtext"> 
         <%= @asset.description %>
       </div>
+   </div>
+   <% if @asset.points and @asset.points>0 %>
+     <div class="erow" id="name">
+        <div class="rowtitle"><%= "Points" %></div>
+        <div class="rowtext"> 
+          <%= @asset.points %>
+        </div>
+     </div>
+   <% end %>
    <% if @asset.type.fields then @asset.type.fields.split(',').each do |f| %>
      
      <div class="erow" id="name">
         <div class="rowtitle"><%= f.gsub('_',' ').titlecase %></div>
         <div class="rowtext"><%= @asset.r_field(f)%></div>
      </div>
-  <% end end %>
+   <% end end %>
    <div class="erow" id="name">
       <div class="rowtitle"><%= "Lies within" %></div>
       <div class="rowtext"> 

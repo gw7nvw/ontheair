@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210713051123) do
+ActiveRecord::Schema.define(version: 20210911193736) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -94,6 +94,7 @@ ActiveRecord::Schema.define(version: 20210713051123) do
     t.string   "region"
     t.string   "old_code"
     t.float    "area"
+    t.integer  "points"
   end
 
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"

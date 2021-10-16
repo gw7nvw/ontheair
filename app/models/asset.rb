@@ -9,6 +9,8 @@ class Asset < ActiveRecord::Base
 def assign_calculated_fields
   if self.code==nil or self.code=="" then
     self.code=Asset.get_next_code(self.asset_type,self.region)
+  end
+  if self.safecode==nil or self.safecode=="" then
     self.safecode=self.code.gsub('/','_')
   end
   self.url='assets/'+self.safecode
@@ -60,6 +62,7 @@ def y
 end
 
 def self.get_next_code(asset_type, region)
+  puts "Region :"+region
   newcode=nil
   use_region=true
   if asset_type=='hut' then prefix='ZLH/' end
@@ -84,6 +87,7 @@ def self.get_next_code(asset_type, region)
     end
 
   end
+  puts "Code: "+newcode
   newcode
 end
 
@@ -180,14 +184,14 @@ def get_external_url
         if code[0..1].upcase=='VK' then
           url='https://parksnpeaks.org/getPark.php?actPark='+code+'&submit=Process'
         else
-          url='http://pota.us/#/parks/'+code
+          url='http://pota.app/#/park/'+code
         end  
       elsif code.match(/^[a-zA-Z]{1,2}[fF]{2}-\d{4}/) then
         #WWFF
         if code[0..1].upcase=='VK' then
           url='https://parksnpeaks.org/getPark.php?actPark='+code+'&submit=Process'
         else
-          url='http://wwff.co/directory/'
+          url='http://wwff.co/directory/?showRef='+code
         end
       elsif code.match(/^[a-zA-Z]{1,2}\d\/[a-zA-Z]{2}-\d{3}/) then
         #SOTA
@@ -440,6 +444,7 @@ def self.add_sota_peak(p)
     a.is_active=true
     a.name=p.name
     a.location=p.location
+    a.points=p.points
     a.altitude=p.alt
     a.save
     puts a.code
@@ -559,10 +564,13 @@ end
 
 def add_region
     if self.location then region=Region.find_by_sql [ %q{select id, sota_code, name from regions where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), "boundary");} ] else puts "ERROR: place without location. Name: "+self.name+", id: "+self.id.to_s end
-    if region and region.count>0 and self.region != region.first.sota_code then
+    if self.id and region and region.count>0 and self.region != region.first.sota_code then
       ActiveRecord::Base.connection.execute("update assets set region='"+region.first.sota_code+"' where id="+self.id.to_s)
     end
 
+    if region and region.count>0 and self.region != region.first.sota_code then
+      return region.first.sota_code
+    end
 end
 
 

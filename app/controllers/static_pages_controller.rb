@@ -65,26 +65,26 @@ class StaticPagesController < ApplicationController
       if current_user then tzid=current_user.timezone end
       @tz=Timezone.find(tzid)
 
-      url="https://api2.sota.org.uk/api/spots/50/all%7Cssb?client=sotawatch&user=anon"
-      spots=JSON.parse(open(url).read)
-      if spots then
-        zl_spots=spots.find_all { |l| l["associationCode"][0..1]=="ZL" }
-        vk_spots=spots.find_all { |l| l["associationCode"][0..1]=="VK" }
-        zlvk_sota_spots=(zl_spots)+(vk_spots)
-      else
+      #url="https://api2.sota.org.uk/api/spots/50/all%7Cssb?client=sotawatch&user=anon"
+      #spots=JSON.parse(open(url).read)
+      #if spots then
+     #   zl_spots=spots.find_all { |l| l["associationCode"][0..1]=="ZL" }
+     #   vk_spots=spots.find_all { |l| l["associationCode"][0..1]=="VK" }
+     #   zlvk_sota_spots=(zl_spots)+(vk_spots)
+     # else
         zlvk_sota_spots=[] 
-      end
+     # end
 
 
-      url="https://api.pota.us/spot/activator"
-      spots=JSON.parse(open(url).read)
-      if spots then
-        zl_spots=spots.find_all { |l| l["reference"][0..1]=="ZL" }
-        vk_spots=spots.find_all { |l| l["reference"][0..1]=="VK" }
-        zlvk_pota_spots=(zl_spots)+(vk_spots)
-      else
+     # url="https://api.pota.us/spot/activator"
+     # spots=JSON.parse(open(url).read)
+     # if spots then
+     #   zl_spots=spots.find_all { |l| l["reference"][0..1]=="ZL" }
+     #   vk_spots=spots.find_all { |l| l["reference"][0..1]=="VK" }
+     #   zlvk_pota_spots=(zl_spots)+(vk_spots)
+     # else
         zlvk_pota_spots=[] 
-      end
+     # end
 
       items=Item.where(:topic_id => 35, :item_type => "post").order(:created_at).reverse
       @hota_spots=[]
@@ -141,7 +141,7 @@ class StaticPagesController < ApplicationController
            type: "PnP: "+spot["actClass"]})
       end end
 
-      if @all_spots then @all_spots.sort_by!{|hsh| hsh[:time]}.sort_by!{|hsh| hsh[:date]}.reverse! end
+      if @all_spots then @all_spots.sort_by!{|hsh| hsh[:date].to_s+hsh[:time].to_s}.reverse! end
 
 
 
@@ -152,24 +152,24 @@ class StaticPagesController < ApplicationController
       if current_user then tzid=current_user.timezone end
       @tz=Timezone.find(tzid)
 
-      url="https://api2.sota.org.uk/api/alerts/12?client=sotawatch&user=anon"
-      alerts=JSON.parse(open(url).read)
-      if alerts then
-        zl_alerts=alerts.find_all { |l| l["associationCode"][0..1]=="ZL" }
-        vk_alerts=alerts.find_all { |l| l["associationCode"][0..1]=="VK" }
-        zlvk_sota_alerts=zl_alerts+vk_alerts
-      else
+     # url="https://api2.sota.org.uk/api/alerts/12?client=sotawatch&user=anon"
+     # alerts=JSON.parse(open(url).read)
+     # if alerts then
+     #   zl_alerts=alerts.find_all { |l| l["associationCode"][0..1]=="ZL" }
+     #   vk_alerts=alerts.find_all { |l| l["associationCode"][0..1]=="VK" }
+     #   zlvk_sota_alerts=zl_alerts+vk_alerts
+     # else
         zlvk_sota_alerts=[]
-      end
+     # end
 
-      pota_alerts=get_pota_alerts
-      if pota_alerts then
-        zl_alerts=pota_alerts.find_all { |l| l["Reference"][0..1]=="ZL" }
-        vk_alerts=pota_alerts.find_all { |l| l["Reference"][0..1]=="VK" }
-        zlvk_pota_alerts=zl_alerts+vk_alerts
-      else
+     # pota_alerts=get_pota_alerts
+     # if pota_alerts then
+     #   zl_alerts=pota_alerts.find_all { |l| l["Reference"][0..1]=="ZL" }
+     #   vk_alerts=pota_alerts.find_all { |l| l["Reference"][0..1]=="VK" }
+     #   zlvk_pota_alerts=zl_alerts+vk_alerts
+     # else
         zlvk_pota_alerts=[]
-      end
+     # end
 
       items=Item.where(:topic_id => 1, :item_type => "post").order(:created_at).reverse
       @hota_alerts=[]

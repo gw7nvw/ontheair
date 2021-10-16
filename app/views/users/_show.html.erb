@@ -104,7 +104,18 @@
          <td> <%=  link_to "Delete", '/users/'+@user.callsign+'/delete?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'delete__alert', :onclick => "linkHandler('delete_alert')"  %> </td>
 <% else %>
          <td> <%=  link_to "Add", '/users/'+@user.callsign+'/add?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'add_alert', :onclick => "linkHandler('add_alert')"  %> </td>
-     <% end %>
+<% end %>
+       </tr>
+       <tr>
+         <% topic=Topic.find_by_id(NEWS_TOPIC) %>
+         <td> NEWS </td>
+         <td> <%=if topic.subscribed(@user) then "Yes" else "No" end %></td>
+<% if topic.subscribed(@user) then %>
+         <td> <%=  link_to "Delete", '/users/'+@user.callsign+'/delete?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'delete__alert', :onclick => "linkHandler('delete_alert')"  %> </td>
+<% else %>
+         <td> <%=  link_to "Add", '/users/'+@user.callsign+'/add?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'add_alert', :onclick => "linkHandler('add_alert')"  %> </td>
+<% end %>
+       </tr>
    </table>
 <div class="erow">
    <div class="hrline">
