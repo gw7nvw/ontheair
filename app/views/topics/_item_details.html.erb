@@ -3,7 +3,7 @@
   <%=if @post then render 'posts/post_details' end%>
 <% elsif item.item_type=="image" then %>
   <% @image=item.image %>
-  <%=if @image then render 'images/image_details' end%>
+  <%=if @image then render 'photos/photo_details' end%>
 <% elsif item.item_type=="file" then %>
   <% @uploadedfile=item.file %>
   <%=if @uploadedfile then render 'files/file_details' end%>

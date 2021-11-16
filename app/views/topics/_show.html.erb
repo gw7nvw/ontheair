@@ -101,7 +101,7 @@
   <div class="name_pagination"> <%= will_paginate(@items) %></div>
 <% else %>
   <div style="color:red"><i>Please <%=link_to "sign in", signin_path,  remote: true,  :id => 'signin', :onclick => "linkHandler('signin')"%> or <%=link_to "sign up", signup_path,  remote: true,  :id => 'signup', :onclick => "linkHandler('signup')" %> to view posts in this topic</i></div>
-<% end %>`
+<% end %>
 </div>
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;

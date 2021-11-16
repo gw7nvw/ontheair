@@ -27,8 +27,10 @@ resources :users
 get 'users/:id/add', to: 'users#add'
 get 'users/:id/delete', to: 'users#delete'
 get 'images/:id/delete', to: 'images#delete'
+get 'photos/:id/delete', to: 'photos#delete'
 
 resources :posts, only: [:new, :create, :show, :edit, :update]
+resources :photos, only: [:new, :create, :show, :edit, :update]
 resources :topics, only: [:index, :new, :create, :show, :edit, :update]
 get 'posts/:id/delete', to: 'posts#delete'
 match '/queries/asset', to: 'queries#asset',    via:'get'

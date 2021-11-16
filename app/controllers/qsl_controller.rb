@@ -15,9 +15,13 @@ def show
   if cals=@contact.activator_asset_links then
     cals.each do |cal| 
       if cal.photos and cal.photos.count>0 then 
-        @pic_url="/proxy?url="+cal.photos[photo].link_url
+        if cal.photos[photo].link_url[0..3]=="http" then
+          @pic_url="/proxy?url="+cal.photos[photo].link_url
+        else 
+          @pic_url=cal.photos[photo].link_url
+        end
         @photo=photo
-        @maxphoto=cal.photos.count-1
+        @maxphoto=cal.photos.count
       end
     end
   end

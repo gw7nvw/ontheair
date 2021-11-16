@@ -644,7 +644,7 @@ def posted_photos
 end
 
 def photo_count
-  self.photos.count+self.posted_photos.count
+  self.photos.count
 end
 
 

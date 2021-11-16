@@ -190,39 +190,43 @@
    </div>
    <% if current_user %>
             <%=  link_to "Add Contacts", '/logs/new?asset1='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
-
    <% end %>
 
-   <% if @asset.hutbagger_link then %>
    <div class="erow">
-      <div class="hrline">
-         <hr noshade size="4">
-      </div>
+     <div class="hrline">
+       <hr noshade size="4">
+     </div>
    </div>
 
 
-  <div class="sectiontitle_bold" style="margin-bottom: 4px">Photos of this place on  <%=link_to "Hut  Bagger", @asset.hutbagger_link.url, class: 'link_to'%>:</div>
-  <div class="erow">
-    <% if !@asset.photo_count==0 %>
-      <p><i>No photos have been uploaded. Visit <%=link_to "hutbagger.co.nz", @asset.hutbagger_link.url, target: "_blank"%> to add one.</i></p>
-    <% end %>
-    <div class="photo-bar">
-     <div style="width:1000%">
-      <% @asset.photos.each do |photo| %>
-        <span>
-         <%=link_to (image_tag(photo.link_url.gsub(/large/,'small'))), @asset.hutbagger_link.url, :class => "photo", :target=>"_blank"%>
-        </span>
-      <% end %>
-      <% @asset.posted_photos.each do |photo| %>
-        <span>
-         <%=link_to (image_tag(photo.link_url.gsub(/large/,'small'))), 'posts/'+photo.post_id.to_s, :class => "photo", :remote=>true, :onclick => "linkHandler('edit')" %>
-        </span>
-      <% end %>
+   <div class="erow">
+     <div class="sectiontitle_bold" style="margin-bottom: 4px">Photos of this place</div>
+   </div>
+
+   <div class="erow">
+     <% if @asset.photo_count==0 %>
+       <p><i>No photos have been uploaded. </i><p>
+     <% end %>
+     <div class="photo-bar">
+       <div style="width:1000%">
+         <% @asset.photos.each do |photo| %>
+           <span>
+             <% if @asset.hutbagger_link then %>
+               <%=link_to (image_tag(photo.link_url.gsub(/large/,'small'))), @asset.hutbagger_link.url, :class => "photo", :target=>"_blank"%>
+             <% else %>
+               <%=link_to (image_tag(photo.link_url.gsub(/large/,'small'))), '/photos/'+photo.photo_id.to_s, :class => "photo", :remote=>true%>
+             <% end %>
+           </span>
+         <% end %>
+       </div>
      </div>
-    </div>
-  </div>
-  <% end %>
-</div>
+     <div class="erow">
+       <% if current_user then %>
+         <%=link_to "Add Photo", '/photos/new?asset='+@asset.safecode+'&topic_id='+PHOTO_TOPIC.to_s, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('photo')" %>
+       <% end %>
+     </div>
+   </div>
+ </div>
 
 <% @asset.parent_classes.each do |parent_class| %>
    <div class="erow">

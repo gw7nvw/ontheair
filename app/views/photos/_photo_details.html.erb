@@ -1,0 +1,39 @@
+<% if !@image.asset_codes then @image.asset_codes=@image.get_asset_codes end %>
+
+<div class="bordered_box">
+   <div class="box_header">
+      <p><div class="sectiontitle"><%=@image.title%></div>
+      </p>
+      <p>
+      <%= link_to @image.updated_by_name, '/users/'+@image.updated_by_name,remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
+      <%=if @image.updated_at > @image.created_at then " updated in " else " posted in " end %> 
+      <%=if @image.topic then @image.topic.name else "??" end %> on 
+      <%=if @image.updated_at then @image.updated_at.strftime("%Y-%m-%d") else "" end%>
+      </p>
+      <% if @image.asset_codes and @image.asset_codes.split(',').count>0 %>
+        <p>
+          <b>Places:</b> <% @image.asset_codes.split(",").each do |code| %>
+            <% asset=Asset.assets_from_code(code) %>
+            <% if asset and asset.count>0 and asset.first[:code]!=nil then %>
+              <% if asset.first[:external] then %>
+                <%=link_to "["+asset.first[:code]+"] ",asset.first[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">&nbsp
+              <% else %>
+               <%=link_to "["+asset.first[:code]+"} "+asset.first[:name],asset.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>&nbsp;
+              <% end %>
+            <% end %>
+          <% end %>
+        </p> 
+      <% end %>
+      <% if current_user and (current_user.id==@image.created_by_id or current_user.is_admin) then %>
+        <%=  link_to "Edit", '/photos/'+@image.id.to_s+'/edit', class: 'link_to', remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
+        <%= link_to "Delete", '/photos/'+@image.id.to_s+'/delete', confirm: "Delete photo: Are you sure?", class: 'link_to', remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+      <% end %>
+
+   </div>
+   <div class="box_contents">
+      <div class="sectiontext"><%=raw (@image.description).gsub(/(?<=<style type=\"text\/css\">).+(?=<\/style>)/m,'')%></div>
+      <% if @image.image_content_type %>
+          <%= link_to (image_tag @image.image.url(:original), style: 'max-height:480px;max-width:480px'), @image.image.url(:original), :target=>"_blank"%>
+      <% end %>
+  </div>
+ </div>

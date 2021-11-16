@@ -1,0 +1,99 @@
+<% if @topic then topic=@topic else topic=@image.topic end %>
+  <script type="text/javascript">
+     bkLib.onDomLoaded(startEdit);
+  
+    function startEdit() {
+      nicEditors.allTextAreas();
+    }
+  </script>
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.title = '... On The Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+</script>
+
+<div class="fullform">
+  <% if @image.id then photo_url='/photos/'+@image.id.to_s else photo_url='/photos' end %>
+  <%= form_for @image, url: photo_url, remote: true, :html => {:name => 'imageform'}  do |f| %>
+    <div id="actionbar" class="span7">
+      <div id="crumbs">
+        <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+        &nbsp;--&gt;&nbsp;
+        <%if @image.id%>
+          <b><%=link_to @image.title, '/images/'+@image.id.to_s%></b>
+          &nbsp;--&gt;&nbsp;
+          <b>Edit</b>
+        <% else %>
+          <b>New</b>
+        <% end %>
+      </div>
+      <div id="controls">
+        <% if @image.id %><% if params[:referring]=='index'%>
+            <%=  link_to "Cancel", '/photos', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+          <% else %>
+            <%=  link_to "Cancel", '/photos/'+@image.id.to_s, class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+        <% end %> <% end %>
+
+        <%=render 'map_controls'%>
+      </div>
+    </div>
+    <%= render 'shared/error_messages' %>	
+
+    <div id="right_scroll">
+      <%=hidden_field_tag(:topic_id, topic.id)%>
+      <%= render 'flash' %>
+      <%= render 'shared/error_messages' %>
+
+ 
+      <span>
+        <%=f.label :title %>
+        <%= f.text_field :title %>
+      </span>
+    
+      <%=f.label :description%>
+      <div id="editPanel"></div>
+        <span id="descrSpan">
+          <%= f.text_area :description %>
+        </span>
+      </div>      
+   
+      <span>
+        <%=f.label :Places %>
+        <%= f.text_field :asset_codes %>
+      </span>
+
+      <div id="attachments">
+        <div class="erow"><div class="sectiontitle">Attachments:</div></div>
+        <div class="erow" id="filename_form">
+          <div class="sectiontitle25">Filename:</div>
+          <%= f.file_field :image %>
+        </div>
+
+        <div class="erow">
+          <div class="hrline">
+             <hr noshade size="3">
+          </div>
+        </div>
+        <% if @image.id then %>
+          <%= link_to (image_tag @image.image.url(:original), style: 'max-height:480px;max-width:480px'), @image.image.url(:original), :target=>"_blank"%>
+        <% end %>
+      </div>
+
+      <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight" %>
+      <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@image.created_by_id)) %>
+        <%= f.submit "Delete Photo", confirm: "Delete image: Are you sure?", class: "btn btn-small btn-primary", id:  "deletebutton",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+      <% end %>
+   </div>
+  <% end %>
+</div>
+<script>
+
+function addmore(count) {
+  document.getElementById('row'+(count+1)).style="display:";
+}
+document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+
+  startEdit();
+</script>
+
