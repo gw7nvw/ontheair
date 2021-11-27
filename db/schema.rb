@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20211116031656) do
+ActiveRecord::Schema.define(version: 20211127084842) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -81,8 +81,8 @@ ActiveRecord::Schema.define(version: 20211116031656) do
     t.boolean  "is_active"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.spatial  "boundary",      limit: {:srid=>4326, :type=>"multi_polygon"}
-    t.spatial  "location",      limit: {:srid=>4326, :type=>"point"}
+    t.spatial  "boundary",                  limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "location",                  limit: {:srid=>4326, :type=>"point"}
     t.string   "safecode"
     t.string   "category"
     t.boolean  "minor"
@@ -96,10 +96,15 @@ ActiveRecord::Schema.define(version: 20211116031656) do
     t.string   "old_code"
     t.float    "area"
     t.integer  "points"
+    t.spatial  "boundary_quite_simplified", limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary_simplified",       limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
   end
 
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
+  add_index "assets", ["boundary"], :name => "assets_boundary_index", :spatial => true
   add_index "assets", ["code"], :name => "index_assets_on_code"
+  add_index "assets", ["location"], :name => "assets_location_index", :spatial => true
   add_index "assets", ["safecode"], :name => "index_assets_on_safecode"
 
   create_table "award_user_links", force: true do |t|

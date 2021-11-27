@@ -217,7 +217,7 @@ def create
 
 
         if params[:pnp]=="on" then 
-            res=@post.send_to_pnp(debug,@topic,params[:post][:referenced_date],params[:post][:referenced_time],nil)
+            res=@post.send_to_pnp(debug,@topic,@post.referenced_date.strftime('%Y-%m-%d'),@post.referenced_time.strftime('%H:%M'),'UTC')
             if res and res!="" then
               debugstart=res.body.index("INSERT")
               if debugstart then

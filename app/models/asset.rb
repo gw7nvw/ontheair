@@ -718,8 +718,14 @@ end
 
 def self.fix_invalid_polygons
     ActiveRecord::Base.connection.execute( "update assets set boundary=st_multi(ST_CollectionExtract(ST_MakeValid(boundary),3)) where id in (select id from assets where ST_IsValid(boundary)=false);")
-
+    ActiveRecord::Base.connection.execute( "update assets set boundary_simplified=st_multi(ST_CollectionExtract(ST_MakeValid(boundary_simplified),3)) where id in (select id from assets where ST_IsValid(boundary_simplified)=false);")
+    ActiveRecord::Base.connection.execute( "update assets set boundary_very_simplified=st_multi(ST_CollectionExtract(ST_MakeValid(boundary_very_simplified),3)) where id in (select id from assets where ST_IsValid(boundary_very_simplified)=false);")
 end
 
+def self.add_simple_boundaries
+    ActiveRecord::Base.connection.execute( 'update assets set boundary_simplified=ST_Simplify("boundary",0.002) where boundary_simplified is null;')
+    ActiveRecord::Base.connection.execute( 'update assets set boundary_very_simplified=ST_Simplify("boundary",0.02) where boundary_very_simplified is null;')
+    ActiveRecord::Base.connection.execute( 'update assets set boundary_quite_simplified=ST_Simplify("boundary",0.002) where boundary_quite_simplified is null;')
+end
 end
 

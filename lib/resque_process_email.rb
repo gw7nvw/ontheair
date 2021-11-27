@@ -17,7 +17,10 @@ class EmailReceive
        puts "DEBUG: ALERT" 
        posttype="alert"
      end 
-
+     if to[0..6].upcase=="ZL-SOTA" then
+       puts "DEBUG: ZL-SOTA"
+       posttype="zlsota"
+     end
     params = {
       :body     => body,
       :to       => to,
@@ -28,8 +31,12 @@ class EmailReceive
     puts "DEBUG from: "+from
     puts "DEBUG to: "+to
 
-    #check for correct format
-    if body["inr.ch"] then
+    # forward mail to zl-sota
+    if posttype=="zlsota" then
+       UserMailer.zlsota_mail(body.gsub(/https.*$/,'{link removed}'), subject).deliver
+    else 
+     #check for correct format
+     if body["inr.ch"] then
       msg=body.split('inr.ch')[0]
       msgs=msg.split(' ') 
       sub_callsign=msgs[0].upcase
@@ -91,6 +98,7 @@ class EmailReceive
       end
       @topic=Topic.find_by_id(topic_id)
       res=@post.send_to_pnp(debug,@topic,al_date,al_time,'UTC')
+     end
     end
   end
 end
