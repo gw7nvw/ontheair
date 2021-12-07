@@ -111,7 +111,9 @@
    </div>
    <% if @asset.minor then %>
    <div class="erow" id="email" style='color:#bb0000 !important'>
+      <span title="Places can be marked as invalid for a number of reasons. This includes duplicate place names, names of groups of islands and lakes that are included individually, reserves that are smaller than the minimum 10ha size, Queen's chain reserves, special purpose reserves, and others.">
       <div class="rowtitle" style='color:#bb0000'><%= "Valid for OnTheAir?" %></div>
+      </span>
       <div class="textext">No</div>
    </div>
    <% end %>

@@ -80,6 +80,12 @@
       <% else %>
         <%= f.check_box :is_active, :readonly => true%><br/><br/>
       <% end %>
+      <%= "Not valid for OnTheAir? " %><br/>
+      <% if current_user and (current_user.is_admin or current_user.is_modifier)%> 
+        <%= f.check_box :minor%><br/><br/>
+      <% else %>
+        <%= f.check_box :minor, :readonly => true%><br/><br/>
+      <% end %>
       <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-hightlight" %>
       <%  if(@submit_button == "Save Changes" and current_user and current_user.is_admin) %>
         <%= f.submit "Delete", confirm: "Delete asset: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>

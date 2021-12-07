@@ -2,11 +2,12 @@ class ApplicationController < ActionController::Base
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
-before_filter :set_cache_headers
+  before_filter :set_cache_headers
   before_filter :log_visit
 
   include SessionsHelper
   include RgeoHelper
+
 
   def signed_in_user
       redirect_to signin_url+"?referring_url="+URI.escape(request.fullpath), notice: "Please sign in." unless signed_in?

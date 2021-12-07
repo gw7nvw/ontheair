@@ -93,6 +93,11 @@ end
 def self.import(filestr,user)
   logs=[]
   count=0
+  #check encoding
+  if !filestr.valid_encoding? then
+    filestr=filestr.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
+  end
+
   # remove header
   if filestr["<EOH>"] or filestr["<eoh>"] then
     logbody=filestr.split(/<EOH>|<eoh>/)[1]
@@ -131,9 +136,16 @@ def self.import(filestr,user)
            len=key.split(':')[1]
            value=parm.split('>')[1]
            if len then value=value[0..len-1] end
+           puts "DEBUG: "+key.downcase
            case (key.downcase)
  
            when "station_callsign"
+              callsign=value.strip
+              #remove suffix
+              if callsign['/'] then callsign=Log.remove_suffix(callsign) end
+              protolog.callsign1=callsign
+              contact.callsign1=callsign
+           when "operator"
               callsign=value.strip
               #remove suffix
               if callsign['/'] then callsign=Log.remove_suffix(callsign) end
@@ -245,9 +257,10 @@ def self.import(filestr,user)
           end
        end
        if !logid then
-         puts "IMPORT: creating new log"
+         puts "IMPORT: creating new log ("+count.to_s+")"
          count=logs.count
          lstr=protolog.to_json
+         puts "DEBUG: "+lstr
          logs[count]=Log.new(JSON.parse(lstr))
          logs[count].save
          logs[count].reload
