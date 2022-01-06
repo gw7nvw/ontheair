@@ -1,0 +1,2 @@
+if (window.history.pushState!=null) window.history.pushState(null, '', '/vkassets?<%=raw(@parameters)%>');
+$('#right_panel').html("<%= escape_javascript(render(:partial => 'vkassets/index')).html_safe %>");

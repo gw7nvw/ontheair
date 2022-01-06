@@ -57,8 +57,34 @@ class Contact < ActiveRecord::Base
         end
       end
     end
-      
+     
+    self.add_child_codes 
   end
+
+ def get_all_asset1_codes
+   codes=self.asset1_codes
+   newcodes=codes
+   codes.each do |code|
+     newcodes=newcodes+Asset.child_codes_from_parent(code)
+     newcodes=newcodes+VkAsset.child_codes_from_parent(code)
+   end
+   newcodes.uniq
+ end
+
+ def get_all_asset2_codes
+   codes=self.asset2_codes
+   newcodes=codes
+   codes.each do |code|
+     newcodes=newcodes+Asset.child_codes_from_parent(code)
+     newcodes=newcodes+VkAsset.child_codes_from_parent(code)
+   end
+   newcodes.uniq
+ end
+
+ def add_child_codes
+   self.asset1_codes=self.get_all_asset1_codes
+   self.asset2_codes=self.get_all_asset2_codes
+ end
 
  def location1_text
   text=""

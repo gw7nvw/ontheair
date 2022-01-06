@@ -57,6 +57,7 @@ match "/contacts/:id/editlog", :to => "logs#editcontact", :via => "get"
 resources :contacts
 
 resources :assets
+resources :vkassets
 match "/assets/:id/associations", :to => "assets#associations", :via => "get"
 resources :huts
 resources :summits

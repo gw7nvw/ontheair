@@ -1,0 +1,118 @@
+<script> 
+   document.getElementById("page_status").innerHTML = '';
+   document.title = 'ZL On the Air'
+   document.getElementById('logo').innerHTML='ZL On The Air'
+
+</script>
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  "VK Places:", '/vkassets', remote: true,  :id => 'assets', :onclick => "linkHandler('assets')" %>
+     &nbsp;--&gt;&nbsp;
+     <b><%= @asset.name %></b>
+     </div>
+   <div id="controls">
+       <%=  link_to "Index", "/vkassets", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+       <%=render 'map_controls'%>
+   </div>
+</div>
+<div id="right_scroll">
+   <%= render 'flash' %>
+   <div class="erow" id="email">
+      <div class="rowtitle"><%= "Id:" %></div>
+      <% url=@asset.get_external_url %>
+      <% if url then %> 
+        <div class="rowtext"><%= link_to @asset.code, url, target: "_blank" %><img src="/assets/external-link-symbol.png"></div>
+      <% else %>
+        <div class="rowtext"><%= @asset.code %></div>
+      <% end %>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Name" %></div>
+      <div class="rowtext"> 
+        <%=link_to @asset.name, '/vkassets/'+@asset.get_safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+      </div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Class" %></div>
+      <div class="rowtext"> 
+        <%= @asset.award %>
+      </div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Type" %></div>
+      <div class="rowtext"> 
+        <%= @asset.site_type %>
+      </div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Lies within" %></div>
+      <div class="rowtext"> 
+          <ul style="list-style-type:none;padding:0;margin:0;">
+            <% if @asset.wwff_asset then %> <li>WWFF: <%= link_to @asset.wwff_asset.codename, @asset.wwff_asset.url, remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></li><% end %>
+            <% if @asset.pota_asset then %> <li>POTA: <%= link_to @asset.pota_asset.codename, @asset.pota_asset.url, remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></li><% end %>
+          </ul>
+      </div>
+   </div>
+   <div class="erow" id="state">
+      <div class="rowtitle">State</div>
+      <div class="rowtext"> 
+        <%=@asset.state%>
+      </div>
+   </div>
+   <div class="erow" id="region">
+      <div class="rowtitle">Region</div>
+      <div class="rowtext"> 
+        <%=@asset.region%>
+      </div>
+   </div>
+   <div class="erow" id="District">
+      <div class="rowtitle">District</div>
+      <div class="rowtext"> 
+        <%=@asset.district%>
+      </div>
+   </div>
+   <div class="erow" id="Shire">
+      <div class="rowtitle">Shire</div>
+      <div class="rowtext"> 
+        <%=@asset.shire_code%>
+      </div>
+   </div>
+
+   <div class="erow" id="location">
+      <div class="rowtitle"><%= "Location" %></div>
+      <% if @asset.location %>
+        <div class="rowtext"> <%= "WGS: "+@asset.location.x.to_s+", "+@asset.location.y.to_s %></div>
+      <% end %>
+   </div>
+
+   <div class="erow" id="Contains">
+      <div class="rowtitle">Contains</div>
+      <div class="rowtext">
+       <table>
+         <% @asset.parents.each do |parent| %>
+           <tr>
+             <td>
+                <%=parent.award%>
+             </td>
+             <td>
+                <%=link_to parent.codename, '/vkassets/'+parent.get_safecode, remote: true,  :id => 'parent'+parent.get_safecode, :onclick => "linkHandler('parent')"   %>
+             </td>
+           </tr>
+         <% end %>
+         </table>
+      </div>
+   </div>
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+
+<script>
+    document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>
+

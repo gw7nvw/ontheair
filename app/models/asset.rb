@@ -257,6 +257,12 @@ def self.add_parks
   end 
   true
 end
+
+def self.child_codes_from_parent(code)
+  code=code.upcase
+  codes=AssetLink.where(parent_code: code).pluck(:child_code)
+end
+
 def self.assets_from_code(codes)
   assets=[]
   if codes then 
@@ -268,6 +274,7 @@ def self.assets_from_code(codes)
     if code then
       code=code.upcase
       a=Asset.find_by(code: code.split(' ')[0])
+      va=VkAsset.find_by(code: code.split(' ')[0])
       if a then
           asset[:asset]=a
           asset[:url]=a.url
@@ -282,6 +289,16 @@ def self.assets_from_code(codes)
 
           if a.type then asset[:title]=a.type.display_name else puts "ERROR: cannot find type "+a.asset_type end
           if asset[:url][0]!='/' then asset[:url]='/'+asset[:url] end
+      elsif va then
+          asset[:asset]=va
+          asset[:url]='/vkassets/'+va.get_safecode
+          asset[:name]=va.name
+          asset[:external]=false
+          asset[:code]=va.code
+          asset[:type]=va.site_type
+          asset[:external_url]=va.get_external_url
+
+          asset[:title]=va.site_type
       elsif thecode=code.match(/^[a-zA-Z]{1,2}\d\/H[a-zA-Z]{2}-\d{3}/) then
         #HEMA
          puts "HEMA"

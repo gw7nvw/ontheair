@@ -1,0 +1,90 @@
+
+<script>
+   document.getElementById("page_status").innerHTML = '';
+   document.title = 'ZL On The Air';
+   document.getElementById('logo').innerHTML='ZL On The Air';
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=link_to "VK Places", '/vkassets', remote: true,  :id => 'assets', :onclick => "linkHandler('assets')" %>
+     &nbsp;--&gt;&nbsp;
+     <b><%=@asset_type%></b>
+     </div>
+   <div id="controls">
+       <%=render 'map_controls'%>
+   </div>
+</div>
+<div id="right_scroll">
+<%= render 'flash' %>
+
+
+<%= form_tag '/vkassets', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+  <br/>
+  <div class="rowtitle">Type:</div>
+  <div class="rowtext">
+    <%= collection_select( :asset_type, :to_s, ['All', 'POTA', 'SOTA', 'WWFF'], :to_s, :to_s) %>    
+  </div>
+  <div class="rowtitle">Find:</div>
+  <div class="rowtext">
+    <input type="text" name="searchtext" value='<%=@searchtext%>'/>
+  </div>
+  <div class="buttonshort">
+    <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small" %>
+    <%=  link_to "Clear", '/assets', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
+
+  </div>
+</form>
+
+<% if !@searchtext %>
+  Your search returned no results.
+
+<% else %>
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+  Your search returned <%=@count.to_s%> results.
+  <% if @count>99 then %>
+     This is more than can be displayed.  Please refine your search
+  <% end %>
+
+  <table class="places">
+      <tr>
+        <th>Type</th>
+        <th>ID</th>
+        <th>Name</th>
+        <th>State</th>
+        <th>Related</th>
+      </tr>
+    <% if @assets then @assets.each do |asset| %>
+      <tr>
+        <td><%=asset.award%></td>
+        <td><%=asset.code%></td>
+        <td>
+          <%= link_to asset.name, '/vkassets/'+asset.get_safecode, remote: true, :id => 'asset_link_'+asset.id.to_s, :onclick => "linkHandler('asset_link_"+asset.id.to_s+"')" %>
+        </td>
+        <td>
+            <%=asset.state%>
+        </td>
+        <td>
+          <ul style="list-style-type:none;padding:0;margin:0;">
+          <%if asset.children then %><% asset.children.each do |link|%>
+            <li><%= link_to link.codename, '/vkassets/'+link.get_safecode, remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></li>
+          <% end %><% end %>
+          </ul>
+        </td>
+      </tr>
+    <% end end %>
+</table>
+</div>
+
+<% end %>
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>

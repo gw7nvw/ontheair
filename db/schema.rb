@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20211127084842) do
+ActiveRecord::Schema.define(version: 20220105063153) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -103,6 +103,9 @@ ActiveRecord::Schema.define(version: 20211127084842) do
 
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
   add_index "assets", ["boundary"], :name => "assets_boundary_index", :spatial => true
+  add_index "assets", ["boundary_quite_simplified"], :name => "assets_boundary_quite_simplified_index", :spatial => true
+  add_index "assets", ["boundary_simplified"], :name => "assets_boundary_simplified_index", :spatial => true
+  add_index "assets", ["boundary_very_simplified"], :name => "assets_boundary_very_simplified_index", :spatial => true
   add_index "assets", ["code"], :name => "index_assets_on_code"
   add_index "assets", ["location"], :name => "assets_location_index", :spatial => true
   add_index "assets", ["safecode"], :name => "index_assets_on_safecode"
@@ -590,6 +593,24 @@ ActiveRecord::Schema.define(version: 20211127084842) do
 
   add_index "users", ["callsign"], :name => "index_users_on_callsign"
   add_index "users", ["remember_token"], :name => "index_users_on_remember_token"
+
+  create_table "vk_assets", force: true do |t|
+    t.string   "award"
+    t.string   "wwff_code"
+    t.string   "pota_code"
+    t.string   "shire_code"
+    t.string   "state"
+    t.string   "region"
+    t.string   "district"
+    t.string   "code"
+    t.string   "name"
+    t.string   "site_type"
+    t.float    "latitude"
+    t.float    "longitude"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.spatial  "location",   limit: {:srid=>4326, :type=>"point"}
+  end
 
   create_table "web_link_classes", force: true do |t|
     t.string   "name"

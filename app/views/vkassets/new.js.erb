@@ -1,0 +1,4 @@
+if (window.history.pushState!=null) window.history.pushState(null, 'ZL on the Air', '/assets/new?<%=@parameters%>');
+$('#right_panel').html("<%= escape_javascript(render(:partial => 'assets/new')).html_safe %>");
+
+

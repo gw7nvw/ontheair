@@ -1,0 +1,130 @@
+<script> 
+   document.getElementById("page_status").innerHTML = '';
+   document.title = 'ZL On the Air'
+   document.getElementById('logo').innerHTML='ZL On The Air'
+
+</script>
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  "Places:", '/assets', remote: true,  :id => 'assets', :onclick => "linkHandler('assets')" %>
+     &nbsp;--&gt;&nbsp;
+     <b><%= link_to @asset.name, '/'+@asset.url, remote: true, onclick: "linkHandler('asset');" %></b>
+     &nbsp;--&gt;&nbsp;
+     <b>Associations</b>
+   </div>
+   <div id="controls">
+       <%=  link_to "Index", "/assets", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+       <%=  link_to "Cancel", "/assets/"+@asset.safecode, class: "btn btn-small btn-primary", remote: true,  :id => 'asset', :onclick => "linkHandler('index')" %>
+       <%=render 'map_controls'%>
+   </div>
+</div>
+<div id="right_scroll">
+   <%= render 'flash' %>
+   <div class="erow" id="email">
+      <div class="rowtitle"><%= "Id:" %></div>
+      <div class="rowtext"><%= @asset.code %></div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Name" %></div>
+      <div class="rowtext"> 
+        <%=link_to @asset.name, '/assets/'+@asset.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+      </div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Class" %></div>
+      <div class="rowtext"> 
+        <%= @asset.type.display_name %>
+      </div>
+   </div>
+
+  <div class="sectontitle">This asset lies within:</div>
+  <div id="editlinks">
+    <%= form_for @newchild, remote: true, :html => {:name => 'childform'}, :namespace => 'c' do |f| %>
+      <table>
+        <% @asset.children.each do |aa| %>
+          <% asset_link=AssetLink.find_by(parent_code: @asset.code, child_code: aa.code) %>
+          <tr> 
+            <td><%= aa.type.display_name %></td>
+            <td><%= aa.code %></td>
+            <td><%= aa.name %></td>
+            <td><%=  link_to "Delete", '/asset_links/'+asset_link.id.to_s+'/delete?asset_code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('delete')" %></td>
+          </tr>
+        <% end %>
+        <tr>
+          <input id="asset_code" name="asset_code" type="hidden" value="<%=@asset.code%>">
+          <%= f.hidden_field :parent_code %>
+          <td>
+            <ul style="float: left;margin: 0" class="nav pull-left" id="menus">
+              <li id="fat-menu" class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                     Select <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><%= link_to "... from list", '/query?assetfield=child', :remote => true,  :onclick => "search_assets('child')" %></li>
+                  <li><%= link_to "... from map", '#',  :onclick => "site_selectPlace(null,'c_asset_link_child_code', 'c_asset_link_child_name', null, null, null, null, null, site_green_star,false);return false;" %></li>
+                  <li><%= link_to "Clear", '#',  :onclick => "site_clear_element(['c_asset_link_child_name', 'c_asset_link_child_code']);map_clear_scratch_layer(null,site_green_star);return false;" %></li>
+                </ul>
+              </li>
+            </ul>
+          </td>
+
+          <td> <%=f.text_field :child_code %></td>
+          <td> <%=text_field :c_asset_link, :child_name %></td>
+          <td> <%= f.submit 'Add', class: "btn btn-small btn-primary btn-hightlight" %> </td>
+        </tr>
+      </table>
+    <% end %>
+  </div>
+  <div class="sectontitle">This asset contains:</div>
+  <div id="editlinks">
+    <%= form_for @newparent, remote: true, :html => {:name => 'parentform'}, :namespace => 'p' do |f| %>
+    <table>
+    <% @asset.parents.each do |aa| %>
+        <% asset_link=AssetLink.find_by(parent_code: aa.code, child_code: @asset.code) %>
+        <tr> 
+          <td><%= aa.type.display_name %></td>
+          <td><%= aa.code %></td>
+          <td><%= aa.name %></td>
+          <td><%=  link_to "Delete", '/asset_links/'+asset_link.id.to_s+'/delete?asset_code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('delete')" %></td>
+        </tr>
+    <% end %>
+      <tr>
+        <%= f.hidden_field :child_code %>
+        <input id="asset_code" name="asset_code" type="hidden" value="<%=@asset.code%>">
+        <td>
+            <ul style="float: left;margin: 0" class="nav pull-left" id="menus">
+              <li id="fat-menu" class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                     Select <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><%= link_to "... from list", '/query?assetfield=parent', :remote => true,  :onclick => "search_assets('parent')" %></li>
+                  <li><%= link_to "... from map", '#',  :onclick => "site_selectPlace(null,'p_asset_link_parent_code', 'p_asset_link_parent_name', null, null, null, null, null, site_green_star,false);return false;" %></li>
+                  <li><%= link_to "Clear", '#',  :onclick => "site_clear_element(['p_asset_link_parent_code', 'p_asset_link_parent_name']);map_clear_scratch_layer(null,site_green_star);return false;" %></li>
+                </ul>
+              </li>
+            </ul>
+         </td>
+
+        <td> <%=f.text_field :parent_code %></td>
+        <td> <%=text_field :p_asset_link, :parent_name %></td>
+        <td> <%= f.submit 'Add', class: "btn btn-small btn-primary btn-hightlight" %> </td>
+      </tr>
+    </table>
+    <% end %>
+  </div>
+
+  <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+  </div>
+
+
+<script>
+    document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+    place_init('<%=@asset.location%>',  0);
+</script>
+
