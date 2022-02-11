@@ -197,6 +197,7 @@ function site_bigger_map() {
 }
 
 function reset_map_controllers(keep) {
+  document.body.classList.remove("loading");
 
 //deactiavte all other click controllers
   if(typeof(map_map)=='undefined') {
@@ -366,12 +367,7 @@ function site_centreMap() {
 
 function site_navigate_to(url) {
   if(url.length>0) {
-        BootstrapDialog.show({
-            title: "Select",
-            message: $('<div id="info_details2">Loading ...</div>'),
-            size: "size-small"
-        });
-
+        document.body.classList.add("loading");
         document.getElementById("page_status").innerHTML = 'Loading ...';
 
         $.ajax({
