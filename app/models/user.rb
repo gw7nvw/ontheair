@@ -136,7 +136,7 @@ def authenticated?(attribute, token)
       callsigns.push(c.callsign1) 
       callsigns.push(c.callsign2) 
     end
-    users=User.where(callsign: callsigns)
+    users=User.where(callsign: callsigns.uniq)
   end
 
   def self.update_scores
@@ -245,34 +245,36 @@ end
 
    contacts=Contact.where(callsign1: self.callsign)
    contacts.each do |c|
-     if c.asset1_codes then c.asset1_codes.each do |code|
-       a=Asset.find_by(code: code)
-       if (a) then
-         if a.type.keep_score==true and c.is_qrp1==true then 
-           activated_total['qrp'].push(a.code+" "+c.date.strftime('%Y')) 
-           activated['qrp'].push(a.code)
+     if c.date then 
+       if c.asset1_codes then c.asset1_codes.each do |code|
+         a=Asset.find_by(code: code)
+         if (a and a.is_active and !(a.minor==true)) then
+           if a.type.keep_score==true and c.is_qrp1==true then 
+             activated_total['qrp'].push(a.code+" "+c.date.strftime('%Y')) 
+               activated['qrp'].push(a.code)
+           end
+           activated_total[a.asset_type].push(a.code+" "+c.date.strftime('%Y'))
+           activated[a.asset_type].push(a.code)
          end
-         activated_total[a.asset_type].push(a.code+" "+c.date.strftime('%Y'))
-         activated[a.asset_type].push(a.code)
-       end
-     end end
-     if c.asset2_codes then c.asset2_codes.each do |code|
-       a=Asset.find_by(code: code)
-       if (a) then
-         if a.type.keep_score==true and c.is_qrp1==true then 
-           chased_total['qrp'].push(a.code+" "+c.localdate(nil).to_s) 
-           chased['qrp'].push(a.code) 
+       end end
+       if c.asset2_codes then c.asset2_codes.each do |code|
+         a=Asset.find_by(code: code)
+         if (a and a.is_active and !(a.minor==true)) then
+           if a.type.keep_score==true and c.is_qrp1==true then 
+             chased_total['qrp'].push(a.code+" "+c.localdate(nil).to_s) 
+             chased['qrp'].push(a.code) 
+           end
+           chased_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
+           chased[a.asset_type].push(a.code)
          end
-         chased_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
-         chased[a.asset_type].push(a.code)
-       end
-     end end
+       end end
+     end
    end
    contacts=Contact.where(callsign2: self.callsign)
    contacts.each do |c|
      if c.asset2_codes then c.asset2_codes.each do |code|
        a=Asset.find_by(code: code)
-       if (a) then
+       if (a and a.is_active and !(a.minor==true)) then
          #Activatons count once per year
          if a.type.keep_score==true and c.is_qrp2==true then 
            activated_total['qrp'].push(a.code+" "+c.date.strftime('%Y')) 
@@ -285,7 +287,7 @@ end
      end end
      if c.asset1_codes then c.asset1_codes.each do |code|
        a=Asset.find_by(code: code)
-       if (a) then
+       if (a and a.is_active and !(a.minor==true)) then
          if a.type.keep_score==true and c.is_qrp2==true then 
            chased_total['qrp'].push(a.code+" "+c.localdate(nil).to_s) 
            chased['qrp'].push(a.code) 

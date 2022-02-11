@@ -313,13 +313,13 @@ function site_init_styles() {
   site_lake_point_style=map_create_style("x", 6, "#0000ff", "#0000dd", 1);
   site_summits_style=map_create_style("triangle", 4, "#6c0dc4", "#6c0dc4", 1);
   site_contacts_style=map_create_style("circle", 4, "#2222ff", "#22ffff", 1);
-  site_highlight_polygon=map_create_style("", null, 'rgba(128,0,0,0.6)', "#660000", 2);
+  site_highlight_polygon=map_create_style("", null, 'rgba(128,0,0,0.3)', "#660000", 2);
   site_red_polygon=map_create_style("", null, 'rgba(256,0,0,0.6)', "#880000", 2);
   site_green_polygon=map_create_style("", null, 'rgba(0,256,0,0.6)', "#008800", 2);
-  site_pota_style=map_create_style('',0, 'rgba(128,0,128,0.4)', "#900090", 2);
-  site_wwff_style=map_create_style('',0, 'rgba(150,30,150,0.4)', "#901090", 2);
-  site_docland_styles[1]=map_create_style('',0, 'rgba(0,128,0,0.4)', "#005500", 2);
-  site_docland_styles[2]=map_create_style('',0, 'rgba(128,255,128,0.4)', "#20a020", 1);
+  site_pota_style=map_create_style('',0, 'rgba(128,0,128,0.2)', "#900090", 2);
+  site_wwff_style=map_create_style('',0, 'rgba(150,30,150,0.2)', "#901090", 2);
+  site_docland_styles[1]=map_create_style('',0, 'rgba(0,128,0,0.2)', "#005500", 2);
+  site_docland_styles[2]=map_create_style('',0, 'rgba(128,255,128,0.2)', "#20a020", 1);
 
 }
 
@@ -366,6 +366,12 @@ function site_centreMap() {
 
 function site_navigate_to(url) {
   if(url.length>0) {
+        BootstrapDialog.show({
+            title: "Select",
+            message: $('<div id="info_details2">Loading ...</div>'),
+            size: "size-small"
+        });
+
         document.getElementById("page_status").innerHTML = 'Loading ...';
 
         $.ajax({
@@ -564,12 +570,24 @@ function site_select_point_on_click_callback(evt) {
     }
 }   
    
+function closeAllHandlers() {
+    BootstrapDialog.closeAll();
+    document.body.classList.remove("loading");
+    document.getElementById("page_status").innerHTML = ''
+}
+
+function submitHandler(entity_name) {
+    document.body.classList.add("loading");
+    document.getElementById("page_status").innerHTML = 'Loading ...'
+}
 
 function linkHandler(entity_name) {
+    dialog=true;
     /* close the dropdown */
     $('.dropdown').removeClass('open');
 
-    /* show 'loading ...' */
+    document.body.classList.add("loading");
+
     document.getElementById("page_status").innerHTML = 'Loading ...'
 
     $(function() {
@@ -587,14 +605,28 @@ function linkHandler(entity_name) {
              $.rails.ajax(this);
            } else {
              document.getElementById("page_status").innerHTML = 'Timeout';
+             document.body.classList.remove("loading");
+             BootstrapDialog.show({
+               title: "Loading",
+               message: $('<div id="page_status2">Timeout</div>'),
+               size: "size-small"
+             });
            }
          }
          if(thrownError=="error") {
-           document.getElementById("page_status").innerHTML = 'Error';
+           document.getElementById("page_status").innerHTML = 'Error: '+jqXHR.status;
+           document.body.classList.remove("loading");
+           BootstrapDialog.show({
+             title: "Loading",
+             message: $('<div id="page_status2">Error: '+jqXHR.status+'</div>'),
+             size: "size-small"
+           });
+
          }
          if(thrownError=="success") {
            //if(site_map_size==0) site_bigger_map();
            document.getElementById("page_status").innerHTML = ''
+           document.body.classList.remove("loading");
          }
          lastUrl=document.URL;
        }
@@ -681,6 +713,8 @@ function search_parks(field) {
  return(false);
 }
 function submit_search() {
+   document.getElementById("info_results2").innerHTML = 'Searching...';
+
    return false;
 }
 

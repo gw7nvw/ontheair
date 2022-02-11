@@ -24,6 +24,31 @@ $lightblue: #4444ff;
     }
 }
 
+.spinner_modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .2 )
+    url('/assets/spinner.gif')
+    50% 50%
+    no-repeat;
+}
+body.loading {
+    overflow: hidden;
+}
+body.loading .spinner_modal {
+    display: block;
+}
+
+body {
+  background-color: #e1e1e1;
+}
+
+
 .hoverover { border-bottom: 1px dotted green; color: purple }
 
 .handsontable .truncated {

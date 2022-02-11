@@ -31,6 +31,17 @@ class UsersController < ApplicationController
       redirect_to '/'
     else 
       @contacts=Contact.find_by_sql [ "select * from contacts where (callsign1='"+@user.callsign+"' or callsign2='"+@user.callsign+"')" ]
+      as=SotaActivation.find_by_sql [ "select * from sota_activations where callsign='"+@user.callsign+"'" ]
+      as.each do |a|
+        c=Contact.new
+        c.callsign1=a.callsign
+        c.callsign2=""
+        c.date=a.date
+        c.time=a.date
+        asset=Asset.find_by(code: a.summit_code)
+        c.location1=asset.location
+        @contacts.push(c)
+      end
     end
 
   end

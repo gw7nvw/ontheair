@@ -61,7 +61,7 @@ def self.import
    elsif self.award=="SiOTA" then
      url='https://www.silosontheair.com/silos/#'+self.code.to_s
    elsif self.award=="POTA" then
-     url='http://pota.us/#/parks/'+self.code.to_s
+     url='https://pota.app/#/park/'+self.code.to_s
    elsif self.award=="SOTA" then
      url="https://summits.sota.org.uk/summit/"+self.code.to_s
    elsif self.award=="WWFF" then
@@ -88,7 +88,7 @@ def self.import
    asset=nil
    if self.award != "POTA" then
      if self.pota_code and self.pota_code.length>0 then
-       asset=VkAsset.find_by(code: self.code)
+       asset=VkAsset.find_by(code: self.pota_code)
        if asset then
          asset.award='POTA'
          asset.code=self.pota_code

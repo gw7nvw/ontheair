@@ -29,7 +29,7 @@
               <% if asset.first[:external] then %>
                 <%=link_to "["+asset.first[:code]+"] ",asset.first[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">&nbsp
               <% else %>
-               <%=link_to "["+asset.first[:code]+"} "+asset.first[:name],asset.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>&nbsp;
+               <%=link_to "["+asset.first[:code]+"] "+asset.first[:name],asset.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>&nbsp;
               <% end %>
             <% end %>
           <% end %>

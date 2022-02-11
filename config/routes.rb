@@ -58,12 +58,15 @@ resources :contacts
 
 resources :assets
 resources :vkassets
+resources :districts
+resources :regions
 match "/assets/:id/associations", :to => "assets#associations", :via => "get"
 resources :huts
 resources :summits
 resources :parks
 resources :islands
 
+  get 'assets/:id/refresh_sota', to: 'assets#refresh_sota'
   match '/sessions', to: 'static_pages#home',    via:'get'
   match '/signin',  to: 'sessions#new',         via: 'get'
   match '/signup',  to: 'users#new',         via: 'get'

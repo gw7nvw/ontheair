@@ -35,8 +35,8 @@ class Contact < ActiveRecord::Base
       assets=Asset.assets_from_code(self.loc_desc1)
       self.asset1_codes=[]
       assets.each do |asset| 
-        if asset and asset[:type]
-          if asset2_codes==[] then 
+        if asset and asset[:code] then
+          if asset1_codes==[] then 
             self.asset1_codes=["#{asset[:code].to_s}"]
           else
             self.asset1_codes.push("#{asset[:code]}")
@@ -48,7 +48,7 @@ class Contact < ActiveRecord::Base
       assets=Asset.assets_from_code(self.loc_desc2)
       self.asset2_codes=[]
       assets.each do |asset| 
-        if asset and asset[:type]
+        if asset and asset[:code] then
           if asset2_codes==[] then 
             self.asset2_codes=["#{asset[:code].to_s}"]
           else

@@ -1,0 +1,40 @@
+
+<script>
+   document.getElementById("page_status").innerHTML = '';
+   document.title = 'ZL On The Air';
+   document.getElementById('logo').innerHTML='ZL On The Air';
+   reset_map_controllers();
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=link_to "Regions", '/regions', remote: true,  :id => 'regions', :onclick => "linkHandler('regions')" %>
+     </div>
+   <div id="controls">
+       <%=render 'map_controls'%>
+   </div>
+</div>
+<div id="right_scroll">
+<%= render 'flash' %>
+
+  <table class="places">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+      </tr>
+    <% if @regions then @regions.each do |region| %>
+      <tr>
+        <td><%=region.sota_code%></td>
+        <td>
+          <%= link_to region.name, '/regions/'+region.sota_code, remote: true, :id => 'region_link_'+region.id.to_s, :onclick => "linkHandler('region_link_"+region.id.to_s+"')" %>
+        </td>
+      </tr>
+    <% end end %>
+</table>
+</div>
+
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>

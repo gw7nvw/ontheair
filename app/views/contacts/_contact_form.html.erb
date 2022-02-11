@@ -15,7 +15,7 @@
          <% end %>
        </div>
        <div id="controls">
-          <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight" %>
+          <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Saving ...');" %>
           <%  if(@submit_button == "Save Changes" and current_user) %>
             <%= f.submit "Delete", confirm: "Delete contact: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>
           <% end %>

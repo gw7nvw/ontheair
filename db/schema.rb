@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220105063153) do
+ActiveRecord::Schema.define(version: 20220130035642) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -99,6 +99,7 @@ ActiveRecord::Schema.define(version: 20220105063153) do
     t.spatial  "boundary_quite_simplified", limit: {:srid=>4326, :type=>"multi_polygon"}
     t.spatial  "boundary_simplified",       limit: {:srid=>4326, :type=>"multi_polygon"}
     t.spatial  "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.string   "district"
   end
 
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
@@ -205,6 +206,15 @@ ActiveRecord::Schema.define(version: 20220105063153) do
   end
 
   add_index "crownparks", ["WKT"], :name => "docparks_wkt_index", :spatial => true
+
+  create_table "districts", force: true do |t|
+    t.string   "district_code"
+    t.string   "region_code"
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.spatial  "boundary",      limit: {:srid=>4326, :type=>"multi_polygon"}
+  end
 
   create_table "hut_photo_links", force: true do |t|
     t.integer  "hut_id"
@@ -492,6 +502,16 @@ ActiveRecord::Schema.define(version: 20220105063153) do
 
   add_index "sessions", ["session_id"], :name => "index_sessions_on_session_id", :unique => true
   add_index "sessions", ["updated_at"], :name => "index_sessions_on_updated_at"
+
+  create_table "sota_activations", force: true do |t|
+    t.string   "callsign"
+    t.string   "summit_code"
+    t.integer  "summit_sota_id"
+    t.date     "date"
+    t.integer  "qso_count"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "sota_peaks", force: true do |t|
     t.string   "summit_code"

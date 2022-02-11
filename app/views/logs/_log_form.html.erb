@@ -82,7 +82,7 @@
         <%= f.hidden_field :x1 %>
         <%= f.hidden_field :y1 %>
         <%= f.hidden_field :location1 %>
-        <td colspan=8> <%= f.submit @submit_button, id: 'submit_button', class: "btn btn-small btn-primary btn-highlight" %></td>
+        <td colspan=8> <%= f.submit @submit_button, id: 'submit_button', class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Saving ...');" %></td>
 
       </table>
     <% end %>   

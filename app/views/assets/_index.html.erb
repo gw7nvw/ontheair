@@ -1,5 +1,6 @@
 
 <script>
+  closeAllHandlers();
   function page_set_layer_filter(name) {
    if (name=='all') {
      if (JSON.stringify(site_map_layers['point'])!=JSON.stringify(site_all_point_layers)) {
@@ -67,7 +68,7 @@
   </div>
   <% end %>
   <div class="buttonshort">
-    <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small" %>
+    <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
     <%=  link_to "Clear", '/assets', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
 
   </div>
@@ -85,7 +86,7 @@
    </div>
 
   Your search returned <%=@count.to_s%> results.
-  <% if @count>99 then %>
+  <% if @count>@limit then %>
      This is more than can be displayed.  Please refine your search
   <% end %>
 
@@ -118,7 +119,7 @@
         </td>
         <td>
           <ul style="list-style-type:none;padding:0;margin:0;">
-          <%if asset.children then %><% asset.children.each do |link|%>
+          <%if asset.childnames then %><% asset.childnames.each do |link|%>
             <li><%= link_to link.codename, '/assets/'+link.safecode, remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></li>
           <% end %><% end %>
           </ul>

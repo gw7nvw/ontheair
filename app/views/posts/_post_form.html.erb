@@ -168,7 +168,7 @@
         </div>
       <% end %>
 
-      <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight" %>
+      <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Posting ...');" %>
       <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@post.created_by_id)) %>
         <%= f.submit "Delete Post", confirm: "Delete post: Are you sure?", class: "btn btn-small btn-primary", id:  "deletebutton",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
       <% end %>

@@ -26,8 +26,10 @@ class Log < ActiveRecord::Base
    if c1 and c1.time then 
        thetime=c1.time 
        t=thetime.in_time_zone(tz.name).strftime('%Y-%m-%d') 
-   else
+   elsif self.date then
        t=self.date.strftime('%Y-%m-%d')
+   else 
+     t=""
    end
    t
  end
@@ -91,8 +93,12 @@ def self.migrate_to_distcodes
 end
 
 def self.import(filestr,user)
+
   logs=[]
+  errors=[]
+
   count=0
+  contactcount=0
   #check encoding
   if !filestr.valid_encoding? then
     filestr=filestr.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
@@ -117,6 +123,10 @@ def self.import(filestr,user)
   lines.each do |line|
      contact=Contact.new
      protolog=Log.new
+     if user then 
+       contact.callsign1=user.callsign 
+       protolog.callsign1=user.callsign
+     end
      logid=nil
      timestr=nil
      contact.asset1_codes=[]
@@ -262,9 +272,13 @@ def self.import(filestr,user)
          lstr=protolog.to_json
          puts "DEBUG: "+lstr
          logs[count]=Log.new(JSON.parse(lstr))
-         logs[count].save
-         logs[count].reload
-         logid=logs[count].id
+         if logs[count].save then
+           logs[count].reload
+           logid=logs[count].id
+         else
+           errors.push("Create log #{count.to_s} failed: "+logs[count].errors.messages.to_s)
+           return {logs: logs, errors: errors, success: false}
+         end
        end 
 
        contact.log_id=logid
@@ -273,15 +287,24 @@ def self.import(filestr,user)
        cstr=contact.to_json
        c=JSON.parse(cstr)
        contact=Contact.new(c)
-       if timestr then contact.time=protolog.date.strftime("%Y-%m-%d")+" "+timestr[0..1]+":"+timestr[2..3] end
-       if contact.callsign1 and !contact.save then 
+       if timestr and protolog.date then contact.time=protolog.date.strftime("%Y-%m-%d")+" "+timestr[0..1]+":"+timestr[2..3] end
+       contactcount+=1
+       if !contact.date then
          puts "IMPORT: save contact failed"
-         return(logs)
-       end 
+         errors.push("Save contact #{contactcount.to_s} failed: no date/time")
+#         return {logs: logs, errors: errors, success: false}
+       elsif (!contact.asset1_codes or contact.asset1_codes.count==0) and (!contact.asset2_codes or contact.asset2_codes.count==0) then
+         errors.push("Save contact #{contactcount.to_s} failed: no activation location for either party")
+#         return {logs: logs, errors: errors, success: false}
+       elsif !contact.save then 
+         puts "IMPORT: save contact failed"
+           errors.push("Save contact #{contactcount.to_s} failed: "+contact.errors.messages.to_s)
+#           return {logs: logs, errors: errors, success: false}
+       end
      end  #end of parms.each 
   end #end of lines.each 
    puts "IMPORT: clean exit"
-  logs
+   return {logs: logs, errors: errors, success: true}
 end
 
 def self.degs_from_deg_min_sec(value)

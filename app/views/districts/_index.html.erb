@@ -1,0 +1,47 @@
+
+<script>
+   document.getElementById("page_status").innerHTML = '';
+   document.title = 'ZL On The Air';
+   document.getElementById('logo').innerHTML='ZL On The Air';
+   reset_map_controllers();
+
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=link_to "Districts", '/districts', remote: true,  :id => 'districts', :onclick => "linkHandler('districts')" %>
+     </div>
+   <div id="controls">
+       <%=render 'map_controls'%>
+   </div>
+</div>
+<div id="right_scroll">
+<%= render 'flash' %>
+
+  <table class="places">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Region</th>
+      </tr>
+    <% if @districts then @districts.each do |district| %>
+      <tr>
+        <td><%=district.district_code%></td>
+        <td>
+          <%= link_to district.name, '/districts/'+district.district_code, remote: true, :id => 'district_link_'+district.id.to_s, :onclick => "linkHandler('district_link_"+district.id.to_s+"')" %>
+        </td>
+        <td>
+            <% if district.region_code and district.region_code!='' then %>
+              <%=link_to district.region_name, '/regions/'+district.region_code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+            <% end %>
+        </td>
+      </tr>
+    <% end end %>
+</table>
+</div>
+
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>

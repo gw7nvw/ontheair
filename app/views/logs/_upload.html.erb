@@ -16,7 +16,7 @@
   <div class="fullform">
     <%= render 'flash' %>
     <%= render 'shared/error_messages' %>
-    <div style='color:#ff0000'><p><i>This is a new experimental feature. Logs use a wide range of different parameters and this has not yet been tested with the full range of logging software. Feel free to try it out but please check your logs once uploaded and if necessary edt them.  Please report any issues to admin@ontheair.nz.  We currently support 1 activation per log or 1 day of chaser data per log.</i></p></div>
+    <div style='color:#ff0000'><p><i>This is a new experimental feature. Logs use a wide range of different parameters and this has not yet been tested with the full range of logging software. Feel free to try it out but please check your logs once uploaded and if necessary edt them.  Please report any issues to admin@ontheair.nz.  We currently recommend uploading 1 activation per log or 1 day of chaser data per log.</i></p></div>
     <div class="erow">
     <p>Select your log and click the 'Upload' button. Logs must be in ADIF format</p>
     <%  @submit_button = "Upload log" %>
@@ -32,7 +32,7 @@
           </div>
           <%= f.file_field :doc %>
 
-          <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-hightlight" %>
+          <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-hightlight", :onclick => "submitHandler('Uploading ...');" %>
         </div>
       <% end %>
     </div>

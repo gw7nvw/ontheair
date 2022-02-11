@@ -13,6 +13,9 @@
      <b><%= @asset.name %></b>
      </div>
    <div id="controls">
+       <% if @asset.asset_type=="summit" %>
+            <%=  link_to "Update from SOTA", '/assets/'+@asset.safecode+'/refresh_sota', class: "btn btn-small btn-primary", remote: true, :id => 'sota', :onclick => "linkHandler('sota')" %>
+       <% end %>
        <% if current_user and current_user.is_modifier %>
             <%=  link_to "Associate", '/assets/'+@asset.safecode+'/associations', class: "btn btn-small btn-primary", remote: true, :id => 'associations', :onclick => "linkHandler('associations')" %>
             <%=  link_to "Edit", '/assets/'+@asset.safecode+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
@@ -81,16 +84,32 @@
           <% end %></ul><% end %>
       </div>
    </div>
-   <div class="erow" id="district">
-      <div class="rowtitle">Region</div>
-      <div class="rowtext"> 
-        <%=@asset.region_name%>
-      </div>
-   </div>
+   <% if @asset.region %>
+     <div class="erow" id="district">
+        <div class="rowtitle">Region</div>
+        <div class="rowtext"> 
+          <%=link_to @asset.region_name, '/regions/'+@asset.region, remote: true,  :id => 'region', :onclick => "linkHandler('region')"  %>
+        </div>
+     </div>
+   <% end %>
+   <% if @asset.district %>
+     <div class="erow" id="district2">
+        <div class="rowtitle">District</div>
+        <div class="rowtext"> 
+          <%=link_to @asset.district_name, '/districts/'+@asset.district, remote: true,  :id => 'district', :onclick => "linkHandler('district')"  %>
+        </div>
+     </div>
+   <% end %>
    <div class="erow" id="location">
       <div class="rowtitle"><%= "Location" %></div>
       <% if @asset.x and @asset.y %>
-        <div class="rowtext"> <%= "NZTM2000: "+@asset.x.round().to_s+", "+@asset.y.round().to_s %><% if @asset.r_field("altitude") %><%=" (alt: "+@asset.r_field("altitude").to_i.to_s+"m)"%> <% end %> </div>
+        <div class="rowtext"> <%= "NZTM2000: "+@asset.x.round().to_s+", "+@asset.y.round().to_s %><% if @asset.altitude %><%=" (alt: "+@asset.altitude.to_s+"m)"%> <% end %> </div>
+      <% end %>
+   </div>
+   <div class="erow" id="maidenhead">
+      <div class="rowtitle"><%= "Maidenhead" %></div>
+      <% if @asset.x and @asset.y %>
+        <div class="rowtext"> <%= @asset.maidenhead %>
       <% end %>
    </div>
    <% if @asset.area then %>
@@ -121,7 +140,11 @@
    <% if c then %>
      <div class="erow" id="doc">
        <div class="rowtitle"><%= "First activation" %></div>
-       <div class="textext"><%=link_to c.callsign1+' -> '+c.callsign2+c.time.strftime(' (%Y-%m-%d)'), '/contacts/'+c.id.to_s, remote: true, :onclick => "linkHandler('first')" %></div>
+       <% if c.id>0 then%>
+         <div class="textext"><%=link_to c.callsign1+' -> '+c.callsign2+c.time.strftime(' (%Y-%m-%d)'), '/contacts/'+c.id.to_s, remote: true, :onclick => "linkHandler('first')" %></div>
+       <% else %>
+         <div class="textext"><%= c.callsign1+' -> '+c.callsign2+c.time.strftime(' (%Y-%m-%d)')%></div>
+       <% end %>
      </div>
    <% end %>
 
@@ -149,6 +172,7 @@
   </div>
   <% if signed_in? then %>
   <div id="editlinks" style="display:none">
+    <%= form_for @newlink, remote: true, :html => {:name => 'linkform'} do |f| %>
     <table>
     <% @asset.web_links.each do |awl| %>
         <tr> 
@@ -157,15 +181,14 @@
           <td><%=  link_to "Delete", '/asset_web_links/'+awl.id.to_s+'/delete', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('delete')" %></td>
         </tr>
     <% end %>
-    <%= form_for @newlink, remote: true, :html => {:name => 'linkform'} do |f| %>
       <tr>
         <%= f.hidden_field :asset_code %>
         <td><%= f.collection_select( :link_class, WebLinkClass.all.order(:name), :name, :display_name) %></td>
         <td> <%=f.text_field :url %></td>
         <td> <%= f.submit 'Add', class: "btn btn-small btn-primary btn-hightlight" %> </td>
       </tr>
-    <% end %>
   </table>
+  <% end %>
   </div>
   <% end %>
   <div class="erow">
@@ -174,17 +197,27 @@
       </div>
   </div>
 
-   <div class="sectiontitle_bold">Bagged by:</div>
+   <div class="sectiontitle_bold">Chased by:</div>
    <div class="erow">
-     <% if not @asset.baggers or (@asset.baggers and @asset.baggers.count==0) then %>
-        <i>No-one has bagged this place yet. Be the first!</i></br>
+     <% if not @asset.chasers or (@asset.chasers and @asset.chasers.count==0) then %>
+        <i>No-one has chased this place yet. Be the first!</i></br>
      <% end %>
 
-     <% @asset.baggers.each do |user| %>
+     <% @asset.chasers.each do |user| %>
          <%=link_to user.callsign, '/users/'+user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp
      <% end %>
    </div> 
 
+   <div class="sectiontitle_bold">Activated by:</div>
+   <div class="erow">
+     <% if not @asset.activators_including_sota or (@asset.activators_including_sota and @asset.activators_including_sota.count==0) then %>
+        <i>No-one has activated this place yet. Be the first!</i></br>
+     <% end %>
+
+     <% @asset.activators_including_sota.each do |user| %>
+         <%=link_to user.callsign, '/users/'+user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp
+     <% end %>
+   </div> 
    <div class="erow">
      <% if @asset.contacts and @asset.contacts.count>0 then %>
          <b><%=link_to @asset.contacts.count.to_s+" Contacts (View)", '/contacts/?asset='+@asset.safecode, remote: true,  :id => 'user', :onclick => "linkHandler('contact')" %></b>

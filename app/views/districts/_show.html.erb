@@ -1,0 +1,118 @@
+<script> 
+   document.getElementById("page_status").innerHTML = '';
+   document.title = 'ZL On the Air'
+   document.getElementById('logo').innerHTML='ZL On The Air'
+
+</script>
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  "Districts:", '/districts', remote: true,  :id => 'assets', :onclick => "linkHandler('assets')" %>
+     &nbsp;--&gt;&nbsp;
+     <b><%= @district.name %></b>
+     </div>
+   <div id="controls">
+       <%=  link_to "Index", "/districts", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+       <%=render 'map_controls'%>
+   </div>
+</div>
+<div id="right_scroll">
+   <%= render 'flash' %>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Code" %></div>
+      <div class="rowtext"> 
+        <%= @district.district_code %>
+      </div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Name" %></div>
+      <div class="rowtext"> 
+        <%=link_to @district.name, '/districts/'+@district.district_code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+      </div>
+   </div>
+   <div class="erow" id="name">
+      <div class="rowtitle"><%= "Region" %></div>
+      <div class="rowtext"> 
+        <% if @district.region_code and @district.region_code!='' then %>
+          <%=link_to @district.region_name, '/regions/'+@district.region_code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+        <% end %>
+      </div>
+   </div>
+   <div class="erow" id="callsign">
+      <div class="rowtitle"><%= "Stats for callsign" %></div>
+      <div class="rowtext"> 
+        <form action="/districts/<%=@district.district_code%>" method="get" accept-charset="UTF-8"  data-remote="true">
+          <input id="callsign" name="callsign" type="text" value=<%=@callsign%> />
+          <input name="commit" value="Show" type="submit" onclick="linkHandler(&#39;clear&#39;)">
+        </form>
+      </div>
+   </div>
+
+   <div class="erow">
+     <table>
+       <tr>
+         <th>Place</th>
+         <th>Code</th>
+         <th>Activated</th>
+         <th>Chased</th>
+       </tr>
+       <% @assets_by_class.each do |assets| %>
+         <%classname=assets.first.type.display_name%>
+         <tr>
+           <th colspan=4><b>
+             <%=classname%>
+           </b></th>
+         </tr>
+
+         <% count=0
+            activated=0
+            chased=0 %>
+       
+         <% assets.each do |asset| %>
+           <% act_true=asset.activated_by?(@callsign)
+              cha_true=asset.chased_by?(@callsign)
+              if cha_true then chased+=1  end
+              if act_true then activated+=1 end
+                count+=1 %>
+  
+           <tr>
+             <td>
+               <%=link_to asset.name, '/assets/'+asset.safecode, remote: true,  :id => 'parent'+asset.safecode, :onclick => "linkHandler('parent')"   %>
+             </td>
+             <td>
+               <%=asset.code%>
+             </td>
+             <td>
+                 <%=if act_true then "YES" end%>    
+             </td>
+             <td>    
+                 <%=if cha_true then "YES" end%>    
+             </td>
+           </tr>
+         <% end %>
+         <tr>
+           <td><b>Total <%=classname.pluralize%>:</b></td>
+           <td><b><%=count %></b></td>
+           <td><b><%=activated.to_s%></b> </td>
+           <td><b><%=chased.to_s%></b> </td>
+         </tr>
+       <% end%>
+     </table>
+   </div>
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+
+
+<script>
+    document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+    reset_map_controllers();
+    <% if @district.boundary then %>
+      place_init('<%=@district.boundary%>',  1,site_highlight_polygon);
+    <% end %>
+
+</script>
+

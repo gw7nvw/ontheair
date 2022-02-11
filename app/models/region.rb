@@ -40,4 +40,16 @@ names=[["Northland Region","NL"],
   end
  end; true
 end
+def assets
+  as=Asset.where(region: self.sota_code)
+end
+
+
+def assets_by_type(type)
+  as=Asset.where(region: self.sota_code, asset_type: type)
+end
+
+def districts
+  districts=District.where(region_code: self.sota_code)
+end
 end

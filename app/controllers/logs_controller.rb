@@ -23,12 +23,29 @@ end
 def savefile
     @upload = Upload.new(upload_params)
 
+    if current_user.is_admin and params[:callsign] then 
+      user=User.find_by(callsign: params[:callsign].upcase)
+    else
+      user=current_user
+    end
     success=@upload.save
 
 
     if success then
       logfile=File.read(@upload.doc.path)
-      logs=Log.import(logfile, current_user)
+      results=Log.import(logfile, user)
+      logs=results[:logs]
+      errors=results[:errors]
+      success=results[:success]
+      if errors and errors.count>0 then
+        flash[:error]=errors.to_s
+      end
+      if success==false then
+        @upload = Upload.new
+        render 'upload'
+        return
+      end
+
       puts logs
       logs.each do |log| puts log.to_json end
       if logs and logs.count>0 and logs.first.id then
@@ -36,8 +53,10 @@ def savefile
         flash[:success]="Uploaded "+logs.count.to_s+" days/QTHs of contacts into "+logs.count.to_s+" logs. Showing first" 
         redirect_to '/logs/'+logs.first.id.to_s
       else  
+         @upload = Upload.new
          flash[:error]=logs.map{|log| log.errors.full_messages.join(',')}.join(',')
          render 'upload'
+         return
       end
     else
       flash[:error]="Error creating file - "+@upload.errors.full_messages.join(',')

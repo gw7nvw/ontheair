@@ -18,6 +18,33 @@ def assign_calculated_fields
 #  self.add_links
 end
 
+def maidenhead
+  if self.location then
+    mhl="######"
+    abc="abcdefghijklmnopqrstuvwxyz"
+    lat=self.location.y
+    long=self.location.x
+    long=long+180
+    lat=lat+90
+  
+    long20=(long/20).to_i
+    lat10=(lat/10).to_i
+    long2=((long-(long20*20))/2).to_i
+    lat1=(lat-(lat10*10)).to_i
+    longm=((long-(long20*20+long2*2))*12).to_i
+    latm=((lat-(lat10*10+lat1))*24).to_i
+    mhl[0]=abc[long20].upcase
+    mhl[1]=abc[lat10].upcase
+    mhl[2]=long2.to_s 
+    mhl[3]=lat1.to_s 
+    mhl[4]=abc[longm]
+    mhl[5]=abc[latm]
+  else
+    mhl=""
+  end
+  mhl
+end
+
 def boundary_simple
    pp=Asset.find_by_sql [ "select id, ST_NPoints(boundary) as altitude from assets where id="+self.id.to_s ]
    if pp then 
@@ -27,6 +54,12 @@ def boundary_simple
      boundary=boundarys.first.boundary
      boundary
    else nil end
+end
+
+def district_name
+  name=""
+  r=District.find_by(district_code: self.district)
+  if r then r.name else "" end
 end
 
 def region_name
@@ -91,6 +124,41 @@ def self.get_next_code(asset_type, region)
   newcode
 end
 
+def activated_by?(callsign)
+  if callsign and callsign!="" and callsign!="*" then 
+    callsign=callsign.upcase
+
+    cs=Contact.find_by_sql [ ' select id from contacts where (callsign1 = ? and ? = ANY(asset1_codes)) or (callsign2 = ? and ? = ANY(asset2_codes)) limit 1 ', callsign, self.code, callsign, self.code ]
+
+    if self.asset_type="summit" then
+      as=SotaActivation.find_by_sql [ "select * from sota_activations where summit_code='"+self.code+"' and callsign = '"+callsign+"' limit 1" ]
+    end
+
+    if (as and as.count>0) or (cs and cs.count>0) then true else false end
+  else
+    cs=Contact.find_by_sql [ ' select id from contacts where (? = ANY(asset1_codes)) or (? = ANY(asset2_codes)) limit 1 ', self.code, self.code ]
+
+    if self.asset_type="summit" then
+      as=SotaActivation.find_by_sql [ "select * from sota_activations where summit_code='"+self.code+"' limit 1" ]
+    end
+    if (as and as.count>0) or (cs and cs.count>0) then true else false end
+  end
+
+end
+
+def chased_by?(callsign)
+  if callsign and callsign!="" and callsign!="*" then
+    callsign=callsign.upcase
+    cs=Contact.find_by_sql [ ' select id from contacts where (callsign2 = ? and ? = ANY(asset1_codes)) or (callsign1 = ? and ? = ANY(asset2_codes)) limit 1 ', callsign, self.code, callsign, self.code ]
+
+    if (cs and cs.count>0) then true else false end
+  else
+    cs=Contact.find_by_sql [ ' select id from contacts where (? = ANY(asset1_codes)) or (? = ANY(asset2_codes)) limit 1 ', self.code, self.code ]
+
+    if (cs and cs.count>0) then true else false end
+  end
+end
+
 def first_activated
  cs=Contact.find_by_sql [ ' select * from contacts where ? = ANY(asset1_codes) or ? = ANY(asset2_codes) order by date, time limit 1 ', self.code, self.code ]
  if cs and cs.count>0 then 
@@ -101,6 +169,20 @@ def first_activated
  else 
   c=nil 
  end
+
+ if self.asset_type="summit" then
+   as=SotaActivation.find_by_sql [ "select * from sota_activations where summit_code='"+self.code+"' order by date asc limit 1" ]
+   puts as[0]
+   if as and as[0] and (c==nil or as[0].date<c.date) then
+     c=Contact.new
+     c.callsign1=as[0].callsign
+     c.date=as[0].date
+     c.time=as[0].date
+     c.callsign2=""
+     c.id=-99
+   end
+ end
+
  c 
 end
 
@@ -141,9 +223,14 @@ def record
 end
 
 def children
-  als=AssetLink.where(parent_code: self.code)
-  codes=als.map{|al| al.child_code}
-  assets=Asset.where(:code => codes, is_active: true)
+  assets=Asset.find_by_sql [ " select a.* from asset_links al inner join assets a on a.code=al.child_code where al.parent_code = '#{self.code}' " ]
+#  als=AssetLink.where(parent_code: self.code)
+#  codes=als.map{|al| al.child_code}
+#  assets=Asset.where(:code => codes, is_active: true)
+end
+
+def childnames
+  assets=Asset.find_by_sql [ " select a.name, a.code, a.safecode from asset_links al inner join assets a on a.code=al.child_code where al.parent_code = '#{self.code}' " ]
 end
 
 def child_classes
@@ -329,7 +416,7 @@ def self.assets_from_code(codes)
           asset[:title]="POTA - VK"
         else
           asset[:name]=code
-          asset[:url]='http://pota.us/#/parks/'+thecode.to_s
+          asset[:url]='https://pota.app/#/park/'+thecode.to_s
           asset[:external]=true
           asset[:code]=thecode.to_s
           asset[:type]='pota park'
@@ -348,7 +435,7 @@ def self.assets_from_code(codes)
             asset[:title]="WWFF - VK"
         else
           asset[:name]=code
-          asset[:url]='http://wwff.co/directory/'
+          asset[:url]='https://wwff.co/directory/?showRef='+thecode.to_s
           asset[:external]=true
           asset[:code]=thecode.to_s
           asset[:type]='wwff park'
@@ -534,6 +621,17 @@ def self.add_regions
      end
 end
 
+def self.add_districts
+     count=0
+     a=Asset.first_by_id
+     while a do
+       puts a.code+" "+count.to_s
+       count+=1
+       a.add_district
+       a=Asset.next(a.id)
+     end
+end
+
 def self.add_links
   as=Asset.find_by_sql [ " select id,code from assets " ]
   as.each do |aa|
@@ -566,8 +664,19 @@ def activators
   users=User.where(callsign: callsigns).order(:callsign)
 end
 
+def sota_activators
+  cals=SotaActivation.where(summit_code: self.code);
+  callsigns=cals.map{|cal| cal.callsign};
+  users=User.where(callsign: callsigns).order(:callsign)
+end
+
+def activators_including_sota
+  users=self.sota_activators+self.activators
+  users.uniq
+end
+
 def chasers
-  cals=Contact.where("? = ANY(asset2_codes)", self.code);
+  cals=Contact.where("? = ANY(asset1_codes)", self.code);
   callsigns=cals.map{|cal| cal.callsign2};
   users=User.where(callsign: callsigns).order(:callsign)
 end
@@ -579,6 +688,10 @@ def baggers
   users=User.where(callsign: callsigns+callsigns2).order(:callsign)
 end
 
+def baggers_including_sota
+  users=self.baggers+self.sota_activators
+  users.uniq
+end
 def add_region
     if self.location then region=Region.find_by_sql [ %q{select id, sota_code, name from regions where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), "boundary");} ] else puts "ERROR: place without location. Name: "+self.name+", id: "+self.id.to_s end
     if self.id and region and region.count>0 and self.region != region.first.sota_code then
@@ -587,6 +700,17 @@ def add_region
 
     if region and region.count>0 and self.region != region.first.sota_code then
       return region.first.sota_code
+    end
+end
+
+def add_district
+    if self.location then district=District.find_by_sql [ %q{select id, district_code, name from districts where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), "boundary");} ] else puts "ERROR: place without location. Name: "+self.name+", id: "+self.id.to_s end
+    if self.id and district and district.count>0 and self.district != district.first.district_code then
+      ActiveRecord::Base.connection.execute("update assets set district='"+district.first.district_code+"' where id="+self.id.to_s)
+    end
+
+    if district and district.count>0 and self.district != district.first.district_code then
+      return district.first.district_code
     end
 end
 
@@ -744,5 +868,65 @@ def self.add_simple_boundaries
     ActiveRecord::Base.connection.execute( 'update assets set boundary_very_simplified=ST_Simplify("boundary",0.02) where boundary_very_simplified is null;')
     ActiveRecord::Base.connection.execute( 'update assets set boundary_quite_simplified=ST_Simplify("boundary",0.002) where boundary_quite_simplified is null;')
 end
+
+def self.get_altitudes_from_sota
+  summits=Asset.where(asset_type: "summit")
+  summits.each do |summit|
+    puts "Summit: "+summit.code
+    url = "https://api-db.sota.org.uk/admin/find_summit?search="+summit.code
+    data = JSON.parse(open(url, {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE}).read)
+    if data and data[0] then
+      summitId=data[0]["SummitId"]
+      url = "https://api-db.sota.org.uk/admin/summit_history?summitID="+summitId.to_s
+      data = JSON.parse(open(url, {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE}).read)
+      if data and data["info"] and data["info"].count>0 and data["info"][0]["AltM"] then
+        puts data["info"][0]["AltM"]
+        summit.altitude=data["info"][0]["AltM"].to_i
+        summit.save
+      end
+    end
+  end
+end
+
+def self.add_sota_activation_zones
+     count=0
+     a=Asset.first_by_id
+     while a do
+       count+=1
+       a.add_sota_activation_zone
+       a=Asset.next(a.id)
+     end
+end
+
+def add_sota_activation_zone
+  if self.asset_type=="summit" then
+    puts self.code
+    dem=Asset.get_custom_connection("cps",'dem30','mbriggs','littledog')
+    location=self.location
+    alt_min=self.altitude-25
+    alt_max=5000
+    dist_max=0.02 #degrees
+    puts " select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(st_clip(rast,  st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem30s) as foo where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326));"
+    az_poly=dem.exec_query(" select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(st_clip(rast,  st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem30s) as foo where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326));")   
+    if az_poly and az_poly.count>0 and az_poly.first["geom"] then
+      puts az_poly.first["geom"]
+      boundary=make_multipolygon(az_poly.first["geom"])
+      ActiveRecord::Base.connection.execute("update assets set boundary=ST_geomfromtext('#{boundary}',4326) where id=#{self.id.to_s};");  
+    end
+  end
+end
+
+def make_multipolygon(boundary)
+   if boundary[0..6]=="POLYGON" then boundary="MULTIPOLYGON ("+boundary[7..-1]+")" end
+   boundary
+end
+
+def self.get_custom_connection(identifier, dbname, dbuser, password)
+      eval("Custom_#{identifier} = Class::new(ActiveRecord::Base)")
+      eval("Custom_#{identifier}.establish_connection(:adapter=>'postgis', :database=>'#{dbname}', " +
+      ":username=>'#{dbuser}', :password=>'#{password}')")
+    return eval("Custom_#{identifier}.connection")
+end
+
 end
 

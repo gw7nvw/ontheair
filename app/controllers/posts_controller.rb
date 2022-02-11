@@ -123,7 +123,7 @@ def update
          @post.site=""
          @post.asset_codes.each do |ac|
           assets=Asset.assets_from_code(ac)
-          @post.site+=(if assets and assets.count>0 then assets.first[:name] else "" end)+" ["+ac+"] "
+          @post.site+=(if assets and assets.count>0 then assets.first[:name] else "" end)+" ["+ac+"] "+(if assets and assets.count>0 and assets.first[:asset] then "{"+assets.first[:asset].maidenhead+"}" else "" end)
         end
 
          if topic.is_alert then 
@@ -180,7 +180,7 @@ def create
       @post.site=""
       @post.asset_codes.each do |ac|
         assets=Asset.assets_from_code(ac)
-        @post.site+=(if assets and assets.count>0 then assets.first[:name]||"" else "" end)+" ["+ac+"] " 
+        @post.site+=(if assets and assets.count>0 then assets.first[:name]||"" else "" end)+" ["+ac+"] "+(if assets and assets.count>0 and assets.first[:asset] then "{"+assets.first[:asset].maidenhead+"}" else "" end)
       end
       @post.created_by_id = current_user.id #current_user.id
       @post.updated_by_id = current_user.id #current_user.id

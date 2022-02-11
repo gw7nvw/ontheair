@@ -28,10 +28,13 @@ class AssetsController < ApplicationController
 
     @searchtext=params[:searchtext] || ""
     if params[:searchtext] and params[:searchtext]!="" then
+       @limit=100
        whereclause=whereclause+" and (unaccent(lower(name)) like '%%"+@searchtext.downcase+"%%' or lower(code) like '%%"+@searchtext.downcase+"%%')"
+    else
+       @limit=20
     end
 
-    @assets=Asset.find_by_sql [ 'select id,name,code,asset_type,url,is_active,safecode,category,minor,description,region from assets where id in (select id from assets where '+whereclause+' order by name limit 100) order by name' ]
+    @assets=Asset.find_by_sql [ "select id,name,code,asset_type,url,is_active,safecode,category,minor,description,region from assets where id in (select id from assets where "+whereclause+" order by name limit #{@limit}) order by name" ]
     counts=Asset.find_by_sql [ 'select count(id) as id from assets where '+whereclause ]
     #counts=0;
     if counts and counts.first then @count=counts.first.id else @count=0 end
@@ -53,6 +56,14 @@ class AssetsController < ApplicationController
       format.csv { send_data asset_to_csv(Asset.all), filename: "assets-#{Date.today}.csv" }
     end
     end
+  end
+
+  def refresh_sota
+    a=Asset.find_by(safecode: params[:id])
+    if a and a.asset_type=='summit' then
+      SotaActivation.update_sota_activation(a)
+    end
+    redirect_to '/assets/'+params[:id]
   end
 
   def show
