@@ -1,3 +1,3 @@
-if (window.history.pushState!=null) window.history.pushState(null, 'Railhead Nursery', '/faq');
+if ((window.history.pushState!=null) && (site_back!=true)) window.history.pushState(null, 'Railhead Nursery', '/faq');
 $('#right_panel').html("<%= escape_javascript(render(:partial => 'static_pages/faq')).html_safe %>");
 
