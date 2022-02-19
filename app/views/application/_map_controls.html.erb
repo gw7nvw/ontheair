@@ -1,4 +1,4 @@
       <span id="larger_map"><%=  link_to "Larger Map", "#", class: "btn btn-small btn-primary",   :onclick => "site_bigger_map(); return false;"%></span>
       <span id="smaller_map"><%=  link_to "Smaller Map", "#", class: "btn btn-small btn-primary",   :onclick => "site_smaller_map(); return false;"%></span>
-      <span id="Back"><%=  link_to "Back", request.referrer, remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler('back_link')"%></span>
+      <span id="Back"><%=  link_to "Back", :back, remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler('back_link')"%></span>
 

@@ -4,6 +4,7 @@ site_show_huts=false;
 site_show_controls=false;
 def_zoom=0;
    document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
 </script>
 <div class="erow" data-turbolinks="false">
     <a id="export-png" class="btn btn-small btn-primary btn-highlight" download="myImage.jpg" onclick="download_img(this);"><i class="fa fa-download"></i>Download</a>

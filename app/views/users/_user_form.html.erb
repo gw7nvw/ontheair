@@ -1,6 +1,7 @@
 
 <script> 
    document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
 </script>
 
 <%= javascript_include_tag('rsa/jsbn', 'rsa/prng4', 'rsa/rng', 'rsa/rsa', 'rsa/base64', :cache => true) %>

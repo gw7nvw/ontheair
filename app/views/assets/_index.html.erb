@@ -17,6 +17,7 @@
 
    reset_map_controllers();
    document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
 //   site_toggle_assets(<%=@asset_type.display_name%>)
    page_set_layer_filter("<%=@asset_type.name%>");
    document.title = 'ZL On The Air';

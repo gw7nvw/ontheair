@@ -17,7 +17,8 @@
 #Timezone.create(name: "UTC", description: "UTC", difference: 0)
 #Timezone.create(name: "Pacific/Chatham", description: "Pacific / New Zealand / Chatham Islands", difference: 13.45)
 
-#Maplayer.create(name: "NZTM Topo 2009", baseurl: "http://au.mapspast.org.nz/topo50/", basemap: "mapspast", minzoom: 0, maxzoom: 10, imagetype: "png")
+#Maplayer.create(name: "NZTM Topo 2019", baseurl: "http://au.mapspast.org.nz/topo50-2019/", basemap: "mapspast", minzoom: 0, maxzoom: 10, imagetype: "png")
+#Maplayer.create(name: "Public Access Land", baseurl: "http://au.mapspast.org.nz/pal-2193/", basemap: "mapspast", minzoom: 0, maxzoom: 10, imagetype: "png")
 #Maplayer.create(name: "(LINZ) Topo50 latest", baseurl: "http://tiles-a.data-cdn.linz.govt.nz/services;key=d8c83efc690a4de4ab067eadb6ae95e4/tiles/v4/layer=767/EPSG:2193/", basemap: "linz", minzoom: 0, maxzoom: 16, imagetype: "png")
 #Maplayer.create(name: "(LINZ) Airphoto latest", baseurl: "http://tiles-a.data-cdn.linz.govt.nz/services;key=d8c83efc690a4de4ab067eadb6ae95e4/tiles/v4/set=2/EPSG:2193/", basemap: "linz", minzoom: 0, maxzoom: 16, imagetype: "png")
 

@@ -382,7 +382,8 @@ def self.assets_from_code(codes)
           asset[:name]=va.name
           asset[:external]=false
           asset[:code]=va.code
-          asset[:type]=va.site_type
+          asset[:type]=va.award
+          if asset[:type]=='SOTA' then asset[:type]='summit' end
           asset[:external_url]=va.get_external_url
 
           asset[:title]=va.site_type

@@ -1,3 +1,3 @@
-if (window.history.pushState!=null) window.history.pushState(null, '... On The Air', '/?<%=raw(@parameters)%>');
+if ((window.history.pushState!=null) && (site_back!=true)) window.history.pushState(null, '... On The Air', '/?<%=raw(@parameters)%>');
 $('#right_panel').html("<%= escape_javascript(render(:partial => 'static_pages/home')).html_safe %>");
 

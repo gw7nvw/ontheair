@@ -3,6 +3,7 @@ var contacts_layer;
 var site_show_polygon=true;
 var site_map_pinned=false;
 var site_show_controls=true;
+var site_back = false;
 
 var currZoom;
 
@@ -275,6 +276,7 @@ function site_set_map_filters(filter, list) {
 
 function site_add_layers() {
         map_add_raster_layer('NZTM Topo 2019', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
+        map_add_raster_layer('Public Access Land', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/pal-2193/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
         map_add_raster_layer('(LINZ) Topo50 latest','http://tiles-a.data-cdn.linz.govt.nz/services;key=d8c83efc690a4de4ab067eadb6ae95e4/tiles/v4/layer=767/EPSG:2193/{z}/{x}/{y}.png','linz',8690, 17);
         map_add_raster_layer('(LINZ) Airphoto latest','http://tiles-a.data-cdn.linz.govt.nz/services;key=d8c83efc690a4de4ab067eadb6ae95e4/tiles/v4/set=2/EPSG:2193/{z}/{x}/{y}.png','linz',8690, 17);
 
@@ -578,6 +580,12 @@ function submitHandler(entity_name) {
 }
 
 function linkHandler(entity_name) {
+    if(entity_name=='back_link') {
+      history.back();
+      site_back=true;
+    } else {
+       site_back=false;
+    } 
     dialog=true;
     /* close the dropdown */
     $('.dropdown').removeClass('open');
