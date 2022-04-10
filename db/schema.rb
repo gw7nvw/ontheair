@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220130035642) do
+ActiveRecord::Schema.define(version: 20220310215038) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -100,6 +100,8 @@ ActiveRecord::Schema.define(version: 20220130035642) do
     t.spatial  "boundary_simplified",       limit: {:srid=>4326, :type=>"multi_polygon"}
     t.spatial  "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
     t.string   "district"
+    t.integer  "nearest_road_id"
+    t.integer  "road_distance"
   end
 
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
@@ -493,6 +495,15 @@ ActiveRecord::Schema.define(version: 20220130035642) do
     t.spatial  "boundary",   limit: {:srid=>4326, :type=>"multi_polygon"}
   end
 
+  create_table "roads", force: true do |t|
+    t.string   "hway_num"
+    t.integer  "lane_count"
+    t.string   "surface"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.spatial  "linestring", limit: {:srid=>4326, :type=>"line_string"}
+  end
+
   create_table "sessions", force: true do |t|
     t.text     "session_id"
     t.text     "data"
@@ -631,6 +642,9 @@ ActiveRecord::Schema.define(version: 20220130035642) do
     t.datetime "updated_at"
     t.spatial  "location",   limit: {:srid=>4326, :type=>"point"}
   end
+
+  add_index "vk_assets", ["award"], :name => "vk_award_indx"
+  add_index "vk_assets", ["code"], :name => "vk_code_indx"
 
   create_table "web_link_classes", force: true do |t|
     t.string   "name"

@@ -160,6 +160,7 @@ end
     if rawmode=="FM" then found=true end
     if rawmode=="SSB" then found=true end
     if rawmode=="DSTAR" then found=true end
+    if rawmode=="FT8" then found=true end
    
     if found==true then mode=rawmode end
     mode 

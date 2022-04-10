@@ -72,7 +72,11 @@ def show
         if other_park_code then @wwff_log+="<sig_info:"+other_park_code.length.to_s+">"+other_park_code end
         @wwff_log+="<eor>\n"
       else 
-        @invalid_contacts.push(contact)
+        errors=""
+        if contact.band.length==0 then errors+="Invalid frequency / band: #{contact.frequency} MHz; " end
+        if contact.adif_mode.length==0 then errors+="Invalid mode: #{contact.mode}; " end
+        if !contact.time or contact.time.strftime("%H%M").length!=4 then errors+="Invalid time: #{contact.time.strftime("%H%M")}; " end
+        @invalid_contacts.push({contact: contact, message: errors})
       end
     end
     @filename=@user.callsign+"@"+park.code+"_"+lastdate+".adi" 

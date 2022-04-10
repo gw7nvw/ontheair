@@ -75,7 +75,7 @@
             </ul>
           </td>
           <td colspan=4 class="td-d">
-             <div id="asset_names" name="asset_names"><%=raw(@log.asset_code_names.join("<br/>"))%></div>
+             <div id="asset_names" name="asset_names"><%=if @log.asset_code_names then raw(@log.asset_code_names.join("<br/>")) else "" end%></div>
              <%= f.text_field :asset_codes, :readonly => true, :style => 'display:none' %>
           </td>
         </tr>

@@ -2,6 +2,7 @@ class Log < ActiveRecord::Base
   validates :callsign1,  presence: true, length: { maximum: 50 }
 
   belongs_to :createdBy, class_name: "User"
+  before_save { self.check_codes_in_location }
   before_save { remove_suffix }
   after_save { update_contacts }
   #attr_accessor :asset_names
@@ -12,8 +13,39 @@ class Log < ActiveRecord::Base
     asset_names
   end
 
+  def check_codes_in_location
+    if self.asset_codes==nil or self.asset_codes==[] or self.asset_codes==[""] then
+      assets=Asset.assets_from_code(self.loc_desc1)
+      self.asset_codes=[]
+      assets.each do |asset|
+        if asset and asset[:code] then
+          if asset_codes==[] then
+            self.asset_codes=["#{asset[:code].to_s}"]
+          else
+            self.asset_codes.push("#{asset[:code]}")
+          end
+        end
+      end
+    end
+    self.add_child_codes
+  end
+
+  def add_child_codes
+    self.asset_codes=self.get_all_asset_codes
+  end
+
+  def get_all_asset_codes
+    codes=self.asset_codes
+    newcodes=codes
+    codes.each do |code|
+      newcodes=newcodes+Asset.child_codes_from_parent(code)
+      newcodes=newcodes+VkAsset.child_codes_from_parent(code)
+    end
+    newcodes.uniq
+  end
+
   def asset_code_names
-    if self.asset_codes then asset_names=self.asset_codes.map{|ac| asset=Asset.assets_from_code(ac).first; "["+asset[:code]+"] "+asset[:name]} else asset_names=[] end
+    if self.asset_codes then asset_names=self.asset_codes.map{|ac| asset=Asset.assets_from_code(ac).first; if asset then "["+asset[:code]+"] "+asset[:name] else "" end} else asset_names=[] end
     if !asset_names then asset_names=[] end
     asset_names
   end
@@ -256,6 +288,7 @@ def self.import(filestr,user)
            end
           end #end of if
        end
+       protolog.check_codes_in_location
        logs.each do |log|
           puts "IMPORT: testing"
           puts log.callsign1, protolog.callsign1, log.callsign1==protolog.callsign1

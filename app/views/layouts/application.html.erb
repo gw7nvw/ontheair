@@ -1,3 +1,17 @@
+<% if @lite %>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="google-site-verification" content="KIylIchG3986annyXGfxBNJ-qMOJCDG2tdcuUMFPoO0" />
+  </head>
+  <body>
+      <%=yield %>
+  </body>
+</html>
+<% else %>
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -74,3 +88,5 @@ if( /Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent))
 <div class="spinner_modal"></div>
 </body>
 </html>
+
+<% end %>

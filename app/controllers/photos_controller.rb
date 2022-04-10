@@ -123,6 +123,7 @@ def update
         render 'show'
       end #delete or edit
     else
+      flash[:error]="Sorry - you don't have permissions to post to this topic"
       redirect_to '/'
     end # do we have permissions
   else

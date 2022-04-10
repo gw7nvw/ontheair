@@ -114,27 +114,37 @@
           <%= f.text_area :description %>
         </span>
       </div>      
-   
-      <% if topic.is_spot or topic.is_alert then %>
-        <span>
-          Publish on Parks n Peaks
-          <input id="pnp" name="pnp" type="checkbox" checked="checked">
-        </span>
-        <%  if(@submit_button != "Save Changes" and current_user and current_user.is_admin) %>
-          <span>
-            DEBUG PnP
-            <input id="debug" name="debug" type="checkbox">
-          </span>
+
+      <div class="erow">   
+        <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Posting ...');" %>
+        <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@post.created_by_id)) %>
+          <%= f.submit "Delete Post", confirm: "Delete post: Are you sure?", class: "btn btn-small btn-primary", id:  "deletebutton",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
         <% end %>
-      <% end %>
-      <%  if(@submit_button != "Save Changes" and current_user and current_user.is_admin) %>
+      </div>
 
-        <div class="erow">
-          <%=f.label "Check to supress emails of this post" %> 
-          <%= f.check_box :do_not_publish %>
-        </div>
-      <% end %>
-
+      <div class="erow">
+      <% if topic.is_spot or topic.is_alert then %>
+          <br/>
+          <span>
+            Publish on Parks n Peaks
+            <input id="pnp" name="pnp" type="checkbox" checked="checked">
+            </span>
+            <%  if(@submit_button != "Save Changes" and current_user and current_user.is_admin) %>
+            <span>
+              DEBUG PnP
+              <input id="debug" name="debug" type="checkbox">
+            </span>
+          <% end %>
+           
+        <% end %>
+        <%  if(@submit_button != "Save Changes" and current_user and current_user.is_admin) %>
+  
+          <div class="erow">
+            <%=f.label "Check to supress emails of this post" %> 
+            <%= f.check_box :do_not_publish %>
+          </div>
+        <% end %>
+      </div>
       <% if topic.allow_attachments then %>
         <div id="attachments">
           <div class="erow"><div class="sectiontitle">Attachments:</div></div>
@@ -169,10 +179,6 @@
         </div>
       <% end %>
 
-      <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Posting ...');" %>
-      <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@post.created_by_id)) %>
-        <%= f.submit "Delete Post", confirm: "Delete post: Are you sure?", class: "btn btn-small btn-primary", id:  "deletebutton",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
-      <% end %>
    </div>
   <% end %>
 </div>

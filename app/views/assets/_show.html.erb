@@ -70,6 +70,14 @@
         </div>
      </div>
    <% end %>
+   <% if @asset.road_distance and @asset.road_distance>0 %>
+     <div class="erow" id="name">
+        <div class="rowtitle"><%= "Distance from nearest road" %></div>
+        <div class="rowtext"> 
+          <%= (@asset.road_distance.to_d/1000) %>km
+        </div>
+     </div>
+   <% end %>
    <% if @asset.type.fields then @asset.type.fields.split(',').each do |f| %>
      
      <div class="erow" id="name">
@@ -110,7 +118,7 @@
    <div class="erow" id="maidenhead">
       <div class="rowtitle"><%= "Maidenhead" %></div>
       <% if @asset.x and @asset.y %>
-        <div class="rowtext"> <%= @asset.maidenhead %>
+        <div class="rowtext"> <%= @asset.maidenhead %> </div>
       <% end %>
    </div>
    <% if @asset.area then %>
@@ -250,7 +258,7 @@
              <% if @asset.hutbagger_link then %>
                <%=link_to (image_tag(photo.link_url.gsub(/large/,'small'))), @asset.hutbagger_link.url, :class => "photo", :target=>"_blank"%>
              <% else %>
-               <%=link_to (image_tag(photo.link_url.gsub(/large/,'small'))), '/photos/'+photo.photo_id.to_s, :class => "photo", :remote=>true%>
+               <%=link_to (image_tag(photo.photo.image.url(:thumb))), '/photos/'+photo.photo_id.to_s, :class => "photo", :remote=>true%>
              <% end %>
            </span>
          <% end %>

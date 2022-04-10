@@ -13,6 +13,10 @@ def assign_calculated_fields
   if self.safecode==nil or self.safecode=="" then
     self.safecode=self.code.gsub('/','_')
   end
+
+  if self.district==nil or self.district=="" then
+    self.district=self.add_district()
+  end
   self.url='assets/'+self.safecode
   #add links
 #  self.add_links
@@ -461,7 +465,9 @@ def self.assets_from_code(codes)
         asset[:type]='summit'
         asset[:title]="HEMA"
       end
-      assets.push(asset)
+      if asset[:code] then
+        assets.push(asset)
+      end
    end 
   end 
   end
