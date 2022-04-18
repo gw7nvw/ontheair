@@ -70,7 +70,7 @@ def index
   if signed_in? and current_user.is_admin then callsign=nil end
   if params[:user] then callsign=params[:user].upcase end
   whereclause="true"
-
+  if params[:asset] then whereclause="('#{params[:asset].gsub('_','/')}' = ANY(asset_codes))" end
   if callsign then @fulllogs=Log.find_by_sql [ "select * from logs where callsign1='"+callsign+"' and "+whereclause+" order by date desc" ]
   else @fulllogs=Log.find_by_sql [ "select * from logs where "+whereclause+" order by date desc" ]
   end

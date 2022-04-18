@@ -28,13 +28,14 @@ def show
      redirect_to '/'
     end
 
-    sls=@user.sota_logs
+    summit=Asset.find_by(code: params[:id].gsub('_','/'))
+
+    sls=@user.sota_contacts(summit.code)
     sota_log=nil
     sls.each do |sl|
       if sl[:summit].code==params[:id].gsub('_','/') and sl[:date].strftime("%Y%m%d")==params[:date] then sota_log=sl end
     end 
   
-    summit=Asset.find_by(code: params[:id].gsub('_','/'))
  
     @sota_log=""
     @invalid_contacts=[]

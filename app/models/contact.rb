@@ -15,11 +15,7 @@ class Contact < ActiveRecord::Base
   belongs_to :hut2, class_name: "Hut"
 
  
-
-  before_save { self.callsign1 = callsign1.upcase }
-  before_save { self.callsign2 = callsign2.upcase }
-  before_save { self.check_codes_in_location }
-  before_save { self.remove_suffix }
+  before_save { self.before_save_actions }
   after_save { self.update_scores }
   before_destroy { self.update_scores }
 
@@ -30,6 +26,13 @@ class Contact < ActiveRecord::Base
 #  validates :frequency,  presence: true
 #  validates :mode,  presence: true
 
+  def before_save_actions
+    self.callsign1 = callsign1.upcase
+    self.callsign2 = callsign2.upcase
+    self.check_codes_in_location
+    self.get_most_accurate_location
+    self.remove_suffix
+  end
   def check_codes_in_location
     if self.asset1_codes==nil or self.asset1_codes==[] or self.asset1_codes==[""] then
       assets=Asset.assets_from_code(self.loc_desc1)
@@ -84,6 +87,62 @@ class Contact < ActiveRecord::Base
  def add_child_codes
    self.asset1_codes=self.get_all_asset1_codes
    self.asset2_codes=self.get_all_asset2_codes
+ end
+
+ def get_most_accurate_location(force = false)
+   codes=self.asset1_codes
+   # only overwrite a location with a point locn
+   if self.location1 and force==false then loc_point=true else loc_point=false end
+   accuracy=999999999999
+   codes.each do |code|
+     puts "DEBUG: assessing code1 #{code}"
+     assets=Asset.find_by_sql [ " select id, asset_type, location, area from assets where code='#{code}' limit 1" ]
+     if assets then asset=assets.first else asset=nil end
+     if asset then
+       if asset.type.has_boundary then 
+         if loc_point==false and asset.area and asset.area<accuracy then 
+           self.location1=asset.location
+           accuracy=asset.area
+           loc_point=false
+           puts "DEBUG: Assigning polygon locn"
+         end
+       else
+         if loc_point==true then
+           puts "Multiple POINT locations found for contact #{self.id.to_s}"
+         end
+         self.location1=asset.location
+         loc_point=true
+         puts "DEBUG: Assigning point locn"
+       end
+     end 
+   end
+
+   codes=self.asset2_codes
+   # only overwrite a location with a point locn
+   if self.location2 and force==false then loc_point=true else loc_point=false end
+   accuracy=999999999999
+   codes.each do |code|
+     puts "DEBUG: assessing code2 #{code}"
+     assets=Asset.find_by_sql [ " select id, asset_type, location, area from assets where code='#{code}' limit 1" ]
+     if assets then asset=assets.first else asset=nil end
+     if asset then
+       if asset.type.has_boundary then
+         if loc_point==false and asset.area and asset.area<accuracy then 
+           self.location2=asset.location 
+           accuracy=asset.area
+           loc_point=false
+           puts "DEBUG: Assigning polygon locn"
+         end
+       else
+         if loc_point==true then
+             puts "Multiple POINT locations found for contact #{self.id.to_s}"
+         end
+         self.location2=asset.location
+         loc_point=true
+         puts "DEBUG: Assigning point locn"
+       end 
+     end
+   end
  end
 
  def location1_text

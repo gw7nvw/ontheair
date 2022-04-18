@@ -2,10 +2,15 @@ class Log < ActiveRecord::Base
   validates :callsign1,  presence: true, length: { maximum: 50 }
 
   belongs_to :createdBy, class_name: "User"
-  before_save { self.check_codes_in_location }
-  before_save { remove_suffix }
+  before_save { self.before_save_actions }
   after_save { update_contacts }
   #attr_accessor :asset_names
+
+  def before_save_actions
+    self.check_codes_in_location
+    self.get_most_accurate_location
+    self.remove_suffix
+  end
 
   def asset_names
     asset_names=self.assets.map{|asset| asset.name}
@@ -28,6 +33,38 @@ class Log < ActiveRecord::Base
       end
     end
     self.add_child_codes
+  end
+
+  def get_most_accurate_location(force = false)
+    codes=self.asset_codes
+   # only overwrite a location with a point locn
+   if self.location1 and force==false then loc_point=true else loc_point=false end
+
+    accuracy=999999999999
+    codes.each do |code|
+      puts "DEBUG: assessing code #{code}"
+      assets=Asset.find_by_sql [ " select id, asset_type, location, area from assets where code='#{code}' limit 1" ]
+
+      if assets then asset=assets.first else asset=nil end
+
+      if asset then
+        if asset.type.has_boundary then
+          if loc_point==false and asset.area and asset.area<accuracy then
+            self.location1=asset.location 
+            accuracy=asset.area
+            loc_point=false
+            puts "DEBUG: Assigning polygon locn"
+          end
+        else
+          if loc_point==true then
+            puts "Multiple POINT locations found for log #{self.id.to_s}"
+          end
+          locaton1=asset.location
+          loc_point=true
+          puts "DEBUG: Assigning point locn"
+        end
+      end
+    end
   end
 
   def add_child_codes
@@ -69,6 +106,15 @@ class Log < ActiveRecord::Base
   def assets
     if self.asset_codes then Asset.where(code: self.asset_codes) else [] end
   end  
+
+  def activator_asset_links
+    cals=[]
+    self.asset_codes.each do |code|
+      cal=Asset.find_by(code: code)
+      cals.push(cal)
+    end
+    cals
+  end
 
   def contacts
     if self.id and self.id>0 then

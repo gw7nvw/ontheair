@@ -210,24 +210,11 @@
    </div>
 </div>
 <script>
-  <% count=0 %>
-  <% if @contacts then @contacts.each do |contact| %>
-      <% if @user and @user.callsign==contact.callsign2 then
-            l2=contact.location1
-            l1=contact.location2
-         else
-            l1=contact.location1
-            l2=contact.location2
-         end
-      %>
-      <% if l1 then %> 
-           map_add_feature_from_wkt('<%=l1%>', 'EPSG:4326',site_green_circle);
-      <% end %>
-      <% if l2 then %>
-           map_add_feature_from_wkt('<%=l2%>', 'EPSG:4326',site_red_circle);
-      <% end %>
-
-      <% count=count+1 %>
+  <% if @chaseSites then @chaseSites.each do |chaseSite| %>
+           <% if chaseSite.location1 then %> map_add_feature_from_wkt('<%=chaseSite.location1%>', 'EPSG:4326',site_red_circle); <% end %>
+  <% end end %>
+  <% if @activationSites then @activationSites.each do |activationSite| %>
+           <% if activationSite.location1 then %> map_add_feature_from_wkt('<%=activationSite.location1%>', 'EPSG:4326',site_green_circle); <% end %>
   <% end end %>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>

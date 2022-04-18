@@ -132,4 +132,8 @@
 <script>
   closeAllHandlers();
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+  place_init('<%=@log.location1%>', 0, site_green_circle);
+  <% @log.contacts.each do |contact| %>
+    place_init('<%=contact.location2%>', 1, site_red_circle);
+  <% end %>
 </script>

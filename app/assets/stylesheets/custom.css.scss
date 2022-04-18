@@ -81,7 +81,30 @@ td, th {
     padding: 8px;
 }
 
-tr:nth-child(even){background-color: #f2f2f2}
+//tr:nth-child(even){background-color: #f2f2f2}
+tr {
+  background-color: #ffffff;
+}
+
+.cleanskin {
+  td, th {
+    border: none;
+    font-size: 0.9em;
+    line-height: 0.9em;
+    text-align: left;
+    padding-top: 6px;
+    padding-top: 6px;
+    padding-top: 6px;
+    padding-top: 6px;
+  }
+  tr:nth-child(even){
+    border-bottom: 1px solid #ddd;
+    padding-top: 2px;
+    td {
+      padding-top: 2px;
+    }
+  }
+}
 
 th {
     padding-top: 11px;

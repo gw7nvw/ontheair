@@ -284,7 +284,7 @@ def get_external_url
         else
           url='http://wwff.co/directory/?showRef='+code
         end
-      elsif code.match(/^[a-zA-Z]{1,2}\d\/[a-zA-Z]{2}-\d{3}/) then
+      elsif code.match(/^[a-zA-Z]{1,2}\d{0,1}\/[a-zA-Z]{2}-\d{3}/) then
         #SOTA
         url="https://summits.sota.org.uk/summit/"+code
       end
@@ -446,7 +446,7 @@ def self.assets_from_code(codes)
           asset[:type]='wwff park'
           asset[:title]="WWFF"
         end
-      elsif thecode=code.match(/^[a-zA-Z]{1,2}\d\/[a-zA-Z]{2}-\d{3}/) then
+      elsif thecode=code.match(/^[a-zA-Z]{1,2}\d{0,1}\/[a-zA-Z]{2}-\d{3}/) then
         #SOTA
          puts "SOTA"
         asset[:name]=code
@@ -663,6 +663,10 @@ end
 
 def contacts
   contacts=Contact.find_by_sql [ "select * from contacts c where '"+self.code+"' = ANY(asset1_codes) or '"+self.code+"' = ANY(asset2_codes);" ]
+end
+
+def logs
+  logs=Contact.find_by_sql [ "select * from logs l where '"+self.code+"' = ANY(asset_codes);" ]
 end
 
 def activators

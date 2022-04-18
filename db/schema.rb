@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220310215038) do
+ActiveRecord::Schema.define(version: 20220417230815) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -620,6 +620,7 @@ ActiveRecord::Schema.define(version: 20220310215038) do
     t.boolean  "outstanding"
     t.string   "pin"
     t.boolean  "allow_pnp_login"
+    t.datetime "hide_news_at"
   end
 
   add_index "users", ["callsign"], :name => "index_users_on_callsign"

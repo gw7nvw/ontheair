@@ -376,7 +376,41 @@ end
 
   def sota_logs
    sota_logs=[]
-   contacts1=Contact.where(callsign1: self.callsign)
+   logs=Log.find_by_sql [ "select * from logs where callsign1='#{self.callsign}'" ]
+
+   summits=[]
+   logs.each do |log|
+     assets=log.activator_asset_links
+     assets.each do |a|
+       if a and a.asset_type=="summit" then
+         summits.push(a)
+       end
+     end
+   end
+   summits=summits.uniq
+
+   summits.each do |summit| 
+     contactDates=Contact.find_by_sql [ "select distinct(date::date) from contacts where callsign1 = '#{self.callsign}' and '#{summit.code}' =ANY(asset1_codes)" ]
+     dates=contactDates.map { |contact| contact.date }
+       
+     dates.each do |date| 
+       contacts_submitted=Contact.find_by_sql [ "select count(id) as id from contacts where callsign1 = ? and ? = ANY(asset1_codes) and date >= ? and date < ? and submitted_to_sota=true", self.callsign,  summit.code, date.beginning_of_day,date.end_of_day ]
+       contacts_unsubmitted=Contact.find_by_sql [ "select count(id) as id from contacts where callsign1 = ? and ? = ANY(asset1_codes) and date >= ? and date < ? and submitted_to_sota is not true", self.callsign,  summit.code, date.beginning_of_day,date.end_of_day ]
+       contact_count=contacts_submitted.first.id+contacts_unsubmitted.first.id
+       if contacts_unsubmitted.first.id>0 then submitted=false else submitted=true end 
+       sota_logs.push({summit: summit, date: date, count: contact_count, submitted: submitted})  
+     end
+   end 
+  sota_logs
+  end
+
+  def sota_contacts(summitCode = nil)
+   sota_logs=[]
+   if summitCode then
+     contacts1=Contact.find_by_sql [ "select * from contacts where callsign1='#{self.callsign}' and '#{summitCode}' = ANY(asset1_codes); " ]
+   else 
+     contacts1=Contact.find_by_sql [ "select * from contacts where callsign1='#{self.callsign}';"]
+   end
 
    summits=[]
    contacts1.each do |contact|
