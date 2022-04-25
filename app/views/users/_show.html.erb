@@ -148,7 +148,7 @@
           <% as=Asset.where("code in ('"+(assets[:a][at.name]+assets[:c][at.name]).uniq.join("','")+"')") %>
           <% count=0; as.order(:name).each do |a|; count+=1 %>
             <%= if count>1 then ', ' end %>
-            <%=link_to a.name, '/assets/'+a.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+            <%=link_to a.name, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
           <% end %>
         </div>
 
@@ -157,7 +157,7 @@
           <% as=Asset.where("code in ('"+assets[:c][at.name].uniq.join("','")+"')") %>
           <% count=0; as.order(:name).each do |a|; count+=1 %>
             <%= if count>1 then ', ' end %>
-            <%=link_to a.name, '/assets/'+a.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+            <%=link_to a.name, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
           <% end %>
         </div>
   
@@ -166,7 +166,7 @@
           <% as=Asset.where("code in ('"+assets[:a][at.name].uniq.join("','")+"')") %>
           <% count=0; as.order(:name).each do |a|; count+=1 %>
             <%= if count>1 then ', ' end %>
-            <%=link_to a.name, '/assets/'+a.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+            <%=link_to a.name, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
           <% end %>
         </div>
       </ul>

@@ -1,3 +1,4 @@
-if ((window.history.pushState!=null) && (site_back!=true)) window.history.pushState(null, 'Spots On The Air', '/spots');
+if ((window.history.pushState!=null) && (site_back!=true)) window.history.pushState(null, 'Spots On The Air', '/spots?<%=raw(@parameters)%>');
+
 $('#right_panel').html("<%= escape_javascript(render(:partial => 'static_pages/spots')).html_safe %>");
 

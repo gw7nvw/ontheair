@@ -45,6 +45,20 @@ $(function () {
 </div>
 <div id="right_scroll">
   <%= render 'flash' %>
+  <%= form_tag '/logs', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+    <br/>
+    <div class="rowtitle">Show logs from (location code):</div>
+    <div class="rowtext">
+      <input type="text" name="asset" value='<%=@assetcode%>'/>
+      <input type="hidden" name="user" value='<%=@callsign%>'/>
+    </div>
+    <div class="buttonshort">
+      <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+      <%=  link_to "Clear", '/logs', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
+
+    </div>
+  </form>
+
   <%= render 'list' %>
 </div>
 

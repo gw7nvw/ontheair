@@ -4,7 +4,7 @@ var site_show_polygon=true;
 var site_map_pinned=false;
 var site_show_controls=true;
 var site_back = false;
-
+var refreshInterval;
 var currZoom;
 
 //callback variabkles
@@ -198,6 +198,8 @@ function site_bigger_map() {
 }
 
 function reset_map_controllers(keep) {
+  //clearInterval(refreshInterval);
+
   document.body.classList.remove("loading");
 
 //deactiavte all other click controllers
@@ -580,6 +582,8 @@ function submitHandler(entity_name) {
 }
 
 function linkHandler(entity_name) {
+    clearTimeout(refreshInterval);
+
     if(entity_name=='back_link') {
       history.back();
       site_back=true;

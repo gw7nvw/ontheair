@@ -66,12 +66,23 @@ def savefile
 end
 
 def index
-  if signed_in? then callsign=current_user.callsign end
-  if signed_in? and current_user.is_admin then callsign=nil end
-  if params[:user] then callsign=params[:user].upcase end
+  if signed_in? then @callsign=current_user.callsign end
+  if params[:user] and params[:user].length>0 then 
+     if params[:user].upcase=='ALL' then 
+       @callsign=nil
+     else
+       @callsign=params[:user].upcase 
+       @user=User.find_by(callsign: @callsign.upcase)
+     end
+  end
   whereclause="true"
-  if params[:asset] then whereclause="('#{params[:asset].gsub('_','/')}' = ANY(asset_codes))" end
-  if callsign then @fulllogs=Log.find_by_sql [ "select * from logs where callsign1='"+callsign+"' and "+whereclause+" order by date desc" ]
+  if params[:asset] and params[:asset].length>0 then 
+    whereclause="('#{params[:asset].upcase.gsub('_','/')}' = ANY(asset_codes))"
+    @asset=Asset.find_by(code: params[:asset].upcase)
+    if @asset then @assetcode=@asset.code end
+  end
+
+  if @callsign then @fulllogs=Log.find_by_sql [ "select * from logs where callsign1='"+@callsign+"' and "+whereclause+" order by date desc" ]
   else @fulllogs=Log.find_by_sql [ "select * from logs where "+whereclause+" order by date desc" ]
   end
   @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])

@@ -222,7 +222,10 @@ end
     if rawmode=="FT8" then found=true end
    
     if found==true then mode=rawmode end
-    mode 
+    if rawmode=="DATA" then 
+       mode = 'FT8'
+    end
+    mode
   end
 
   def set_defaults

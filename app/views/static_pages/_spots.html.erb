@@ -4,6 +4,20 @@
    document.body.classList.remove('loading');
    document.title = '... On The Air'
    document.getElementById('logo').innerHTML='... On The Air'
+   refreshInterval = setTimeout(function(){
+     $.ajax({
+       beforeSend: function (xhr){
+         xhr.setRequestHeader("Content-Type","application/javascript");
+         xhr.setRequestHeader("Accept","text/javascript");
+       },
+       type: "GET",
+       //timeout: 10000,
+       url: `/spots?<%=raw(@parameters)%>`,
+       complete: function() {
+       }
+     });
+  }, 60000) /* time in milliseconds (ie 60 seconds)*/
+
 </script>
 
 <div id="actionbar" class="span7">
@@ -22,25 +36,34 @@
 
 <div id="right_scroll">
   <%= render 'flash' %>
-  <h2>ZL/VK Spots <%=  link_to "Refresh", '/spots', remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler('refresh_link')"%></h2>
+  <h2>Spots</h2>
 
-  <% if @class then %>
-    <i>Showing class <%=@class%> only.  <%=link_to "Show All", '/spots', remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+  <p>Retrieved at <%=Time.now.in_time_zone(@tz.name).strftime("%H:%M:%S")%> (<%=@tz.name%>) <i><%=  link_to "Refresh Now", '/spots?'+raw(@parameters), remote: true,  :onclick => "linkHandler('refresh_link')"%> </i></p>
+  <p>
+  <% if @all then %>
+    Showing all DXCCs.  <i><%=link_to "Show only ZL/VK", "/spots?class=#{@class}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
   <% else %>
-    <i>Showing all spots.  Show only 
-       <%=link_to "ZLOTA", '/spots?class=ZLOTA', remote: true, id: "add",   :onclick => "linkHandler('add')"%>
-       <%=link_to "SOTA", '/spots?class=SOTA', remote: true, id: "add",   :onclick => "linkHandler('add')"%>
-       <%=link_to "POTA", '/spots?class=POTA', remote: true, id: "add",   :onclick => "linkHandler('add')"%>
-       <%=link_to "WWFF", '/spots?class=WWFF', remote: true, id: "add",   :onclick => "linkHandler('add')"%>
-    </i>
+    Showing VK/ZL spots.  <i><%=link_to "Show All DXCC", "/spots?all=true&class=#{@class}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+  <% end %>
+  ||
+  <% if @class and @class.length>0 then %>
+    Showing class <%=@class%> only.  <i><%=link_to "Show All Classes", "/spots?all=#{@all}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+  <% else %>
+    Showing all classes. <i>Show only 
+       <%=link_to "ZLOTA", "/spots?all=#{@all}&class=ZLOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "SOTA", "/spots?all=#{@all}&class=SOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "POTA", "/spots?all=#{@all}&class=POTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "WWFF", "/spots?all=#{@all}&class=WWFF", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
   <% end %> 
+  </i></p>
   <%= render 'spot_list' %>
 
 </div>
 <script>
 document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
-if ($(window).width() < 960) {
-        site_smaller_map();
-      }
+  
+ if ($(window).width() < 960) {
+   site_smaller_map();
+ }
 </script>
 

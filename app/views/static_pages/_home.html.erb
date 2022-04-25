@@ -47,7 +47,7 @@
 
   <h2>
     <%= link_to 'Latest ZL / VK Spots', '/spots', remote: true,:onclick => "linkHandler('results')"%>
-    <%=  link_to "Refresh", '/', remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler('home_link')"%>
+    <%=  link_to "Auto-Refresh", '/spots', remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler('refresh_link')"%>
   </h2>
   <% @all_spots=@all_spots[0..9] %>
   <%=render 'spot_list'%>

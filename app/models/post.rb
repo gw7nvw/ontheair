@@ -181,5 +181,36 @@ def send_to_pnp(debug,topic,idate,itime,tzname)
 end
 
 
+def send_to_pota(debug,topic,idate,itime,tzname)
+    res=""
+        if debug then dbtext="/DEBUG" else dbtext="" end
+        puts "DEBUG status: "+dbtext 
+        if topic.is_spot then
+            self.asset_codes.each do |ac|
+              code=ac.split(']')[0]
+              code=code.gsub('[','')
+#              if code[0..2]=="ZLP" or code[0..2]=="ZLH" or code[0..2]=="ZLI" then 
+#                 aa=Asset.find_by(code: code)
+#                 if aa then code=aa.old_code end
+#              end
+#                params = {"actClass" => pnp_class,"actCallsign" => (self.callsign||self.updated_by_name),"actSite" => code,"mode" => self.mode,"freq" => self.freq,"comments" => convert_to_text(self.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2"}
+params = {
+ 	"activator"=> (self.callsign||self.updated_by_name),
+	"comments"=> convert_to_text(self.description),
+	"frequency"=> self.freq*1000,
+	"mode"=> self.mode,
+	"reference"=> code,
+	"source"=> "Web",
+	"spotter"=> "ZLOTA"
+}
+                puts "sending spot to POTA"
+                res=send_spot_to_pota(params,dbtext)
+              end
+        end
+   res
 end
+
+
+end
+
 

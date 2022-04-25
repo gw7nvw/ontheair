@@ -11,23 +11,20 @@ class ContactsController < ApplicationController
       whereclause=whereclause+" and is_qrp1=true and is_qrp2=true"
     end
 
-    if params[:user] then
-         @fullcontacts=Contact.find_by_sql [ "select * from contacts where (callsign1='"+params[:user]+"' or callsign2='"+params[:user]+"') and "+whereclause+" order by date desc, time desc" ]
+    if params[:user] and params[:user].length>0 then
+         whereclause=whereclause+" and (callsign1='"+params[:user]+"' or callsign2='"+params[:user]+"')"
          @user=User.find_by(callsign: params[:user])
-    elsif params[:asset] then
-         @fullcontacts=Contact.find_by_sql [ "select c.* from contacts c where ('"+params[:asset].gsub('_','/')+"'=ANY(asset1_codes) or '"+params[:asset].gsub('_','/')+"'=ANY(asset2_codes)) and "+whereclause+" order by date desc, time desc" ]
-         @asset=Asset.find_by(code: params[:asset])
-    else 
-      if current_user  then
-       if  current_user.is_admin and params[:all] then
-         @fullcontacts=Contact.find_by_sql [ "select * from contacts where "+whereclause+" order by date desc, time desc" ]
-         @all=true
-       else
-         @fullcontacts=Contact.find_by_sql [ "select * from contacts where (callsign1='"+current_user.callsign+"' or callsign2='"+current_user.callsign+"') and "+whereclause+" order by date desc, time desc" ]
+         @callsign=params[:user].upcase
+    elsif current_user then
+         whereclause=whereclause+" and (callsign1='"+current_user.callsign+"' or callsign2='"+current_user.callsign+"')"
          @user=current_user
-       end
-     end
+    end
+    if params[:asset] and params[:asset].length>0 then
+         whereclause=whereclause+" and ('"+params[:asset].gsub('_','/')+"'=ANY(asset1_codes) or '"+params[:asset].gsub('_','/')+"'=ANY(asset2_codes))"
+         @asset=Asset.find_by(code: params[:asset].upcase)
+         if @asset then @assetcode=@asset.code end
     end 
+    @fullcontacts=Contact.find_by_sql [ "select * from contacts where "+whereclause+" order by date desc, time desc" ]
     if params[:user_qrp] and (params[:user] or signed_in?) then
       if params[:user] then callsign=params[:user].upcase else callsign=current_user.callsign.upcase end
       cs=[]
