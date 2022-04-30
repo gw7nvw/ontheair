@@ -9,7 +9,7 @@
       <%=if @post.topic then @post.topic.name else "??" end %> on 
       <%=if @post.updated_at then @post.updated_at.in_time_zone(@tz.name).strftime("%Y-%m-%d") else "" end%>
       </p>
-      <% if current_user and (current_user.id==@post.created_by_id or current_user.is_admin) then %>
+      <% if write_access? and (current_user.id==@post.created_by_id or current_user.is_admin) then %>
         <%=  link_to "Edit", '/posts/'+@post.id.to_s+'/edit', class: 'link_to', remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
         <%=  link_to "Reply", '/posts/new?topic_id='+@post.topic.id.to_s, class: 'link_to',remote: true,  :id => 'reply', :onclick => "linkHandler('reply')"%>
         <%= link_to "Delete", '/posts/'+@post.id.to_s+'/delete', confirm: "Delete post: Are you sure?", class: 'link_to', remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>

@@ -14,7 +14,7 @@
      <b>Posts</b>
 </div>
    <div id="controls">
-       <% if current_user and (current_user.is_admin or @post.created_by_id==current_user.id) %>
+       <% if write_access? and (current_user.is_admin or @post.created_by_id==current_user.id) %>
             <%=  link_to "Edit Post", '/posts/'+@post.id.to_s+'/edit', class: "btn btn-small btn-primary",remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
             <%=  link_to "Delete Post", '/posts/'+@post.id.to_s+'/delete', confirm: "Delete post: Are you sure?", class: "btn btn-small btn-primary",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')"%>
        <% end %>

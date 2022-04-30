@@ -31,6 +31,11 @@ end
   def signed_in?
     !current_user.nil?
   end
+
+  def write_access?
+    (!current_user.nil? and !current_user.read_only)
+  end
+
   def current_user=(user)
     @current_user = user
   end

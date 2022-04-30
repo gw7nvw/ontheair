@@ -33,10 +33,10 @@
      <b><%=@asset_type.display_name%></b>
      </div>
    <div id="controls">
-       <% if current_user and current_user.is_modifier %>
+       <% if write_access? and current_user.is_modifier %>
             <%=  link_to "Add", '/assets/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('add')" %>
        <% end %>
-       <% if current_user %>
+       <% if signed_in? %>
          <%=  link_to "Download", '/assets.csv?type='+@asset_type.name, class: "btn btn-small btn-primary"%>
        <% end %>
        <%=render 'map_controls'%>
@@ -62,7 +62,7 @@
     <input id="minor" name="minor" type="checkbox" value="0">
   </div>
   </div>
-  <% if current_user and (current_user.is_admin or current_user.is_modifier) then %>
+  <% if signed_in? and (current_user.is_admin or current_user.is_modifier) then %>
   <div class="rowtitle">Include inactive records:</div>
   <div class="rowtext">
     <input id="active" name="active" type="checkbox" value="0">
@@ -110,7 +110,7 @@
         <td><%=asset.type.display_name%></td>
         <td><%=asset.code%></td>
         <td>
-          <% if current_user and current_user.is_modifier %>
+          <% if write_access? and current_user.is_modifier %>
              <span title="Click to edit row"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/assets/'+asset.safecode+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
           <% end %>
           <%= link_to asset.name, '/assets/'+asset.safecode, remote: true, :id => 'asset_link_'+asset.id.to_s, :onclick => "linkHandler('asset_link_"+asset.id.to_s+"')" %>

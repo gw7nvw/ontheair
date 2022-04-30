@@ -23,14 +23,14 @@ $(function () {
           if @user then "("+@user.callsign+")" end%></b>
      </div>
    <div id="controls">
-       <% if current_user  %>
+       <% if write_access?  %>
             <% if current_user.is_admin then %>
               <%=  link_to "View All", '/logs/?all=true', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('all')" %>
             <% end %>
             <%=  link_to "Upload Log", '/logs/upload', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('upload')" %>
             <%=  link_to "Add Log", '/logs/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
        <% end %>
-       <% if current_user and ((@user and current_user.callsign==@user.callsign) or current_user.is_admin) %>
+       <% if signed_in? and ((@user and current_user.callsign==@user.callsign) or current_user.is_admin) %>
           <% 
             parmtext=""
             params.each do |k, v|

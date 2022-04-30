@@ -27,7 +27,7 @@
      <b>Spots</b>
 </div>
    <div id="controls">
-     <% if current_user  %>
+     <% if write_access?  %>
        <%=  link_to "Add Spot", "/posts/new?topic_id="+SPOT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
      <% end %>
      <%=render 'map_controls'%>

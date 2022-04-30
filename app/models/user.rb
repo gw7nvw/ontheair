@@ -30,6 +30,11 @@ class User < ActiveRecord::Base
     Digest::SHA1.hexdigest(token.to_s)
   end
 
+def valid_callsign? 
+  valid_callsign=/d?[a-zA-Z]{1,2}\d{1,4}[a-zA-Z]{1,4}/
+  if valid_callsign.match(self.callsign) then true else false end
+end
+
 def authenticated?(attribute, token)
      digest = send("#{attribute}_digest")
     return false if digest.nil?
@@ -404,12 +409,50 @@ end
   sota_logs
   end
 
+  def sota_chaser_contacts(summitCode = nil, resubmit = false)
+   sota_logs=[]
+   if resubmit==false then
+     whereclause=" and submitted_to_sota is not true"
+   else
+     whereclause=""
+   end
+ 
+   if summitCode then
+     contacts1=Contact.find_by_sql [ "select * from contacts where callsign1='#{self.callsign}' and '#{summitCode}' = ANY(asset2_codes))#{whereclause}; " ]
+   else
+     contacts1=Contact.find_by_sql [ "select * from contacts where callsign1='#{self.callsign}' and array_length(asset2_codes,1)>0#{whereclause};"]
+   end
+
+   chaser_contacts=[]
+   contacts1.each do |contact|
+     #do not include S2S
+     activated=false
+     contact.asset1_codes.each do |code|
+       if code.match(/^[a-zA-Z]{1,2}\d{0,1}\/[a-zA-Z]{2}-\d{3}/) then
+         activated=true
+       end
+     end
+     if activated==false then
+       contact.asset2_codes.each do |code|
+         if code.match(/^[a-zA-Z]{1,2}\d{0,1}\/[a-zA-Z]{2}-\d{3}/) then
+           chaser_contacts.push(contact)
+           chaser_contacts.last.asset2_codes=[code]
+         end
+       end
+     end
+   end
+
+   sota_logs[0]={summit: nil, date: nil, count: chaser_contacts.count, contacts: chaser_contacts.sort_by{|c| c.date} } 
+
+   sota_logs
+  end
+
   def sota_contacts(summitCode = nil)
    sota_logs=[]
    if summitCode then
      contacts1=Contact.find_by_sql [ "select * from contacts where callsign1='#{self.callsign}' and '#{summitCode}' = ANY(asset1_codes); " ]
    else 
-     contacts1=Contact.find_by_sql [ "select * from contacts where callsign1='#{self.callsign}';"]
+     contacts1=Contact.find_by_sql [ "select * from contacts where callsign1='#{self.callsign} and array_length(asset1_codes,1)>0';"]
    end
 
    summits=[]

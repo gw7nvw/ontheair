@@ -12,7 +12,7 @@
      <b>Home</b>
    </div>
    <div id="controls">
-     <% if current_user  %>
+     <% if write_access?  %>
        <%=  link_to "Add Spot", "/posts/new?topic_id="+SPOT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
        <%=  link_to "Add Alert", "/posts/new?topic_id="+ALERT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
      <% end %>
@@ -34,7 +34,7 @@
   </th>
 </table>
 
-<% if current_user and @items and @items.count>0 then %>
+<% if signed_in? and @items and @items.count>0 then %>
   <h2>
     <%=link_to "What's New", '/topics/4',  remote: true,:onclick => "linkHandler('more')"%> 
     <%=  link_to "Hide", 'ack_news', remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler('acklink')"%>

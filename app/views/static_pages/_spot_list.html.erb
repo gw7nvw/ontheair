@@ -2,7 +2,7 @@
   <% @all_spots.each do |spot| %>
     <tr>
       <td><%if spot[:type]=="ZLOTA" then %><b><%=spot[:type]%></b><% else %><%=spot[:type]%> <% end %></td>
-        <td><%=spot[:date]%> <%=spot[:time]%> (<%=@tz.name%>)</td>
+        <td><%=spot[:date]%> <b><%=spot[:time]%></b> (<%=@tz.name%>)</td>
         <td><b><%user=User.find_by_full_callsign(spot[:activatorCallsign])%>
           <% if user then %>
             <%=link_to spot[:activatorCallsign].upcase, "users/"+user.callsign, remote: true,  :id => 'link', :onclick => "linkHandler('link')" %>

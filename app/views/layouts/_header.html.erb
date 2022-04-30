@@ -49,7 +49,7 @@
                     <li><%= link_to "Results", '/results',  remote: true,  :id => 'results_link', :onclick => "linkHandler('results_link')"  %></li>
                   </ul>
                 </li>
-              <% if signed_in? %>
+              <% if write_access? %>
                 <li><%= link_to "My Logs", '/logs',  remote: true,  :id => 'logs_link', :onclick => "linkHandler('logs_link')"  %></li>
               <% end %>
                 <li><%= link_to "Spots", '/spots',  remote: true,  :id => 'spots_link', :onclick => "linkHandler('spots_link')"  %></li>
@@ -70,12 +70,14 @@
                 <ul class="dropdown-menu">
                   <li><%= link_to "Profile", '/users/'+current_user.callsign, remote: true, :id => 'profile_link', :onclick => "linkHandler('profile_link')" %></li>
                   <li class="divider"></li>
-                  <li><%= link_to "My Contacts", '/contacts',  remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')"  %></li>
-                  <li class="divider"></li>
-                  <li><%= link_to "SOTA Logs", '/sota_logs', remote: true, :id => 'sota_link', :onclick => "linkHandler('sota_link')" %></li>
-                  <li class="divider"></li>
-                  <li><%= link_to "POTA Logs", '/pota_logs', remote: true, :id => 'pota_link', :onclick => "linkHandler('pota_link')" %></li>
-                  <li><%= link_to "WWFF Logs", '/wwff_logs', remote: true, :id => 'wwff_link', :onclick => "linkHandler('wwff_link')" %></li>
+                  <% if write_access? then %>
+                    <li><%= link_to "My Contacts", '/contacts',  remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')"  %></li>
+                    <li class="divider"></li>
+                    <li><%= link_to "SOTA Logs", '/sota_logs', remote: true, :id => 'sota_link', :onclick => "linkHandler('sota_link')" %></li>
+                    <li class="divider"></li>
+                    <li><%= link_to "POTA Logs", '/pota_logs', remote: true, :id => 'pota_link', :onclick => "linkHandler('pota_link')" %></li>
+                    <li><%= link_to "WWFF Logs", '/wwff_logs', remote: true, :id => 'wwff_link', :onclick => "linkHandler('wwff_link')" %></li>
+                  <% end %>
                   <li class="divider"></li>                  
                   <% if current_user.mailuser and current_user.mailuser.length>0 then %>
                     <li><%= link_to "Mail"+mail, '/webmail' %></li>

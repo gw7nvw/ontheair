@@ -168,7 +168,7 @@ class StaticPagesController < ApplicationController
              activatorCallsign: spot["activator"],
              code: spot["reference"],
              name: spot["name"],
-             frequency: spot["frequency"],
+             frequency: ((spot["frequency"].to_f)/1000).to_s,
              mode: spot["mode"],
              comments: spot["comments"],
              type: "POTA"})

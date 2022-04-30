@@ -68,7 +68,7 @@ end
 def index
   if signed_in? then @callsign=current_user.callsign end
   if params[:user] and params[:user].length>0 then 
-     if params[:user].upcase=='ALL' then 
+     if params[:user].upcase=='ALL' or params[:all]===true then 
        @callsign=nil
      else
        @callsign=params[:user].upcase 

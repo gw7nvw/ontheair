@@ -60,8 +60,8 @@ class UsersController < ApplicationController
   end
 
  def create
-       password=params[:user][:password]
-       password_confirmation=params[:user][:password_confirmation]
+    password=params[:user][:password]
+    password_confirmation=params[:user][:password_confirmation]
 
     user = User.new(user_params)
     user.password=password
@@ -69,7 +69,9 @@ class UsersController < ApplicationController
 
     user.callsign=user.callsign.strip
     existing_user=User.find_by(callsign: user.callsign.upcase)
- 
+
+
+
     #register an auto_created user 
     if existing_user and not existing_user.activated then
       @user=existing_user 
@@ -85,11 +87,20 @@ class UsersController < ApplicationController
     @user.is_modifier=false
     @user.activated_at=Time.now()
 
+    if !@user.valid_callsign? then
+      @user.read_only=true
+    end
+
     if @user.save
       @user.reload
       sign_in @user
 
-      flash[:success] = "Welcome to the Huts on the Air"
+      if @user.read_only then
+        flash[:success]="Welcome to ZL on the Air. Your account has been created as a restricted, non-amatuer user. Contact admin@ontheair if you expected full access"
+      else
+        flash[:success] = "Welcome to ZL On the Air"
+      end
+
       redirect_to '/users/'+@user.callsign
     else
 #      key = OpenSSL::PKey::RSA.new(1024)

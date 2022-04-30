@@ -27,6 +27,15 @@
       <th>Contacts</th> 
       <th></th>
     </tr>
+    <% chaser_logs=@user.sota_chaser_contacts %>
+    <tr>
+        <td>CHASER</td>
+        <td></td>
+        <td></td>
+        <td><%=chaser_logs.first[:contacts].count%></td>        
+        <td><%=link_to "Sumbit New", '/sota_logs/chaser?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>&nbsp<%=link_to "Resend All", '/sota_logs/chaser?resubmit=true&user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%></td>
+    </tr>
+    <tr><td></td><td></td><td></td><td></td><td></td></tr>
     <% logdays=@user.sota_logs %>
     <% if logdays then logdays.sort_by!{|hsh| hsh[:date]}.reverse! end%>
     <% logdays.each do |logday| %>

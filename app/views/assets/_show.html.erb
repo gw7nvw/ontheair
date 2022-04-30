@@ -17,7 +17,7 @@
        <% if @asset.asset_type=="summit" %>
             <%=  link_to "Update from SOTA", '/assets/'+@asset.safecode+'/refresh_sota', class: "btn btn-small btn-primary", remote: true, :id => 'sota', :onclick => "linkHandler('sota')" %>
        <% end %>
-       <% if current_user and current_user.is_modifier %>
+       <% if write_access? and current_user.is_modifier %>
             <%=  link_to "Associate", '/assets/'+@asset.safecode+'/associations', class: "btn btn-small btn-primary", remote: true, :id => 'associations', :onclick => "linkHandler('associations')" %>
             <%=  link_to "Edit", '/assets/'+@asset.safecode+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
        <% end %>
@@ -165,7 +165,7 @@
    </div>
 
    <div class="erow"><div class="sectiontitle_bold">Links:</div>&nbsp;        
-     <% if current_user %>
+     <% if write_access? %>
        <%=  link_to "(Edit)", '#', class: 'link_to', :id => 'edit', :onclick => "editlinks(); return(false)"%>
      <%end%>
    </div>
@@ -179,7 +179,7 @@
    
    <% end %>
   </div>
-  <% if signed_in? then %>
+  <% if write_access? then %>
   <div id="editlinks" style="display:none">
     <%= form_for @newlink, remote: true, :html => {:name => 'linkform'} do |f| %>
     <table>
@@ -235,7 +235,7 @@
          <b><%=@asset.contacts.count.to_s+" Contacts "%><%=link_to "(View)", '/contacts/?asset='+@asset.safecode, remote: true,  :id => 'user', :onclick => "linkHandler('contact')" %></b>
      <% end %>
    </div>
-   <% if current_user %>
+   <% if write_access? %>
             <%=  link_to "Add Contacts", '/logs/new?asset1='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
    <% end %>
 
@@ -268,7 +268,7 @@
        </div>
      </div>
      <div class="erow">
-       <% if current_user then %>
+       <% if write_access? then %>
          <%=link_to "Add Photo", '/photos/new?asset='+@asset.safecode+'&topic_id='+PHOTO_TOPIC.to_s, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('photo')" %>
        <% end %>
      </div>

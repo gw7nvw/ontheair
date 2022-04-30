@@ -29,10 +29,10 @@
      <% end %>  
 </div>
    <div id="controls">
-       <% if current_user and (current_user.is_admin or (@topic.is_public or (@topic.is_owners and current_user.id == @topic.owner_id))) %>
+       <% if write_access? and (current_user.is_admin or (@topic.is_public or (@topic.is_owners and current_user.id == @topic.owner_id))) %>
             <%=  link_to "New post", '/posts/new/?topic_id='+@topic.url, class: "btn btn-small btn-primary",  remote: true,  :id => 'new', :onclick => "linkHandler('new')"%>
        <% end %>
-       <% if current_user and (current_user.is_admin or (current_user.id == @topic.owner_id)) %>
+       <% if write_access? and (current_user.is_admin or (current_user.id == @topic.owner_id)) %>
             <%=  link_to "Edit Topic", '/topics/'+@topic.url+'/edit', class: "btn btn-small btn-primary",  remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
        <% end %>
        <%=  link_to "Index", "/topics", class: "btn btn-small btn-primary",  remote: true,  :id => 'index', :onclick => "linkHandler('index')"%>
@@ -95,6 +95,19 @@
 <% end %>
   <h2>Latest posts</h2>
 <% if (@topic.is_members_only and current_user) or !@topic.is_members_only then %>
+
+  <ul>
+    <% @items.each do |item| %>
+      <li><%=link_to item.end_item.title, "#post"+item.id.to_s %></li>
+    <% end %>
+  </ul>
+
+  <div class="erow">
+     <div class="hrline">
+        <hr noshade size="4">
+     </div>
+  </div>
+
   <div class="name_pagination"> <%= will_paginate(@items) %></div>
   <% @items.each do |item| %>
     <%=render :partial => 'topics/item_details',  :locals => {:item => item, :topic=>@topic} %>

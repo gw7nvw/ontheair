@@ -32,12 +32,16 @@
 
    <div class="erow" id="realname">
       <% if @user.activated then %>
-         <i>Registered user  </i>
-         <% if @user.is_modifier then %>
-            <i> - authorised to edit hut and park data </i>
-         <% else %>
-            <i> - not authorised to edit hut and park data </i>
-         <% end %>
+        <% if @user.read_only then %>
+          <i>Restricted user. Contact admin@ontheair if you require full access  </i>
+        <% else %>
+          <i>Registered user  </i>
+          <% if @user.is_modifier then %>
+             <i> - authorised to edit hut and park data </i>
+          <% else %>
+             <i> - not authorised to edit hut and park data </i>
+          <% end %>
+        <% end %>
       <% else %>
         <i> Not a registered user </i>
       <% end %>
