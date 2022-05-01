@@ -666,13 +666,22 @@ def contacts
 end
 
 def logs
-  logs=Contact.find_by_sql [ "select * from logs l where '"+self.code+"' = ANY(asset_codes);" ]
+  logs=Log.find_by_sql [ "select * from logs l where '"+self.code+"' = ANY(asset_codes);" ]
 end
 
 def activators
   cals=Contact.where("? = ANY(asset1_codes)", self.code);
   callsigns=cals.map{|cal| cal.callsign1};
   users=User.where(callsign: callsigns).order(:callsign)
+end
+
+def activations
+  logs=self.logs
+  count=0
+  logs.each do |log|
+     if log.contacts.count>0 then count+=1 end
+  end
+  count
 end
 
 def sota_activators

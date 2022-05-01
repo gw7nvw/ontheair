@@ -229,10 +229,10 @@
    </div> 
    <div class="erow">
      <% if @asset.logs and @asset.logs.count>0 then %>
-         <b><%=@asset.logs.count.to_s+" Activations "%><%=link_to "(View)", '/logs/?asset='+@asset.safecode, remote: true,  :id => 'user', :onclick => "linkHandler('logs')" %></b>
+         <b><%=@asset.activations.to_s+" Activations "%><%=link_to "(View)", '/logs/?asset='+@asset.safecode+"&user=ALL", remote: true,  :id => 'user', :onclick => "linkHandler('logs')" %></b>
      <% end %>
      <% if @asset.contacts and @asset.contacts.count>0 then %>
-         <b><%=@asset.contacts.count.to_s+" Contacts "%><%=link_to "(View)", '/contacts/?asset='+@asset.safecode, remote: true,  :id => 'user', :onclick => "linkHandler('contact')" %></b>
+         <b><%=@asset.contacts.count.to_s+" Contacts "%><%=link_to "(View)", '/contacts/?asset='+@asset.safecode+"&user=ALL", remote: true,  :id => 'user', :onclick => "linkHandler('contact')" %></b>
      <% end %>
    </div>
    <% if write_access? %>

@@ -12,9 +12,13 @@ class ContactsController < ApplicationController
     end
 
     if params[:user] and params[:user].length>0 then
-         whereclause=whereclause+" and (callsign1='"+params[:user].upcase+"' or callsign2='"+params[:user].upcase+"')"
-         @user=User.find_by(callsign: params[:user])
-         @callsign=params[:user].upcase
+         if params[:user].upcase=="ALL" then
+           @callsign="ALL"
+         else
+           whereclause=whereclause+" and (callsign1='"+params[:user].upcase+"' or callsign2='"+params[:user].upcase+"')"
+           @user=User.find_by(callsign: params[:user])
+           @callsign=params[:user].upcase
+         end
     elsif current_user then
          whereclause=whereclause+" and (callsign1='"+current_user.callsign+"' or callsign2='"+current_user.callsign+"')"
          @user=current_user

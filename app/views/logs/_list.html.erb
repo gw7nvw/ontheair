@@ -9,10 +9,10 @@
         <th>Portable?</th>
         <th>Contacts</th>
       </tr>
-    <% count=0
+    <% 
        if @logs then @logs.each do |log| %>
          <% count=Contact.where(log_id: log.id).count %>
-         <% if count>0 then %>
+         <% #if count>0 then %>
           <tr>
             <td>
               <% if !@brief and current_user  and (current_user.callsign==log.callsign1 or current_user.is_admin) %>
@@ -48,8 +48,7 @@
             <td> <%=if log.is_portable1 then "Yes" else "no" end %></td>
             <td> <%=count %></td>
           </tr>
-        <%count=count+1%>
-      <% end end %>
+      <% end #end %>
     <% end %>
   </table>
   <div class="name_pagination"> <%= will_paginate(@logs) %></div>

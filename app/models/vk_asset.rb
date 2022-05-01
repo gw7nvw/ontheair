@@ -4,6 +4,7 @@ def url
   url='/vkassets/'+self.get_safecode
 end
 
+
 def self.import
   self.destroy_all
   url="http://parksnpeaks.org/api/SITES"
