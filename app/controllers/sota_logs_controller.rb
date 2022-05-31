@@ -70,6 +70,7 @@ def show
         end
       end
       if contact.band.length>0 and contact.adif_mode.length>0 and contact.time and contact.time.strftime("%H%M").length==4 then
+        if contact.is_portable2 and other_callsign[-2..-1]!="/P" then other_callsign+="/P" end
         @sota_log+="<call:"+other_callsign.length.to_s+">"+other_callsign
         @sota_log+="<station_callsign:"+@user.callsign.length.to_s+">"+@user.callsign
         @sota_log+="<band:"+contact.band.length.to_s+">"+contact.band

@@ -5,17 +5,24 @@
    document.title = '... On The Air'
    document.getElementById('logo').innerHTML='... On The Air'
    refreshInterval = setTimeout(function(){
-     $.ajax({
-       beforeSend: function (xhr){
-         xhr.setRequestHeader("Content-Type","application/javascript");
-         xhr.setRequestHeader("Accept","text/javascript");
-       },
-       type: "GET",
-       //timeout: 10000,
-       url: `/spots?<%=raw(@parameters)%>`,
-       complete: function() {
-       }
-     });
+     //only if we're still on spots page
+     if(document.getElementById('spots')) {
+       $.ajax({
+         beforeSend: function (xhr){
+           xhr.setRequestHeader("Content-Type","application/javascript");
+           xhr.setRequestHeader("Accept","text/javascript");
+         },
+         type: "GET",
+         timeout: 10000,
+         url: `/spots?<%=raw(@parameters)%>`,
+         complete: function(jqXHR, thrownError) {
+           /* complete also fires when error ocurred, so only clear if no error has been shown */
+           if(thrownError=="timeout" || thrownError=="error") {
+             document.getElementById('retrieved').innerHTML="<p><b>TIMED OUT</b></p>";
+           }
+         }
+       });
+     };
   }, 60000) /* time in milliseconds (ie 60 seconds)*/
 
 </script>
@@ -36,20 +43,21 @@
 
 <div id="right_scroll">
   <%= render 'flash' %>
+  <span id="spots"></span>
   <h2>Spots</h2>
 
-  <p>Retrieved at <%=Time.now.in_time_zone(@tz.name).strftime("%H:%M:%S")%> (<%=@tz.name%>) <i><%=  link_to "Refresh Now", '/spots?'+raw(@parameters), remote: true,  :onclick => "linkHandler('refresh_link')"%> </i></p>
+  <p><span id="retrieved">Retrieved at <%=Time.now.in_time_zone(@tz.name).strftime("%H:%M:%S")%> (<%=@tz.name%>) </span><i><%=  link_to "Refresh Now", '/spots?'+raw(@parameters), remote: true,  :onclick => "linkHandler('refresh_link')"%> </i></p>
   <p>
   <% if @all then %>
-    Showing all DXCCs.  <i><%=link_to "Show only ZL/VK", "/spots?class=#{@class}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+    <b>Showing all DXCCs</b>.  <i><%=link_to "Show only ZL/VK", "/spots?class=#{@class}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
   <% else %>
-    Showing VK/ZL spots.  <i><%=link_to "Show All DXCC", "/spots?all=true&class=#{@class}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+    <b>Showing VK/ZL</b> spots.  <i><%=link_to "Show All DXCC", "/spots?all=true&class=#{@class}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
   <% end %>
   ||
   <% if @class and @class.length>0 then %>
-    Showing class <%=@class%> only.  <i><%=link_to "Show All Classes", "/spots?all=#{@all}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+    <b>Showing class <%=@class%></b> only.  <i><%=link_to "Show All Classes", "/spots?all=#{@all}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
   <% else %>
-    Showing all classes. <i>Show only 
+    <b>Showing all classes</b>. <i>Show only 
        <%=link_to "ZLOTA", "/spots?all=#{@all}&class=ZLOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
        <%=link_to "SOTA", "/spots?all=#{@all}&class=SOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
        <%=link_to "POTA", "/spots?all=#{@all}&class=POTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>

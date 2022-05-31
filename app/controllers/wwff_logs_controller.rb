@@ -59,6 +59,7 @@ def show
       if contact.band.length>0 and contact.adif_mode.length>0 and contact.time and contact.time.strftime("%H%M").length==4 then
         qsodate=contact.date.strftime("%Y%m%d")
         if qsodate>lastdate then lastdate=qsodate end
+        if contact.is_portable2 and other_callsign[-2..-1]!="/P" then other_callsign+="/P" end
         @wwff_log+="<call:"+other_callsign.length.to_s+">"+other_callsign
         @wwff_log+="<station_callsign:"+@user.callsign.length.to_s+">"+@user.callsign
         @wwff_log+="<operator:"+@user.callsign.length.to_s+">"+@user.callsign

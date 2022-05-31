@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220427204541) do
+ActiveRecord::Schema.define(version: 20220531211049) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -28,6 +28,7 @@ ActiveRecord::Schema.define(version: 20220427204541) do
     t.datetime "last_sota_update_at"
     t.datetime "last_pota_update_at"
     t.datetime "last_wwff_update_at"
+    t.datetime "last_spot_read"
   end
 
   create_table "ak_maps", force: true do |t|
@@ -220,6 +221,20 @@ ActiveRecord::Schema.define(version: 20220427204541) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.spatial  "boundary",      limit: {:srid=>4326, :type=>"multi_polygon"}
+  end
+
+  create_table "external_spots", force: true do |t|
+    t.datetime "time"
+    t.string   "callsign"
+    t.string   "activatorCallsign"
+    t.string   "code"
+    t.string   "name"
+    t.string   "frequency"
+    t.string   "mode"
+    t.string   "comments"
+    t.string   "spot_type"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "hut_photo_links", force: true do |t|

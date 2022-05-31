@@ -52,6 +52,7 @@ def show
 
       if contact.band.length>0 and contact.adif_mode.length>0 and contact.time and contact.time.strftime("%H%M").length==4 and not ((callsigns.include? other_callsign) and (not other_park_code))  then
         callsigns.push(other_callsign)
+        if contact.is_portable2 and other_callsign[-2..-1]!="/P" then other_callsign+="/P" end
         @pota_log+="<call:"+other_callsign.length.to_s+">"+other_callsign
         @pota_log+="<station_callsign:"+@user.callsign.length.to_s+">"+@user.callsign
         @pota_log+="<band:"+contact.band.length.to_s+">"+contact.band

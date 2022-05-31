@@ -56,19 +56,49 @@ $(function () {
   <%= render 'flash' %>
   <%= form_tag '/contacts', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
     <br/>
-    <div class="rowtitle">Show contacts for (location code):</div>
-    <div class="rowtext">
-      <input type="text" name="asset" value='<%=@assetcode%>'/>
-      <input type="hidden" name="user" value='<%=@callsign%>'/>
+    <div class="erow">
+      <div class="rowtitle">Show contacts for (location code):</div>
+      <div class="rowtext"> <input type="text" name="asset" value='<%=@assetcode%>'/> </div>
     </div>
-    <div class="buttonshort">
-      <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
-      <%=  link_to "Clear", '/contacts', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
-  
+    <div class="erow">
+      <div class="buttonshort">
+        <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+        <%= link_to "Clear", '/contacts', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
+        <a href="#" class="link_to" remote=true onclick='expand_div("advanced");return(false);'>Advanced v</a>
+      </div>
     </div>
-</form>
-
-  <%= render 'list' %>
+    <div id="advanced" style="display:none">
+      <div class="erow">
+        <div class="rowtitle">Callsign:</div>
+        <div class="rowtext"><input type="text" name="user" value='<%=@callsign%>'/></div>
+      </div>
+      <div class="erow">
+        <div class="rowtitle">Result per page:</div>
+        <div class="rowtext"><input type="text" name="pagelen" value='<%=@page_len%>'/></div>
+      </div>
+      <div class="erow">
+        <div class="rowtitle">Class:</div>
+        <div class="rowtext">
+          <select name="class" id="class">
+            <%for type in AssetType.all%>
+              <option value="<%=type.name%>" <%if @class==type.name then%> selected <% end %>><%=type.display_name%></option>
+            <%end%>
+          </select> 
+        </div>
+      </div>
+      <div class="erow">
+        <div class="rowtitle">Activator?:</div>
+        <div class="rowtext"><input type="checkbox" name="activator" <% if @activator then %>checked<% end %>/></div>
+      </div>
+      <div class="erow">
+        <div class="rowtitle">Chaser?:</div>
+        <div class="rowtext"><input type="checkbox" name="chaser" <% if @chaser then %>checked<% end %>/></div></div>
+      </div>
+    </div>
+  </form>
+  <div class="erow">
+    <%= render 'list' %>
+  </div>
 </div>
 
 <div class="erow">Key: <div style="color:green">QRP</div>  <div style="text-decoration:underline">Home Station</div></div>

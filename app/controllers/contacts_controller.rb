@@ -17,11 +17,14 @@ class ContactsController < ApplicationController
          else
            whereclause=whereclause+" and (callsign1='"+params[:user].upcase+"' or callsign2='"+params[:user].upcase+"')"
            @user=User.find_by(callsign: params[:user])
+           if !@user then @user=current_user end
+           if !@user then @user=User.first end
            @callsign=params[:user].upcase
          end
     elsif current_user then
          whereclause=whereclause+" and (callsign1='"+current_user.callsign+"' or callsign2='"+current_user.callsign+"')"
          @user=current_user
+         @callsign=@user.callsign
     end
     if params[:asset] and params[:asset].length>0 then
          whereclause=whereclause+" and ('"+params[:asset].gsub('_','/')+"'=ANY(asset1_codes) or '"+params[:asset].gsub('_','/')+"'=ANY(asset2_codes))"
@@ -29,6 +32,45 @@ class ContactsController < ApplicationController
          if @asset then @assetcode=@asset.code end
     end 
     @fullcontacts=Contact.find_by_sql [ "select * from contacts where "+whereclause+" order by date desc, time desc" ]
+ 
+    #back compatibility
+    if params[:type] then params[:class]=params[:type] end
+    if params[:class] and params[:class]!="all" then  
+      @class=params[:class]
+      as=[]
+      cs=[]
+      @fullcontacts.each do |contact|
+        if contact.callsign2==@user.callsign then contact=contact.reverse end
+        assets=Asset.assets_from_code(contact.asset1_codes.join(','))
+        assets.each do |a|
+          if a[:asset] and a[:type]==@class then
+            contact.asset1_codes=[a[:code]]
+            as.push(contact)
+          end
+        end
+        assets=Asset.assets_from_code(contact.asset2_codes.join(','))
+        assets.each do |a|
+          if a[:asset] and a[:type]==@class then
+            contact.asset2_codes=[a[:code]]
+            cs.push(contact)
+          end
+        end
+      end
+      if params[:activator] then
+        @fullcontacts=as
+        @activator="on"
+      elsif params[:chaser] then 
+        @fullcontacts=cs
+        @chaser="on"
+      else 
+        @fullcontacts=cs+as
+      end
+      @fullcontacts=@fullcontacts.uniq
+    end
+
+
+    if params[:pagelen] then @page_len=params[:pagelen].to_i else @page_len=20 end
+
     if params[:user_qrp] and (params[:user] or signed_in?) then
       if params[:user] then callsign=params[:user].upcase else callsign=current_user.callsign.upcase end
       cs=[]
@@ -41,7 +83,7 @@ class ContactsController < ApplicationController
      end
      @fullcontacts=cs
     end
- @contacts=(@fullcontacts||[]).paginate(:per_page => 20, :page => params[:page]) 
+ @contacts=(@fullcontacts||[]).paginate(:per_page => @page_len, :page => params[:page]) 
   end
   
   def index
@@ -68,12 +110,22 @@ class ContactsController < ApplicationController
       require 'csv'
       csvtext=""
       if items and items.first then
-        columns=[]; items.first.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") then columns << name end end
-        columns=columns+["place_codes1","place_codes2"]
+        if params[:simple]=="true" then
+          columns=["id","time","callsign1","asset1_codes","callsign2","asset2_codes","frequency","mode"]
+        else
+          columns=[]; items.first.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") then columns << name end end
+          columns=columns+["place_codes1","place_codes2"]
+        end
         csvtext << columns.to_csv
         items.each do |item|
-           fields=[]; item.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") then fields << value end end
-           fields=fields+[item.asset1_codes, item.asset2_codes]
+           if params[:simple]=="true" then
+             fields=[]; columns.each do |column| fields << item[column] end
+           else
+             fields=[]; item.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") then fields << value end end
+             fields=fields+[item.asset1_codes, item.asset2_codes]
+ 
+
+           end
            csvtext << fields.to_csv
         end
      end

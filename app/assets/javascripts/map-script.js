@@ -184,6 +184,32 @@ function map_add_projections() {
   epsg2193=ol.proj.get('EPSG:2193');
   map_projection=ol.proj.get(map_projection_name);
 }
+function map_add_wmts_layer(name,url,layer,source,maxresolution,numzooms) {
+   if (source=="mapspast") {
+           var tilegrid=mapspast_tilegrid;
+   } else {
+	   var tilegrid=linz_tilegrid;
+   };
+   maplayers[map_layer_count]=new ol.layer.Tile({
+     source: new ol.source.WMTS({
+       projection: epsg2193,
+       url: url,
+       layer: layer,
+       maxResolution: maxresolution,
+       numZoomLevels: numzooms,
+       tileGrid: tilegrid,
+       crossOrigin: 'anonymous'
+     }),
+     name: name,
+     visible: false,
+     projection: epsg2193,
+     maxResolution: maxresolution,
+     numZoomLevels: numzooms
+   });
+   map_layer_count=map_layer_count+1;
+}
+
+
 function map_add_raster_layer(name,url,source,maxresolution,numzooms) {
    if (source=="mapspast") {
            var tilegrid=mapspast_tilegrid;
