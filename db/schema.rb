@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220531211049) do
+ActiveRecord::Schema.define(version: 20220709000030) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -118,6 +118,13 @@ ActiveRecord::Schema.define(version: 20220531211049) do
   add_index "assets", ["location"], :name => "assets_location_index", :spatial => true
   add_index "assets", ["safecode"], :name => "index_assets_on_safecode"
 
+  create_table "award_thresholds", force: true do |t|
+    t.integer  "threshold"
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "award_user_links", force: true do |t|
     t.integer  "user_id"
     t.integer  "award_id"
@@ -125,15 +132,13 @@ ActiveRecord::Schema.define(version: 20220531211049) do
     t.boolean  "acknowledged"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "threshold"
   end
 
   create_table "awards", force: true do |t|
     t.string   "name"
     t.text     "description"
     t.text     "email_text"
-    t.integer  "huts_minimum"
-    t.integer  "parks_minimum"
-    t.integer  "islands_minimum"
     t.boolean  "user_qrp"
     t.boolean  "contact_qrp"
     t.boolean  "is_active"
@@ -141,6 +146,14 @@ ActiveRecord::Schema.define(version: 20220531211049) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.boolean  "allow_repeat_visits"
+    t.boolean  "count_based"
+    t.boolean  "activated"
+    t.boolean  "chased"
+    t.string   "programme"
+    t.boolean  "all_district"
+    t.boolean  "all_region"
+    t.boolean  "all_programme"
+    t.boolean  "p2p"
   end
 
   create_table "contacts", force: true do |t|
@@ -191,6 +204,8 @@ ActiveRecord::Schema.define(version: 20220531211049) do
     t.string   "asset2_codes",                                            default: [],   array: true
     t.string   "name1"
     t.string   "name2"
+    t.string   "asset1_classes",                                          default: [],   array: true
+    t.string   "asset2_classes",                                          default: [],   array: true
   end
 
   add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"

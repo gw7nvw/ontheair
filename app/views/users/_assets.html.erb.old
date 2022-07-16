@@ -1,0 +1,32 @@
+    <div class="erow">
+      <div class="sectiontitle" style="margin-top: 12px;"><%=if at.name == 'qrp' then "QRP" else at.name.capitalize.pluralize end%>:</div>
+      <ul>
+        <li><a href="#" class="link_to" remote=true onclick='expand_div("bagged_<%=at.name%>");return(false);'> <%=@count_type%>: <%=(@assets.uniq.count.to_s%> unique (<%@assets.count.to_s%> total) </a></li>
+        <div style="display:none" id="bagged_<%=at.name%>">
+          <% count=0; @assets.uniq.order(:name).each do |a|; count+=1 %>
+            <%= if count>1 then ', ' end %>
+            <%=link_to a.name, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+          <% end %>
+        </div>
+
+      </ul>
+    </div>
+
+<% assets=@user.get_p2p_all %>
+<div class="erow">
+  <div class="sectiontitle" style="margin-top: 12px;">P2P:</div>
+  <ul>
+    <li><a href="#" class="link_to" remote=true onclick='expand_div("bagged_p2p");return(false);'> Contacts: <%=assets.count%> <b class="caret" style="vertical-align: middle"></b> </a></li>
+    <div style="display:none" id="bagged_p2p">
+      <ul>
+      <% count=0; assets.sort.each do |a|; count+=1 %>
+        <% a_arr=a.split(' ') %>
+        <% contact=Contact.get_by_p2p(@user.callsign, a_arr[0], a_arr[1], a_arr[2]) %>
+        <% if contact then contact_id=contact.id.to_s else contact_id="" end %>
+        <li><%=link_to a_arr[0]+" -> "+a_arr[1]+" ("+a_arr[2]+")", '/contacts/'+contact_id, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %></li>
+      <% end %>
+      </ul>
+    </div>
+  </ul>
+</div>
+

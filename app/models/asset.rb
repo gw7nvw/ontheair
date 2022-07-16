@@ -292,6 +292,18 @@ def get_external_url
 
 end
 
+def self.filter_codes(codes, asset_type)
+   filtered_codes=[]
+   codes.each do |code|
+      aa=Asset.assets_from_code(code)
+      a=aa.first
+      if a[:type]==asset_type then
+        filtered_codes.push(a[:asset].code)
+      end
+   end 
+   filtered_codes
+end
+
 def self.get_pnp_class_from_code(code)
   aa=Asset.assets_from_code(code)
   a=aa.first 

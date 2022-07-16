@@ -1,0 +1,59 @@
+<script> 
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+     &nbsp;--&gt;&nbsp;
+     <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Park 2 Park</b>
+   </div>
+   <div id="controls">
+       <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+       <%=render 'map_controls'%>
+   </div>
+</div>
+
+
+<div id="right_scroll">
+   <%= render 'flash' %>
+    <div class="erow">
+      <div class="sectiontitle" style="margin-top: 12px;">Park 2 Park:</div>
+      <span id="valid_count"></span><%=@contacts.count.to_s%> unique P2P contacts 
+      <ul>
+        <div>
+          <% @contacts.sort.each do |c| %>
+            <% contact = c.split(" ") %>
+            <% asset1 = Asset.find_by(code: contact[0]) %>
+            <% asset2 = Asset.find_by(code: contact[1]) %>
+            <li>
+               <%if asset1 and asset1.minor!=true and asset1.is_active==true and asset1.type.keep_score==true %>
+                  <%=link_to asset1.name+" ["+asset1.code+"]", '/contacts?user='+@user.callsign+'&asset='+asset1.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+               <%else%>
+                  <%=contact[0]%>
+               <%end%>
+               to
+               <%if asset2 and asset2.minor!=true and asset2.is_active==true and asset2.type.keep_score==true %>
+                  <%=link_to asset2.name+" ["+asset2.code+"]", '/contacts?user='+@user.callsign+'&asset='+asset2.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+               <%else%>
+                  <%=contact[1]%>
+               <%end%>
+               on
+               <%=contact[2]%>
+            </li>
+          <% end %>
+        </div>
+
+      </ul>
+    </div>
+</div>
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>
+

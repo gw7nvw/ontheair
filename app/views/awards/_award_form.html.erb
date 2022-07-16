@@ -1,32 +1,39 @@
+<script> 
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+</script>
+
 <div class="fullform">
-   <%= form_for @award, remote: true, :html => {:name => 'awardform'} do |f| %>
-    <div id="actionbar-form" class="span7">
+    <%= form_for(@award) do |f| %>
+      <div id="actionbar" class="span7">
        <div id="crumbs">
          <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
          &nbsp;--&gt;&nbsp;
-         <%=  link_to  "Awards:", '/awards', remote: true,  :id => 'awards', :onclick => "linkHandler('awards')" %>
+         <%=  link_to  "Awards", '/awards', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
          &nbsp;--&gt;&nbsp;
-         <%if @award.id%> 
-            <b><%=link_to @award.name, '/awards/'+@award.id.to_s, remote: true, :id => 'award', :onclick => "linkHandler('award')" %>
+         <%if @award.id%>
+            <b><%=link_to @award.name.capitalize, '/awards/'+@award.id.to_s, remote: true, :id => 'user', :onclick => "linkHandler('user')" %>
             &nbsp;--&gt;&nbsp;
             <b>Edit</b>
          <% else %>
             <b>New</b>
          <% end %>
+
        </div>
+
        <div id="controls">
-          <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight" %>
-          <%  if(@submit_button == "Save Changes" and current_user and current_user.is_admin) %>
-            <%= f.submit "Delete", confirm: "Delete award: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>
-          <% end %>
-          <% if params[:referring]=='index'%>
+          <% if @award.id %><% if params[:referring]=='index'%>
             <%=  link_to "Cancel", '/awards', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
           <% else %>
-            <%=  link_to "Cancel", '/awards/'+@award.id.to_s, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
-          <% end %>
-          <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
+            <%=  link_to "Cancel", '/awarss/'+@award.id.to_s, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+          <% end %> <% end %>
+
+          <%=render 'map_controls'%>
        </div>
-    </div>
+     </div>
+
+     <%= render 'shared/error_messages' %>
+
 
     <div id="right_scroll">
       <%= hidden_field_tag(:referring, @referring) %>
@@ -44,18 +51,34 @@
 
       <div class="sectiontitle">Text of notification email</div>
       <%= f.text_area :email_text %>
-      <div class="sectiontitle">Minimum huts required</div>
-      <%= f.text_field :huts_minimum %>
-      <div class="sectiontitle">Minimum parks required</div>
-      <%= f.text_field :parks_minimum %>
-      <div class="sectiontitle">Minimum islands required</div>
-      <%= f.text_field :islands_minimum %>
 
-      <%= "Claimant must be QRP?" %><br/>
+      <div class="sectiontitle">Programnme (asset class)</div>
+      <%= f.text_area :programme %>
+
+      <%= "Threshold based award" %><br/>
+      <%= f.check_box :count_based%><br/><br/>
+
+      <%= "All of district award" %><br/>
+      <%= f.check_box :all_district%><br/><br/>
+
+      <%= "All of region award" %><br/>
+      <%= f.check_box :all_region%><br/><br/>
+
+      <%= "All of programme award" %><br/>
+      <%= f.check_box :all_programme%><br/><br/>
+
+      <%= "Park-to-park award" %><br/>
+      <%= f.check_box :p2p%><br/><br/>
+
+      <i>For bagged leave both blank, for completed tick both</i><br/>
+      <%= "For activations" %><br/>
+      <%= f.check_box :activated%><br/><br/>
+
+      <%= "For chases" %><br/>
+      <%= f.check_box :chased%><br/><br/>
+
+      <%= "Contact must be QRP?" %><br/>
       <%= f.check_box :user_qrp%><br/><br/>
-
-      <%= "Entire contact must be QRP?" %><br/>
-      <%= f.check_box :contact_qrp%><br/><br/>
 
       <%= "Allow repeat visits to same QTH?" %><br/>
       <%= f.check_box :allow_repeat_visits%><br/><br/>
@@ -66,18 +89,18 @@
       <% else %>
         <%= f.check_box :is_active, :readonly => true%><br/><br/>
       <% end %>
+
+      <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-hightlight" %>
+      <%  if(@submit_button == "Save Changes" and current_user and current_user.is_admin) %>
+        <%= f.submit "Delete", confirm: "Delete award: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>
+      <% end %>
  
     </div>
   <% end %>
 </div>
 
 <script>
-    reset_map_controllers(); 
-
-    if(site_map_size==0) { 
-       $('#actionbar-form').removeClass('span7');
-       $('#actionbar-form').addClass('span12');
-    }
-
+  closeAllHandlers();
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>
 

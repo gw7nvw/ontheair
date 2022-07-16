@@ -383,6 +383,7 @@ def self.import(filestr,user)
      end  #end of parms.each 
   end #end of lines.each 
    puts "IMPORT: clean exit"
+   puts errors
    return {logs: logs, errors: errors, success: true}
 end
 

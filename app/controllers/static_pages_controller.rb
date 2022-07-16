@@ -87,7 +87,7 @@ class StaticPagesController < ApplicationController
   end
 
   def spots
-      twohoursago=Time.at(Time.now().to_i-60*60*2).in_time_zone('UTC').to_s
+      onehourago=Time.at(Time.now().to_i-60*60*1).in_time_zone('UTC').to_s
 
       @parameters=params_to_query
 
@@ -105,11 +105,11 @@ class StaticPagesController < ApplicationController
 
       #read spots from db
       if @all then
-        @all_spots=ExternalSpot.where("time>'"+twohoursago+"'")
+        @all_spots=ExternalSpot.where("time>'"+onehourago+"'")
       else
-        @all_spots=ExternalSpot.find_by_sql ["select * from external_spots where time>'"+twohoursago+"' and (code like 'VK%%' or code like 'ZL%%');"]
+        @all_spots=ExternalSpot.find_by_sql ["select * from external_spots where time>'"+onehourago+"' and (code like 'VK%%' or code like 'ZL%%');"]
       end
-
+     
       items=Item.where(:topic_id => 35, :item_type => "post").order(:created_at).reverse
       @hota_spots=[]
       items.each do |i|
@@ -140,7 +140,10 @@ class StaticPagesController < ApplicationController
         @all_spots=@all_spots.select{|spot| spot[:spot_type].include? @class}
       end
 
-
+      if params[:mode] then
+        @mode=params[:mode]
+        @all_spots=@all_spots.select{|spot| @mode.upcase.include? spot[:mode].upcase}
+      end
   end
 
   def alerts

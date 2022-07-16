@@ -135,65 +135,30 @@
    </div>
 </div>
 
-<% assets=@user.assets_all %>
 <% ats=AssetType.where(keep_score: true)
    qrp=AssetType.new
    qrp.name='qrp'
    ats << qrp %>
 <% ats.each do |at| %>
 
-  <% if (assets[:a][at.name] and assets[:a][at.name].count>0) or (assets[:c][at.name] and assets[:c][at.name].count>0) then %>
 
     <div class="erow">
       <div class="sectiontitle" style="margin-top: 12px;"><%=if at.name == 'qrp' then "QRP" else at.name.capitalize.pluralize end%>:</div>
       <ul>
-        <li><a href="#" class="link_to" remote=true onclick='expand_div("bagged_<%=at.name%>");return(false);'> Bagged: <%=(assets[:a][at.name]+assets[:c][at.name]).uniq.count%> unique <b class="caret" style="vertical-align: middle"></b> </a></li>
-        <div style="display:none" id="bagged_<%=at.name%>">
-          <% as=Asset.where("code in ('"+(assets[:a][at.name]+assets[:c][at.name]).uniq.join("','")+"')") %>
-          <% count=0; as.order(:name).each do |a|; count+=1 %>
-            <%= if count>1 then ', ' end %>
-            <%=link_to a.name, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
-          <% end %>
-        </div>
+        <li><%=link_to "Bagged: "+@user.score[at.name].to_s+" unique", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=bagged", remote: true,  :id => 'users', :onclick => "linkHandler('users')"%></li>
 
-        <li><a href="#" class="link_to" remote=true onclick='expand_div("chased_<%=at.name%>");return(false);'> Chased: <%=assets[:c][at.name].uniq.count%> unique (<%=assets[:ct][at.name].uniq.count%> total) <b class="caret" style="vertical-align: middle"></b> </a></li>
-        <div style="display:none" id="chased_<%=at.name%>">
-          <% as=Asset.where("code in ('"+assets[:c][at.name].uniq.join("','")+"')") %>
-          <% count=0; as.order(:name).each do |a|; count+=1 %>
-            <%= if count>1 then ', ' end %>
-            <%=link_to a.name, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
-          <% end %>
-        </div>
-  
-        <li><a href="#" class="link_to" remote=true onclick='expand_div("activated<%=at.name%>");return(false);'> Activated: <%=assets[:a][at.name].uniq.count%> unique (<%=assets[:at][at.name].uniq.count%> total) <b class="caret" style="vertical-align: middle"></b> </a></li>
-          <div style="display:none" id="activated<%=at.name%>">
-          <% as=Asset.where("code in ('"+assets[:a][at.name].uniq.join("','")+"')") %>
-          <% count=0; as.order(:name).each do |a|; count+=1 %>
-            <%= if count>1 then ', ' end %>
-            <%=link_to a.name, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
-          <% end %>
-        </div>
+        <li><%=link_to "Activated: "+@user.activated_count[at.name].to_s+" unique ("+@user.activated_count_total[at.name].to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=activated", remote: true,  :id => 'users', :onclick => "linkHandler('users')"%></li>
+        <li><%=link_to "Chased: "+@user.chased_count[at.name].to_s+" unique ("+@user.chased_count_total[at.name].to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=chased", remote: true,  :id => 'users', :onclick => "linkHandler('users')"%></li>
       </ul>
     </div>
   <% end %>
-<% end %>
 
 
 <% assets=@user.get_p2p_all %>
 <div class="erow">
   <div class="sectiontitle" style="margin-top: 12px;">P2P:</div>
   <ul>
-    <li><a href="#" class="link_to" remote=true onclick='expand_div("bagged_p2p");return(false);'> Contacts: <%=assets.count%> <b class="caret" style="vertical-align: middle"></b> </a></li>
-    <div style="display:none" id="bagged_p2p">
-      <ul>
-      <% count=0; assets.sort.each do |a|; count+=1 %>
-        <% a_arr=a.split(' ') %>
-        <% contact=Contact.get_by_p2p(@user.callsign, a_arr[0], a_arr[1], a_arr[2]) %>
-        <% if contact then contact_id=contact.id.to_s else contact_id="" end %>
-        <li><%=link_to a_arr[0]+" -> "+a_arr[1]+" ("+a_arr[2]+")", '/contacts/'+contact_id, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %></li>
-      <% end %>
-      </ul>
-    </div>
+    <li><%=link_to "Contacts: "+assets.count.to_s, '/users/'+@user.callsign+"/p2p", remote: true,  :id => 'users', :onclick => "linkHandler('users')"%></li>
   </ul>
 </div>
 <div class="erow">

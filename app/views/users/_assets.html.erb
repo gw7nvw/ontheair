@@ -1,0 +1,50 @@
+<script> 
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+     &nbsp;--&gt;&nbsp;
+     <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+     &nbsp;--&gt;&nbsp;
+     <b><%=@asset_type.capitalize.pluralize%> <%@count_type%></b>
+   </div>
+   <div id="controls">
+       <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+       <%=render 'map_controls'%>
+   </div>
+</div>
+
+
+<div id="right_scroll">
+   <%= render 'flash' %>
+    <div class="erow">
+      <div class="sectiontitle" style="margin-top: 12px;"><%=if @asset_type == 'qrp' then "QRP" else @asset_type.capitalize.pluralize end%>:</div>
+      <ul>
+        <li> <%=@count_type%>: <span id="valid_count"></span> ZLOTA sites (<%=@assets.uniq.count.to_s%> total) </li>
+        <div>
+          <% count=0; valid_count=0; invalid_count=0; @assets.uniq.sort_by { |asset| asset[:name] }.each do |a|; count+=1 %>
+            <%= if count>1 then ', ' end %>
+            <%if a.minor==true or a.is_active==false or a.type.keep_score!=true %>
+               <%=link_to a.name+" ["+a.code+"]", '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :class => "link_to", :onclick => "linkHandler('asset')" %>
+               <% invalid_count+=1 %>
+            <%else%>
+               <%=link_to a.name+" ["+a.code+"]", '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+               <% valid_count+=1 %>
+            <%end%>
+          <% end %>
+        </div>
+
+      </ul>
+    </div>
+</div>
+<script>
+  document.getElementById('valid_count').innerHTML=`<%=valid_count.to_s%>`
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>
+

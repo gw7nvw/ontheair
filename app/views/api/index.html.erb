@@ -163,3 +163,54 @@
   </tr>
 </table>
       
+<h2>logs</h2>
+
+<p><a href="/api/assetlinks">/api/logs</a> (POST)</p>
+
+<table>
+  <tr>
+    <th colspan=2>Request</th>
+  </tr>
+  <tr>
+    <th>field</th>
+    <th>description</th>
+  </tr>
+  <tr>
+    <td><i>userID</i></td>
+    <td>string: callsign of the user (as used to register/login to ontheair.nz</td>
+  </tr>
+  <tr>
+    <td><i>APIKey</i></td>
+    <td>string: PIN for the user (see user profile to view/set) or ParksNPeaks key for users with a ParksNPeaks account. Note pin and key are not same as password</td>
+  </tr>
+  <tr>
+    <td><i>file</i></td>
+    <td>file: multi-part post part containing adif log to be uploaded</td>
+  </tr>
+  <tr>
+  <tr>
+    <td><i>(Example)</i></td>
+    <td>curl -F "userID=zl4test" -F "APIKey=XXXX" -F file=@zl4test.adi https://ontheair.nz/api/logs</td>
+  </tr>
+</table>
+
+
+<table>
+  <tr>
+    <th colspan=2>Response</th>
+  </tr>
+
+  <tr>
+    <th>field</th>
+    <th>description</th>
+  </tr>
+  <tr>
+    <td>success</td>
+    <td>true (log created) or false (log creation failed)</td>
+  </tr>
+  <tr>
+    <td>message</td>
+    <td>Error or Warning messages resulting from log or contact creation</td>
+  </tr>
+</table>
+      

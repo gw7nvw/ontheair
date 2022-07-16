@@ -47,8 +47,12 @@ def authenticated?(attribute, token)
     update_attribute(:activated_at, Time.zone.now)
   end
 
- def has_award(award_id)
-   uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_id = "+award_id.to_s ]
+ def has_award(award, threshold)
+   if threshold==nil then
+     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_id = "+award.id.to_s+" and threshold is null" ]
+   else
+     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_id = "+award.id.to_s+" and threshold = "+threshold.threshold.to_s ]
+   end
    if uas and uas.count>0 then true else false end
  end
 
@@ -60,6 +64,128 @@ def authenticated?(attribute, token)
    end
    timezonename
  end
+
+ def bagged_qrp
+   ats=AssetType.where(keep_score: true)
+   at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+   codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where (callsign2='"+self.callsign+"' and is_qrp2=true) or (callsign1='"+self.callsign+"' and is_qrp1=true)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+   codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where (callsign2='"+self.callsign+"' and is_qrp2=true) or (callsign1='"+self.callsign+"' and is_qrp1=true)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+   codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+ end
+
+ def bagged(asset_type = 'all')
+   if asset_type=='all' then
+     ats=AssetType.where(keep_score: true)
+     at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+     codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where (callsign1='"+self.callsign+"' or callsign2='"+self.callsign+"')) as c inner join assets a on a.code = c.asset1_codes where a.is_active=true and a.minor is not true and asset1_classes in ("+at_list+"); " ]
+     codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where (callsign1='"+self.callsign+"' or callsign2='"+self.callsign+"')) as c inner join assets a on a.code = c.asset2_codes where a.is_active=true and a.minor is not true and asset2_classes in ("+at_list+"); " ]
+   else
+     codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where (callsign1='"+self.callsign+"' or callsign2='"+self.callsign+"') and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+     codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where (callsign1='"+self.callsign+"' or callsign2='"+self.callsign+"') and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+   end
+   codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+  end
+
+  def activated_qrp
+    ats=AssetType.where(keep_score: true)
+    at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+    codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where callsign1='"+self.callsign+"' and is_qrp1=true) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where callsign2='"+self.callsign+"' and is_qrp2=true) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",")].join(",").split(',').uniq
+  end
+
+  def activated(asset_type = 'all')
+    if asset_type=='all' then
+        ats=AssetType.where(keep_score: true)
+        at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+        codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where callsign1='"+self.callsign+"') as c inner join assets a on a.code = c.asset1_codes where a.is_active=true and a.minor is not true and asset1_classes in ("+at_list+") ; " ]
+        codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where callsign2='"+self.callsign+"') as c inner join assets a on a.code = c.asset2_codes where a.is_active=true and a.minor is not true and asset2_classes in ("+at_list+") ; " ]
+    else
+        codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where callsign1='"+self.callsign+"' and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+        codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where callsign2='"+self.callsign+"' and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+    end
+    codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",")].join(",").split(',').uniq
+  end
+
+  def chased_qrp
+    ats=AssetType.where(keep_score: true)
+    at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+    codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where callsign2='"+self.callsign+"' and is_qrp2=true) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where callsign1='"+self.callsign+"' and is_qrp1=true) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+  end
+
+  def chased(asset_type = 'all')
+    if asset_type=='all' then
+      ats=AssetType.where(keep_score: true)
+      at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where callsign2='"+self.callsign+"') as c inner join assets a on a.code = c.asset1_codes where a.is_active=true and a.minor is not true and asset1_classes in ("+at_list+"); " ]
+      codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where callsign1='"+self.callsign+"') as c inner join assets a on a.code = c.asset2_codes where a.is_active=true and a.minor is not true and asset2_classes in ("+at_list+"); " ]
+    else
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where callsign2='"+self.callsign+"' and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+      codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where callsign1='"+self.callsign+"' and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+    end
+    codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+  end
+
+  def chased_by_day(asset_type = 'all')
+    if asset_type=='all' then
+      ats=AssetType.where(keep_score: true)
+      at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where callsign2='"+self.callsign+"' and asset1_classes in ("+at_list+")) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+      codes2=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where callsign1='"+self.callsign+"' and asset1_classes in ("+at_list+")) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    else
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where callsign2='"+self.callsign+"' and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+      codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where callsign1='"+self.callsign+"' and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+    end
+    codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+  end
+
+  def chased_qrp_by_day
+    ats=AssetType.where(keep_score: true)
+    at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+    codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where callsign2='"+self.callsign+"' and is_qrp2=true) as c inner join assets a on a.code = c.asset1_codes  where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where callsign1='"+self.callsign+"' and is_qrp1=true) as c inner join assets a on a.code = c.asset2_codes  where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+  end
+
+  def activated_by_day(asset_type = 'all')
+    if asset_type=='all' then
+      ats=AssetType.where(keep_score: true)
+      at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where callsign1='"+self.callsign+"') as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+      codes2=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where callsign2='"+self.callsign+"') as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    else
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where callsign1='"+self.callsign+"' and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+      codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where callsign2='"+self.callsign+"' and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+    end
+    codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+  end
+
+  def activated_by_year(asset_type = 'all')
+    if asset_type=='all' then
+      ats=AssetType.where(keep_score: true)
+      at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where callsign1='"+self.callsign+"') as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+      codes2=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where callsign2='"+self.callsign+"') as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    else
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where callsign1='"+self.callsign+"' and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+      codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where callsign2='"+self.callsign+"' and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+    end
+    codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+
+  end
+
+  def activated_qrp_by_year
+    ats=AssetType.where(keep_score: true)
+    at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+    codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where callsign1='"+self.callsign+"' and is_qrp1=true) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where callsign2='"+self.callsign+"' and is_qrp2=true) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",")].join(",").split(',').uniq
+  end
+
 
   def self.find_by_full_callsign(callsign)
     if callsign and callsign.length>0 then 
@@ -111,29 +237,6 @@ def authenticated?(attribute, token)
       logs=Log.find_by_sql [ "select * from logs where callsign1='"+self.callsign+"' order by date"]
   end
 
-  def filter_contacts(contacts,user_qrp, contact_qrp)
-    fc=[]
-    contacts.each do |c|
-     if contact_qrp then
-       if c.is_qrp1 and c.is_qrp2 then fc.push(c) end
-     elsif user_qrp
-       if (c.callsign1==self.callsign and c.is_qrp1) or
-          (c.callsign2==self.callsign and c.is_qrp2) then
-              fc.push(c)
-       end
-     else
-       fc.push(c)
-     end
-    end
-    fc
-  end
-
-  def contacts_filtered(user_qrp, contact_qrp)
-    contacts=self.contacts
-    fc=filter_contacts(contacts,user_qrp, contact_qrp)
-    fc 
-  end
-
   def self.users_with_assets
     callsigns=[]
     contacts=Contact.where("asset1_codes is not null or asset2_codes is not null")
@@ -152,19 +255,25 @@ def authenticated?(attribute, token)
   end
 
   def update_score
-    scores=self.assets_count_all
     ats=AssetType.where(keep_score: true)
+    ats.each do |asset_type|
+       self.score[asset_type.name]=self.bagged(asset_type.name).count
+       self.score_total[asset_type.name]=0
+       self.activated_count[asset_type.name]=self.activated(asset_type.name).count
+       self.activated_count_total[asset_type.name]=self.activated_by_year(asset_type.name).count
+       self.chased_count[asset_type.name]=self.chased(asset_type.name).count
+       self.chased_count_total[asset_type.name]=self.chased_by_day(asset_type.name).count
+    end
     qrp=AssetType.new
     qrp.name="qrp"
     ats << qrp
-    ats.each do |asset_type|
-       self.score[asset_type.name]=scores[:bagged_count][asset_type.name]
-       self.score_total[asset_type.name]=scores[:bagged_count_total][asset_type.name]
-       self.activated_count[asset_type.name]=scores[:activated_count][asset_type.name]
-       self.activated_count_total[asset_type.name]=scores[:activated_count_total][asset_type.name]
-       self.chased_count[asset_type.name]=scores[:chased_count][asset_type.name]
-       self.chased_count_total[asset_type.name]=scores[:chased_count_total][asset_type.name]
-    end
+
+    self.score["qrp"]=self.bagged_qrp.count
+    self.score_total["qrp"]=0
+    self.activated_count["qrp"]=self.activated_qrp.count
+    self.activated_count_total["qrp"]=self.activated_qrp_by_year.count
+    self.chased_count["qrp"]=self.chased_qrp.count
+    self.chased_count_total["qrp"]=self.chased_qrp_by_day.count
 
     self.score["p2p"]=self.get_p2p_all.count
     success=self.save
@@ -172,176 +281,76 @@ def authenticated?(attribute, token)
 
   def get_p2p_all
     #all activations I make that are ZLOTA to /P
+    ats=AssetType.where(keep_score: true)
+    at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+
     p2p=[]
-    contacts1=Contact.find_by_sql [ "select c1.time as time, c1.date as date, c1.id as id, c1.callsign1 as callsign1, c1.callsign2 as callsign2, unnest(c1.asset1_codes) as asset1_code, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.callsign1='#{self.callsign}'; " ]
-    contacts2=Contact.find_by_sql [ "select c1.time as time, c1.date as date, c1.id as id, c1.callsign1 as callsign1, c1.callsign2 as callsign2, unnest(c1.asset1_codes) as asset1_code, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.callsign2='#{self.callsign}'; " ]
 
-    contacts1.each do |c|
-        a=Asset.find_by(code: c.asset1_code)
-        if !a then a=Asset.find_by(code: c.asset2_code) end
-        if (a and a.type.keep_score) and c.asset1_code!="" and c.asset2_code!="" then
-          p2p.push(c.asset1_code.split(' ')[0]+" "+c.asset2_code.split(' ')[0]+" "+c.localdate(nil).to_s)
-        end
+    contacts1=Contact.find_by_sql [ "select (split_part(asset1_code,' ', 1) || ' ' || split_part(asset2_code, ' ', 1) || ' ' || time::date) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.callsign1 as callsign1, c1.callsign2 as callsign2, unnest(c1.asset1_codes) as asset1_code, unnest(c1.asset1_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.callsign1='"+self.callsign+"') as foo where asset1_class in ("+at_list+"); " ]
+    contacts2=Contact.find_by_sql [ "select (split_part(asset1_code, ' ', 1) || ' ' || split_part(asset2_code, ' ', 1) || ' ' || time::date) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.callsign1 as callsign1, c1.callsign2 as callsign2, unnest(c1.asset2_codes) as asset1_code, unnest(c1.asset2_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset1_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.callsign2='"+self.callsign+"') as foo where asset1_class in ("+at_list+"); " ]
+    contacts=((contacts1+contacts2).map{|c| c.asset1_code}).uniq
+  end
+
+
+  def assets_by_type(asset_type, count_type)
+    if asset_type=="qrp" then
+      case count_type
+      when 'activated'
+        codes=self.activated_qrp
+      when 'chased'
+        codes=self.chased_qrp
+      else
+        codes=self.bagged_qrp
+      end
+    else
+      case count_type
+      when 'activated'
+        codes=self.activated(asset_type)
+      when 'chased'
+        codes=self.chased(asset_type)
+      else
+        codes=self.bagged(asset_type)
+      end
+    end   
+  end
+
+  def contacts_by_type(asset_type, count_type)
+    if asset_type=="qrp" then
+      if count_type=="bagged" then
+        query1="(callsign1 = '"+self.callsign+"' and is_qrp1=true) or (callsign2 = '"+self.callsign+"' and is_qrp2=true)" 
+      else #activated, chased
+        query1="callsign1 = '"+self.callsign+"' and is_qrp1=true"
+        query2="callsign2 = '"+self.callsign+"' and is_qrp2=true"
+      end
+    else
+      if count_type=="activated" then
+        query1="callsign1 = '"+self.callsign+"' and '"+asset_type+"'=ANY(asset1_classes)"
+        query2="callsign2 = '"+self.callsign+"' and '"+asset_type+"'=ANY(asset2_classes)"
+      elsif count_type=="chased" then
+        query1="callsign1 = '"+self.callsign+"' and '"+asset_type+"'=ANY(asset2_classes)"
+        query2="callsign2 = '"+self.callsign+"' and '"+asset_type+"'=ANY(asset1_classes)"
+      else  #bagged
+        query1="(callsign1 = '"+self.callsign+"' or callsign2 = '"+self.callsign+"') and ('"+asset_type+"'=ANY(asset1_classes) or '"+asset_type+"'=ANY(asset2_classes))"
+      end
     end
-    contacts2.each do |c|
-        a=Asset.find_by(code: c.asset2_code)
-        if !a then a=Asset.find_by(code: c.asset1_code) end
-        if (a and a.type.keep_score) and c.asset1_code!="" and c.asset2_code!="" then
-          p2p.push(c.asset2_code.split(' ')[0]+" "+c.asset1_code.split(' ')[0]+" "+c.localdate(nil).to_s)
-        end
-      end 
-    p2p.uniq
+    if count_type=="bagged" then
+      contacts=Contact.find_by_sql [ " select callsign1, callsign2, date, asset1_classes, asset1_codes, asset2_classes, asset2_codes from contacts where "+query1 ]
+    else
+      contacts1=Contact.find_by_sql [ " select callsign1, callsign2, date, asset1_classes, asset1_codes, asset2_classes, asset2_codes from contacts where "+query1 ]
+      contacts2=Contact.find_by_sql [ " select callsign1 as callsign2, callsign2 as callsign1, date, asset1_classes as asset2_classes, asset1_codes as asset2_codes, asset2_classes as asset1_classes, asset2_codes as asset1_codes from contacts where "+query2 ]
+      contacts=contacts1+contacts2
+    end
   end
 
-
-  def assets(at)
-    assets=self.assets_filtered(at,false, false)
-  end
-
-
-  def assets_count_all
-
-   ats=AssetType.where("name != 'all'")
-   qrp=AssetType.new
-   qrp.name='qrp'
-   ats << qrp
-
-   activated_count_total={}
-   activated_count={}
-   chased_count_total={}
-   chased_count={}
-   bagged_count_total={}
-   bagged_count={}
-
-   cs=self.assets_all
-
-   ats.each do |at|
-     activated_count[at.name]=cs[:a][at.name].uniq.count
-     activated_count_total[at.name]=cs[:at][at.name].uniq.count
-     chased_count[at.name]=cs[:c][at.name].uniq.count
-     chased_count_total[at.name]=cs[:ct][at.name].uniq.count
-     bagged_count[at.name]=(cs[:a][at.name]+cs[:c][at.name]).uniq.count
-     bagged_count_total[at.name]=(cs[:at][at.name]+cs[:ct][at.name]).uniq.count
-   end
-   results={activated_count: activated_count, activated_count_total: activated_count_total, chased_count: chased_count, chased_count_total: chased_count_total, bagged_count: bagged_count, bagged_count_total: bagged_count_total}
-end
-
-  def assets_all
-
-   ats=AssetType.where("name != 'all'")
-   qrp=AssetType.new
-   qrp.name='qrp'
-   ats << qrp
-   activated_total={}
-   activated={}
-   chased_total={}
-   chased={}
-   qrp_activated=[]
-   qrp_chased=[]
-   qrp_activated_total=[]
-   qrp_chased_total=[]
-
-   ats.each do |at|
-     activated[at.name]=[]
-     activated_total[at.name]=[]
-     chased[at.name]=[]
-     chased_total[at.name]=[]
-   end
-
-   contacts=Contact.where(callsign1: self.callsign)
-   contacts.each do |c|
-     if c.date then 
-       if c.asset1_codes then c.asset1_codes.each do |code|
-         a=Asset.find_by(code: code)
-         if (a and a.is_active and !(a.minor==true)) then
-           if a.type.keep_score==true and c.is_qrp1==true then 
-             activated_total['qrp'].push(a.code+" "+c.date.strftime('%Y')) 
-               activated['qrp'].push(a.code)
-           end
-           activated_total[a.asset_type].push(a.code+" "+c.date.strftime('%Y'))
-           activated[a.asset_type].push(a.code)
-         end
-       end end
-       if c.asset2_codes then c.asset2_codes.each do |code|
-         a=Asset.find_by(code: code)
-         if (a and a.is_active and !(a.minor==true)) then
-           if a.type.keep_score==true and c.is_qrp1==true then 
-             chased_total['qrp'].push(a.code+" "+c.localdate(nil).to_s) 
-             chased['qrp'].push(a.code) 
-           end
-           chased_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
-           chased[a.asset_type].push(a.code)
-         end
-       end end
-     end
-   end
-   contacts=Contact.where(callsign2: self.callsign)
-   contacts.each do |c|
-     if c.asset2_codes then c.asset2_codes.each do |code|
-       a=Asset.find_by(code: code)
-       if (a and a.is_active and !(a.minor==true)) then
-         #Activatons count once per year
-         if a.type.keep_score==true and c.is_qrp2==true then 
-           activated_total['qrp'].push(a.code+" "+c.date.strftime('%Y')) 
-           activated['qrp'].push(a.code) 
-         end
-
-         activated_total[a.asset_type].push(a.code+" "+c.date.strftime('%Y'))
-         activated[a.asset_type].push(a.code)
-       end
-     end end
-     if c.asset1_codes then c.asset1_codes.each do |code|
-       a=Asset.find_by(code: code)
-       if (a and a.is_active and !(a.minor==true)) then
-         if a.type.keep_score==true and c.is_qrp2==true then 
-           chased_total['qrp'].push(a.code+" "+c.localdate(nil).to_s) 
-           chased['qrp'].push(a.code) 
-         end
-
-         #Chases count once per day
-         chased_total[a.asset_type].push(a.code+" "+c.localdate(nil).to_s)
-         chased[a.asset_type].push(a.code)
-       end
-     end end
-   end
-  {a: activated, at: activated_total, c: chased, ct: chased_total}
-
-  end
-
-  def assets_filtered(at, user_qrp, contact_qrp)
-   assets=[]
-   contacts=self.contacts_filtered(user_qrp, contact_qrp)
-   contacts.each do |c|
-     c.asset1_codes.each do |code|
-       a=Asset.find_by(code: code)
-       if (a and a.asset_type==at) then assets.push(a.code) end
-     end
-     c.asset2_codes.each do |code|
-       a=Asset.find_by(code: code)
-       if (a and a.asset_type==at) then assets.push(a.code) end
-     end
-   end
-
-
-   assets=Asset.where(code: assets).order(:name)
-  end
 
 
   def wwff_logs(resubmit)
    if resubmit==true then resubmit_str="" else resubmit_str=" and submitted_to_wwff is not true" end
    wwff_logs=[]
    puts "resubmit: "+resubmit_str
-   contacts1=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where callsign1 = '"+self.callsign+"'"+resubmit_str+") as sq where asset1_codes  like 'ZLP%%'" ]
-   contacts2=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where callsign1 = '"+self.callsign+"'"+resubmit_str+") as sq where asset1_codes  like 'ZLFF-%%'" ]
+   contacts2=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where callsign1 = '"+self.callsign+"'"+resubmit_str+" and 'wwff park'=ANY(asset1_classes)) as sq where asset1_codes  like 'ZLFF-%%'" ]
 
    parks=[]
-   contacts1.each do |contact|
-       p=Asset.find_by(code: contact.asset1_codes)
-       pp=p.linked_assets_by_type("wwff park")
-       if pp and pp.count>0 then
-         parks.push(wwffpark: pp.first.code, name: pp.first.name)
-       end
-   end
    contacts2.each do |contact|
        pp=Asset.find_by(code: contact.asset1_codes)
        p=pp.linked_assets_by_type("park")
@@ -353,9 +362,12 @@ end
 
    parks.each do |park|
      pp=Asset.find_by(code: park[:wwffpark]);
-     dps=pp.linked_assets_by_type("park");
-     dpcodes=dps.map{|dp| dp.code}
-     contacts1=Contact.where(" callsign1 = ? and (? = ANY(asset1_codes) or (array[?]::varchar[] && asset1_codes))"+resubmit_str, self.callsign, park[:wwffpark], dpcodes)
+#Now all contacts have all assets saved againstt them - this code looked for
+#related assets and is no longer needed
+#     dps=pp.linked_assets_by_type("park");
+#     dpcodes=dps.map{|dp| dp.code}
+#     contacts1=Contact.where(" callsign1 = ? and (? = ANY(asset1_codes) or (array[?]::varchar[] && asset1_codes))"+resubmit_str, self.callsign, park[:wwffpark], dpcodes)
+     contacts1=Contact.where(" callsign1 = ? and (? = ANY(asset1_codes))"+resubmit_str, self.callsign, park[:wwffpark])
 
      contact_count=contacts1.count
      callsigns=[]
@@ -367,7 +379,7 @@ end
      callsigns.each do |cs|
 
 
-       contacts1=Contact.where('callsign1= ? and callsign2 = ? and date >= ? and date < ? and ((array[?]::varchar[] && asset1_codes) or ? = ANY(asset1_codes))'+resubmit_str,  self.callsign,  cs[:callsign], cs[:date].beginning_of_day,cs[:date].end_of_day, dpcodes, park[:wwffpark])
+       contacts1=Contact.where('callsign1= ? and callsign2 = ? and date >= ? and date < ? and (? = ANY(asset1_codes))'+resubmit_str,  self.callsign,  cs[:callsign], cs[:date].beginning_of_day,cs[:date].end_of_day, park[:wwffpark])
        if contacts1 and contacts1.count>0 then 
          contacts.push(contacts1.first) 
          if contacts1.count>1 then puts "Dropping "+(contacts1.count-1).to_s+" "+contacts1.first.callsign1+" "+contacts1.first.callsign2+" "+contacts1.first.date.to_date.to_s end
@@ -488,17 +500,9 @@ end
   def pota_logs
    pota_logs=[]
 
-   contacts1=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where callsign1 = '"+self.callsign+"') as sq where asset1_codes  like 'ZLP%%'" ]
-   contacts2=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where callsign1 = '"+self.callsign+"') as sq where asset1_codes  like 'ZL-%%'" ]
+   contacts2=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where callsign1 = '"+self.callsign+"' and 'pota park'=ANY(asset1_classes)) as sq where asset1_codes  like 'ZL-%%'" ]
 
    parks=[]
-   contacts1.each do |contact|
-       p=Asset.find_by(code: contact.asset1_codes)
-       pp=p.linked_assets_by_type("pota park")
-       if pp and pp.count>0 then 
-         parks.push(potapark: pp.first.code, name: pp.first.name)
-       end
-   end
    contacts2.each do |contact|
        pp=Asset.find_by(code: contact.asset1_codes)
        p=pp.linked_assets_by_type("park")
@@ -510,10 +514,11 @@ end
 
    parks.each do |park| 
      pp=Asset.find_by(code: park[:potapark]);
-     dps=pp.linked_assets_by_type("park");
-     dpcodes=dps.map{|dp| dp.code}
-     puts dpcodes;
-     contacts1=Contact.where(" callsign1 = ? and (? = ANY(asset1_codes) or (array[?]::varchar[] && asset1_codes))", self.callsign, park[:potapark], dpcodes)
+#     dps=pp.linked_assets_by_type("park");
+#     dpcodes=dps.map{|dp| dp.code}
+#     puts dpcodes;
+#     contacts1=Contact.where(" callsign1 = ? and (? = ANY(asset1_codes) or (array[?]::varchar[] && asset1_codes))", self.callsign, park[:potapark], dpcodes)
+     contacts1=Contact.where(" callsign1 = ? and (? = ANY(asset1_codes))", self.callsign, park[:potapark])
  
      dates=[]
      contacts1.each do |contact|
@@ -522,7 +527,7 @@ end
      dates=dates.uniq
       
      dates.each do |date| 
-       contacts1=Contact.where(" callsign1 = ? and ((array[?]::varchar[] && asset1_codes) or ? = ANY(asset1_codes)) and date >= ? and date < ? ", self.callsign, dpcodes, park[:potapark], date.beginning_of_day,date.end_of_day)
+       contacts1=Contact.where(" callsign1 = ? and (? = ANY(asset1_codes)) and date >= ? and date < ? ", self.callsign, park[:potapark], date.beginning_of_day,date.end_of_day)
        contact_count=contacts1.count
        contacts=[]
        contacts1.each do |contact| contacts.push(contact) end
@@ -532,6 +537,45 @@ end
   pota_logs
   end
 
+def awards
+   awls=AwardUserLink.where(user_id: self.id)
+end
+
+def check_awards()
+  user=self
+  awarded=[]
+  awards=Award.where(:is_active => true)
+  awards.each do |award|
+    if !(user.has_award(award,nil)) then
+      failcount=0
+      if award.count_based==true then
+         if award.activated==true and award.chased == true then
+           #we need a complete count! 
+         elsif award.activated==true then
+           score=user.activated_count[award.programme]
+         elsif award.chased==true then
+           score=user.chased_count[award.programme]
+         else
+           score=user.score[award.programme]
+         end
+         puts(award.name, score)
+         if score then
+           AwardThreshold.all.each do |threshold|
+             if score >= threshold.threshold
+               if !(user.has_award(award,threshold)) then
+                 a=AwardUserLink.new
+                 a.award_id=award.id
+                 a.threshold=threshold.threshold
+                 a.user_id=user.id
+                 a.save
+               end
+             end
+           end
+        end
+      end
+    end
+  end
+end
 
   private
 

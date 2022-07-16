@@ -20,11 +20,14 @@ match '/alerts',   to: 'static_pages#alerts',   via: 'get'
 match '/ack_news',   to: 'static_pages#ack_news',   via: 'get'
 resources :sessions, only: [:new, :create, :destroy]
 resources :asset_web_links, only: [:create]
+resources :awards
 resources :asset_links, only: [:create]
 get 'asset_web_links/:id/delete', to: 'asset_web_links#delete'
 get 'asset_links/:id/delete', to: 'asset_links#delete'
 resources :qsl, only: [:show]
 resources :users
+get 'users/:id/assets', to: 'users#assets'
+get 'users/:id/p2p', to: 'users#p2p'
 get 'users/:id/add', to: 'users#add'
 get 'users/:id/delete', to: 'users#delete'
 get 'images/:id/delete', to: 'images#delete'

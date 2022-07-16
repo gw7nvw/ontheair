@@ -126,7 +126,7 @@ end
 
   private
   def award_params
-    params.require(:award).permit(:id, :name, :description, :email_text, :huts_minimum, :parks_minimum, :islands_minimum, :user_qrp, :contact_qrp, :is_active, :allow_repeat_visits)
+    params.require(:award).permit(:id, :name, :description, :email_text, :count_based, :all_district, :all_region, :all_programme, :p2p,  :user_qrp, :contact_qrp, :is_active, :allow_repeat_visits, :activated, :chased, :programme)
   end
 
 

@@ -3,26 +3,31 @@
 <%= render 'flash' %>
 
 <script> 
+   reset_map_controllers();
    update_title('<%=@title%>'); 
    document.getElementById("page_status").innerHTML = '';
    document.body.classList.remove('loading');
 </script>
-<div clas"erow">
-Enter your account's registered email below to request a password reset.  You will be emailed with a link to reset your password.  </div>
-<div class="erow">The email may end up in your spam folder. There are known issues with delivery being rejected to yahoo addresses due to their filters on apparent bulk-mail. </div>
-<div class="erow">Email me mattbriggs@yahoo.com if you need to request a manual reset instead.  
-</div>
- <div class="row">
-  <div class="span6">
-    <%= form_for :password_reset, url: password_resets_path, remote: true do |f| %>
+<div id="right_scroll">
+   <%= render 'flash' %>
 
-      <%= f.label :email %>
-      <%= f.text_field :email %>
+   <div class="erow">
+   Enter your account's registered email below to request a password reset.  You will be emailed with a link to reset your password.  </div>
+   <div class="erow">The email may end up in your spam folder. There are known issues with delivery being rejected to yahoo addresses due to their filters on apparent bulk-mail. </div>
+   <div class="erow">Email me mattbriggs@yahoo.com if you need to request a manual reset instead.  
+   </div>
+   <div class="row">
+     <div class="span6">
+       <%= form_for :password_reset, url: password_resets_path, remote: true do |f| %>
 
-      <br/>
+         <%= f.label :email %>
+         <%= f.text_field :email %>
 
-      <%= f.submit "Reset password", class: "btn btn-small btn-primary" %>
-    <% end %>
+         <br/>
 
-  </div>
+         <%= f.submit "Reset password", class: "btn btn-small btn-primary" %>
+       <% end %>
+
+     </div>
+   </div>
 </div>

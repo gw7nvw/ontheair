@@ -13,10 +13,13 @@ class EmailReceive
     from    = mail.from.first
     to      = mail.to.first
     subject = mail.subject
-
+    attachment = nil
+    file = nil
 
     if mail.multipart?
       part = mail.parts.select { |p| p.content_type =~ /text\/plain/ }.first rescue nil
+      attachment = mail.parts.select { |p| p.content_type =~ /application\/octet-stream/ }.first rescue nil
+      file=attachment.decoded
       unless part.nil?
         message = part.body.decoded
       end
@@ -25,7 +28,7 @@ class EmailReceive
     end
 
     unless message.nil?
-      Resque.enqueue(EmailReceive, from, to, subject, message)
+      Resque.enqueue(EmailReceive, from, to, subject, message, file)
     end
   end
 end

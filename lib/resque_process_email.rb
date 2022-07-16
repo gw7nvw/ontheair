@@ -7,7 +7,7 @@ class EmailReceive
 #  SPOT_TOPIC_ID=32
 #  ALERT_TOPIC_ID=32
 
-  def self.perform(from, to, subject, body)
+  def self.perform(from, to, subject, body, attachment)
      posttype=nil
      if to[0..3].upcase=="SPOT" then
        puts "DEBUG: SPOT" 
@@ -21,6 +21,10 @@ class EmailReceive
        puts "DEBUG: ZL-SOTA"
        posttype="zlsota"
      end
+     if to[0..3].upcase=="LOGS" then
+       puts "DEBUG: LOGS"
+       posttype="logs"
+     end
     params = {
       :body     => body,
       :to       => to,
@@ -28,12 +32,48 @@ class EmailReceive
       :from     => from
     }
     puts "DEBUG body: "+body
+    puts "DEBUG subject: "+subject
     puts "DEBUG from: "+from
     puts "DEBUG to: "+to
 
     # forward mail to zl-sota
     if posttype=="zlsota" then
        UserMailer.zlsota_mail(body.gsub(/https.*$/,'{link removed}'), subject).deliver
+    #upload a log
+    elsif posttype=="logs" then
+      username=nil
+      pin=nil
+      if subject["ZLOTA"] then
+        puts "DEBUG: Valid subject"
+        creds=subject.split("ZLOTA")
+        if creds and creds.count>0 then 
+          username=creds[1].split(":")[1]
+          pin=creds[1].split(":")[2]
+          puts "DEBUG: username: "+username
+          puts "DEBUG: pin: "+pin
+        end
+      end
+      #if username and pin and api_authenticate(username, pin) then
+      if self.api_authenticate(username, pin) then
+         puts "DEBUG: Authenticated"
+         res={success: true, message: ''}
+         logs=Log.import(attachment, nil)
+	 puts "DEBUG: Imported"
+         if logs[:success]==false then
+            res={success: false, message: logs[:errors].join(", ")}
+         end
+         if logs[:success]==true and logs[:errors] and logs[:errors].count>0  then
+            res={success: true, message: "Warnings: "+logs[:errors].join(", ")}
+         end
+      else
+         res={success: false, message: 'Login failed using supplied credentials'}
+      end
+      puts "Result: "+res[:message]
+      if res[:success]==false or res[:message]!="" then
+        #reply with error (swapping to and from)
+        UserMailer.free_form_mail(from, to, "Re: "+subject, res[:message]).deliver
+      end
+
     else 
      #check for correct format
      if body["inr.ch"] then
@@ -101,5 +141,35 @@ class EmailReceive
      end
     end
   end
+
+def self.api_authenticate(username, pin)
+  puts "DEBUG: authenticating"
+  valid=false
+  if username and pin then
+    puts "DEBUG: comparing username"
+    user=User.find_by(callsign: username.upcase)
+    puts "DEBUG: comparing pin"
+    if user and user.pin.upcase==pin.upcase then
+       puts "DEBUG: valid pin"
+       valid=true
+    else
+       #authenticate via PnP 
+       #if not a local user, or is a local user and have allowed PnP logins
+       #if !user or (user and user.allow_pnp_login==true) then
+       if (user and user.allow_pnp_login==true) then
+         params={"actClass"=>"WWFF", "actCallsign"=>"test", "actSite"=>"test", "mode"=>"SSB", "freq"=>"7.095", "comments"=>"Test", "userID"=>username, "APIKey"=>pin}
+         res=send_spot_to_pnp(params,'/DEBUG')
+         if res.body.match('Success') then
+           valid=true
+           puts "AUTH: SUCCESS authenticated via PnP"
+         else
+           puts "AUTH: FAILED authentication via PnP"
+         end
+       end
+    end
+  end
+  valid
+end
+
 end
 

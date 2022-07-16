@@ -1,0 +1,5 @@
+if ((window.history.pushState!=null) && (site_back!=true)) window.history.pushState(null, '', '/users/<%=@user.callsign%>/assets?<%=raw(@parameters)%>');
+
+$('#right_panel').html("<%= escape_javascript(render(:partial => 'users/assets')).html_safe %>");
+
+

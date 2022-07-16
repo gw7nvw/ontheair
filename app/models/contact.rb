@@ -32,6 +32,7 @@ class Contact < ActiveRecord::Base
     self.check_codes_in_location
     self.get_most_accurate_location
     self.remove_suffix
+    self.update_classes
   end
   def check_codes_in_location
     if self.asset1_codes==nil or self.asset1_codes==[] or self.asset1_codes==[""] then
@@ -82,6 +83,26 @@ class Contact < ActiveRecord::Base
      newcodes=newcodes+VkAsset.child_codes_from_parent(code)
    end
    newcodes.uniq
+ end
+
+ def update_classes
+    asset1_classes=[]
+    self.asset1_codes.each do |code|
+      asset=Asset.assets_from_code(code)
+      if asset and asset.count>0 then
+        asset1_classes.push(asset.first[:type])
+      end
+    end
+    self.asset1_classes=asset1_classes
+
+    asset2_classes=[]
+    self.asset2_codes.each do |code|
+      asset=Asset.assets_from_code(code)
+      if asset and asset.count>0 then
+        asset2_classes.push(asset.first[:type])
+      end
+    end
+    self.asset2_classes=asset2_classes
  end
 
  def add_child_codes
@@ -351,6 +372,7 @@ end
        user=User.create(callsign: callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
      end
      if Rails.env.production? then user.outstanding=true;user.save;Resque.enqueue(Scorer) else user.update_score end
+     user.check_awards
    end
    callsign=self.callsign2
    if callsign and callsign.length>0 then
@@ -359,6 +381,7 @@ end
        user=User.create(callsign: callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
      end
      if Rails.env.production? then user.outstanding=true;user.save;Resque.enqueue(Scorer) else user.update_score end
+     user.check_awards
    end
  end
 
@@ -390,6 +413,8 @@ end
    c.user2_id=self.user1_id
    c.asset1_codes=self.asset2_codes 
    c.asset2_codes=self.asset1_codes 
+   c.asset1_classes=self.asset2_classes 
+   c.asset2_classes=self.asset1_classes 
    c.id=-self.id
    c
  end

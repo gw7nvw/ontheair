@@ -40,10 +40,32 @@
     <%=  link_to "Hide", 'ack_news', remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler('acklink')"%>
   </h2>
 
-    <% @items.each do |item| %>
-       <%=render :partial => 'item_details',  :locals => {:item => item} %>
-    <% end%>
+  <% @items.each do |item| %>
+     <%=render :partial => 'item_details',  :locals => {:item => item} %>
+  <% end%>
+  <div class="erow">
+     <div class="hrline">
+        <hr noshade size="4">
+     </div>
+  </div>
 <% end %>
+
+<%= form_tag '/assets', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+  <br/>
+  <div class="rowtitle">Search for place:</div>
+  <div class="rowtext">
+    <input type="text" name="searchtext" value='<%=@searchtext%>'/>
+  </div>
+  <div class="buttonshort">
+    <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+  </div>
+</form>
+
+  <div class="erow">
+     <div class="hrline">
+        <hr noshade size="4">
+     </div>
+  </div>
 
   <h2>
     <%= link_to 'Latest ZL / VK Spots', '/spots', remote: true,:onclick => "linkHandler('results')"%>

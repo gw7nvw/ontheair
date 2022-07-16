@@ -77,4 +77,11 @@ class UserMailer < ActionMailer::Base
     #mail from: "zl4nvw@ontheair.nz", to: "mattbriggs@yahoo.com", subject: subject
   end
 
+  def free_form_mail(to, from, subject, body)
+     @to=to
+     @from=from
+     @subject=subject
+     @body=body
+     mail from: from, to: to, subject: subject
+  end
 end

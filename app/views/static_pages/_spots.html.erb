@@ -13,7 +13,7 @@
            xhr.setRequestHeader("Accept","text/javascript");
          },
          type: "GET",
-         timeout: 10000,
+         timeout: 20000,
          url: `/spots?<%=raw(@parameters)%>`,
          complete: function(jqXHR, thrownError) {
            /* complete also fires when error ocurred, so only clear if no error has been shown */

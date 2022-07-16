@@ -119,12 +119,18 @@ def logs_post
   if api_authenticate(params) then
      res={success: true, message: 'Thanks for the data!'} 
      @upload=Upload.new
-     @upload.doc=params[:item][:file]
+     @upload.doc=params[:file]
      res=@upload.save
      puts res
      logfile=File.read(@upload.doc.path)
      logs=Log.import(logfile, nil)
      @upload.destroy
+     if logs[:success]==false then
+        res={success: false, message: logs[:errors].join(", ")}
+     end
+     if logs[:success]==true and logs[:errors] and logs[:errors].count>0  then
+        res={success: true, message: "Warnings: "+logs[:errors].join(", ")}
+     end
   else
      res={success: false, message: 'Login failed using supplied credentials'}
   end
@@ -144,16 +150,16 @@ private
 
 def api_authenticate(params)
   valid=false
-  if params[:item][:userID] and params[:item][:APIKey] then
-    user=User.find_by(callsign: params[:item][:userID].upcase)
-    if user and user.pin.upcase==params[:item][:APIKey].upcase then 
+  if params[:userID] and params[:APIKey] then
+    user=User.find_by(callsign: params[:userID].upcase)
+    if user and user.pin.upcase==params[:APIKey].upcase then 
        valid=true
     else
        #authenticate via PnP 
        #if not a local user, or is a local user and have allowed PnP logins
        #if !user or (user and user.allow_pnp_login==true) then
        if (user and user.allow_pnp_login==true) then
-         params={"actClass"=>"WWFF", "actCallsign"=>"test", "actSite"=>"test", "mode"=>"SSB", "freq"=>"7.095", "comments"=>"Test", "userID"=>params[:item][:userID], "APIKey"=>params[:item][:APIKey]} 
+         params={"actClass"=>"WWFF", "actCallsign"=>"test", "actSite"=>"test", "mode"=>"SSB", "freq"=>"7.095", "comments"=>"Test", "userID"=>params[:userID], "APIKey"=>params[:APIKey]} 
          res=send_spot_to_pnp(params,'/DEBUG')
          if res.body.match('Success') then 
            valid=true

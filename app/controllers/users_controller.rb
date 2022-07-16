@@ -6,6 +6,23 @@ class UsersController < ApplicationController
 
   end
 
+  def assets
+     @parameters=params_to_query
+     @user=User.find_by(callsign: params[:id])
+     @count_type=params[:count_type]
+     @asset_type=params[:asset_type]
+
+     @asset_codes=@user.assets_by_type(@asset_type, @count_type) 
+     @assets = Asset.find_by_sql [ " select asset_type, minor, is_active, id, name, code from assets where code in (?) ",@asset_codes ] 
+  end
+
+  def p2p
+     @parameters=params_to_query
+     @user=User.find_by(callsign: params[:id])
+
+     @contacts=@user.get_p2p_all
+  end
+
   def index_prep
     whereclause="true"
     if params[:filter] then
