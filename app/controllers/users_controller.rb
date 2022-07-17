@@ -30,7 +30,9 @@ class UsersController < ApplicationController
       whereclause="is_"+@filter+" is true"
     end
 
-    @users=User.find_by_sql [ 'select * from users where '+whereclause+' order by callsign' ]
+    @fullusers=User.find_by_sql [ 'select * from users where '+whereclause+' order by callsign' ]
+    @users=@fullusers.paginate(:per_page => 40, :page => params[:page])
+
   end
 
 
@@ -39,7 +41,7 @@ class UsersController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.csv { send_data users_to_csv(@users), filename: "users-#{Date.today}.csv" }
+      format.csv { send_data users_to_csv(@fullusers), filename: "users-#{Date.today}.csv" }
     end
   end
 

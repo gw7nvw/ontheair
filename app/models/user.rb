@@ -237,14 +237,13 @@ def authenticated?(attribute, token)
       logs=Log.find_by_sql [ "select * from logs where callsign1='"+self.callsign+"' order by date"]
   end
 
-  def self.users_with_assets
+  def self.users_with_assets(sortby = "park", scoreby = "score", max_rows = 2000)
     callsigns=[]
-    contacts=Contact.where("asset1_codes is not null or asset2_codes is not null")
-    contacts.each do |c|
-      callsigns.push(c.callsign1) 
-      callsigns.push(c.callsign2) 
-    end
-    users=User.where(callsign: callsigns.uniq)
+    contacts1=Contact.find_by_sql [" select distinct callsign1 from contacts where asset1_classes is not null or asset2_classes is not null "]
+    contacts2=Contact.find_by_sql [" select distinct callsign2 as callsign1 from contacts where asset1_classes is not null or asset2_classes is not null "]
+    callsigns=((contacts1+contacts2).map{|c| c.callsign1}).uniq
+
+    users=User.find_by_sql [ "select * from users where callsign in ("+callsigns.uniq.map{|c| "'"+c+"'"}.join(",")+") order by cast(substring(SUBSTRING("+scoreby+" from '"+sortby+": [0-9]{1,9}') from '[0-9]{1,9}') as integer) desc limit "+max_rows.to_s ]
   end
 
   def self.update_scores

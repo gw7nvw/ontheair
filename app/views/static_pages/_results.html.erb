@@ -4,6 +4,12 @@
    document.body.classList.remove('loading');
    document.title = '... On The Air'
    document.getElementById('logo').innerHTML='... On The Air'
+$(function () {
+  $('#right_panel .pagination a').on('click', function () {
+    $.getScript(this.href+"&sortby=<%=@sortby%>");
+    return false;
+  });
+});
 
 </script>
 
@@ -24,7 +30,11 @@
     <h1>ZL ... On The Air</h1>
   </div>
 
+  <div class="name_pagination"> <%= will_paginate(@users, :sortby => @sortby, :scoreby => @scoreby) %></div>
+
   <%=render 'result_table'%>
+
+  <div class="name_pagination"> <%= will_paginate(@users, :sortby => @sortby, :scoreby => @scoreby) %></div>
 
 <script>
 document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;

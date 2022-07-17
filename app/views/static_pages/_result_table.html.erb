@@ -35,8 +35,8 @@ end%>
 
     <% position=0    
     lastscore=99999999 %>
-    <% if @users then  @users.sort_by { |u| u[scorefield][@sortby]||0 }.reverse.each do |user| %>
-      <% if position<@max_len then %>
+    <% if @users then  @users[0..@max_len].each do |user| %>
+      <% if position<@max_len and user[scorefield][@sortby] and user[scorefield][@sortby]>-1 then %>
         <% 
            if (user[scorefield][@sortby]||0)<(lastscore||0) then 
             position+=1
@@ -51,10 +51,10 @@ end%>
             <%= link_to user.callsign.upcase, '/users/'+user.callsign, remote: true, :id => 'user_link_'+user.id.to_s, :style => (if not user.activated then 'color:grey' else '' end), :onclick => "linkHandler('user_link_"+user.id.to_s+"')" %>
           </td>
           <% AssetType.where("keep_score = true").each do |asset_type| %>
-            <td><%=user[scorefield][asset_type.name].to_s%></td>
+            <td><%=(user[scorefield][asset_type.name]||0).to_s%></td>
           <% end %>
-          <td><%=user[scorefield]['p2p'].to_s%></td>
-          <td><%=user[scorefield]['qrp'].to_s%></td>
+          <td><%=(user[scorefield]['p2p']||0).to_s%></td>
+          <td><%=(user[scorefield]['qrp']||0).to_s%></td>
         </tr>
       <% end %>
     <% end end  %>

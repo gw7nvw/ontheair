@@ -31,18 +31,11 @@ class StaticPagesController < ApplicationController
       @tz=Timezone.find(tzid)
 
       @parameters=params_to_query
-
-      @users=User.users_with_assets
-
-      @scoreby=params[:scoreby] 
-      if !@scoreby or @scoreby=='' then @scoreby="bagged" end
+      @max_rows=30
+      results
+      @users=@full_users
 
       @static_page=true
-      @sortby=params[:sortby]
-      if !@sortby or @sortby=='' then 
-         cats=AssetType.where("keep_score = true")
-         @sortby=cats[rand(0..cats.count-1)].name
-      end
       @brief=true
       @fulllogs=Log.find_by_sql [ " select * from logs order by date desc " ]
       @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
@@ -56,11 +49,12 @@ class StaticPagesController < ApplicationController
       @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
   end
   def results
+      if !@max_rows then @max_rows=2000 end
+
       @parameters=params_to_query
       @scoreby=params[:scoreby] 
       if !@scoreby or @scoreby=='' then @scoreby="bagged" end
 
-      @users=User.users_with_assets
 
       @static_page=true
       @sortby=params[:sortby]
@@ -68,6 +62,17 @@ class StaticPagesController < ApplicationController
          cats=AssetType.where("keep_score = true")
          @sortby=cats[rand(0..cats.count-1)].name
       end
+      if @scoreby=="activated" then
+        scorefield="activated_count_total"
+      elsif @scoreby=="chased" then
+        scorefield="chased_count_total"
+      else
+        scorefield="score"
+        @scoreby="bagged"
+      end
+
+      @full_users=User.users_with_assets(@sortby, scorefield, @max_rows)
+      @users=@full_users.paginate(:per_page => 40, :page => params[:page])
   end
 
   def help

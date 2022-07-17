@@ -4,6 +4,14 @@
    document.body.classList.remove('loading');
    document.title = '... On the Air'
    document.getElementById('logo').innerHTML='... On The Air'
+$(function () {
+  $('#right_panel .pagination a').on('click', function () {
+    $.getScript(this.href);
+    return false;
+  });
+});
+
+
 </script>
 
 <div id="actionbar" class="span7">
@@ -24,6 +32,9 @@
 
 <div id="right_scroll">
   <%= render 'flash' %>
+
+  <div class="name_pagination"> <%= will_paginate(@users) %></div>
+
   <table class="places">
     <tr>
       <th>Callsign</th>
@@ -65,6 +76,8 @@
       </tr>
     <% end end %>
   </table>
+  <div class="name_pagination"> <%= will_paginate(@users) %></div>
+
 </div>
 <div class="erow">
 Key to huts / parks / islands: </br>
