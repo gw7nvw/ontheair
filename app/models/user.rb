@@ -243,7 +243,7 @@ def authenticated?(attribute, token)
     contacts2=Contact.find_by_sql [" select distinct callsign2 as callsign1 from contacts where asset1_classes is not null or asset2_classes is not null "]
     callsigns=((contacts1+contacts2).map{|c| c.callsign1}).uniq
 
-    users=User.find_by_sql [ "select * from users where callsign in ("+callsigns.uniq.map{|c| "'"+c+"'"}.join(",")+") order by cast(substring(SUBSTRING("+scoreby+" from '"+sortby+": [0-9]{1,9}') from '[0-9]{1,9}') as integer) desc limit "+max_rows.to_s ]
+    users=User.find_by_sql [ "select * from users where callsign in ("+callsigns.uniq.map{|c| "'"+c+"'"}.join(",")+") order by cast(substring(SUBSTRING("+scoreby+" from '"+sortby+": [0-9]{1,9}') from ' [0-9]{1,9}') as integer) desc limit "+max_rows.to_s ]
   end
 
   def self.update_scores
