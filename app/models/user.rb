@@ -56,6 +56,11 @@ def authenticated?(attribute, token)
    if uas and uas.count>0 then true else false end
  end
 
+ def has_completion_award(scale, loc_id, activity_type, award_class)
+     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_type='"+scale+"' and linked_id="+loc_id.to_s+" and activity_type='"+activity_type+"' and award_class='"+award_class+"' "]
+     if uas and uas.count>0 then true else false end
+ end
+
  def timezonename
    timezonename=""
    if self.timezone!="" then
@@ -284,10 +289,14 @@ def authenticated?(attribute, token)
     at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
 
     p2p=[]
-
-    contacts1=Contact.find_by_sql [ "select (split_part(asset1_code,' ', 1) || ' ' || split_part(asset2_code, ' ', 1) || ' ' || time::date) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.callsign1 as callsign1, c1.callsign2 as callsign2, unnest(c1.asset1_codes) as asset1_code, unnest(c1.asset1_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.callsign1='"+self.callsign+"') as foo where asset1_class in ("+at_list+"); " ]
-    contacts2=Contact.find_by_sql [ "select (split_part(asset1_code, ' ', 1) || ' ' || split_part(asset2_code, ' ', 1) || ' ' || time::date) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.callsign1 as callsign1, c1.callsign2 as callsign2, unnest(c1.asset2_codes) as asset1_code, unnest(c1.asset2_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset1_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.callsign2='"+self.callsign+"') as foo where asset1_class in ("+at_list+"); " ]
-    contacts=((contacts1+contacts2).map{|c| c.asset1_code}).uniq
+    #contacts where I'm in ZLOTA
+    contacts1=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset1_code,' ', 1) || ' ' || split_part(asset2_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.callsign1 as callsign1, c1.callsign2 as callsign2, unnest(c1.asset1_codes) as asset1_code, unnest(c1.asset1_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.callsign1='"+self.callsign+"') as foo where asset1_class in ("+at_list+"); " ]
+    contacts2=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset1_code, ' ', 1) || ' ' || split_part(asset2_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.callsign1 as callsign1, c1.callsign2 as callsign2, unnest(c1.asset2_codes) as asset1_code, unnest(c1.asset2_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset1_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.callsign2='"+self.callsign+"') as foo where asset1_class in ("+at_list+"); " ]
+    #contacts where other party  ZLOTA (reverse code order so my loc first
+    #to avoid double-counting ZLOTA-ZLOTA
+    contacts3=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset2_code,' ', 1) || ' ' || split_part(asset1_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.callsign1 as callsign1, c1.callsign2 as callsign2, unnest(c1.asset1_codes) as asset1_code, unnest(c1.asset1_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.callsign2='"+self.callsign+"') as foo where asset1_class in ("+at_list+"); " ]
+    contacts4=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset2_code, ' ', 1) || ' ' || split_part(asset1_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.callsign1 as callsign1, c1.callsign2 as callsign2, unnest(c1.asset2_codes) as asset1_code, unnest(c1.asset2_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset1_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.callsign1='"+self.callsign+"') as foo where asset1_class in ("+at_list+"); " ]
+    contacts=((contacts1+contacts2+contacts3+contacts4).map{|c| c.asset1_code}).uniq
   end
 
 
@@ -540,6 +549,89 @@ def awards
    awls=AwardUserLink.where(user_id: self.id)
 end
 
+def check_district_completion(district_id, activity_type, asset_type)
+  available_codes=[]
+  activated_codes=[]
+  missing_codes=[]
+  d=District.find(district_id)
+  if d then
+     as=d.assets_by_type(asset_type)
+     if as and as.count>0 then
+       available_codes=as.map{|a| a.code}
+       asset_codes=as.map{|a| "'"+a.code+"'"}.join(',') 
+       contacts1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_codes) as asset1_codes from contacts where callsign1='"+self.callsign+"') as foo where asset1_codes in ("+asset_codes+")" ]
+       contacts2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_codes) as asset2_codes from contacts where callsign2='"+self.callsign+"') as foo where asset2_codes in ("+asset_codes+")" ]
+       activated_codes=(contacts1+contacts2).map{|c| c.asset1_codes}.uniq
+       missing_codes=available_codes-activated_codes
+     end
+  end
+  {available: available_codes, worked: activated_codes, missing: missing_codes}
+end
+
+def check_district_awards
+  avail=Contact.find_by_sql [" select name, type, code_count, site_list from (select d.district_code as name, a.asset_type as type, count(a.code) as code_count, array_agg(a.code) as site_list from districts d inner join assets a on a.district=d.district_code group by d.district_code, a.asset_type) as foo; " ]
+  activations=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select unnest(asset1_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset2_codes) as asset1_code from contacts where callsign2='"+self.callsign+"'))as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district group by d.district_code, a.asset_type; "]
+  chases=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select unnest(asset2_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset1_codes) as asset1_code from contacts where callsign2='"+self.callsign+"'))as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district group by d.district_code, a.asset_type; "]
+  avail.each do |combo|
+     activation=activations.select {|a| a.name==combo.name and a.type==combo.type}
+     chase=chases.select {|c| c.name==combo.name and c.type==combo.type}
+     if activation and activation.count>0 then
+       site_count=combo.site_list.count
+       site_act=activation.first.site_list.count
+       site_not_act=(combo.site_list-activation.first.site_list).count
+       if site_not_act==0 then
+         d=District.find_by(district_code: combo.name)
+         if !(self.has_completion_award("district", d.id, "activator", combo.type)) then
+           award=AwardUserLink.new
+           award.award_type="district"
+           award.linked_id=d.id
+           award.activity_type="activator"
+           award.award_class=combo.type
+           award.user_id=self.id
+           award.save
+         end
+       end
+     end
+
+     if chase and chase.count>0 then
+       site_count=combo.site_list.count
+       site_chased=chase.first.site_list.count
+       site_not_chased=(combo.site_list-chase.first.site_list).count
+       if site_not_chased==0 then
+         d=District.find_by(district_code: combo.name)
+         if !(self.has_completion_award("district", d.id, "chaser", combo.type)) then
+           award=AwardUserLink.new
+           award.award_type="district"
+           award.linked_id=d.id
+           award.activity_type="chaser"
+           award.award_class=combo.type
+           award.user_id=self.id
+           award.save
+         end
+       end
+     end
+  end 
+
+end
+
+
+def check_award(award_id)
+    awarded={latest: nil, next: nil}
+    score=0
+    awls=AwardUserLink.find_by_sql [" select * from award_user_links where user_id="+self.id.to_s+" and award_id="+award_id.to_s+" order by threshold desc limit 1"]
+    if awls and awls.count==1 then
+      awarded[:latest]=awls.first.threshold_name.capitalize+" ("+awls.first.threshold.to_s+")"
+      score=awls.first.threshold
+    end
+    if score then
+      nextThreshold=AwardThreshold.find_by_sql [" select * from award_thresholds where threshold>"+score.to_s+" order by threshold asc limit 1" ]
+      if nextThreshold and nextThreshold.count==1 then
+        awarded[:next]=nextThreshold.first.name.capitalize+" ("+nextThreshold.first.threshold.to_s+")"
+      end
+    end
+    awarded
+end
+
 def check_awards()
   user=self
   awarded=[]
@@ -551,13 +643,12 @@ def check_awards()
          if award.activated==true and award.chased == true then
            #we need a complete count! 
          elsif award.activated==true then
-           score=user.activated_count[award.programme]
+           score=user.activated_count_total[award.programme]
          elsif award.chased==true then
-           score=user.chased_count[award.programme]
+           score=user.chased_count_total[award.programme]
          else
            score=user.score[award.programme]
          end
-         puts(award.name, score)
          if score then
            AwardThreshold.all.each do |threshold|
              if score >= threshold.threshold
@@ -565,6 +656,7 @@ def check_awards()
                  a=AwardUserLink.new
                  a.award_id=award.id
                  a.threshold=threshold.threshold
+                 a.award_type="threshold"
                  a.user_id=user.id
                  a.save
                end

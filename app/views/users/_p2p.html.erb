@@ -26,31 +26,40 @@
     <div class="erow">
       <div class="sectiontitle" style="margin-top: 12px;">Park 2 Park:</div>
       <span id="valid_count"></span><%=@contacts.count.to_s%> unique P2P contacts 
-      <ul>
-        <div>
-          <% @contacts.sort.each do |c| %>
+      <table>
+        <tr>
+          <th>Date</th>
+          <th>From</th>
+          <th>To</th>
+        <% @contacts.sort.each do |c| %>
+          <tr>
             <% contact = c.split(" ") %>
-            <% asset1 = Asset.find_by(code: contact[0]) %>
-            <% asset2 = Asset.find_by(code: contact[1]) %>
-            <li>
-               <%if asset1 and asset1.minor!=true and asset1.is_active==true and asset1.type.keep_score==true %>
-                  <%=link_to asset1.name+" ["+asset1.code+"]", '/contacts?user='+@user.callsign+'&asset='+asset1.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
-               <%else%>
-                  <%=contact[0]%>
-               <%end%>
-               to
-               <%if asset2 and asset2.minor!=true and asset2.is_active==true and asset2.type.keep_score==true %>
-                  <%=link_to asset2.name+" ["+asset2.code+"]", '/contacts?user='+@user.callsign+'&asset='+asset2.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+            <% asset1 = Asset.find_by(code: contact[1]) %>
+            <% if !asset1 then asset1=VkAsset.find_by(code: contact[1]) end %>
+            <% asset2 = Asset.find_by(code: contact[2]) %>
+            <% if !asset2 then asset2=VkAsset.find_by(code: contact[2]) end %>
+            <td>
+               <%=link_to contact[0], '/contacts?user='+@user.callsign+'&asset='+asset1.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+            </td>
+            <td>
+               <%if asset1 %>
+                  <% if asset1.url[0]!='/' then asset1.url='/'+asset1.url end %>
+                  <%=link_to asset1.name+" ["+asset1.code+"]", asset1.url, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')", class: (if ! asset1.type or !asset1.type.keep_score or asset1.minor or asset1.is_active==false then "link_to" end) %>
                <%else%>
                   <%=contact[1]%>
                <%end%>
-               on
-               <%=contact[2]%>
-            </li>
-          <% end %>
-        </div>
-
-      </ul>
+            </td>
+            <td>
+               <%if asset2 %>
+                  <% if asset2.url[0]!='/' then asset2.url='/'+asset2.url end %>
+                  <%=link_to asset2.name+" ["+asset2.code+"]", asset2.url, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')", class: (if ! asset2.type or !asset2.type.keep_score or asset1.minor or asset2.is_active==false then "link_to" end) %>
+               <%else%>
+                  <%=contact[2]%>
+               <%end%>
+            </td>
+          </tr>
+        <% end %>
+      </table>
     </div>
 </div>
 <script>

@@ -27,6 +27,7 @@ get 'asset_links/:id/delete', to: 'asset_links#delete'
 resources :qsl, only: [:show]
 resources :users
 get 'users/:id/assets', to: 'users#assets'
+get 'users/:id/awards', to: 'users#awards'
 get 'users/:id/p2p', to: 'users#p2p'
 get 'users/:id/add', to: 'users#add'
 get 'users/:id/delete', to: 'users#delete'

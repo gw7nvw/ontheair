@@ -6,9 +6,17 @@ class UsersController < ApplicationController
 
   end
 
+  def awards
+     @parameters=params_to_query
+     @user=User.find_by(callsign: params[:id].upcase)
+     @awards=Award.where(count_based: true).sort_by &:name
+     @district_awards=AwardUserLink.where(award_type: "district", user_id: @user.id).sort_by {|a| a.district.name}
+  end
+
+
   def assets
      @parameters=params_to_query
-     @user=User.find_by(callsign: params[:id])
+     @user=User.find_by(callsign: params[:id].upcase)
      @count_type=params[:count_type]
      @asset_type=params[:asset_type]
 
@@ -18,7 +26,7 @@ class UsersController < ApplicationController
 
   def p2p
      @parameters=params_to_query
-     @user=User.find_by(callsign: params[:id])
+     @user=User.find_by(callsign: params[:id].upcase)
 
      @contacts=@user.get_p2p_all
   end

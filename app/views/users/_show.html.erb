@@ -129,6 +129,9 @@
 </div>
 <% end %>
 
+<h2>Awards</h2>
+<%=link_to "Show awards", '/users/'+@user.callsign+'/awards', remote: true,  :id => 'awards', :onclick => "linkHandler('awards')"  %> 
+
 <div class="erow">
    <div class="hrline">
       <hr noshade size="4">

@@ -18,4 +18,8 @@ def generate_notification
     self.save
   end
 end
+
+def district
+  if self.award_type=="district" then District.find(self.linked_id) else nil end
+end
 end

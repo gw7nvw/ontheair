@@ -10,6 +10,8 @@ class Scorer
       u.outstanding=false
       u.save
       u.update_score
+      u.check_awards
+      u.check_district_awards
     end
   end
 end

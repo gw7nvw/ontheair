@@ -228,17 +228,21 @@ def self.import(filestr,user)
            case (key.downcase)
  
            when "station_callsign"
-              callsign=value.strip
-              #remove suffix
-              if callsign['/'] then callsign=Log.remove_suffix(callsign) end
-              protolog.callsign1=callsign
-              contact.callsign1=callsign
+              if value.strip.length>0 then
+                callsign=value.strip
+                #remove suffix
+                if callsign['/'] then callsign=Log.remove_suffix(callsign) end
+                protolog.callsign1=callsign
+                contact.callsign1=callsign
+              end
            when "operator"
-              callsign=value.strip
-              #remove suffix
-              if callsign['/'] then callsign=Log.remove_suffix(callsign) end
-              protolog.callsign1=callsign
-              contact.callsign1=callsign
+              if value.strip.length>0 then
+                callsign=value.strip
+                #remove suffix
+                if callsign['/'] then callsign=Log.remove_suffix(callsign) end
+                protolog.callsign1=callsign
+                contact.callsign1=callsign
+              end
            when "qso_date"
               protolog.date=value.strip
               contact.date=value.strip
@@ -286,7 +290,9 @@ def self.import(filestr,user)
                 protolog.is_qrp1=true
               end
            when "band"
-              contact.frequency=Contact.band_to_freq(value.strip)
+              if !contact.frequency then
+                contact.frequency=Contact.band_to_freq(value.strip)
+              end
            when "freq"
               contact.frequency=value.strip
            when "rst_sent"

@@ -371,8 +371,13 @@ end
      if not user then
        user=User.create(callsign: callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
      end
-     if Rails.env.production? then user.outstanding=true;user.save;Resque.enqueue(Scorer) else user.update_score end
-     user.check_awards
+     if Rails.env.production? then 
+       user.outstanding=true;user.save;Resque.enqueue(Scorer) 
+     else 
+       user.update_score 
+       user.check_awards
+       user.check_district_awards
+     end
    end
    callsign=self.callsign2
    if callsign and callsign.length>0 then

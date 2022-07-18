@@ -4,6 +4,18 @@ def url
   url='/vkassets/'+self.get_safecode
 end
 
+#fake ZL asset fields
+def minor
+   false
+end
+
+def is_active
+   true
+end
+
+def type
+   nil
+end
 
 def self.import
   self.destroy_all
