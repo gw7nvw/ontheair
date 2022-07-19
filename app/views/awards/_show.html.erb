@@ -93,8 +93,18 @@
      <% if not @award.baggers or (@award.baggers and @award.baggers.count==0) then %>
         <i>No-one has achieved this award yet. Be the first!</i></br>
      <% end %>
-     <% @award.baggers.each do |ua| %>
-          <%=link_to ua.user.callsign, '/users/'+ua.user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>: <%=ua.threshold_name%> (<%=ua.threshold.to_s%>)<br/>
+     <% @award.baggers.sort_by {|b| b.user.callsign}.each do |ua| %>
+          <% if @award.count_based then %>
+            <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>: <%=ua.threshold_name%> (<%=ua.threshold.to_s%>). Awarded: <%=ua.created_at.to_date%>
+          <% elsif @award.all_district then %>
+            <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>: <%=ua.district.name%> (<%=ua.activity_type%>). Awarded: <%=ua.created_at.to_date%>
+          <% elsif @award.all_region then %>
+            <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>: <%=ua.region.name%> (<%=ua.award_class%> <%=ua.activity_type%>). Awarded: <%=ua.created_at.to_date%>
+          <% end %>
+          <% if ua.expired then %>
+            <%=", Expired: "+ua.expired_at.to_date.to_s%>
+          <% end %>
+          <br/>
      <% end %>
    </div>   
 

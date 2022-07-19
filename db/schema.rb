@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220718080335) do
+ActiveRecord::Schema.define(version: 20220719000846) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -137,6 +137,8 @@ ActiveRecord::Schema.define(version: 20220718080335) do
     t.string   "activity_type"
     t.integer  "linked_id"
     t.string   "award_class"
+    t.datetime "expired_at"
+    t.boolean  "expired"
   end
 
   create_table "awards", force: true do |t|

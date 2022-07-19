@@ -22,4 +22,8 @@ end
 def district
   if self.award_type=="district" then District.find(self.linked_id) else nil end
 end
+
+def region
+  if self.award_type=="region" then Region.find(self.linked_id) else nil end
+end
 end

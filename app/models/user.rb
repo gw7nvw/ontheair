@@ -57,8 +57,18 @@ def authenticated?(attribute, token)
  end
 
  def has_completion_award(scale, loc_id, activity_type, award_class)
-     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_type='"+scale+"' and linked_id="+loc_id.to_s+" and activity_type='"+activity_type+"' and award_class='"+award_class+"' "]
+     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_type='"+scale+"' and linked_id="+loc_id.to_s+" and activity_type='"+activity_type+"' and award_class='"+award_class+"' and expired is not true "]
      if uas and uas.count>0 then true else false end
+ end
+
+ def retire_completion_award(scale, loc_id, activity_type, award_class)
+     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_type='"+scale+"' and linked_id="+loc_id.to_s+" and activity_type='"+activity_type+"' and award_class='"+award_class+"' and expired is not true "]
+     uas.each do |ua|
+       puts "Retiring "+self.callsign+" "+loc_id.to_s+" "+scale+" "+activity_type+" "+award_class
+       ua.expired=true
+       ua.expired_at=Time.now()
+       ua.save
+     end
  end
 
  def timezonename
@@ -568,10 +578,10 @@ def check_district_completion(district_id, activity_type, asset_type)
   {available: available_codes, worked: activated_codes, missing: missing_codes}
 end
 
-def check_district_awards
-  avail=Contact.find_by_sql [" select name, type, code_count, site_list from (select d.district_code as name, a.asset_type as type, count(a.code) as code_count, array_agg(a.code) as site_list from districts d inner join assets a on a.district=d.district_code group by d.district_code, a.asset_type) as foo; " ]
-  activations=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select unnest(asset1_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset2_codes) as asset1_code from contacts where callsign2='"+self.callsign+"'))as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district group by d.district_code, a.asset_type; "]
-  chases=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select unnest(asset2_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset1_codes) as asset1_code from contacts where callsign2='"+self.callsign+"'))as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district group by d.district_code, a.asset_type; "]
+def check_region_awards
+  avail=Region.get_assets_with_type
+  activations=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select unnest(asset1_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset2_codes) as asset1_code from contacts where callsign2='"+self.callsign+"') union (select summit_code as asset1_code from sota_activations where callsign='"+self.callsign+"'))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where a.is_active=true and a.minor is not true group by d.sota_code, a.asset_type, a.minor; "]
+  chases=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select unnest(asset2_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset1_codes) as asset1_code from contacts where callsign2='"+self.callsign+"'))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where a.is_active=true and a.minor is not true group by d.sota_code, a.asset_type, a.minor; "]
   avail.each do |combo|
      activation=activations.select {|a| a.name==combo.name and a.type==combo.type}
      chase=chases.select {|c| c.name==combo.name and c.type==combo.type}
@@ -579,17 +589,23 @@ def check_district_awards
        site_count=combo.site_list.count
        site_act=activation.first.site_list.count
        site_not_act=(combo.site_list-activation.first.site_list).count
+       d=Region.find_by(sota_code: combo.name)
        if site_not_act==0 then
-         d=District.find_by(district_code: combo.name)
-         if !(self.has_completion_award("district", d.id, "activator", combo.type)) then
+         award_spec=Award.find_by(activated: true, programme: combo.type, all_region: true, is_active: true)
+         if award_spec and !(self.has_completion_award("region", d.id, "activator", combo.type)) then
+           puts "Awarded!! "+self.callsign+" "+combo.type+" region activator "+d.name
            award=AwardUserLink.new
-           award.award_type="district"
+           award.award_type="region"
            award.linked_id=d.id
            award.activity_type="activator"
            award.award_class=combo.type
            award.user_id=self.id
+           award.award_id=award_spec.id
            award.save
          end
+       else
+         #check for expired award
+         self.retire_completion_award("region", d.id, "activator", combo.type) 
        end
      end
 
@@ -597,17 +613,80 @@ def check_district_awards
        site_count=combo.site_list.count
        site_chased=chase.first.site_list.count
        site_not_chased=(combo.site_list-chase.first.site_list).count
+       d=Region.find_by(sota_code: combo.name)
        if site_not_chased==0 then
-         d=District.find_by(district_code: combo.name)
-         if !(self.has_completion_award("district", d.id, "chaser", combo.type)) then
+         award_spec=Award.find_by(chased: true, programme: combo.type, all_region: true, is_active: true)
+         if award_spec and !(self.has_completion_award("region", d.id, "chaser", combo.type)) then
+           puts "Awarded!! "+self.callsign+" "+combo.type+" region chaser "+d.name
+           award=AwardUserLink.new
+           award.award_type="region"
+           award.linked_id=d.id
+           award.activity_type="chaser"
+           award.award_class=combo.type
+           award.user_id=self.id
+           award.award_id=award_spec.id
+           award.save
+         end
+       else
+         #check for expired award
+         self.retire_completion_award("region", d.id, "chaser", combo.type) 
+       end
+     end
+  end 
+end
+
+def check_district_awards
+  avail=District.get_assets_with_type
+  activations=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select unnest(asset1_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset2_codes) as asset1_code from contacts where callsign2='"+self.callsign+"') union (select summit_code as asset1_code from sota_activations where callsign='"+self.callsign+"')) as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where a.is_active=true and a.minor is not true group by d.district_code, a.asset_type, a.minor; "]
+  chases=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select unnest(asset2_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset1_codes) as asset1_code from contacts where callsign2='"+self.callsign+"'))as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where a.is_active=true and a.minor is not true group by d.district_code, a.asset_type, a.minor; "]
+  avail.each do |combo|
+     activation=activations.select {|a| a.name==combo.name and a.type==combo.type}
+     chase=chases.select {|c| c.name==combo.name and c.type==combo.type}
+     if activation and activation.count>0 then
+       site_count=combo.site_list.count
+       site_act=activation.first.site_list.count
+       site_not_act=(combo.site_list-activation.first.site_list).count
+       d=District.find_by(district_code: combo.name)
+       if site_not_act==0 then
+         award_spec=Award.find_by(activated: true, programme: combo.type, all_district: true, is_active: true)
+         if award_spec and !(self.has_completion_award("district", d.id, "activator", combo.type)) then
+           puts "Awarded!! "+self.callsign+" "+combo.type+" district activator "+d.name
+           award=AwardUserLink.new
+           award.award_type="district"
+           award.linked_id=d.id
+           award.activity_type="activator"
+           award.award_class=combo.type
+           award.user_id=self.id
+           award.award_id=award_spec.id
+           award.save
+         end
+       else
+         #check for expired award
+         self.retire_completion_award("district", d.id, "activator", combo.type) 
+       end
+     end
+
+     if chase and chase.count>0 then
+       site_count=combo.site_list.count
+       site_chased=chase.first.site_list.count
+       site_not_chased=(combo.site_list-chase.first.site_list).count
+       d=District.find_by(district_code: combo.name)
+       if site_not_chased==0 then
+         award_spec=Award.find_by(chased: true, programme: combo.type, all_district: true, is_active: true)
+         if award_spec and !(self.has_completion_award("district", d.id, "chaser", combo.type)) then
+           puts "Awarded!! "+self.callsign+" "+combo.type+" district chaser "+d.name
            award=AwardUserLink.new
            award.award_type="district"
            award.linked_id=d.id
            award.activity_type="chaser"
            award.award_class=combo.type
            award.user_id=self.id
+           award.award_id=award_spec.id
            award.save
          end
+       else
+         #check for expired award
+         self.retire_completion_award("district", d.id, "chaser", combo.type) 
        end
      end
   end 

@@ -34,6 +34,11 @@ def self.update_sota_activation(summit)
           if dups==0 then
             newcount+=1
             sa.save
+            user=User.find_by(callsign: sa.callsign)
+            if user then
+              user.check_district_awards
+              user.check_region_awards
+            end 
           end
         end
         puts "New: "+newcount.to_s

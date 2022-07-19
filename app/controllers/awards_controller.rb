@@ -6,7 +6,7 @@ class AwardsController < ApplicationController
   end
 
   def index_prep
-    @awards=Award.all
+    @awards=Award.all.order(:name)
   end
 
 

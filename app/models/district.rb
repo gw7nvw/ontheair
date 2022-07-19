@@ -61,4 +61,7 @@ def assets_by_type(type)
   as=Asset.where(district: self.district_code, asset_type: type)
 end
 
+def self.get_assets_with_type()
+  Contact.find_by_sql [" select name, type, code_count, site_list from (select a.is_active as is_active, a.minor as minor, d.district_code as name, a.asset_type as type, count(a.code) as code_count, array_agg(a.code) as site_list from districts d inner join assets a on a.district=d.district_code where a.is_active=true and a.minor is not true group by d.district_code, a.asset_type, a.is_active, a.minor) as foo; " ]
+end
 end

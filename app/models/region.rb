@@ -52,4 +52,8 @@ end
 def districts
   districts=District.where(region_code: self.sota_code)
 end
+
+def self.get_assets_with_type()
+  Contact.find_by_sql [" select name, type, code_count, site_list from (select a.is_active as is_active, d.sota_code as name, a.asset_type as type, count(a.code) as code_count, array_agg(a.code) as site_list from regions d inner join assets a on a.region=d.sota_code where a.is_active=true and a.minor is not true group by d.sota_code, a.asset_type, a.is_active, a.minor) as foo; " ]
+end
 end

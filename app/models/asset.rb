@@ -7,6 +7,8 @@ class Asset < ActiveRecord::Base
  after_save {self.add_links}
 
 def assign_calculated_fields
+  if self.minor!=true then self.minor=false end
+
   if self.code==nil or self.code=="" then
     self.code=Asset.get_next_code(self.asset_type,self.region)
   end

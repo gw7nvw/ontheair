@@ -22,52 +22,17 @@
 
 <div id="right_scroll">
   <%= render 'flash' %>
-
-  <table class="places">
-      <tr>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Programme</th>
-        <th>Threshold-based?</th>
-        <th>District-based?</th>
-        <th>Region-based?</th>
-        <th>Programme-based?</th>
-        <th>Activator?</th>
-        <th>Chaser?</th>
-        <th>Contact QRP?</th>
-        <th>Revisits?</th>
-        <th style="text-align:center">
-          <%=render :partial => 'filter',  :locals => {:filtername => "active", :formname => "/awards"} %>
-          Active?
-        </th>
-   
-      </tr>
+  <h2>Awards</h2>
+   <ul>
     <% if @awards then @awards.each do |award| %>
-      <tr>
-        <td>
+        <li>
           <% if current_user and current_user.is_admin %>
              <span title="Click to edit row"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/awards/'+award.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
           <% end %>
           <%= link_to award.name, '/awards/'+award.id.to_s, remote: true, :id => 'award_link_'+award.id.to_s, :onclick => "linkHandler('award_link_"+award.id.to_s+"')" %>
-        </td>
-        <td>
-            <%= award.description %>
-        </td>
-        <td>
-            <%= award.programme %>
-        </td>
-        <td style="text-align:center"><%= check_box "award", "count_based", {:checked => award.count_based, :disabled => true} %></td>
-        <td style="text-align:center"><%= check_box "award", "all_district", {:checked => award.all_district, :disabled => true} %></td>
-        <td style="text-align:center"><%= check_box "award", "all_region", {:checked => award.all_region, :disabled => true} %></td>
-        <td style="text-align:center"><%= check_box "award", "all_programme", {:checked => award.all_programme, :disabled => true} %></td>
-        <td style="text-align:center"><%= check_box "award", "activated", {:checked => award.activated, :disabled => true} %></td>
-        <td style="text-align:center"><%= check_box "award", "chased", {:checked => award.chased, :disabled => true} %></td>
-        <td style="text-align:center"><%= check_box "award", "user_qrp", {:checked => award.user_qrp, :disabled => true} %></td>
-        <td style="text-align:center"><%= check_box "award", "allow_repeat_visits", {:checked => award.allow_repeat_visits, :disabled => true} %></td>
-        <td style="text-align:center"><%= check_box "award", "is_active", {:checked => award.is_active, :disabled => true} %></td>
-      </tr>
+        </li>
     <% end end %>
-  </table>
+  </ul>
 </div>
 
 <script>
