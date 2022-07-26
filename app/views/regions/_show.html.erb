@@ -70,7 +70,9 @@
          <th>Activated</th>
          <th>Chased</th>
        </tr>
-       <% @assets_by_class.each do |assets| %>
+     </table>
+     <% @assets_by_class.each do |assets| %>
+       <table id="<%=assets.first.asset_type%>">
          <%classname=assets.first.type.display_name%>
          <tr>
            <th colspan=4><b>
@@ -110,8 +112,8 @@
            <td><b><%=activated.to_s%></b> </td>
            <td><b><%=chased.to_s%></b> </td>
          </tr>
-       <% end%>
-     </table>
+       </table>
+     <% end%>
    </div>
    <div class="erow">
       <div class="hrline">

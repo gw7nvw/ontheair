@@ -17,6 +17,9 @@
        <% if @asset.asset_type=="summit" %>
             <%=  link_to "Update from SOTA", '/assets/'+@asset.safecode+'/refresh_sota', class: "btn btn-small btn-primary", remote: true, :id => 'sota', :onclick => "linkHandler('sota')" %>
        <% end %>
+       <% if @asset.asset_type=="pota park" %>
+            <%=  link_to "Update from POTA", '/assets/'+@asset.safecode+'/refresh_pota', class: "btn btn-small btn-primary", remote: true, :id => 'sota', :onclick => "linkHandler('sota')" %>
+       <% end %>
        <% if write_access? and current_user.is_modifier %>
             <%=  link_to "Associate", '/assets/'+@asset.safecode+'/associations', class: "btn btn-small btn-primary", remote: true, :id => 'associations', :onclick => "linkHandler('associations')" %>
             <%=  link_to "Edit", '/assets/'+@asset.safecode+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>

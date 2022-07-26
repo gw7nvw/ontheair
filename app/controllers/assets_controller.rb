@@ -58,6 +58,14 @@ class AssetsController < ApplicationController
     end
   end
 
+  def refresh_pota
+    a=Asset.find_by(safecode: params[:id])
+    if a and a.asset_type=='pota park' then
+      SotaActivation.update_pota_activation(a)
+    end
+    redirect_to '/assets/'+params[:id]
+  end
+
   def refresh_sota
     a=Asset.find_by(safecode: params[:id])
     if a and a.asset_type=='summit' then

@@ -1,5 +1,5 @@
    <div class="erow">
-      <div class="sectiontitle" style="margin-top: 12px;">Worked-all-region Awards:</div>
+      <div class="sectiontitle" style="margin-top: 12px;">Worked-all-Region Awards: (<%=link_to "show progress", "/users/"+@user.callsign+"/region_progress", remote: true,  :id => 'region_progress', :onclick => "linkHandler('region_progress')" %>)</div>
       <table>
         <tr>
           <th>Region</th>
@@ -12,7 +12,7 @@
           <% this_combo=@regions.select {|d| d.name==award.region.sota_code and d.type==award.award_class} %>
 
           <tr>
-             <td><%=link_to award.region.name, '/regions/'+award.region.sota_code+"?callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler('award')" %></td>
+             <td><%=link_to award.region.name, '/regions/'+award.region.sota_code+"?section="+award.award_class+"&callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler('award')" %></td>
              <td><%=award.activity_type.capitalize%></td>
              <td><%=link_to award.award_class.capitalize.pluralize+" ("+this_combo.first.code_count.to_s+"/"+this_combo.first.code_count.to_s+")", '/awards/'+award.award_id.to_s, remote: true,  :id => 'award_link', :onclick => "linkHandler('award_link')"%></td>
              <td><%=award.created_at.to_date%></td>

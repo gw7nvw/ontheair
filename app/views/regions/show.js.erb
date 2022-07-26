@@ -1,4 +1,8 @@
 if ((window.history.pushState!=null) && (site_back!=true)) window.history.pushState(null, '', '/regions/<%=params[:id].to_s%>?<%=raw(@parameters)%>');
 $('#right_panel').html("<%= escape_javascript(render(:partial => 'regions/show')).html_safe %>");
+<% if @section %>
+    window.location.hash = "<%= @section %>";
+<% end %>
+
 
 

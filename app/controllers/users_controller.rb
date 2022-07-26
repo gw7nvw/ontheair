@@ -6,6 +6,26 @@ class UsersController < ApplicationController
 
   end
 
+  def district_progress
+     @parameters=params_to_query
+     @user=User.find_by(callsign: params[:id].upcase)
+     @activations=@user.district_activations
+     @chases=@user.district_chases
+     @award_classes=AssetType.where("name != 'all' and name !='pota park' and name!='wwff park'")
+     @district_assets=District.get_assets_with_type
+     @districts=District.all.order(:region_code, :name)
+  end
+
+  def region_progress
+     @parameters=params_to_query
+     @user=User.find_by(callsign: params[:id].upcase)
+     @activations=@user.region_activations
+     @chases=@user.region_chases
+     @award_classes=AssetType.where("name != 'all'")
+     @region_assets=Region.get_assets_with_type
+     @regions=Region.all.order(:name)
+  end
+
   def awards
      @parameters=params_to_query
      @user=User.find_by(callsign: params[:id].upcase)

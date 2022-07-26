@@ -28,6 +28,8 @@ resources :qsl, only: [:show]
 resources :users
 get 'users/:id/assets', to: 'users#assets'
 get 'users/:id/awards', to: 'users#awards'
+get 'users/:id/region_progress', to: 'users#region_progress'
+get 'users/:id/district_progress', to: 'users#district_progress'
 get 'users/:id/p2p', to: 'users#p2p'
 get 'users/:id/add', to: 'users#add'
 get 'users/:id/delete', to: 'users#delete'
@@ -72,6 +74,7 @@ resources :parks
 resources :islands
 
   get 'assets/:id/refresh_sota', to: 'assets#refresh_sota'
+  get 'assets/:id/refresh_pota', to: 'assets#refresh_pota'
   match '/sessions', to: 'static_pages#home',    via:'get'
   match '/signin',  to: 'sessions#new',         via: 'get'
   match '/signup',  to: 'users#new',         via: 'get'

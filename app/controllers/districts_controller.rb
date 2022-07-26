@@ -7,6 +7,7 @@ end
 
 def show
   @parameters=params_to_query
+  @section=params[:section]
   ds=District.find_by_sql [ %q{ select id, name, region_code, district_code, ST_Simplify("boundary",0.002) as boundary from districts where district_code = '}+params[:id]+%q{';} ]
   if ds then 
     @district = ds.first 

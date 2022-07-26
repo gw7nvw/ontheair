@@ -578,10 +578,18 @@ def check_district_completion(district_id, activity_type, asset_type)
   {available: available_codes, worked: activated_codes, missing: missing_codes}
 end
 
+def region_activations
+  activations=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select unnest(asset1_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset2_codes) as asset1_code from contacts where callsign2='"+self.callsign+"') union (select summit_code as asset1_code from sota_activations where callsign='"+self.callsign+"'))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where a.is_active=true and a.minor is not true group by d.sota_code, a.asset_type, a.minor; "]
+end
+
+def region_chases
+  chases=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select unnest(asset2_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset1_codes) as asset1_code from contacts where callsign2='"+self.callsign+"'))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where a.is_active=true and a.minor is not true group by d.sota_code, a.asset_type, a.minor; "]
+end
+
 def check_region_awards
   avail=Region.get_assets_with_type
-  activations=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select unnest(asset1_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset2_codes) as asset1_code from contacts where callsign2='"+self.callsign+"') union (select summit_code as asset1_code from sota_activations where callsign='"+self.callsign+"'))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where a.is_active=true and a.minor is not true group by d.sota_code, a.asset_type, a.minor; "]
-  chases=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select unnest(asset2_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset1_codes) as asset1_code from contacts where callsign2='"+self.callsign+"'))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where a.is_active=true and a.minor is not true group by d.sota_code, a.asset_type, a.minor; "]
+  activations=self.region_activations
+  chases=self.region_chases
   avail.each do |combo|
      activation=activations.select {|a| a.name==combo.name and a.type==combo.type}
      chase=chases.select {|c| c.name==combo.name and c.type==combo.type}
@@ -635,10 +643,18 @@ def check_region_awards
   end 
 end
 
+def district_activations
+  activations=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select unnest(asset1_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset2_codes) as asset1_code from contacts where callsign2='"+self.callsign+"') union (select summit_code as asset1_code from sota_activations where callsign='"+self.callsign+"')) as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where a.is_active=true and a.minor is not true group by d.district_code, a.asset_type, a.minor; "]
+end
+
+def district_chases
+  chases=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select unnest(asset2_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset1_codes) as asset1_code from contacts where callsign2='"+self.callsign+"'))as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where a.is_active=true and a.minor is not true group by d.district_code, a.asset_type, a.minor; "]
+end
+
 def check_district_awards
   avail=District.get_assets_with_type
-  activations=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select unnest(asset1_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset2_codes) as asset1_code from contacts where callsign2='"+self.callsign+"') union (select summit_code as asset1_code from sota_activations where callsign='"+self.callsign+"')) as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where a.is_active=true and a.minor is not true group by d.district_code, a.asset_type, a.minor; "]
-  chases=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select unnest(asset2_codes) as asset1_code from contacts where callsign1='"+self.callsign+"') union (select unnest(asset1_codes) as asset1_code from contacts where callsign2='"+self.callsign+"'))as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where a.is_active=true and a.minor is not true group by d.district_code, a.asset_type, a.minor; "]
+  activations=self.district_activations
+  chases=self.district_chases
   avail.each do |combo|
      activation=activations.select {|a| a.name==combo.name and a.type==combo.type}
      chase=chases.select {|c| c.name==combo.name and c.type==combo.type}

@@ -176,7 +176,7 @@ def first_activated
   c=nil 
  end
 
- if self.asset_type="summit" then
+ if self.asset_type=="summit"  or self.asset_type=="pota park"then
    as=SotaActivation.find_by_sql [ "select * from sota_activations where summit_code='"+self.code+"' order by date asc limit 1" ]
    puts as[0]
    if as and as[0] and (c==nil or as[0].date<c.date) then
@@ -752,7 +752,7 @@ end
 
 
 def add_links
-    linked_assets=Asset.find_by_sql [ %q{select b.id as id,b.code as code, b.is_active as is_active from assets a inner join assets b on ST_Within(a.location, b.boundary)  where a.id = }+self.id.to_s ]
+    linked_assets=Asset.find_by_sql [ %q{select b.id as id,b.code as code, b.is_active as is_active from assets a inner join assets b on ST_Within(a.location, b.boundary)  where a.area>b.area*0.9 and a.id = }+self.id.to_s ]
     linked_assets.each do |la|
       if la.is_active then
         dup=AssetLink.where(:parent_code=> self.code, :child_code => la.code)
@@ -890,7 +890,7 @@ def calc_location
 end
 
 def self.add_areas
-    ActiveRecord::Base.connection.execute( " update assets set area=ST_Area(ST_Transform(boundary,2193)) where boundary is not null")
+    ActiveRecord::Base.connection.execute( " update assets set area=ST_Area(ST_Transform(boundary,2193)) where boundary is not null and asset_type!='summit'")
 end
 
 def self.fix_invalid_polygons

@@ -35,19 +35,20 @@ class Contact < ActiveRecord::Base
     self.update_classes
   end
   def check_codes_in_location
-    if self.asset1_codes==nil or self.asset1_codes==[] or self.asset1_codes==[""] then
-      assets=Asset.assets_from_code(self.loc_desc1)
-      self.asset1_codes=[]
-      assets.each do |asset| 
-        if asset and asset[:code] then
-          if asset1_codes==[] then 
-            self.asset1_codes=["#{asset[:code].to_s}"]
-          else
-            self.asset1_codes.push("#{asset[:code]}")
-          end
-        end
-      end
-    end
+    #Do not update location1 - that's done in the log
+    #if self.asset1_codes==nil or self.asset1_codes==[] or self.asset1_codes==[""] then
+    #  assets=Asset.assets_from_code(self.loc_desc1)
+    #  self.asset1_codes=[]
+    #  assets.each do |asset| 
+    #    if asset and asset[:code] then
+    #      if asset1_codes==[] then 
+    #        self.asset1_codes=["#{asset[:code].to_s}"]
+    #      else
+    #        self.asset1_codes.push("#{asset[:code]}")
+    #      end
+    #    end
+    #  end
+    #end
     if self.asset2_codes==nil or self.asset2_codes==[] or self.asset2_codes==[""] then
       assets=Asset.assets_from_code(self.loc_desc2)
       self.asset2_codes=[]
@@ -106,7 +107,7 @@ class Contact < ActiveRecord::Base
  end
 
  def add_child_codes
-   self.asset1_codes=self.get_all_asset1_codes
+   #self.asset1_codes=self.get_all_asset1_codes
    self.asset2_codes=self.get_all_asset2_codes
  end
 

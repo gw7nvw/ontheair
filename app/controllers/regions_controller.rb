@@ -7,6 +7,7 @@ end
 
 def show
   @parameters=params_to_query
+  @section=params[:section]
   ds=Region.find_by_sql [ %q{ select id, name, sota_code, sota_code, ST_Simplify("boundary",0.002) as boundary from regions where sota_code = '}+params[:id]+%q{';} ]
   if ds then 
     @region = ds.first 
