@@ -13,10 +13,10 @@
      <b><%= @contact.id.to_s %></b>
      </div>
    <div id="controls">
-     <% if signed_in?  and (current_user.callsign==@contact.callsign1 or current_user.callsign==@contact.callsign2) %>
+     <% if signed_in?  and (current_user.id==@contact.user1_id or current_user.id==@contact.user2_id) %>
             <%=  link_to "QSL", '/qsl/'+@contact.id.to_s, class: "btn btn-small btn-primary", :target => "_blank" %>
      <% end %>
-     <% if write_access?  and (current_user.callsign==@contact.callsign1 or current_user.is_admin) %>
+     <% if write_access?  and (current_user.id==@contact.user1_id or current_user.is_admin) %>
             <%=  link_to "Edit", '/contacts/'+@contact.id.to_s+'/editlog', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
        <% end %>
        <%=  link_to "Index", "/contacts", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>

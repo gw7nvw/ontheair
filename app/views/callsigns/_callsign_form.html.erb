@@ -1,0 +1,55 @@
+<div class="fullform">
+   <%= form_for @callsign, remote: true, url: '/callsigns/'+@callsign.id.to_s do |f| %>
+    <div id="actionbar" class="span7">
+       <div id="crumbs">
+         <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+         &nbsp;--&gt;&nbsp;
+         <%=  link_to  "Users:", '/users', remote: true,  :id => 'assets', :onclick => "linkHandler('users')" %>
+         &nbsp;--&gt;&nbsp;
+         <%=  link_to  @callsign.user.callsign, '/users/'+@callsign.user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
+         <%if @callsign.id%> 
+            <b><%=@callsign.callsign%></b>
+            &nbsp;--&gt;&nbsp;
+            <b>Edit</b>
+         <% else %>
+            <b>New</b>
+         <% end %>
+       </div>
+       <div id="controls">
+          <%=  link_to "Cancel", '/users/'+@callsign.user.callsign, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+          <%=render 'map_controls'%>
+       </div>
+    </div>
+
+    <div id="right_scroll">
+      <%= render 'flash' %>
+      <%= render 'shared/error_messages' %>
+
+      <div class="sectiontitle">Callsign ID</div>
+      <%if current_user and current_user.is_admin%><%= f.text_field :id %><%else%><%= f.text_field :id, readonly: true %><% end %>
+
+      <div class="sectiontitle">User Id</div>
+      <%if current_user and current_user.is_admin %><%= f.text_field :user_id %><%else%><%= f.text_field :user_id, readonly: true %><% end %>
+
+      <div class="sectiontitle">Callsign</div>
+      <%= f.text_field :callsign %>
+
+      <div class="sectiontitle">Valid From Date</div>
+      <%= f.date_field :from_date %>
+
+      <div class="sectiontitle">Valid To Date</div>
+      <%= f.date_field :to_date %>
+
+      <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-hightlight" %>
+      <%  if(@submit_button == "Save Changes" and current_user and (current_user.is_admin or current_user.id==@callsign.user_id)) %>
+        <%=  link_to "Delete", '/callsigns/'+@callsign.id.to_s+"/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_call', :onclick => "linkHandler('delete_call')", confirm: "Delete callsign?  This will remove this callsign from the system and you will lose any associated points/contacts.  Use 'Edit' and enter an 'End date' if you wish to retire this callsign and retain past contacts. Really delete?"  %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+    document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+    reset_map_controllers(); 
+</script>
+

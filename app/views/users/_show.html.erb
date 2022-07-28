@@ -83,7 +83,56 @@
    </div>
 </div>
 
+<div class="erow">
+  <h2>Callsigns</h2>
+  <%= form_for(@callsign, remote: true, url: callsigns_path) do |f| %> 
+  <table>
+    <tr> 
+       <th>Callsign</th>
+       <th>From</th>
+       <th>To</th>
+       <th></th>
+    </tr>
+    <% @user.callsigns.each do |c| %>
+      <tr>    
+         <td><%=c.callsign%></td>
+         <td><%=if c.from_date then c.from_date.to_date end%></td>
+         <td><%=if c.to_date then c.to_date.to_date else "present" end%></td>
+         <td>
+          <% if signed_in? and (current_user.id=@user.id or current_user.is_admin) then %>
+            <%=  link_to "Edit", '/callsigns/'+c.id.to_s+"/edit", class: "btn btn-small btn-primary", remote: true,  :id => 'edit_call', :onclick => "linkHandler('edit_call')"  %>
+            <%=  link_to "Delete", '/callsigns/'+c.id.to_s+"/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_call', :onclick => "linkHandler('delete_call')", confirm: "Delete callsign?  This will remove this callsign from the system and you will lose any associated points/contacts.  Use 'Edit' and enter an 'End date' if you wish to retire this callsign and retain past contacts. Really delete?"  %>
+          <% end %>
+         </td>
+      </tr>
+    <% end %>
+    <tr>
+        <%= f.hidden_field :user_id %>
+        <td>
+          <%= f.text_field :callsign %>
+        </td>
+        <td>
+          <%= f.date_field :from_date %>
+        </td>
+        <td>
+          <%= f.date_field :to_date %>
+        </td>
+        <td>
+          <%= f.submit 'Add', class: "btn btn-small btn-primary btn-hightlight" %>
+        </td>
+     </tr>
+  </table>
+  <% end %>
+</div>
+
+<div class="erow">
+   <div class="hrline">
+      <hr noshade size="4">
+   </div>
+</div>
+
 <% if current_user and (@user==current_user or current_user.is_admin or current_user.group_admin) then %>
+<h2>Mail</h2>
    <p>Select the topics for which you would like to receive emails of any new posts</p>
    <table>
      <tr>
@@ -122,6 +171,7 @@
 <% end %>
        </tr>
    </table>
+
 <div class="erow">
    <div class="hrline">
       <hr noshade size="4">

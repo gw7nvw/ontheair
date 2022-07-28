@@ -1,4 +1,21 @@
 class SotaActivation < ActiveRecord::Base
+
+before_save { self.before_save_actions }
+
+def before_save_actions
+  self.remove_suffix
+  self.add_user_ids
+end
+
+def add_user_ids
+    #look up callsign1 at contact.time
+    user=User.find_by_callsign_date(self.callsign, self.date, true)
+    if user then self.user_id=user.id end
+end
+
+def remove_suffix
+  if self.callsign['/'] then self.callsign=Log.remove_suffix(self.callsign) end
+end
  
 def self.import_sota
   summits=Asset.where(asset_type: "summit")
@@ -69,10 +86,7 @@ def self.update_pota_activation(asset)
         if dups==0 then
           newcount+=1
           sa.save
-          user=User.find_by(callsign: sa.callsign)
-          if not user then
-            user=User.create(callsign: sa.callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
-          end
+          user=User.find_by_callsign_date(sa.callsign, sa.date, true)
 
           if user then
             user.check_district_awards

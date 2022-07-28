@@ -8,7 +8,7 @@
      <%= @log.id.to_s %>
      </div>
    <div id="controls">
-       <% if write_access? and @log.id and (@log.callsign1==current_user.callsign or current_user.is_admin) then %>
+       <% if write_access? and @log.id and (@log.user1_id==current_user.id or current_user.is_admin) then %>
           <%=  link_to "Edit", '/logs/'+@log.id.to_s+'/edit', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('edit')"%>
        <% end %>
        <%=  link_to "Index", '/logs/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>

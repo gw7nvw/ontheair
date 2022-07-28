@@ -14,7 +14,7 @@
      <% end %>
      </div>
    <div id="controls">
-       <% if @log.id and (@log.callsign1==current_user.callsign or current_user.is_admin) then %>
+       <% if @log.id and (@log.user1_id==current_user.id or current_user.is_admin) then %>
           <%=  link_to "Delete", '/logs/'+@log.id.to_s+'/delete', class: "btn btn-small btn-primary", confirm: "Delete log: Are you sure?", :remote => true,  :onclick => "linkHandler('delete')"%>
        <% end %>
        <% if @log.id then %>
@@ -40,7 +40,13 @@
       <table style="table-layout: fixed">
         <tr>
           <td class="td-l">Callsign</td>
-          <td colspan=2 class="td-d"> <% if current_user.is_admin then %> <%= f.text_field :callsign1 %> <% else %> <%=f.text_field :callsign1, readonly: true%> <% end %></td>
+          <td colspan=2 class="td-d"> 
+            <% if current_user.is_admin then %> 
+              <%= f.text_field :callsign1 %> 
+            <% else %> 
+              <%= collection_select( :log, :callsign1, current_user.callsigns, :callsign, :callsign, {}) %>
+            <% end %>
+          </td>
           <td class="td-l">Date:</td>
           <td colspan=2 class="td-d"> <%= f.date_field :date%></td>
           <td class="td-l">QRP?</td>

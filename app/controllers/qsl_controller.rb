@@ -7,8 +7,8 @@ def show
   if params[:photo] then photo=params[:photo].to_i else photo=0 end
   @call1=false
   @call2=false 
-  if current_user and current_user.callsign==@contact.callsign1 then @call1=true end
-  if current_user and current_user.callsign==@contact.callsign2 then 
+  if current_user and current_user.id==@contact.user1_id then @call1=true end
+  if current_user and current_user.id==@contact.user2_id then 
      @call2=true
      @contact=@contact.reverse
   end

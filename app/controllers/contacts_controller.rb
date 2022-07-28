@@ -32,7 +32,7 @@ class ContactsController < ApplicationController
            @callsign=params[:user].upcase
          end
     elsif current_user then
-         whereclause=whereclause+" and (callsign1='"+current_user.callsign+"' or callsign2='"+current_user.callsign+"')"
+         whereclause=whereclause+" and (user1_id='"+current_user.id.to_s+"' or user2_id='"+current_user.id.to_s+"')"
          @user=current_user
          @callsign=@user.callsign
     end

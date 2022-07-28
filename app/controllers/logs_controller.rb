@@ -24,7 +24,7 @@ def savefile
     @upload = Upload.new(upload_params)
 
     if current_user.is_admin and params[:callsign] then 
-      user=User.find_by(callsign: params[:callsign].upcase)
+      user=User.find_by_callsign_date(params[:callsign].upcase, date)
     else
       user=current_user
     end
@@ -66,9 +66,12 @@ def savefile
 end
 
 def index
-  if signed_in? then @callsign=current_user.callsign end
+  if signed_in? then 
+    @callsign=current_user.callsign 
+    @user=current_user
+  end
   if params[:user] and params[:user].length>0 then 
-     if params[:user].upcase=='ALL' or params[:all]===true then 
+     if params[:user].upcase=='ALL' then 
        @callsign=nil
      else
        @callsign=params[:user].upcase 
@@ -82,7 +85,7 @@ def index
     if @asset then @assetcode=@asset.code end
   end
 
-  if @callsign then @fulllogs=Log.find_by_sql [ "select * from logs where callsign1='"+@callsign+"' and "+whereclause+" order by date desc" ]
+  if @callsign then @fulllogs=Log.find_by_sql [ "select * from logs where user1_id="+@user.id.to_s+" and "+whereclause+" order by date desc" ]
   else @fulllogs=Log.find_by_sql [ "select * from logs where "+whereclause+" order by date desc" ]
   end
   @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
@@ -96,7 +99,8 @@ def save
     id=params[:id]
     ids=[]
     log=Log.find_by_id(params[:id])
-    if current_user and (current_user.callsign==log.callsign1.upcase or current_user.is_admin) then
+    loguser=User.find_by_callsign_date(log.callsign1.upcase,log.date)
+    if current_user and (current_user.id==loguser.id or current_user.is_admin) then
     
      data.each do |row|
       rid=row[0]
@@ -199,7 +203,9 @@ def editcontact
   @log=nil
   # get log from contact
   @contact=Contact.find_by_id(params[:id])
-  if current_user and (current_user.callsign==@contact.callsign1.upcase or current_user.is_admin) then
+  loguser=User.find_by_callsign_date(@contact.callsign1.upcase,@contact.time)
+
+  if current_user and (current_user.id==loguser.id or current_user.is_admin) then
   if  @contact then
     if @contact.log_id then @log=Log.find_by_id(@contact.log_id) end
     #create log if conact has none
@@ -230,10 +236,10 @@ def edit
   
   @no_map=true
   if !@log then @log = Log.find_by_id(params[:id]) end
-  if @log and current_user and (current_user.callsign==@log.callsign1.upcase or current_user.is_admin) then
-    @user=User.find_by(callsign: @log.callsign1)
+  if @log then @user=User.find_by_callsign_date(@log.callsign1.upcase,@log.date) end
+
+  if @log and current_user and (current_user.id==@user.id or current_user.is_admin) then
     @contacts = Contact.where(log_id: @log.id).order(:time)
-    #@contacts = [Contact.first]
     @contacts.each do |c|  
       c.timetext=c.localtime(current_user)
       asset2_names=[]
@@ -265,7 +271,7 @@ def create
         @log.reload
         @id=@log.id
         params[:id]=@id
-        @user=User.find_by(callsign: @log.callsign1)
+        @user=User.find_by_callsign_date(@log.callsign1.upcase,@log.date)
         redirect_to '/logs/'+@id.to_s+'/edit'
       else
         render 'new'
@@ -282,7 +288,8 @@ def delete
   if signed_in?  then
    cl=Log.find_by_id(params[:id])
    if cl then 
-     if cl.callsign1==current_user.callsign or current_user.is_admin then
+     loguser=User.find_by_callsign_date(cl.callsign1.upcase,cl.date)
+     if loguser.id==current_user.id or current_user.is_admin then
        cl.contacts.each do |cle|
          cle.destroy
        end
@@ -304,22 +311,30 @@ def update
           flash[:error] = "Log does not exist: "+@log.id.to_s
           redirect_to '/'
       end
+
       @log.assign_attributes(log_params)
-      @log.asset_codes=params[:log][:asset_codes].gsub('{','').gsub('}','').split(',')
-      if @log.save then
-        flash[:success] = "Log details updated"
-        @user=User.find_by(callsign: @log.callsign1)
-        @contacts = Contact.where(log_id: @log.id).order(:time)
-        redirect_to '/logs/'+@log.id.to_s+'/edit'
+      loguser=User.find_by_callsign_date(@log.callsign1.upcase,@log.date)
+      if loguser.id===current_user.id or current_user.is_admin then
+        @log.asset_codes=params[:log][:asset_codes].gsub('{','').gsub('}','').split(',')
+        if @log.save then
+          flash[:success] = "Log details updated"
+          @user=User.find_by(callsign: @log.callsign1)
+          @contacts = Contact.where(log_id: @log.id).order(:time)
+          redirect_to '/logs/'+@log.id.to_s+'/edit'
+        else
+          @user=User.find_by(callsign: @log.callsign1)
+          @contacts = Contact.where(log_id: @log.id).order(:time)
+          redirect_to '/logs/'+@log.id.to_s+'/edit'
+        end
       else
-        @user=User.find_by(callsign: @log.callsign1)
-        @contacts = Contact.where(log_id: @log.id).order(:time)
-        redirect_to '/logs/'+@log.id.to_s+'/edit'
+        flash[:error]="You do not have permissions to take this action"
+        redirect_to '/'
       end
     else
       redirect_to '/'
     end
-  else
+  else 
+    flash[:error]="You do not have permissions to take this action"
     redirect_to '/'
   end
 

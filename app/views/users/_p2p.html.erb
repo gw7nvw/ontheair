@@ -39,7 +39,7 @@
             <% asset2 = Asset.find_by(code: contact[2]) %>
             <% if !asset2 then asset2=VkAsset.find_by(code: contact[2]) end %>
             <td>
-               <%=link_to contact[0], '/contacts?user='+@user.callsign+'&asset='+asset1.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+               <%=link_to contact[0], '/contacts?user='+@user.callsign+'&asset='+contact[1], remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
             </td>
             <td>
                <%if asset1 %>
@@ -52,7 +52,7 @@
             <td>
                <%if asset2 %>
                   <% if asset2.url[0]!='/' then asset2.url='/'+asset2.url end %>
-                  <%=link_to asset2.name+" ["+asset2.code+"]", asset2.url, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')", class: (if ! asset2.type or !asset2.type.keep_score or asset1.minor or asset2.is_active==false then "link_to" end) %>
+                  <%=link_to asset2.name+" ["+asset2.code+"]", asset2.url, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')", class: (if ! asset2.type or !asset2.type.keep_score or asset2.minor or asset2.is_active==false then "link_to" end) %>
                <%else%>
                   <%=contact[2]%>
                <%end%>

@@ -39,7 +39,7 @@ $(function () {
             <% end %>
             <%=  link_to "Add Contacts", '/logs/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
        <% end %>
-       <% if signed_in? and ((@user and current_user.callsign==@user.callsign) or current_user.is_admin) %>
+       <% if signed_in? and ((@user and current_user.id==@user.id) or current_user.is_admin) %>
           <% 
             parmtext=""
             params.each do |k, v|
@@ -107,7 +107,7 @@ $(function () {
   <% if @contacts then %>
 
    <%  @contacts.each do |contact| %>
-      <% if @user and @user.callsign==contact.callsign2 then
+      <% if @user and @user.id==contact.user2_id then
             l2=contact.location1
             l1=contact.location2
          else

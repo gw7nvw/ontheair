@@ -16,7 +16,7 @@ class Contact < ActiveRecord::Base
 
  
   before_save { self.before_save_actions }
-  after_save { self.update_scores }
+#  after_save { self.update_scores }
   before_destroy { self.update_scores }
 
   validates :callsign1,  presence: true, length: { maximum: 50 }
@@ -29,11 +29,21 @@ class Contact < ActiveRecord::Base
   def before_save_actions
     self.callsign1 = callsign1.upcase
     self.callsign2 = callsign2.upcase
+    self.add_user_ids
     self.check_codes_in_location
     self.get_most_accurate_location
     self.remove_suffix
     self.update_classes
   end
+  def add_user_ids
+    #look up callsign1 at contact.time
+    user1=User.find_by_callsign_date(self.callsign1, self.time, true)
+    if user1 then self.user1_id=user1.id end
+    #look up callsign2 at contact.time
+    user2=User.find_by_callsign_date(self.callsign2, self.time, true)
+    if user2 then self.user2_id=user2.id end
+  end
+
   def check_codes_in_location
     #Do not update location1 - that's done in the log
     #if self.asset1_codes==nil or self.asset1_codes==[] or self.asset1_codes==[""] then
@@ -327,11 +337,11 @@ end
  end
 
  def user1
-   user=User.find_by_sql [ "select * from users where callsign='"+callsign1+"'"]
+   user=User.find_by_id(user1_id)
    user.first
  end
  def user2
-   user=User.find_by_sql [ "select * from users where callsign='"+callsign2+"'"]
+   user=User.find_by_id(user2_id)
    user.first
  end
 
@@ -366,34 +376,38 @@ end
  end
 
  def update_scores
-   callsign=self.callsign1
-   if callsign and callsign.length>0 then
-     user=User.find_by(callsign: callsign)
-     if not user then
-       user=User.create(callsign: callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
-     end
-     if Rails.env.production? then 
-       user.outstanding=true;user.save;Resque.enqueue(Scorer) 
-     else 
-       user.update_score 
-       user.check_awards
-       user.check_district_awards
+   if self.user1_id then
+     user=User.find_by_id(self.user1_id)
+     if user then
+       if Rails.env.production? then 
+         user.outstanding=true;user.save;Resque.enqueue(Scorer) 
+       else 
+         user.update_score 
+         user.check_awards
+         user.check_district_awards
+         user.check_region_awards
+       end
      end
    end
-   callsign=self.callsign2
-   if callsign and callsign.length>0 then
-     user=User.find_by(callsign: callsign)
-     if not user then
-       user=User.create(callsign: callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
+   if user2_id then
+     user=User.find_by_id(self.user2_id)
+     if user then
+       if Rails.env.production? then 
+          user.outstanding=true;user.save;Resque.enqueue(Scorer) 
+       else 
+         user.update_score 
+         user.check_awards
+         user.check_district_awards
+         user.check_region_awards
+       end
+       user.check_awards
      end
-     if Rails.env.production? then user.outstanding=true;user.save;Resque.enqueue(Scorer) else user.update_score end
-     user.check_awards
    end
  end
 
  def reverse
    c=self.dup
-   c.callsign1=self.callsign2
+   c.callsign2=self.callsign1
    c.callsign2=self.callsign1
    c.power1=self.power2
    c.power2=self.power1
@@ -521,9 +535,9 @@ def self.migrate_to_codes
     end
 end
  
-def self.get_by_p2p(callsign,asset1,asset2,date)
-  contact=Contact.find_by("callsign1='#{callsign}' and '#{asset1}'=ANY(asset1_codes) and '#{asset2}'=ANY(asset2_codes) and date>='#{date}'::date and date<('#{date}'::date+'1 day'::interval)")
-  if !contact then contact=Contact.find_by("callsign2='#{callsign}' and '#{asset1}'=ANY(asset2_codes) and '#{asset2}'=ANY(asset1_codes) and date>='#{date}'::date and date<('#{date}'::date+'1 day'::interval)") end
+def self.get_by_p2p(user_id,asset1,asset2,date)
+  contact=Contact.find_by("user1_id=#{user_id} and '#{asset1}'=ANY(asset1_codes) and '#{asset2}'=ANY(asset2_codes) and date>='#{date}'::date and date<('#{date}'::date+'1 day'::interval)")
+  if !contact then contact=Contact.find_by("user2_id=#{user_id} and '#{asset1}'=ANY(asset2_codes) and '#{asset2}'=ANY(asset1_codes) and date>='#{date}'::date and date<('#{date}'::date+'1 day'::interval)") end
   contact
 end 
 

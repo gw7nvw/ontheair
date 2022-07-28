@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220719000846) do
+ActiveRecord::Schema.define(version: 20220727223933) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -435,6 +435,7 @@ ActiveRecord::Schema.define(version: 20220719000846) do
     t.datetime "updated_at"
     t.spatial  "location1",      limit: {:srid=>4326, :type=>"point"}
     t.string   "asset_codes",                                          default: [],   array: true
+    t.integer  "user_id"
   end
 
   create_table "maplayers", force: true do |t|
@@ -505,6 +506,7 @@ ActiveRecord::Schema.define(version: 20220719000846) do
     t.string   "summit"
     t.string   "callsign"
     t.string   "asset_codes",         default: [], array: true
+    t.integer  "user_id"
   end
 
   create_table "pota_parks", force: true do |t|
@@ -562,6 +564,7 @@ ActiveRecord::Schema.define(version: 20220719000846) do
     t.integer  "qso_count"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "user_id"
   end
 
   create_table "sota_peaks", force: true do |t|
@@ -615,6 +618,15 @@ ActiveRecord::Schema.define(version: 20220719000846) do
     t.string   "doc_content_type"
     t.integer  "doc_file_size"
     t.datetime "doc_updated_at"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "user_callsigns", force: true do |t|
+    t.integer  "user_id"
+    t.string   "callsign"
+    t.datetime "from_date"
+    t.datetime "to_date"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

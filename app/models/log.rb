@@ -7,9 +7,16 @@ class Log < ActiveRecord::Base
   #attr_accessor :asset_names
 
   def before_save_actions
+    self.add_user_ids
     self.check_codes_in_location
     self.get_most_accurate_location
     self.remove_suffix
+  end
+
+  def add_user_ids
+    #look up callsign1 at contact.time
+    user1=User.find_by_callsign_date(self.callsign1, self.date, true)
+    if user1 then self.user1_id=user1.id end
   end
 
   def asset_names
@@ -137,7 +144,7 @@ class Log < ActiveRecord::Base
       cle.x1=self.x1
       cle.y1=self.y1
       cle.location1=self.location1
-      cle.convert_to_utc(User.find_by(callsign: cle.callsign1))
+      cle.convert_to_utc(User.find_by_callsign_date(cle.callsign1, cle.date))
       cle.asset1_codes=self.asset_codes
       cle.save
     end
@@ -357,11 +364,17 @@ def self.import(filestr,user)
          lstr=protolog.to_json
          puts "DEBUG: "+lstr
          logs[count]=Log.new(JSON.parse(lstr))
-         if logs[count].save then
-           logs[count].reload
-           logid=logs[count].id
+         loguser=User.find_by_callsign_date(logs[count].callsign1,logs[count].date)
+         if loguser.id==user.id or user.is_admin then
+           if logs[count].save then
+             logs[count].reload
+             logid=logs[count].id
+           else
+             errors.push("Create log #{count.to_s} failed: "+logs[count].errors.messages.to_s)
+             return {logs: logs, errors: errors, success: false}
+           end
          else
-           errors.push("Create log #{count.to_s} failed: "+logs[count].errors.messages.to_s)
+           errors.push("Create log #{count.to_s} failed: you cannot create a log for a callsign not registered to your account")
            return {logs: logs, errors: errors, success: false}
          end
        end 

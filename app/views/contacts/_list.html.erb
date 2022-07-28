@@ -15,7 +15,7 @@
        if @contacts then @contacts.each do |contact| %>
       <tr>
         <td>
-          <% if !@brief and current_user  and (current_user.callsign==contact.callsign1 or current_user.is_admin) %>
+          <% if !@brief and current_user  and (current_user.id==contact.user1_id or current_user.is_admin) %>
             <%= link_to 'Edit', '/contacts/'+contact.id.to_s+'/editlog?referring=index', remote: true, :id => 'editbutton'+contact.id.to_s, :onclick => "linkHandler('editbutton"+contact.id.to_s+"')" %><br/>
           <% end %>
           <%= link_to 'View', '/contacts/'+contact.id.to_s, remote: true, :id => 'contact_link_'+contact.id.to_s, :onclick => "linkHandler('contact_link_"+contact.id.to_s+"')" %>
