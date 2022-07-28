@@ -11,7 +11,11 @@ def create
     if !current_user.is_admin then @callsign.user_id=current_user.id end
   
     if @callsign.save then
-      Resque.enqueue(UpdateUserids, @callsign.callsign)
+      if Rails.env.production? then
+        Resque.enqueue(UpdateUserids, @callsign.callsign)
+      else
+        User.reassign_userids_used_by_callsign(@callsign.callsign)
+      end
       redirect_to "/users/"+@callsign.user.callsign
     else
       render 'new'
@@ -33,7 +37,11 @@ def delete
       if !@callsign.delete then
         flash[:error]="Delete failed"
       else
-        Resque.enqueue(UpdateUserids, oldcallsign)
+        if Rails.env.production? then
+          Resque.enqueue(UpdateUserids, oldcallsign)
+        else
+          User.reassign_userids_used_by_callsign(oldcallsign)
+        end
       end
       redirect_to "/users/"+usercall 
     else
@@ -61,8 +69,13 @@ def update
 
       if @callsign.save
         flash[:success] = "Callsign details updated"
-        Resque.enqueue(UpdateUserids, @callsign.callsign)
-        Resque.enqueue(UpdateUserids, oldcallsign)
+        if Rails.env.production? then
+          Resque.enqueue(UpdateUserids, oldcallsign)
+          Resque.enqueue(UpdateUserids, @callsign.callsign)
+        else
+          User.reassign_userids_used_by_callsign(oldcallsign)
+          User.reassign_userids_used_by_callsign(@callsign.callsign)
+        end
         redirect_to '/users/'+@callsign.user.callsign
       else
         render 'edit'

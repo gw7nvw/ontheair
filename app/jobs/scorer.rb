@@ -12,6 +12,7 @@ class Scorer
       u.update_score
       u.check_awards
       u.check_district_awards
+      u.check_region_awards
     end
   end
 end

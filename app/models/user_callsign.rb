@@ -17,7 +17,7 @@ before_save { self.callsign = callsign.upcase }
 #     -> delete auto-created entry in favour of manual one and PASS
 #   -> Else: FAIL
 def record_is_unique
-  dups=UserCallsign.find_by_sql [" select * from user_callsigns where callsign=? and (from_date<=? and (to_date>=? or to_date is null)) and id!=?; ", self.callsign, self.to_date||Time.now(), self.from_date||Time.new(1900,1,1), self.id ||-1]
+  dups=UserCallsign.find_by_sql [" select * from user_callsigns where callsign=? and (from_date<=? and (to_date>=? or to_date is null)) and id!=?; ", self.callsign, self.to_date||Time.now(), self.from_date||Time.new(1900,1,1), self.id ||0]
   if dups and dups.count>0 then
      dups.each do |dup|
        #can't duplicate a manually created user

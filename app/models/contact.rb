@@ -16,7 +16,7 @@ class Contact < ActiveRecord::Base
 
  
   before_save { self.before_save_actions }
-#  after_save { self.update_scores }
+  after_save { self.update_scores }
   before_destroy { self.update_scores }
 
   validates :callsign1,  presence: true, length: { maximum: 50 }
@@ -407,7 +407,7 @@ end
 
  def reverse
    c=self.dup
-   c.callsign2=self.callsign1
+   c.callsign1=self.callsign2
    c.callsign2=self.callsign1
    c.power1=self.power2
    c.power2=self.power1

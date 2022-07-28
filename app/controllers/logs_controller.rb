@@ -24,7 +24,7 @@ def savefile
     @upload = Upload.new(upload_params)
 
     if current_user.is_admin and params[:callsign] then 
-      user=User.find_by_callsign_date(params[:callsign].upcase, date)
+      user=User.find_by(callsign: params[:callsign].upcase)
     else
       user=current_user
     end
