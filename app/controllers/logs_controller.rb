@@ -1,5 +1,5 @@
 class LogsController < ApplicationController
-  before_action :signed_in_user, only: [:edit, :update, :create, :new]
+  before_action :signed_in_user, only: [:edit, :update, :create, :new, :upload]
 
 skip_before_filter :verify_authenticity_token, :only => [:save, :savefile]
 
@@ -18,40 +18,51 @@ end
 
 def upload
     @upload = Upload.new
+    @upload.doc_callsign=current_user.callsign
 end
 
 def savefile
     @upload = Upload.new(upload_params)
 
+    #get callsign from form
+    if params[:upload][:doc_callsign] then
+      puts "Got callsign: "+params[:upload][:doc_callsign]
+      callsign=params[:upload][:doc_callsign]
+    end
     if current_user.is_admin and params[:callsign] then 
       user=User.find_by(callsign: params[:callsign].upcase)
     else
       user=current_user
     end
+    if !callsign then callsign=user.callsign end
+
     success=@upload.save
 
 
     if success then
       logfile=File.read(@upload.doc.path)
-      results=Log.import(logfile, user)
+      results=Log.import(logfile, user, callsign, params[:upload][:doc_no_create]=="1", params[:upload][:doc_ignore_error]=="1")
       logs=results[:logs]
       errors=results[:errors]
       success=results[:success]
       if errors and errors.count>0 then
-        flash[:error]=errors.to_s
+        @errors=errors
+        puts errors.join('\n')
       end
-      if success==false then
+      if success==false and params[:upload][:doc_ignore_error]!="1" then
         @upload = Upload.new
         render 'upload'
         return
       end
 
-      puts logs
-      logs.each do |log| puts log.to_json end
-      if logs and logs.count>0 and logs.first.id then
-        @log=logs.first
-        flash[:success]="Uploaded "+logs.count.to_s+" days/QTHs of contacts into "+logs.count.to_s+" logs. Showing first" 
-        redirect_to '/logs/'+logs.first.id.to_s
+      if results[:good_logs]>0 and logs and logs.count>0 then
+        lc=0
+        while !logs[lc].id and lc<logs.count do
+          lc+=1
+        end
+        @log=logs[lc]
+        flash[:success]="Uploaded "+results[:good_contacts].to_s+" contact(s) into "+results[:good_logs].to_s+" logs. Showing first log" 
+        redirect_to '/logs/'+@log.id.to_s
       else  
          @upload = Upload.new
          flash[:error]=logs.map{|log| log.errors.full_messages.join(',')}.join(',')

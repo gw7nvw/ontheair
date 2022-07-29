@@ -49,7 +49,7 @@ class Log < ActiveRecord::Base
 
     accuracy=999999999999
     codes.each do |code|
-      puts "DEBUG: assessing code #{code}"
+      #puts "DEBUG: assessing code #{code}"
       assets=Asset.find_by_sql [ " select id, asset_type, location, area from assets where code='#{code}' limit 1" ]
 
       if assets then asset=assets.first else asset=nil end
@@ -60,15 +60,15 @@ class Log < ActiveRecord::Base
             self.location1=asset.location 
             accuracy=asset.area
             loc_point=false
-            puts "DEBUG: Assigning polygon locn"
+            #puts "DEBUG: Assigning polygon locn"
           end
         else
           if loc_point==true then
-            puts "Multiple POINT locations found for log #{self.id.to_s}"
+            #puts "Multiple POINT locations found for log #{self.id.to_s}"
           end
           locaton1=asset.location
           loc_point=true
-          puts "DEBUG: Assigning point locn"
+          #puts "DEBUG: Assigning point locn"
         end
       end
     end
@@ -177,13 +177,16 @@ def self.migrate_to_distcodes
   end
 end
 
-def self.import(filestr,user)
+def self.import(filestr,user,default_callsign,no_create=false, ignore_error=false)
 
   logs=[]
+  contacts=[]
   errors=[]
+  contacts_per_log=[]
+  invalid_log=[]
 
-  count=0
-  contactcount=0
+  log_count=0
+  contact_count=0
   #check encoding
   if !filestr.valid_encoding? then
     filestr=filestr.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
@@ -205,19 +208,21 @@ def self.import(filestr,user)
      lines=logbody.lines
   end
 
+  record_count=0
+  skip_count=0
   lines.each do |line|
      contact=Contact.new
      protolog=Log.new
      if user then 
-       contact.callsign1=user.callsign 
-       protolog.callsign1=user.callsign
+       contact.callsign1=default_callsign
+       protolog.callsign1=default_callsign
      end
      logid=nil
      timestr=nil
      contact.asset1_codes=[]
      contact.asset2_codes=[]
      contact.timezone=Timezone.find_by(name: "UTC").id
-     #get date fro this line
+     #get date from this line
      if line.upcase['QSO_DATE'] then
        #prefetch date
        date=line.upcase.split('<QSO_DATE')[1].split('>')[1][0..7]
@@ -231,11 +236,11 @@ def self.import(filestr,user)
            len=key.split(':')[1]
            value=parm.split('>')[1]
            if len then value=value[0..len-1] end
-           puts "DEBUG: "+key.downcase
+           #puts "DEBUG: "+key.downcase
            case (key.downcase)
  
            when "station_callsign"
-              if value.strip.length>0 then
+              if value and value.length>0 and value.strip.length>0 then
                 callsign=value.strip
                 #remove suffix
                 if callsign['/'] then callsign=Log.remove_suffix(callsign) end
@@ -243,7 +248,7 @@ def self.import(filestr,user)
                 contact.callsign1=callsign
               end
            when "operator"
-              if value.strip.length>0 then
+              if value and value.length>0 and value.strip.length>0 then
                 callsign=value.strip
                 #remove suffix
                 if callsign['/'] then callsign=Log.remove_suffix(callsign) end
@@ -251,159 +256,268 @@ def self.import(filestr,user)
                 contact.callsign1=callsign
               end
            when "qso_date"
-              protolog.date=value.strip
-              contact.date=value.strip
+              if value and value.length>0 and value.strip.length>0 then
+                protolog.date=value.strip
+                contact.date=value.strip
+              end
            when "my_sota_ref"
-              values=value.split(',')
-              values.each do |val|
-                protolog.asset_codes.push(val.strip)
-                contact.asset1_codes.push(val.strip)
-                protolog.is_portable1=true
-                contact.is_portable1=true
+              if value and value.length>0 and value.strip.length>0 then
+                values=value.split(',')
+                values.each do |val|
+                  protolog.asset_codes.push(val.strip)
+                  contact.asset1_codes.push(val.strip)
+                  protolog.is_portable1=true
+                  contact.is_portable1=true
+                end
               end
            when "my_sig_info"
-              values=value.split(',')
-              values.each do |val|
-                protolog.asset_codes.push(val.strip)
-                contact.asset1_codes.push(val.strip)
-                protolog.is_portable1=true
-                contact.is_portable1=true
+              if value and value.length>0 and value.strip.length>0 then
+                values=value.split(',')
+                values.each do |val|
+                  protolog.asset_codes.push(val.strip)
+                  contact.asset1_codes.push(val.strip)
+                  protolog.is_portable1=true
+                  contact.is_portable1=true
+                end
               end
            when "comment"
+              if value and value.length>0 then
                 protolog.comments1=value.gsub(/\r/,'').gsub(/\n/,'')
                 contact.comments1=value.gsub(/\r/,'').gsub(/\n/,'')
+              end
            when "my_antenna"
+              if value and value.length>0 then
                 protolog.antenna1=value.gsub(/\r/,'').gsub(/\n/,'')
                 contact.antenna1=value.gsub(/\r/,'').gsub(/\n/,'')
+              end
            when "my_rig"
+              if value and value.length>0 then
                 protolog.transceiver1=value.gsub(/\r/,'').gsub(/\n/,'')
                 contact.transceiver1=value.gsub(/\r/,'').gsub(/\n/,'')
+              end
            when "my_lat"
-              pos=Log.degs_from_deg_min_sec(value)
-              contact.y1=pos
-              protolog.y1=pos
+              if value and value.length>0 then
+                pos=Log.degs_from_deg_min_sec(value)
+                contact.y1=pos
+                protolog.y1=pos
+              end
            when "my_long"
-              pos=Log.degs_from_deg_min_sec(value)
-              contact.x1=pos
-              protolog.x1=pos
+              if value and value.length>0 then
+                pos=Log.degs_from_deg_min_sec(value)
+                contact.x1=pos
+                protolog.x1=pos
+              end
            when "my_city"
-              contact.loc_desc1=value.strip
-              protolog.loc_desc1=value.strip
+              if value and value.length>0 and value.strip.length>0 then
+                contact.loc_desc1=value.strip
+                protolog.loc_desc1=value.strip
+              end
            when "tx_pwr"
-              contact.power1=value.strip
-              protolog.power1=value.strip
-              if value.strip.to_f<=10 then 
-                contact.is_qrp1=true
-                protolog.is_qrp1=true
+              if value and value.length>0 and value.strip.length>0 then
+                contact.power1=value.strip
+                protolog.power1=value.strip
+                if value.strip.to_f<=10 then 
+                  contact.is_qrp1=true
+                  protolog.is_qrp1=true
+                end
               end
            when "band"
-              if !contact.frequency then
-                contact.frequency=Contact.band_to_freq(value.strip)
+              if value and value.length>0 and value.strip.length>0 then
+                if !contact.frequency then
+                  contact.frequency=Contact.band_to_freq(value.strip)
+                end
               end
            when "freq"
-              contact.frequency=value.strip
+              if value and value.length>0 and value.strip.length>0 then
+                contact.frequency=value.strip
+              end
            when "rst_sent"
-              contact.signal2=value.strip
+              if value and value.length>0 and value.strip.length>0 then
+                contact.signal2=value.strip
+              end
            when "rst_rcvd"
-              contact.signal1=value.strip
+              if value and value.length>0 and value.strip.length>0 then
+                contact.signal1=value.strip
+              end
            when "time_on"
-              timestr=value.strip.gsub(':','')
+              if value and value.length>0 and value.strip.length>0 then
+                timestr=value.strip.gsub(':','')
+              end
            when "time_off"
-              timestr=value.strip.gsub(':','')
+              if value and value.length>0 and value.strip.length>0 then
+                timestr=value.strip.gsub(':','')
+              end
            when "lat"
-              pos=Log.degs_from_deg_min_sec(value)
-              contact.y2=pos
+              if value and value.length>0 then
+                pos=Log.degs_from_deg_min_sec(value)
+                contact.y2=pos
+              end
            when "long"
-              pos=Log.degs_from_deg_min_sec(value)
-              contact.x2=pos
+              if value and value.length>0 then
+                pos=Log.degs_from_deg_min_sec(value)
+                contact.x2=pos
+              end
            when "mode"
-              contact.mode=value.strip
+              if value and value.length>0 and value.strip.length>0 then
+                contact.mode=value.strip
+              end
            when "name"
-              contact.name2=value.strip
+              if value and value.length>0 and value.strip.length>0 then
+                contact.name2=value.strip
+              end
            when "call"
-              callsign=value.strip
-              #remove suffix
-              if callsign['/'] then callsign=Log.remove_suffix(callsign) end
-              contact.callsign2=callsign
+              if value and value.length>0 and value.strip.length>0 then
+                callsign=value.strip
+                #remove suffix
+                if callsign['/'] then callsign=Log.remove_suffix(callsign) end
+                contact.callsign2=callsign
+              end
            when "qth"
-              contact.loc_desc2=value.strip
+              if value and value.length>0 and value.strip.length>0 then
+                contact.loc_desc2=value.strip
+              end
            when "rx_pwr"
-              contact.power2=value.strip
-              if value.strip.to_f<=10 then 
-                contact.is_qrp2=true
+              if value and value.length>0 and value.strip.length>0 then
+                contact.power2=value.strip
+                if value.strip.to_f<=10 then 
+                  contact.is_qrp2=true
+                end
               end
            when "sota_ref"
-              values=value.split(',')
-              values.each do |val|
-                contact.asset2_codes.push(val.strip)
-                contact.is_portable2=true
+              if value and value.length>0 then
+                values=value.split(',')
+                values.each do |val|
+                  contact.asset2_codes.push(val.strip)
+                  contact.is_portable2=true
+                end
               end
            when "sig_info"
-              values=value.split(',')
-              values.each do |val|
-                contact.asset2_codes.push(val.strip)
-                contact.is_portable2=true
+              if value and value.length>0 then
+                values=value.split(',')
+                values.each do |val|
+                  contact.asset2_codes.push(val.strip)
+                  contact.is_portable2=true
+                end
               end
            end
           end #end of if
        end
+       record_count+=1
        protolog.check_codes_in_location
+       lc=0
        logs.each do |log|
-          puts "IMPORT: testing"
-          puts log.callsign1, protolog.callsign1, log.callsign1==protolog.callsign1
-          puts log.date,protolog.date,log.date==protolog.date
-          puts log.asset_codes,protolog.asset_codes,log.asset_codes == protolog.asset_codes
-          if log.callsign1==protolog.callsign1 and log.date==protolog.date and log.asset_codes == protolog.asset_codes then 
-                  logid=log.id
-                  puts "IMPORT: matched"
-          end
+          #puts "IMPORT: testing"
+          #puts log.callsign1, protolog.callsign1, log.callsign1==protolog.callsign1
+          #puts log.date,protolog.date,log.date==protolog.date
+          #puts log.asset_codes.join(','),protolog.asset_codes.join(','),(protolog.asset_codes-log.asset_codes).empty?
+          if log.callsign1==protolog.callsign1 and log.date==protolog.date and (protolog.asset_codes-log.asset_codes).empty? then 
+                  logid=lc
+                  puts "IMPORT: matched existing log: #{lc.to_s}"
+          end  
+          lc+=1
        end
-       if !logid then
-         puts "IMPORT: creating new log ("+count.to_s+")"
-         count=logs.count
+       if logid==nil then
+         puts "IMPORT: creating new log ("+log_count.to_s+")"
+         log_count=logs.count
          lstr=protolog.to_json
-         puts "DEBUG: "+lstr
-         logs[count]=Log.new(JSON.parse(lstr))
-         loguser=User.find_by_callsign_date(logs[count].callsign1,logs[count].date)
-         if loguser.id==user.id or user.is_admin then
-           if logs[count].save then
-             logs[count].reload
-             logid=logs[count].id
+         invalid_log[log_count]=true
+         logs[log_count]=Log.new(JSON.parse(lstr))
+         loguser=User.find_by_callsign_date(logs[log_count].callsign1,logs[log_count].date)
+         if loguser and (loguser.id==user.id or user.is_admin) then
+           if logs[log_count].valid? then
+             puts "Valid log "+log_count.to_s    
+             invalid_log[log_count]=false
            else
-             errors.push("Create log #{count.to_s} failed: "+logs[count].errors.messages.to_s)
-             return {logs: logs, errors: errors, success: false}
+             errors.push("Record #{record_count.to_s}: Create log #{log_count.to_s} failed: "+logs[log_count].errors.messages.to_s)
            end
          else
-           errors.push("Create log #{count.to_s} failed: you cannot create a log for a callsign not registered to your account")
-           return {logs: logs, errors: errors, success: false}
+           errors.push("Record #{record_count.to_s}: Create log #{log_count.to_s} failed: you cannot create a log for a callsign not registered to your account (#{user.callsign}) at the time of the contact (#{logs[log_count].callsign1} #{logs[log_count].date.to_s})")
          end
+         contacts_per_log[log_count]=0       
+         logid=log_count
+         log_count+=1
        end 
 
        contact.log_id=logid
-       puts "IMPORT: save contact"
-       puts contact.to_json
+       #puts "IMPORT: save contact"
        cstr=contact.to_json
        c=JSON.parse(cstr)
        contact=Contact.new(c)
        if timestr and protolog.date then contact.time=protolog.date.strftime("%Y-%m-%d")+" "+timestr[0..1]+":"+timestr[2..3] end
-       contactcount+=1
        if !contact.date then
-         puts "IMPORT: save contact failed"
-         errors.push("Save contact #{contactcount.to_s} failed: no date/time")
-#         return {logs: logs, errors: errors, success: false}
+         errors.push("Record #{record_count.to_s}: Save contact #{contactcount.to_s} failed: no date/time")
        elsif (!contact.asset1_codes or contact.asset1_codes.count==0) and (!contact.asset2_codes or contact.asset2_codes.count==0) then
-         errors.push("Save contact #{contactcount.to_s} failed: no activation location for either party")
-#         return {logs: logs, errors: errors, success: false}
-       elsif !contact.save then 
-         puts "IMPORT: save contact failed"
-           errors.push("Save contact #{contactcount.to_s} failed: "+contact.errors.messages.to_s)
-#           return {logs: logs, errors: errors, success: false}
+         errors.push("Record #{record_count.to_s}: Save contact #{contactcount.to_s} failed: no activation location for either party")
+       else
+         res=true
+         create=false
+         if no_create==true then
+           #only save if both calls are registered
+           uc=UserCallsign.find_by(callsign: contact.callsign2)
+           if uc then 
+             res=contact.valid?
+             create=true
+           else 
+             puts "Skipping contact with unknown call: "+contact.callsign2 
+             skip_count+=1
+             create=false
+           end
+         else
+           #always save
+           res=contact.valid?
+           create=true
+         end
+         if !res then 
+           puts "IMPORT: save contact failed"
+           errors.push("Record #{record_count.to_s}: Save contact #{contactcount.to_s} failed: "+contact.errors.messages.to_s)
+         end
+         if res and create then
+           contacts[contact_count]=contact
+           contacts_per_log[contact.log_id]+=1
+           contact_count+=1
+         end 
        end
      end  #end of parms.each 
   end #end of lines.each 
-   puts "IMPORT: clean exit"
-   puts errors
-   return {logs: logs, errors: errors, success: true}
+ 
+  good_logs=0 
+  if errors.empty? or ignore_error then
+    #create logs
+    lc=0
+    logs.each do |log|
+      if contacts_per_log[lc]>0 and !invalid_log[lc] then 
+        if logs[lc].save then
+           logs[lc].reload
+           good_logs+=1
+        else
+           errors.push("FATAL: Save log #{lc.to_s} failed: "+logs[lc].errors.messages.to_s)
+           invalid_log[lc]=true
+        end
+      else
+        puts "Skipping empty log: "+lc.to_s
+      end
+      lc+=1
+    end
+
+    #create contacts
+    cc=0
+    good_contacts=0
+    contacts.each do |contact|
+      if invalid_log[contact.log_id] then
+        puts "Skipping contact #{cc.to_s} as log #{contact.log_id.to_s} invalid"
+      else
+        contact.log_id=logs[contact.log_id].id
+        if contact.save  then
+           good_contacts+=1
+        else
+           errors.push("FATAL: Save contact #{cc.to_s} failed: "+contact.errors.messages.to_s)
+        end
+      end
+    end
+  end
+  puts "IMPORT: clean exit"
+  puts errors
+  return {logs: logs, errors: errors, success: true, good_logs: good_logs, good_contacts: good_contacts}
 end
 
 def self.degs_from_deg_min_sec(value)

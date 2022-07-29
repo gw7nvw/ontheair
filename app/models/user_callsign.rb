@@ -21,8 +21,8 @@ def record_is_unique
   if dups and dups.count>0 then
      dups.each do |dup|
        #can't duplicate a manually created user
-       if dup.user.activated_at or !self.user.activated_at then 
-         errors.add(:callsign, "This callsign is already assigned in this period")
+       if dup.user.activated or !self.user.activated then 
+         errors.add(:callsign, "This callsign is already assigned in this period. Please contact admin@ontheair.nz with details of the period for which you held this callsign so that it can be assigned correctly.")
        else
          #automatic user, so delete
          puts "Delete automatic user "+self.callsign

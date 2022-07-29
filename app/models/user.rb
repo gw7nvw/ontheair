@@ -794,7 +794,7 @@ end
 #   If callsign does not exist at all, create an auto-cretae duser for the callsign
 #   If callsign does exist, but on another date, FAIL and return nil
 def self.find_by_callsign_date(callsign, c_date, create=false)
-  uc=UserCallsign.find_by_sql [ " select * from user_callsigns where callsign=? and from_date<? and (to_date is null or to_date>?) ",callsign, c_date, c_date ]
+  uc=UserCallsign.find_by_sql [ " select * from user_callsigns where callsign=? and from_date<=? and (to_date is null or to_date>=?) ",callsign, c_date, c_date ]
   if uc and uc.count>0 then 
     uc.first.user 
   else 

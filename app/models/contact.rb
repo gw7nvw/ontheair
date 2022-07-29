@@ -45,7 +45,6 @@ class Contact < ActiveRecord::Base
   end
 
   def check_codes_in_location
-    #Do not update location1 - that's done in the log
     #if self.asset1_codes==nil or self.asset1_codes==[] or self.asset1_codes==[""] then
     #  assets=Asset.assets_from_code(self.loc_desc1)
     #  self.asset1_codes=[]
@@ -117,7 +116,7 @@ class Contact < ActiveRecord::Base
  end
 
  def add_child_codes
-   #self.asset1_codes=self.get_all_asset1_codes
+   self.asset1_codes=self.get_all_asset1_codes
    self.asset2_codes=self.get_all_asset2_codes
  end
 

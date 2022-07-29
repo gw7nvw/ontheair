@@ -59,18 +59,27 @@ class AssetsController < ApplicationController
   end
 
   def refresh_pota
-    a=Asset.find_by(safecode: params[:id])
-    if a and a.asset_type=='pota park' then
-      SotaActivation.update_pota_activation(a)
+    if signed_in? then
+      a=Asset.find_by(safecode: params[:id])
+      if a and a.asset_type=='pota park' then
+        SotaActivation.update_pota_activation(a)
+      end
+    else 
+      flash[:error]="You must be signed in to do this"
     end
     redirect_to '/assets/'+params[:id]
   end
 
   def refresh_sota
-    a=Asset.find_by(safecode: params[:id])
-    if a and a.asset_type=='summit' then
-      SotaActivation.update_sota_activation(a)
+    if signed_in? then
+      a=Asset.find_by(safecode: params[:id])
+      if a and a.asset_type=='summit' then
+        SotaActivation.update_sota_activation(a)
+      end
+    else
+      flash[:error]="You must be signed in to do this"
     end
+
     redirect_to '/assets/'+params[:id]
   end
 

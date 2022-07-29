@@ -6,6 +6,7 @@
 User-Agent: *
 Disallow: */edit
 Disallow: */new
-Disallow: asstes/*/refresh_sota
+Disallow: */refresh_sota
+Disallow: users/*/*
 Disallow: *.gpx
 Disallow: *.csv

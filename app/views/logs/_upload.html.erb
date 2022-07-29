@@ -25,16 +25,54 @@
     <div class="fullform">
        <%= form_for @upload, :remote => true, url: '/logs/upload', :html => {:name => 'hutform'} do |f| %>
         <%= render 'shared/error_messages' %>
-        <div id="right_scroll">
+
+          <div class="erow">
+            <i>Some log programs do not include callsign for your station or operator. Select a default to apply where no station/operator is specified for you in the log</i>
+          <div class="erow">
+            <div class="sectiontitle25">Station callsign:</div>
+          </div>
+          <div class="erow">
+            <% if current_user.is_admin then %>
+              <%= f.text_field :doc_callsign %>
+            <% else %>
+              <%= collection_select( :upload, :doc_callsign, current_user.callsigns, :callsign, :callsign, {}) %>
+            <% end %>
+          </div>
+          <div class="erow">
+            <div class="sectiontitle25">Import only contacts with current registered users:</div>
+          </div>
+          <div class="erow">
+            <%= f.check_box :doc_no_create%><br/><br/>
+          </div>
+          <div class="erow">
+            <div class="sectiontitle25">Ignore errors and save valid contacts:</div>
+          </div>
+          <div class="erow">
+            <%= f.check_box :doc_ignore_error%><br/><br/>
+          </div>
 
           <div class="erow">
              <div class="sectiontitle25">Filename:</div>
           </div>
-          <%= f.file_field :doc %>
+          <div class="erow">
 
-          <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-hightlight", :onclick => "submitHandler('Uploading ...');" %>
-        </div>
+            <%= f.file_field :doc %>
+
+            <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-hightlight", :onclick => "submitHandler('Uploading ...');" %>
+          </div>
       <% end %>
     </div>
   </div>
+  <div class="erow" style="text-color: #f00">
+  <% if @errors then %>
+    <ul>
+      <% @errors.each do |error| %>
+        <li>
+           <%=error%>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+  </div>
+ 
 </div>
