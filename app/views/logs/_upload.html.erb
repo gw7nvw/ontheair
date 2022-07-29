@@ -26,8 +26,21 @@
        <%= form_for @upload, :remote => true, url: '/logs/upload', :html => {:name => 'hutform'} do |f| %>
         <%= render 'shared/error_messages' %>
 
+       <div class="erow">
+         <div class="hrline">
+            <hr noshade size="4">
+         </div>
+       </div>
+
+        <div class="erow">
+            <a href="#"  remote=true onclick='expand_div("advanced");return(false);'>Advanced options v</a>
+        </div>
+
+        <div id="advanced" style="display:none">
+
           <div class="erow">
-            <i>Some log programs do not include callsign for your station or operator. Select a default to apply where no station/operator is specified for you in the log</i>
+            <i>Some log programs do not include callsign or location for your station or operator. Select a default to apply where no station/operator or location is specified for you in the log. You can ignore this if you know the log contains correct callsign / location information.</i>
+          </div>
           <div class="erow">
             <div class="sectiontitle25">Station callsign:</div>
           </div>
@@ -37,6 +50,12 @@
             <% else %>
               <%= collection_select( :upload, :doc_callsign, current_user.callsigns, :callsign, :callsign, {}) %>
             <% end %>
+          </div>
+          <div class="erow">
+            <div class="sectiontitle25">Station location reference (e.g. ZLL/0001):</div>
+          </div>
+          <div class="erow">
+              <%= f.text_field :doc_location %>
           </div>
           <div class="erow">
             <div class="sectiontitle25">Import only contacts with current registered users:</div>
@@ -50,16 +69,21 @@
           <div class="erow">
             <%= f.check_box :doc_ignore_error%><br/><br/>
           </div>
+        </div>
 
-          <div class="erow">
-             <div class="sectiontitle25">Filename:</div>
+        <div class="erow">
+          <div class="hrline">
+            <hr noshade size="4">
           </div>
-          <div class="erow">
+        </div>
 
-            <%= f.file_field :doc %>
-
-            <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-hightlight", :onclick => "submitHandler('Uploading ...');" %>
-          </div>
+        <div class="erow">
+          <div class="sectiontitle25">Filename:</div>
+        </div>
+        <div class="erow">
+          <%= f.file_field :doc %>
+          <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-hightlight", :onclick => "submitHandler('Uploading ...');" %>
+        </div>
       <% end %>
     </div>
   </div>

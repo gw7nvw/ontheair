@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220729023851) do
+ActiveRecord::Schema.define(version: 20220729192219) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -623,6 +623,7 @@ ActiveRecord::Schema.define(version: 20220729023851) do
     t.string   "doc_callsign"
     t.boolean  "doc_no_create"
     t.boolean  "doc_ignore_error"
+    t.string   "doc_location"
   end
 
   create_table "user_callsigns", force: true do |t|

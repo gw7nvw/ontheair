@@ -177,7 +177,7 @@ def self.migrate_to_distcodes
   end
 end
 
-def self.import(filestr,user,default_callsign,no_create=false, ignore_error=false)
+def self.import(filestr,user,default_callsign,default_location,no_create=false, ignore_error=false)
 
   logs=[]
   contacts=[]
@@ -221,6 +221,11 @@ def self.import(filestr,user,default_callsign,no_create=false, ignore_error=fals
      timestr=nil
      contact.asset1_codes=[]
      contact.asset2_codes=[]
+     if default_location and default_location.length>0 and default_location.strip.length>0 then
+       protolog.asset_codes.push(default_location.strip)
+       contact.asset1_codes.push(default_location.strip)
+     end
+
      contact.timezone=Timezone.find_by(name: "UTC").id
      #get date from this line
      if line.upcase['QSO_DATE'] then
@@ -445,9 +450,9 @@ def self.import(filestr,user,default_callsign,no_create=false, ignore_error=fals
        contact=Contact.new(c)
        if timestr and protolog.date then contact.time=protolog.date.strftime("%Y-%m-%d")+" "+timestr[0..1]+":"+timestr[2..3] end
        if !contact.date then
-         errors.push("Record #{record_count.to_s}: Save contact #{contactcount.to_s} failed: no date/time")
+         errors.push("Record #{record_count.to_s}: Save contact #{contact_count.to_s} failed: no date/time")
        elsif (!contact.asset1_codes or contact.asset1_codes.count==0) and (!contact.asset2_codes or contact.asset2_codes.count==0) then
-         errors.push("Record #{record_count.to_s}: Save contact #{contactcount.to_s} failed: no activation location for either party")
+         errors.push("Record #{record_count.to_s}: Save contact #{contact_count.to_s} failed: no activation location for either party")
        else
          res=true
          create=false
@@ -469,7 +474,7 @@ def self.import(filestr,user,default_callsign,no_create=false, ignore_error=fals
          end
          if !res then 
            puts "IMPORT: save contact failed"
-           errors.push("Record #{record_count.to_s}: Save contact #{contactcount.to_s} failed: "+contact.errors.messages.to_s)
+           errors.push("Record #{record_count.to_s}: Save contact #{contact_count.to_s} failed: "+contact.errors.messages.to_s)
          end
          if res and create then
            contacts[contact_count]=contact
@@ -481,11 +486,11 @@ def self.import(filestr,user,default_callsign,no_create=false, ignore_error=fals
   end #end of lines.each 
  
   good_logs=0 
-  if errors.empty? or ignore_error then
-    #create logs
-    lc=0
-    logs.each do |log|
-      if contacts_per_log[lc]>0 and !invalid_log[lc] then 
+  #create logs
+  lc=0
+  logs.each do |log|
+    if contacts_per_log[lc]>0 and !invalid_log[lc] then 
+      if errors.empty? or ignore_error then
         if logs[lc].save then
            logs[lc].reload
            good_logs+=1
@@ -494,24 +499,30 @@ def self.import(filestr,user,default_callsign,no_create=false, ignore_error=fals
            invalid_log[lc]=true
         end
       else
-        puts "Skipping empty log: "+lc.to_s
+        good_logs+=1
       end
-      lc+=1
+    else
+      puts "Skipping empty log: "+lc.to_s
     end
+    lc+=1
+  end
 
-    #create contacts
-    cc=0
-    good_contacts=0
-    contacts.each do |contact|
-      if invalid_log[contact.log_id] then
-        puts "Skipping contact #{cc.to_s} as log #{contact.log_id.to_s} invalid"
-      else
+  #create contacts
+  cc=0
+  good_contacts=0
+  contacts.each do |contact|
+    if invalid_log[contact.log_id] then
+      puts "Skipping contact #{cc.to_s} as log #{contact.log_id.to_s} invalid"
+    else
+      if errors.empty? or ignore_error then
         contact.log_id=logs[contact.log_id].id
         if contact.save  then
            good_contacts+=1
         else
            errors.push("FATAL: Save contact #{cc.to_s} failed: "+contact.errors.messages.to_s)
         end
+      else
+        good_contacts+=1
       end
     end
   end

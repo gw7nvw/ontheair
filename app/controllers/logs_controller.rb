@@ -25,6 +25,8 @@ def savefile
     @upload = Upload.new(upload_params)
 
     #get callsign from form
+    location=params[:upload][:doc_location]
+
     if params[:upload][:doc_callsign] then
       puts "Got callsign: "+params[:upload][:doc_callsign]
       callsign=params[:upload][:doc_callsign]
@@ -41,7 +43,7 @@ def savefile
 
     if success then
       logfile=File.read(@upload.doc.path)
-      results=Log.import(logfile, user, callsign, params[:upload][:doc_no_create]=="1", params[:upload][:doc_ignore_error]=="1")
+      results=Log.import(logfile, user, callsign, location, params[:upload][:doc_no_create]=="1", params[:upload][:doc_ignore_error]=="1")
       logs=results[:logs]
       errors=results[:errors]
       success=results[:success]
@@ -50,6 +52,7 @@ def savefile
         puts errors.join('\n')
       end
       if success==false and params[:upload][:doc_ignore_error]!="1" then
+        flash[:success]="Found "+results[:good_contacts].to_s+" valid contact(s) and "+results[:good_logs].to_s+" valid logs but did not upload due to other errors." 
         @upload = Upload.new
         render 'upload'
         return
@@ -65,6 +68,7 @@ def savefile
         redirect_to '/logs/'+@log.id.to_s
       else  
          @upload = Upload.new
+         flash[:success]="Found "+results[:good_contacts].to_s+" valid contact(s) and "+results[:good_logs].to_s+" valid logs but did not upload due to other errors." 
          flash[:error]=logs.map{|log| log.errors.full_messages.join(',')}.join(',')
          render 'upload'
          return
