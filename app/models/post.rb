@@ -156,7 +156,7 @@ def send_to_pnp(debug,topic,idate,itime,tzname)
 #              end
               if pnp_class and pnp_class!="" then
                 puts "sending alert to PnP"
-                params = {"actClass" => pnp_class,"actCallsign" => self.updated_by_name,"actSite" => code,"actMode" => self.mode,"actFreq" => self.freq,"actComments" => convert_to_text(self.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2","alDate" => if tt then tt.strftime('%Y-%m-%d') else "" end,"alTime" => if tt then tt.strftime('%H:%M') else "" end,"optDay" => if dayflag then "1" else "0" end}
+                params = {"actClass" => pnp_class,"actCallsign" => self.updated_by_name,"actSite" => code,"actMode" => self.mode.strip,"actFreq" => self.freq.strip,"actComments" => convert_to_text(self.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2","alDate" => if tt then tt.strftime('%Y-%m-%d') else "" end,"alTime" => if tt then tt.strftime('%H:%M') else "" end,"optDay" => if dayflag then "1" else "0" end}
                 res=send_alert_to_pnp(params,dbtext)
               end
             end
@@ -171,7 +171,7 @@ def send_to_pnp(debug,topic,idate,itime,tzname)
 #                 if aa then code=aa.old_code end
 #              end
               if pnp_class and pnp_class!="" then
-                params = {"actClass" => pnp_class,"actCallsign" => (self.callsign||self.updated_by_name),"actSite" => code,"mode" => self.mode,"freq" => self.freq,"comments" => convert_to_text(self.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2"}
+                params = {"actClass" => pnp_class,"actCallsign" => (self.callsign||self.updated_by_name),"actSite" => code,"mode" => self.mode.strip,"freq" => self.freq.strip,"comments" => convert_to_text(self.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2"}
                 puts "sending spot to PnP"
                 res=send_spot_to_pnp(params,dbtext)
               end

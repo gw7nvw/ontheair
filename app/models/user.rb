@@ -88,8 +88,8 @@ def authenticated?(attribute, token)
  def bagged_qrp
    ats=AssetType.where(keep_score: true)
    at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
-   codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where (user2_id='"+self.id.to_s+"' and is_qrp2=true) or (user1_id='"+self.id.to_s+"' and is_qrp1=true)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
-   codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where (user2_id='"+self.id.to_s+"' and is_qrp2=true) or (user1_id='"+self.id.to_s+"' and is_qrp1=true)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+   codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where (user2_id="+self.id.to_s+" and is_qrp2=true) or (user1_id="+self.id.to_s+" and is_qrp1=true)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+   codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where (user2_id="+self.id.to_s+" and is_qrp2=true) or (user1_id="+self.id.to_s+" and is_qrp1=true)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
    codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
  end
 
@@ -97,11 +97,11 @@ def authenticated?(attribute, token)
    if asset_type=='all' then
      ats=AssetType.where(keep_score: true)
      at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
-     codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where (user1_id='"+self.id.to_s+"' or user2_id='"+self.id.to_s+"')) as c inner join assets a on a.code = c.asset1_codes where a.is_active=true and a.minor is not true and asset1_classes in ("+at_list+"); " ]
-     codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where (user1_id='"+self.id.to_s+"' or user2_id='"+self.id.to_s+"')) as c inner join assets a on a.code = c.asset2_codes where a.is_active=true and a.minor is not true and asset2_classes in ("+at_list+"); " ]
+     codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where (user1_id="+self.id.to_s+" or user2_id="+self.id.to_s+")) as c inner join assets a on a.code = c.asset1_codes where a.is_active=true and a.minor is not true and asset1_classes in ("+at_list+"); " ]
+     codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where (user1_id="+self.id.to_s+" or user2_id="+self.id.to_s+")) as c inner join assets a on a.code = c.asset2_codes where a.is_active=true and a.minor is not true and asset2_classes in ("+at_list+"); " ]
    else
-     codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where (user1_id='"+self.id.to_s+"' or user2_id='"+self.id.to_s+"') and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
-     codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where (user1_id='"+self.id.to_s+"' or user2_id='"+self.id.to_s+"') and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+     codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where (user1_id="+self.id.to_s+" or user2_id="+self.id.to_s+") and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+     codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where (user1_id="+self.id.to_s+" or user2_id="+self.id.to_s+") and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
    end
    codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
   end
@@ -109,8 +109,8 @@ def authenticated?(attribute, token)
   def activated_qrp
     ats=AssetType.where(keep_score: true)
     at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
-    codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id='"+self.id.to_s+"' and is_qrp1=true) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
-    codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id='"+self.id.to_s+"' and is_qrp2=true) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+" and is_qrp1=true) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and is_qrp2=true) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",")].join(",").split(',').uniq
   end
 
@@ -118,11 +118,11 @@ def authenticated?(attribute, token)
     if asset_type=='all' then
         ats=AssetType.where(keep_score: true)
         at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
-        codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id='"+self.id.to_s+"') as c inner join assets a on a.code = c.asset1_codes where a.is_active=true and a.minor is not true and asset1_classes in ("+at_list+") ; " ]
-        codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id='"+self.id.to_s+"') as c inner join assets a on a.code = c.asset2_codes where a.is_active=true and a.minor is not true and asset2_classes in ("+at_list+") ; " ]
+        codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+") as c inner join assets a on a.code = c.asset1_codes where a.is_active=true and a.minor is not true and asset1_classes in ("+at_list+") ; " ]
+        codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+") as c inner join assets a on a.code = c.asset2_codes where a.is_active=true and a.minor is not true and asset2_classes in ("+at_list+") ; " ]
     else
-        codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id='"+self.id.to_s+"' and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
-        codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id='"+self.id.to_s+"' and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+        codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+" and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+        codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
     end
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",")].join(",").split(',').uniq
   end
@@ -130,8 +130,8 @@ def authenticated?(attribute, token)
   def chased_qrp
     ats=AssetType.where(keep_score: true)
     at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
-    codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id='"+self.id.to_s+"' and is_qrp2=true) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
-    codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id='"+self.id.to_s+"' and is_qrp1=true) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id="+self.id.to_s+" and is_qrp2=true) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id="+self.id.to_s+" and is_qrp1=true) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
   end
 
@@ -139,11 +139,11 @@ def authenticated?(attribute, token)
     if asset_type=='all' then
       ats=AssetType.where(keep_score: true)
       at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
-      codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id='"+self.id.to_s+"') as c inner join assets a on a.code = c.asset1_codes where a.is_active=true and a.minor is not true and asset1_classes in ("+at_list+"); " ]
-      codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id='"+self.id.to_s+"') as c inner join assets a on a.code = c.asset2_codes where a.is_active=true and a.minor is not true and asset2_classes in ("+at_list+"); " ]
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id="+self.id.to_s+") as c inner join assets a on a.code = c.asset1_codes where a.is_active=true and a.minor is not true and asset1_classes in ("+at_list+"); " ]
+      codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id="+self.id.to_s+") as c inner join assets a on a.code = c.asset2_codes where a.is_active=true and a.minor is not true and asset2_classes in ("+at_list+"); " ]
     else
-      codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id='"+self.id.to_s+"' and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
-      codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id='"+self.id.to_s+"' and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id="+self.id.to_s+" and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+      codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id="+self.id.to_s+" and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
     end
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
   end
@@ -153,11 +153,11 @@ def authenticated?(attribute, token)
       ats=AssetType.where(keep_score: true)
       at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
 
-      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id='"+self.id.to_s+"' and asset1_classes in ("+at_list+")) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
-      codes2=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id='"+self.id.to_s+"' and asset1_classes in ("+at_list+")) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id="+self.id.to_s+" and asset1_classes in ("+at_list+")) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+      codes2=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id="+self.id.to_s+" and asset1_classes in ("+at_list+")) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
     else
-      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id='"+self.id.to_s+"' and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
-      codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id='"+self.id.to_s+"' and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id="+self.id.to_s+" and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+      codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id="+self.id.to_s+" and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
     end
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
   end
@@ -165,8 +165,8 @@ def authenticated?(attribute, token)
   def chased_qrp_by_day
     ats=AssetType.where(keep_score: true)
     at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
-    codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id='"+self.id.to_s+"' and is_qrp2=true) as c inner join assets a on a.code = c.asset1_codes  where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
-    codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id='"+self.id.to_s+"' and is_qrp1=true) as c inner join assets a on a.code = c.asset2_codes  where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id="+self.id.to_s+" and is_qrp2=true) as c inner join assets a on a.code = c.asset1_codes  where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id="+self.id.to_s+" and is_qrp1=true) as c inner join assets a on a.code = c.asset2_codes  where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
   end
 
@@ -174,11 +174,11 @@ def authenticated?(attribute, token)
     if asset_type=='all' then
       ats=AssetType.where(keep_score: true)
       at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
-      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id='"+self.id.to_s+"') as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
-      codes2=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id='"+self.id.to_s+"') as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+") as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+      codes2=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+") as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
     else
-      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id='"+self.id.to_s+"' and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
-      codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id='"+self.id.to_s+"' and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+" and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+      codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
     end
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
   end
@@ -188,11 +188,11 @@ def authenticated?(attribute, token)
       ats=AssetType.where(keep_score: true)
       at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
 
-      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id='"+self.id.to_s+"') as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
-      codes2=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id='"+self.id.to_s+"') as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+") as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+      codes2=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+") as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
     else
-      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id='"+self.id.to_s+"' and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
-      codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id='"+self.id.to_s+"' and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+      codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+" and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
+      codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes='"+asset_type+"' and a.is_active=true and a.minor is not true; " ]
     end
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
 
@@ -201,8 +201,8 @@ def authenticated?(attribute, token)
   def activated_qrp_by_year
     ats=AssetType.where(keep_score: true)
     at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
-    codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id='"+self.id.to_s+"' and is_qrp1=true) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
-    codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id='"+self.id.to_s+"' and is_qrp2=true) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+" and is_qrp1=true) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
+    codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and is_qrp2=true) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and a.minor is not true; " ]
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",")].join(",").split(',').uniq
   end
 
@@ -251,10 +251,10 @@ def authenticated?(attribute, token)
   end
 
   def contacts
-      contacts=Contact.find_by_sql [ "select * from contacts where user1_id='"+self.id.to_s+"' or user2_id='"+self.id.to_s+"' order by date, time"]
+      contacts=Contact.find_by_sql [ "select * from contacts where user1_id="+self.id.to_s+" or user2_id="+self.id.to_s+" order by date, time"]
   end
   def logs
-      logs=Log.find_by_sql [ "select * from logs where user1_id='"+self.id.to_s+"' order by date"]
+      logs=Log.find_by_sql [ "select * from logs where user1_id="+self.id.to_s+" order by date"]
   end
 
   def self.users_with_assets(sortby = "park", scoreby = "score", max_rows = 2000)
@@ -305,12 +305,12 @@ def authenticated?(attribute, token)
 
     p2p=[]
     #contacts where I'm in ZLOTA
-    contacts1=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset1_code,' ', 1) || ' ' || split_part(asset2_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset1_codes) as asset1_code, unnest(c1.asset1_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user1_id='"+self.id.to_s+"') as foo where asset1_class in ("+at_list+"); " ]
-    contacts2=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset1_code, ' ', 1) || ' ' || split_part(asset2_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset2_codes) as asset1_code, unnest(c1.asset2_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset1_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user2_id='"+self.id.to_s+"') as foo where asset1_class in ("+at_list+"); " ]
+    contacts1=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset1_code,' ', 1) || ' ' || split_part(asset2_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset1_codes) as asset1_code, unnest(c1.asset1_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user1_id="+self.id.to_s+") as foo where asset1_class in ("+at_list+"); " ]
+    contacts2=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset1_code, ' ', 1) || ' ' || split_part(asset2_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset2_codes) as asset1_code, unnest(c1.asset2_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset1_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user2_id="+self.id.to_s+") as foo where asset1_class in ("+at_list+"); " ]
     #contacts where other party  ZLOTA (reverse code order so my loc first
     #to avoid double-counting ZLOTA-ZLOTA
-    contacts3=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset2_code,' ', 1) || ' ' || split_part(asset1_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset1_codes) as asset1_code, unnest(c1.asset1_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user2_id='"+self.id.to_s+"') as foo where asset1_class in ("+at_list+"); " ]
-    contacts4=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset2_code, ' ', 1) || ' ' || split_part(asset1_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset2_codes) as asset1_code, unnest(c1.asset2_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset1_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user1_id='"+self.id.to_s+"') as foo where asset1_class in ("+at_list+"); " ]
+    contacts3=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset2_code,' ', 1) || ' ' || split_part(asset1_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset1_codes) as asset1_code, unnest(c1.asset1_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user2_id="+self.id.to_s+") as foo where asset1_class in ("+at_list+"); " ]
+    contacts4=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset2_code, ' ', 1) || ' ' || split_part(asset1_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset2_codes) as asset1_code, unnest(c1.asset2_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset1_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user1_id="+self.id.to_s+") as foo where asset1_class in ("+at_list+"); " ]
     contacts=((contacts1+contacts2+contacts3+contacts4).map{|c| c.asset1_code}).uniq
   end
 
@@ -340,20 +340,20 @@ def authenticated?(attribute, token)
   def contacts_by_type(asset_type, count_type)
     if asset_type=="qrp" then
       if count_type=="bagged" then
-        query1="(user1_id = '"+self.id.to_s+"' and is_qrp1=true) or (user2_id = '"+self.id.to_s+"' and is_qrp2=true)" 
+        query1="(user1_id = "+self.id.to_s+" and is_qrp1=true) or (user2_id = "+self.id.to_s+" and is_qrp2=true)" 
       else #activated, chased
-        query1="user1_id = '"+self.id.to_s+"' and is_qrp1=true"
-        query2="user2_id = '"+self.id.to_s+"' and is_qrp2=true"
+        query1="user1_id = "+self.id.to_s+" and is_qrp1=true"
+        query2="user2_id = "+self.id.to_s+" and is_qrp2=true"
       end
     else
       if count_type=="activated" then
-        query1="user1_id = '"+self.id.to_s+"' and '"+asset_type+"'=ANY(asset1_classes)"
-        query2="user2_id = '"+self.id.to_s+"' and '"+asset_type+"'=ANY(asset2_classes)"
+        query1="user1_id = "+self.id.to_s+" and '"+asset_type+"'=ANY(asset1_classes)"
+        query2="user2_id = "+self.id.to_s+" and '"+asset_type+"'=ANY(asset2_classes)"
       elsif count_type=="chased" then
-        query1="user1_id = '"+self.id.to_s+"' and '"+asset_type+"'=ANY(asset2_classes)"
-        query2="user2_id = '"+self.id.to_s+"' and '"+asset_type+"'=ANY(asset1_classes)"
+        query1="user1_id = "+self.id.to_s+" and '"+asset_type+"'=ANY(asset2_classes)"
+        query2="user2_id = "+self.id.to_s+" and '"+asset_type+"'=ANY(asset1_classes)"
       else  #bagged
-        query1="(user1_id = '"+self.id.to_s+"' or user2_id = '"+self.id.to_s+"') and ('"+asset_type+"'=ANY(asset1_classes) or '"+asset_type+"'=ANY(asset2_classes))"
+        query1="(user1_id = "+self.id.to_s+" or user2_id = "+self.id.to_s+") and ('"+asset_type+"'=ANY(asset1_classes) or '"+asset_type+"'=ANY(asset2_classes))"
       end
     end
     if count_type=="bagged" then
@@ -371,7 +371,7 @@ def authenticated?(attribute, token)
    if resubmit==true then resubmit_str="" else resubmit_str=" and submitted_to_wwff is not true" end
    wwff_logs=[]
    puts "resubmit: "+resubmit_str
-   contacts2=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where user1_id = '"+self.id.to_s+"'"+resubmit_str+" and 'wwff park'=ANY(asset1_classes)) as sq where asset1_codes  like 'ZLFF-%%'" ]
+   contacts2=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where user1_id = "+self.id.to_s+""+resubmit_str+" and 'wwff park'=ANY(asset1_classes)) as sq where asset1_codes  like 'ZLFF-%%'" ]
 
    parks=[]
    contacts2.each do |contact|
@@ -523,7 +523,7 @@ def authenticated?(attribute, token)
   def pota_logs
    pota_logs=[]
 
-   contacts2=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where user1_id = '"+self.id.to_s+"' and 'pota park'=ANY(asset1_classes)) as sq where asset1_codes  like 'ZL-%%'" ]
+   contacts2=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where user1_id = "+self.id.to_s+" and 'pota park'=ANY(asset1_classes)) as sq where asset1_codes  like 'ZL-%%'" ]
 
    parks=[]
    contacts2.each do |contact|
@@ -574,8 +574,8 @@ def check_district_completion(district_id, activity_type, asset_type)
      if as and as.count>0 then
        available_codes=as.map{|a| a.code}
        asset_codes=as.map{|a| "'"+a.code+"'"}.join(',') 
-       contacts1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_codes) as asset1_codes from contacts where user1_id='"+self.id.to_s+"') as foo where asset1_codes in ("+asset_codes+")" ]
-       contacts2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_codes) as asset2_codes from contacts where user2_id='"+self.id.to_s+"') as foo where asset2_codes in ("+asset_codes+")" ]
+       contacts1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+") as foo where asset1_codes in ("+asset_codes+")" ]
+       contacts2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+") as foo where asset2_codes in ("+asset_codes+")" ]
        activated_codes=(contacts1+contacts2).map{|c| c.asset1_codes}.uniq
        missing_codes=available_codes-activated_codes
      end
@@ -584,11 +584,11 @@ def check_district_completion(district_id, activity_type, asset_type)
 end
 
 def region_activations
-  activations=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select unnest(asset1_codes) as asset1_code from contacts where user1_id='"+self.id.to_s+"') union (select unnest(asset2_codes) as asset1_code from contacts where user2_id='"+self.id.to_s+"') union (select summit_code as asset1_code from sota_activations where user_id='"+self.id.to_s+"'))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where a.is_active=true and a.minor is not true group by d.sota_code, a.asset_type, a.minor; "]
+  activations=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select unnest(asset1_codes) as asset1_code from contacts where user1_id="+self.id.to_s+") union (select unnest(asset2_codes) as asset1_code from contacts where user2_id="+self.id.to_s+") union (select summit_code as asset1_code from sota_activations where user_id="+self.id.to_s+"))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where a.is_active=true and a.minor is not true group by d.sota_code, a.asset_type, a.minor; "]
 end
 
 def region_chases
-  chases=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select unnest(asset2_codes) as asset1_code from contacts where user1_id='"+self.id.to_s+"') union (select unnest(asset1_codes) as asset1_code from contacts where user2_id='"+self.id.to_s+"'))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where a.is_active=true and a.minor is not true group by d.sota_code, a.asset_type, a.minor; "]
+  chases=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select unnest(asset2_codes) as asset1_code from contacts where user1_id="+self.id.to_s+") union (select unnest(asset1_codes) as asset1_code from contacts where user2_id="+self.id.to_s+"))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where a.is_active=true and a.minor is not true group by d.sota_code, a.asset_type, a.minor; "]
 end
 
 def check_region_awards
@@ -649,11 +649,11 @@ def check_region_awards
 end
 
 def district_activations
-  activations=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select unnest(asset1_codes) as asset1_code from contacts where user1_id='"+self.id.to_s+"') union (select unnest(asset2_codes) as asset1_code from contacts where user2_id='"+self.id.to_s+"') union (select summit_code as asset1_code from sota_activations where user_id='"+self.id.to_s+"')) as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where a.is_active=true and a.minor is not true group by d.district_code, a.asset_type, a.minor; "]
+  activations=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select unnest(asset1_codes) as asset1_code from contacts where user1_id="+self.id.to_s+") union (select unnest(asset2_codes) as asset1_code from contacts where user2_id="+self.id.to_s+") union (select summit_code as asset1_code from sota_activations where user_id="+self.id.to_s+")) as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where a.is_active=true and a.minor is not true group by d.district_code, a.asset_type, a.minor; "]
 end
 
 def district_chases
-  chases=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select unnest(asset2_codes) as asset1_code from contacts where user1_id='"+self.id.to_s+"') union (select unnest(asset1_codes) as asset1_code from contacts where user2_id='"+self.id.to_s+"'))as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where a.is_active=true and a.minor is not true group by d.district_code, a.asset_type, a.minor; "]
+  chases=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select unnest(asset2_codes) as asset1_code from contacts where user1_id="+self.id.to_s+") union (select unnest(asset1_codes) as asset1_code from contacts where user2_id="+self.id.to_s+"))as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where a.is_active=true and a.minor is not true group by d.district_code, a.asset_type, a.minor; "]
 end
 
 def check_district_awards
