@@ -56,6 +56,8 @@ function site_init() {
     map_init_mapspast('map_map');
     site_add_vector_layers();
     map_map.addLayer(map_scratch_layer);
+    map_add_position_layer();
+    
 
     if(site_show_controls) {
       map_add_tooltip();
@@ -294,6 +296,7 @@ function site_add_controls() {
         map_create_control("/assets/cog24.png","Configure map",site_mapKey,"mapKey");
         map_create_control("/assets/pin24.png","Pin map (do not automatically recentre)",site_pinMap,"mapPin");
         map_create_control("/assets/target24.png","Centre map on current item",site_centreMap,"mapCentre");
+        map_create_control("/assets/location.png","Show current position",site_show_position,"mapPosition");
   }
 }
 
@@ -353,6 +356,16 @@ function site_mapKey() {
               document.getElementById("page_status").innerHTML = '';
           }
         });
+}
+
+function site_show_position() {
+  if(map_show_position==0) {
+     document.getElementById("mapPosition").style.backgroundColor="#008800"
+  } else {
+     document.getElementById("mapPosition").style.backgroundColor="#ffffff"
+  }
+  map_enable_tracking();
+
 }
 
 function site_pinMap() {

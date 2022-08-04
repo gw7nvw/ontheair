@@ -17,7 +17,7 @@ def show
   end
   @assets_by_class=[]
   AssetType.all.order(:name).each do |at|
-    as=(Asset.find_by_sql [ "select * from assets where region = ? and asset_type = ? and is_active = true and (minor = false or minor is null) order by code", @region.sota_code, at.name ])
+    as=(Asset.find_by_sql [ "select * from assets where region = ? and asset_type = ? and is_active = true and (minor != true) order by code", @region.sota_code, at.name ])
     if as and as.count>0 then @assets_by_class.push(as) end
   end
 

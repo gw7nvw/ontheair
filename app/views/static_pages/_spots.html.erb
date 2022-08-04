@@ -48,20 +48,35 @@
 
   <p><span id="retrieved">Retrieved at <%=Time.now.in_time_zone(@tz.name).strftime("%H:%M:%S")%> (<%=@tz.name%>) </span><i><%=  link_to "Refresh Now", '/spots?'+raw(@parameters), remote: true,  :onclick => "linkHandler('refresh_link')"%> </i></p>
   <p>
+  <% new_parameters=@parameters.gsub(/all=[A-Za-z]+/,'') %>
   <% if @all then %>
-    <b>Showing all DXCCs</b>.  <i><%=link_to "Show only ZL/VK", "/spots?class=#{@class}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+    <b>Showing all DXCCs</b>.  <i><%=link_to "Show only ZL/VK", "/spots?#{raw(new_parameters)}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
   <% else %>
-    <b>Showing VK/ZL</b> spots.  <i><%=link_to "Show All DXCC", "/spots?all=true&class=#{@class}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+    <b>Showing VK/ZL</b> spots.  <i><%=link_to "Show All DXCC", "/spots?#{raw(new_parameters)}&all=true", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
   <% end %>
   ||
+  <% new_class_parameters=@parameters.gsub(/class=[A-Za-z]+/,'')%>
   <% if @class and @class.length>0 then %>
-    <b>Showing class <%=@class%></b> only.  <i><%=link_to "Show All Classes", "/spots?all=#{@all}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+    <b>Showing class <%=@class%></b> only.  <i><%=link_to "Show All Classes", "/spots?#{raw(new_class_parameters)}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
   <% else %>
     <b>Showing all classes</b>. <i>Show only 
-       <%=link_to "ZLOTA", "/spots?all=#{@all}&class=ZLOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
-       <%=link_to "SOTA", "/spots?all=#{@all}&class=SOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
-       <%=link_to "POTA", "/spots?all=#{@all}&class=POTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
-       <%=link_to "WWFF", "/spots?all=#{@all}&class=WWFF", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "ZLOTA", "/spots?#{new_class_parameters}&class=ZLOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "SOTA", "/spots?#{new_class_parameters}&class=SOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "POTA", "/spots?#{new_class_parameters}&class=POTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "WWFF", "/spots?#{new_class_parameters}&class=WWFF", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+    </i>
+  <% end %>  
+  ||
+  <% new_mode_parameters=@parameters.gsub(/mode=[A-Za-z]+/,'') %>
+  <% if @mode and @mode.length>0 then %>
+    <b>Showing mode <%=@mode%></b> only.  <i><%=link_to "Show All Modes", "/spots?#{raw(new_mode_parameters)}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+  <% else %>
+    <b>Showing all modes</b>. <i>Show only 
+       <%=link_to "AM", "/spots?#{raw(new_mode_parameters)}&mode=AM", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "CW", "/spots?#{raw(new_mode_parameters)}&mode=CW", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "FM", "/spots?#{raw(new_mode_parameters)}&mode=FM", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "FT8", "/spots?#{raw(new_mode_parameters)}&mode=FT8", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "SSB", "/spots?#{raw(new_mode_parameters)}&mode=SSB", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
   <% end %> 
   </i></p>
   <%= render 'spot_list' %>

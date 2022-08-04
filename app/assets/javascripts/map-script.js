@@ -65,6 +65,7 @@ var map_layer_count=0;
 var map_default_extent=mapBounds;
 var map_scratch_source=new ol.source.Vector();
 var map_scratch_layer=new ol.layer.Vector({ source: map_scratch_source, name: 'Scratch layer' });
+var map_position_layer
 var maplayers = [];
 var map_last_centre='POINT(173 -41)';
 var map_filters={null: ""}
@@ -111,10 +112,59 @@ var linz_tilegrid=new ol.tilegrid.TileGrid({
         extent: linz_extent});
 var epsg2193;
 
+//Map position stuff
+var map_show_position=false;
+
+const map_geolocation = new ol.Geolocation({
+  // enableHighAccuracy must be set to true to have the heading value.
+  trackingOptions: {
+    enableHighAccuracy: true,
+  },
+  projection: ol.proj.get(map_projection_name),
+});
+
+function map_enable_tracking() {
+  map_show_position=!map_show_position;
+  map_position_layer.setVisible(map_show_position)
+  map_geolocation.setTracking(map_show_position)
+}
 
 function map_add_control(item) {
 	map_map.addControl(new item);
 }
+
+const positionFeature = new ol.Feature();
+positionFeature.setStyle(
+  new ol.style.Style({
+    image: new ol.style.Circle({
+      radius: 6,
+      fill: new ol.style.Fill({
+        color: '#ff1493',
+      }),
+      stroke: new ol.style.Stroke({
+        color: '#8b008b',
+        width: 2,
+      }),
+    }),
+  })
+);
+
+map_geolocation.on('change', function () {
+  const coordinates = map_geolocation.getPosition();
+  const proj_coords = ol.proj.transform(coordinates, 'EPSG:4326',map_projection_name);
+  positionFeature.setGeometry(coordinates ? new ol.geom.Point(proj_coords) : null);
+});
+
+function map_add_position_layer() {
+  map_position_layer=new ol.layer.Vector({
+    source: new ol.source.Vector({
+      features: [positionFeature],
+    }),
+    name: 'position',
+    visible: true
+  });
+  map_map.addLayer(map_position_layer);
+};
 
 function map_create_control(buttonicon, buttontitle, callback, id ) {
    var theListener=callback;
@@ -477,6 +527,7 @@ function map_init(divid) {
    		     maxResolution: 2445.9849046875,
                      numZoomLevels: 11
         });
+
         map_mpc= new ol.control.MousePosition({
              coordinateFormat: createStringXY(map_current_projdp),
              projection: ol.proj.get('EPSG:'+map_current_proj)
