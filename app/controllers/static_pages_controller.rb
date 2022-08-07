@@ -40,7 +40,7 @@ class StaticPagesController < ApplicationController
       @fulllogs=Log.find_by_sql [ " select * from logs order by date desc " ]
       @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
    
-      @items=Item.find_by_sql [ "select * from items where topic_id = 4 and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 1;" ]
+      @items=Item.find_by_sql [ "select * from items where (topic_id = 4 or topic_id=42 )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;" ]
 
   end
 

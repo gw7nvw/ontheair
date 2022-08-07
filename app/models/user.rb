@@ -615,6 +615,7 @@ def check_region_awards
            award.user_id=self.id
            award.award_id=award_spec.id
            award.save
+           award.publicise
          end
        else
          #check for expired award
@@ -639,6 +640,7 @@ def check_region_awards
            award.user_id=self.id
            award.award_id=award_spec.id
            award.save
+           award.publicise
          end
        else
          #check for expired award
@@ -680,6 +682,7 @@ def check_district_awards
            award.user_id=self.id
            award.award_id=award_spec.id
            award.save
+           award.publicise
          end
        else
          #check for expired award
@@ -704,6 +707,7 @@ def check_district_awards
            award.user_id=self.id
            award.award_id=award_spec.id
            award.save
+           award.publicise
          end
        else
          #check for expired award
@@ -759,6 +763,7 @@ def check_awards()
                  a.award_type="threshold"
                  a.user_id=user.id
                  a.save
+                 a.publicise
                end
              end
            end

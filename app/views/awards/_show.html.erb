@@ -93,7 +93,7 @@
      <% if not @award.baggers or (@award.baggers and @award.baggers.count==0) then %>
         <i>No-one has achieved this award yet. Be the first!</i></br>
      <% end %>
-     <% @award.baggers.sort_by {|b| b.user.callsign}.each do |ua| %>
+     <% @award.baggers.sort_by {|b| if b.user then b.user.callsign else "" end}.each do |ua| %>
           <% if @award.count_based then %>
             <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>: <%=ua.threshold_name%> (<%=ua.threshold.to_s%>). Awarded: <%=ua.created_at.to_date%>
           <% elsif @award.all_district then %>
