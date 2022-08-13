@@ -82,6 +82,104 @@ def find_park
   end
 
 def self.import
+
+  uri = URI('https://wwff.co/directory')
+  params="progName=ZLFF&dxccName=ZLFF&refID=Select&newState=ZZ&newCounty=ZZ"
+
+  http=Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl=true
+  http.verify_mode=OpenSSL::SSL::VERIFY_NONE
+  req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/x-www-form-urlencoded')
+
+  req.body = params
+  res = http.request(req)
+  table=res.body.split("Start: template_directory_listing.htm")[1].split("End: template_directory_listing.htm")[0]
+  rows=table.split("<tr>")
+  rows.each do |row|
+     if row.match("refID") then
+       code=row.split("value=")[1]
+       if code then code=code.split("</td>")[0] end
+       if code then code=code.gsub('\"','') end
+       if code then code=code.gsub('"','') end
+       if code then code=code.gsub('>','') end
+
+       name=row.split("<td>")[2]
+       if name then name=name.split("</td>")[0] end
+     
+       if name and code then
+         puts "Code: "+code+", name: "+name
+         p=WwffPark.find_by(code: code)
+         new=false
+         if !p then   
+           p=WwffPark.new 
+           new=true
+         end 
+         p.code=code.strip
+         p.name=name.strip
+         p.dxcc="ZL"
+         p.region="OC / ZL"
+         park=nil
+         if new==true then
+           #p.location='POINT('+feature["Longitude"].to_s+' '+feature["Latitude"].to_s+')'
+           #try to match against park
+           searchname=name.gsub("'","''")
+           zps=Asset.find_by_sql [" select id, name, code, asset_type, location from assets where asset_type='park' and name='#{searchname}' and is_active=true" ]
+           if !zps or zps.count==0 then
+             #look for best name match
+             short_name=searchname
+             short_name=short_name.gsub("Forest","")
+             short_name=short_name.gsub("Conservation","")
+             short_name=short_name.gsub("Park","")
+             short_name=short_name.gsub("Area","")
+             short_name=short_name.gsub("Scenic","")
+             short_name=short_name.gsub("Reserve","")
+             short_name=short_name.gsub("Marine","")
+             short_name=short_name.gsub("Wildlife","")
+             short_name=short_name.gsub("Ecological","")
+             short_name=short_name.gsub("National","")
+             short_name=short_name.gsub("Wilderness","")
+             short_name=short_name.gsub("Te","")
+             puts "no exact match, try like: "+short_name
+             zps=Asset.find_by_sql [" select id, name, code, asset_type, location from assets where asset_type='park' and name ilike '%%#{short_name.strip}%%' and is_active=true" ]
+             if zps and zps.count>1 then
+                 puts "==========================================================="
+                 count=0
+                 zps.each do |p|
+                   puts count.to_s+" - "+p.name+" == "+self.name
+                   count+=1
+                 end
+                 puts "Select match (or 'a' to skip):"
+                 id=gets
+                 if id and id.length>1 and id[0]!="a" then zps=[zps[id.to_i]] end
+             end
+           end
+           if !zps or zps.count==0 then
+             puts "enter asset id to match: "
+             code=gets
+             zps=Asset.where(code: code.strip)
+           end
+ 
+           if zps and zps.count==1 then
+             park=zps.first
+             p.location=park.location  
+             puts "Matched #{name} with #{park.name}"
+           else
+             puts "Could not find match. No location"
+           end
+         else
+           puts "Existing WWFF park"
+         end
+         p.save
+         a=Asset.add_wwff_park(p, park)
+         if new then 
+           a.add_links
+         end
+       end 
+     end
+   end
+
+end
+def self.import_from_pnp
   pps=self.all
   pps.each do |pp|
      pp.destroy

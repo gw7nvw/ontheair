@@ -101,6 +101,7 @@ def y
 end
 
 def self.get_next_code(asset_type, region)
+  if !region then region="ZZ" end
   puts "Region :"+region
   newcode=nil
   use_region=true
@@ -609,25 +610,35 @@ end
 def self.add_wwff_parks
   ps=WwffPark.all
   ps.each do |p|
-    Asset.add_wwff_park(p)
+    Asset.add_wwff_park(p, nil)
   end
 end
 
-def self.add_wwff_park(p)
+def self.add_wwff_park(p, existing_asset)
     a=Asset.find_by(asset_type: 'wwff park', code: p.code)
     if !a then a=Asset.new end
     a.asset_type="wwff park"
     a.code=p.code
-    if p.park then 
-      a.url='/parks/'+p.park.id.to_s
-      a.is_active=p.park.is_active
+    a.is_active=true
+    
+    if a.id and (a.name!=p.name or a.location!=p.location) then
+      puts "Exiting asset needs updating"
+      name=p.name.gsub("'","''")
+      if existing_asset  then
+        ActiveRecord::Base.connection.execute("update assets set code='"+p.code+"', name='"+name+"', is_active=true, location=ST_GeomFromText('POINT(#{p.location.x} #{p.location.y})',4326), boundary=(select boundary from assets where id="+existing_asset.id.to_s+") where id="+a.id.to_s+";")
+      else
+        ActiveRecord::Base.connection.execute("update assets set code='"+p.code+"', name='"+name+"', is_active=true, location=ST_GeomFromText('POINT(#{p.location.x} #{p.location.y})',4326) where id="+a.id.to_s+";")
+      end
+    elsif !a.id then
+      puts "Adding data to new asset"
+      a.name=p.name
+      a.location=p.location
+      a.save 
+      if existing_asset  then
+        ActiveRecord::Base.connection.execute("update assets set boundary=(select boundary from assets where id="+existing_asset.id.to_s+") where id="+a.id.to_s+";")
+        a.add_simple_boundary 
+      end
     end
-    a.name=p.name
-    a.location=p.location
-    if p.park then 
-      if p.park.doc_park then a.boundary=p.park.doc_park.WKT else a.boundary=p.park.boundary end 
-    end
-    a.save
     puts a.code
     a
 end
@@ -903,6 +914,12 @@ def self.add_simple_boundaries
     ActiveRecord::Base.connection.execute( 'update assets set boundary_simplified=ST_Simplify("boundary",0.002) where boundary_simplified is null;')
     ActiveRecord::Base.connection.execute( 'update assets set boundary_very_simplified=ST_Simplify("boundary",0.02) where boundary_very_simplified is null;')
     ActiveRecord::Base.connection.execute( 'update assets set boundary_quite_simplified=ST_Simplify("boundary",0.002) where boundary_quite_simplified is null;')
+end
+
+def add_simple_boundary
+    ActiveRecord::Base.connection.execute( 'update assets set boundary_simplified=ST_Simplify("boundary",0.002) where id='+self.id.to_s+';')
+    ActiveRecord::Base.connection.execute( 'update assets set boundary_very_simplified=ST_Simplify("boundary",0.02) where id='+self.id.to_s+';')
+    ActiveRecord::Base.connection.execute( 'update assets set boundary_quite_simplified=ST_Simplify("boundary",0.002) where id='+self.id.to_s+';')
 end
 
 def self.get_altitudes_from_sota
