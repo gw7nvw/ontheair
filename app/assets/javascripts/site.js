@@ -132,8 +132,10 @@ function site_smaller_map() {
     $('#actionbar').toggleClass('span7 span12');
     document.getElementById('left_panel').style.display="none";
     site_map_size=0;
-    document.getElementById('larger_map').style.display="contents";
-    document.getElementById('smaller_map').style.display="none";
+    if (document.getElementById('larger_map')) {
+      document.getElementById('larger_map').style.display="contents";
+      document.getElementById('smaller_map').style.display="none";
+    }
   }
   if (site_map_size==2) {
     document.getElementById('right_panel').style.display="block";
@@ -141,8 +143,10 @@ function site_smaller_map() {
     $('#right_panel').toggleClass('span0 span7');
     $('#actionbar').toggleClass('span0 span7');
     site_map_size=1;
-    document.getElementById('larger_map').style.display="contents";
-    document.getElementById('smaller_map').style.display="contents";
+    if (document.getElementById('larger_map')) {
+      document.getElementById('larger_map').style.display="contents";
+      document.getElementById('smaller_map').style.display="contents";
+    }
   }
 
   setTimeout( function() {

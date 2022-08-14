@@ -13,6 +13,13 @@
        site_refresh_layer('point');
      };
    };
+$(function () {
+  $('#right_panel .pagination a').on('click', function () {
+    $.getScript(this.href);
+    return false;
+  });
+});
+
 }
 
    reset_map_controllers();
@@ -44,6 +51,8 @@
 </div>
 <div id="right_scroll">
   <%= render 'flash' %>
+
+  <div class="name_pagination"> <%= will_paginate(@assets) %></div>
 
 
 <%= form_tag '/assets', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
@@ -88,7 +97,7 @@
 
   Your search returned <%=@count.to_s%> results.
   <% if @count>@limit then %>
-     This is more than can be displayed.  Please refine your search
+     Displaying first <%=@limit%> only.  Please refine your search
   <% end %>
 
   <table class="places">
@@ -133,6 +142,9 @@
       </tr>
     <% end end %>
 </table>
+
+<div class="name_pagination"> <%= will_paginate(@assets) %></div>
+
 </div>
 
 <% end %>

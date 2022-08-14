@@ -62,6 +62,11 @@ class UsersController < ApplicationController
       whereclause="is_"+@filter+" is true"
     end
 
+    @searchtext=params[:searchtext] || ""
+    if params[:searchtext] and params[:searchtext]!="" then
+       whereclause=whereclause+" and (lower(callsign) like '%%"+@searchtext.downcase+"%%' )"
+    end
+
     @fullusers=User.find_by_sql [ 'select * from users where '+whereclause+' order by callsign' ]
     @users=@fullusers.paginate(:per_page => 40, :page => params[:page])
 

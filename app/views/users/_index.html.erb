@@ -33,6 +33,24 @@ $(function () {
 <div id="right_scroll">
   <%= render 'flash' %>
 
+<%= form_tag '/users', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+  <br/>
+  <div class="rowtitle">Find:</div>
+  <div class="rowtext">
+    <input type="text" name="searchtext" value='<%=@searchtext%>'/>
+  </div>
+  <div class="buttonshort">
+    <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+    <%=  link_to "Clear", '/users', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
+
+  </div>
+</form>
+
+<% if !@searchtext %>
+  Your search returned no results.
+
+<% else %>
+
   <div class="name_pagination"> <%= will_paginate(@users) %></div>
 
   <table class="places">
@@ -79,10 +97,7 @@ $(function () {
   <div class="name_pagination"> <%= will_paginate(@users) %></div>
 
 </div>
-<div class="erow">
-Key to huts / parks / islands: </br>
-  Number of unique locations bagged <span style="color:grey">(total number of activations)</span>
-</div>
+<% end %>
 
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;

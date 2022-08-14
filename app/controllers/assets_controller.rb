@@ -28,15 +28,16 @@ class AssetsController < ApplicationController
 
     @searchtext=params[:searchtext] || ""
     if params[:searchtext] and params[:searchtext]!="" then
-       @limit=100
+       @limit=500 #100
        whereclause=whereclause+" and (unaccent(lower(name)) like '%%"+@searchtext.downcase+"%%' or lower(code) like '%%"+@searchtext.downcase+"%%')"
     else
-       @limit=20
+       @limit=500 #20
     end
 
-    @assets=Asset.find_by_sql [ "select id,name,code,asset_type,url,is_active,safecode,category,minor,description,region from assets where id in (select id from assets where "+whereclause+" order by name limit #{@limit}) order by name" ]
+    @fullassets=Asset.find_by_sql [ "select id,name,code,asset_type,url,is_active,safecode,category,minor,description,region from assets where id in (select id from assets where "+whereclause+" order by name limit #{@limit}) order by name" ]
+    @assets=@fullassets.paginate(:per_page => 40, :page => params[:page])
     counts=Asset.find_by_sql [ 'select count(id) as id from assets where '+whereclause ]
-    #counts=0;
+    #@count=0;
     if counts and counts.first then @count=counts.first.id else @count=0 end
 
   end

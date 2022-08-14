@@ -172,6 +172,8 @@ def self.import
          p.save
          a=Asset.add_wwff_park(p, park)
          if new then 
+           a.add_region
+           a.add_area
            a.add_links
          end
        end 
