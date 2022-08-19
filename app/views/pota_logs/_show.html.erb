@@ -29,6 +29,7 @@ Invalid contacts rejected: <%=@invalid_contacts.count%><br/>
   <%=link_to "Contact: "+contact[:contact].id.to_s, '/contacts/'+contact[:contact].id.to_s ,remote: true, :onclick => "linkHandler('submit')"%> <%=contact[:contact].callsign1%>&lt=&gt<%=contact[:contact].callsign2%> -- <%=contact[:message]%><br/>
 <% end %>
 <%=link_to "Send Log", '/pota_logs/'+@park.safecode+"/send?date="+@logdate+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
+<%=link_to "Download Log", '/pota_logs/'+@park.safecode+"/download.adi?date="+@logdate+"&user="+@user.callsign, class: "btn btn-small btn-primary" %>
 <%=link_to "Cancel", '/pota_logs?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
 </div>
 <script>

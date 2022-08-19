@@ -763,7 +763,7 @@ end
 
 
 def add_links
-    linked_assets=Asset.find_by_sql [ %q{select b.id as id,b.code as code, b.is_active as is_active from assets a inner join assets b on ST_Within(a.location, b.boundary)  where a.area>b.area*0.9 and a.id = }+self.id.to_s ]
+    linked_assets=Asset.find_by_sql [ %q{select b.id as id,b.code as code, b.is_active as is_active from assets a inner join assets b on ST_Within(a.location, b.boundary)  where b.area>a.area*0.9 and a.id = }+self.id.to_s ]
     linked_assets.each do |la|
       if la.is_active then
         dup=AssetLink.where(:parent_code=> self.code, :child_code => la.code)
@@ -776,7 +776,7 @@ def add_links
       end
   end
 #    linked_assets=Asset.find_by_sql [ %q{ select b.code as code from assets a inner join assets b on b.is_active=true and ST_Within(b.location, a.boundary)  where a.id = }+self.id.to_s ]
-    linked_assets=ActiveRecord::Base.connection.execute( %q{ select b.code as code from assets a inner join assets b on b.is_active=true and ST_Within(b.location, a.boundary)  where a.id = }+self.id.to_s )
+    linked_assets=ActiveRecord::Base.connection.execute( %q{ select b.code as code from assets a inner join assets b on b.is_active=true and ST_Within(b.location, a.boundary)  where (b.area is null or b.area<a.area*0.9) and a.id = }+self.id.to_s )
     linked_assets.each do |la|
         dup=AssetLink.where(:parent_code=> la['code'], :child_code => self.code)
         if (!dup or dup.count==0) and la['code']!=self.code  then

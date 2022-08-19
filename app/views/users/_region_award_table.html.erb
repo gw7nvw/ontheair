@@ -14,7 +14,8 @@
           <tr>
              <td><%=link_to award.region.name, '/regions/'+award.region.sota_code+"?section="+award.award_class+"&callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler('award')" %></td>
              <td><%=award.activity_type.capitalize%></td>
-             <td><%=link_to award.award_class.capitalize.pluralize+" ("+this_combo.first.code_count.to_s+"/"+this_combo.first.code_count.to_s+")", '/awards/'+award.award_id.to_s, remote: true,  :id => 'award_link', :onclick => "linkHandler('award_link')"%></td>
+             <% abt=award.region.assets_by_type(award.award_class, award.created_at) %>
+             <td><%=link_to award.award_class.capitalize.pluralize+" ("+abt.count.to_s+"/"+abt.count.to_s+")", '/awards/'+award.award_id.to_s, remote: true,  :id => 'award_link', :onclick => "linkHandler('award_link')"%></td>
              <td><%=award.created_at.to_date%></td>
              <td><%=if award.expired then award.expired_at.to_date end%></td>
           </tr>

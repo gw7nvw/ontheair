@@ -53,6 +53,7 @@ match '/api/logs', to: 'api#logs_post',    via:'post'
 resources :sota_logs
 resources :pota_logs
 match "/pota_logs/:id/send", :to => "pota_logs#send_email", :as => "send_log", :via => "get"
+match "/pota_logs/:id/download", :to => "pota_logs#download", :as => "download_log", :via => "get"
 resources :wwff_logs
 match "/wwff_logs/:id/send", :to => "wwff_logs#send_email", :as => "wwff_send_log", :via => "get"
 

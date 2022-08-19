@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220729192219) do
+ActiveRecord::Schema.define(version: 20220819193405) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -107,6 +107,8 @@ ActiveRecord::Schema.define(version: 20220729192219) do
     t.string   "district"
     t.integer  "nearest_road_id"
     t.integer  "road_distance"
+    t.datetime "valid_from"
+    t.datetime "valid_to"
   end
 
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"

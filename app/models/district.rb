@@ -52,16 +52,18 @@ def region_name
 end
 
 
-def assets
-  as=Asset.where(district: self.district_code)
+def assets(at_date=Time.now())
+  #as=Asset.where(district: self.district_code)
+  as=Asset.find_by_sql [ " select * from assets where district='#{self.district_code}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') "]
 end
 
 
-def assets_by_type(type)
-  as=Asset.where(district: self.district_code, asset_type: type)
+def assets_by_type(type, at_date=Time.now())
+#  as=Asset.where(district: self.district_code, asset_type: type)
+  as=Asset.find_by_sql [ " select * from assets where district='#{self.district_code}' and asset_type='#{type}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') "]
 end
 
-def self.get_assets_with_type()
-  Contact.find_by_sql [" select name, type, code_count, site_list from (select a.is_active as is_active, a.minor as minor, d.district_code as name, a.asset_type as type, count(distinct(a.code)) as code_count, array_agg(a.code) as site_list from districts d inner join assets a on a.district=d.district_code where a.is_active=true and a.minor is not true group by d.district_code, a.asset_type, a.is_active, a.minor) as foo; " ]
+def self.get_assets_with_type(at_date=Time.now())
+  Contact.find_by_sql [" select name, type, code_count, site_list from (select a.is_active as is_active, a.minor as minor, d.district_code as name, a.asset_type as type, count(distinct(a.code)) as code_count, array_agg(a.code) as site_list from districts d inner join assets a on a.district=d.district_code where a.minor is not true and (a.valid_from is null or a.valid_from<='#{at_date}') and ((a.valid_to is null and a.is_active=true) or a.valid_to>='#{at_date}') group by d.district_code, a.asset_type, a.is_active, a.minor) as foo; " ]
 end
 end

@@ -74,6 +74,12 @@
       <%#= "DOC Asset? " %><br/>
       <%#= f.check_box :is_doc%><br/><br/>
 
+      <div class="sectiontitle">Valid From</div>
+      <%= f.date_field :valid_from %>
+      
+      <div class="sectiontitle">Valid To</div>
+      <%= f.date_field :valid_to %>
+
       <%= "Active? " %><br/>
       <% if current_user and (current_user.is_admin or current_user.is_modifier)%> 
         <%= f.check_box :is_active%><br/><br/>

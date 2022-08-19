@@ -87,6 +87,21 @@ def show
     redirect_to '/'
   end
 end  
+
+def download
+  show()
+  @contacts.each do |contact|
+    contact.submitted_to_pota=true
+    contact.save
+  end
+
+  respond_to do |format|
+    format.adi {
+      send_data @pota_log, filename: @filename 
+    }
+  end
+end
+
 def send_email
   if current_user then callsign=current_user.callsign else callsign="" end 
   if params[:user] then callsign=params[:user].upcase end

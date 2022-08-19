@@ -148,6 +148,22 @@
       <div class="textext">No</div>
    </div>
    <% end %>
+
+
+   <% if @asset.valid_from then %>
+     <div class="erow" id="doc">
+       <div class="rowtitle"><%= "Valid From" %></div>
+       <div class="textext"><%=@asset.valid_from.strftime("%Y-%m-%d")%></div>
+     </div>
+   <% end %>
+
+   <% if @asset.valid_to then %>
+     <div class="erow" id="doc">
+       <div class="rowtitle"><%= "Valid Until" %></div>
+       <div class="textext"><%=@asset.valid_to.strftime("%Y-%m-%d")%></div>
+     </div>
+   <% end %>
+
    <% c=@asset.first_activated %>
    <% if c then %>
      <div class="erow" id="doc">

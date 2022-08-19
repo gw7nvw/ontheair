@@ -177,6 +177,240 @@ def self.migrate_to_distcodes
   end
 end
 
+def self.import_csv(filestr,user,default_callsign,default_location,no_create=false, ignore_error=false)
+
+  logs=[]
+  contacts=[]
+  errors=[]
+  contacts_per_log=[]
+  invalid_log=[]
+
+  log_count=0
+  contact_count=0
+  #check encoding
+  if !filestr.valid_encoding? then
+    filestr=filestr.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
+  end
+
+  lines=filestr.lines
+  # remove header
+  record_count=0
+  skip_count=0
+  lines.each do |line|
+    fields=line.split(',')
+    if fields[0]=='V2' and fields.count>=9 then
+      contact=Contact.new
+      protolog=Log.new
+      if user then 
+        contact.callsign1=default_callsign
+        protolog.callsign1=default_callsign
+      end
+      logid=nil
+      timestr=nil
+      contact.asset1_codes=[]
+      contact.asset2_codes=[]
+      if default_location and default_location.length>0 and default_location.strip.length>0 then
+        protolog.asset_codes.push(default_location.strip)
+        contact.asset1_codes.push(default_location.strip)
+      end
+ 
+      contact.timezone=Timezone.find_by(name: "UTC").id
+ 
+ 
+      #my calls
+      value=fields[1]
+      if value and value.length>0 and value.strip.length>0 then
+         callsign=value.strip
+         #remove suffix
+         if callsign['/'] then callsign=Log.remove_suffix(callsign) end
+         protolog.callsign1=callsign
+         contact.callsign1=callsign
+      end
+ 
+      #date
+      value=fields[3]
+      if value and value.length>0 and value.strip.length>0 then
+         protolog.date=value.strip
+         contact.date=value.strip
+      end
+ 
+      #my location
+      value=fields[2]
+      if value and value.length>0 and value.strip.length>0 then
+         values=value.split(';')
+         values.each do |val|
+           protolog.asset_codes.push(val.strip)
+           contact.asset1_codes.push(val.strip)
+           protolog.is_portable1=true
+           contact.is_portable1=true
+         end
+      end
+ 
+      #time
+      value=fields[4]
+      if value and value.length>0 and value.strip.length>0 then
+        timestr=value.strip.gsub(':','')
+      end
+ 
+      #band
+      value=fields[5]
+      if value and value.length>0 and value.strip.length>0 then
+         contact.frequency=value.strip.gsub("MHz","")
+      end
+ 
+      #mode
+      value=fields[6]
+      if value and value.length>0 and value.strip.length>0 then
+        contact.mode=value.strip
+      end
+ 
+      #other call
+       value=fields[7]
+      if value and value.length>0 and value.strip.length>0 then
+        callsign=value.strip
+        #remove suffix
+        if callsign['/'] then callsign=Log.remove_suffix(callsign) end
+        contact.callsign2=callsign
+      end
+ 
+      #other location
+      value=fields[8]
+      if value and value.length>0 then
+        values=value.split(',')
+        values.each do |val|
+          contact.asset2_codes.push(val.strip)
+          contact.is_portable2=true
+        end
+      end
+ 
+      record_count+=1
+      protolog.check_codes_in_location
+      lc=0
+      logs.each do |log|
+          #puts "IMPORT: testing"
+          #puts log.callsign1, protolog.callsign1, log.callsign1==protolog.callsign1
+          #puts log.date,protolog.date,log.date==protolog.date
+          #puts log.asset_codes.join(','),protolog.asset_codes.join(','),(protolog.asset_codes-log.asset_codes).empty?
+          if log.callsign1==protolog.callsign1 and log.date==protolog.date and (protolog.asset_codes-log.asset_codes).empty? then 
+                  logid=lc
+                  puts "IMPORT: matched existing log: #{lc.to_s}"
+          end  
+          lc+=1
+      end
+      if logid==nil then
+         puts "IMPORT: creating new log ("+log_count.to_s+")"
+         log_count=logs.count
+         lstr=protolog.to_json
+         invalid_log[log_count]=true
+         logs[log_count]=Log.new(JSON.parse(lstr))
+         loguser=User.find_by_callsign_date(logs[log_count].callsign1,logs[log_count].date)
+         if loguser and (loguser.id==user.id or user.is_admin) then
+           if logs[log_count].valid? then
+             puts "Valid log "+log_count.to_s    
+             invalid_log[log_count]=false
+           else
+             errors.push("Record #{record_count.to_s}: Create log #{log_count.to_s} failed: "+logs[log_count].errors.messages.to_s)
+           end
+         else
+           errors.push("Record #{record_count.to_s}: Create log #{log_count.to_s} failed: you cannot create a log for a callsign not registered to your account (#{user.callsign}) at the time of the contact (#{logs[log_count].callsign1} #{logs[log_count].date.to_s})")
+         end
+         contacts_per_log[log_count]=0       
+         logid=log_count
+         log_count+=1
+      end 
+ 
+      contact.log_id=logid
+      #puts "IMPORT: save contact"
+      cstr=contact.to_json
+      c=JSON.parse(cstr)
+      contact=Contact.new(c)
+      if timestr.length==1 then timestr="000"+timestr end
+      if timestr.length==2 then timestr="00"+timestr end
+      if timestr.length==3 then timestr="0"+timestr end
+      if timestr and protolog.date then contact.time=protolog.date.strftime("%Y-%m-%d")+" "+timestr[0..1]+":"+timestr[2..3] end
+      if !contact.date then
+          errors.push("Record #{record_count.to_s}: Save contact #{contact_count.to_s} failed: no date/time")
+      elsif (!contact.asset1_codes or contact.asset1_codes.count==0) and (!contact.asset2_codes or contact.asset2_codes.count==0) then
+          errors.push("Record #{record_count.to_s}: Save contact #{contact_count.to_s} failed: no activation location for either party")
+      else
+         res=true
+         create=false
+         if no_create==true then
+           #only save if both calls are registered
+           uc=UserCallsign.find_by(callsign: contact.callsign2)
+           if uc then 
+             res=contact.valid?
+             create=true
+           else 
+             puts "Skipping contact with unknown call: "+contact.callsign2 
+             skip_count+=1
+             create=false
+           end
+         else
+           #always save
+           res=contact.valid?
+           create=true
+         end
+         if !res then 
+           puts "IMPORT: save contact failed"
+           errors.push("Record #{record_count.to_s}: Save contact #{contact_count.to_s} failed: "+contact.errors.messages.to_s)
+         end
+         if res and create then
+           contacts[contact_count]=contact
+           contacts_per_log[contact.log_id]+=1
+           contact_count+=1
+         end 
+      end
+    end #end of if valid line
+  end #end of lines.each 
+ 
+  good_logs=0 
+  #create logs
+  lc=0
+  logs.each do |log|
+    if contacts_per_log[lc]>0 and !invalid_log[lc] then 
+      if errors.empty? or ignore_error then
+        if logs[lc].save then
+           logs[lc].reload
+           good_logs+=1
+        else
+           errors.push("FATAL: Save log #{lc.to_s} failed: "+logs[lc].errors.messages.to_s)
+           invalid_log[lc]=true
+        end
+      else
+        good_logs+=1
+      end
+    else
+      puts "Skipping empty log: "+lc.to_s
+    end
+    lc+=1
+  end
+
+  #create contacts
+  cc=0
+  good_contacts=0
+  contacts.each do |contact|
+    if invalid_log[contact.log_id] then
+      puts "Skipping contact #{cc.to_s} as log #{contact.log_id.to_s} invalid"
+    else
+      if errors.empty? or ignore_error then
+        contact.log_id=logs[contact.log_id].id
+        if contact.save  then
+           good_contacts+=1
+        else
+           errors.push("FATAL: Save contact #{cc.to_s} failed: "+contact.errors.messages.to_s)
+        end
+      else
+        good_contacts+=1
+      end
+    end
+  end
+  puts "IMPORT: clean exit"
+  puts errors
+  return {logs: logs, errors: errors, success: true, good_logs: good_logs, good_contacts: good_contacts}
+end
+ 
+     
 def self.import(filestr,user,default_callsign,default_location,no_create=false, ignore_error=false)
 
   logs=[]
@@ -448,6 +682,9 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
        cstr=contact.to_json
        c=JSON.parse(cstr)
        contact=Contact.new(c)
+       if timestr.length==1 then timestr="000"+timestr end
+       if timestr.length==2 then timestr="00"+timestr end
+       if timestr.length==3 then timestr="0"+timestr end
        if timestr and protolog.date then contact.time=protolog.date.strftime("%Y-%m-%d")+" "+timestr[0..1]+":"+timestr[2..3] end
        if !contact.date then
          errors.push("Record #{record_count.to_s}: Save contact #{contact_count.to_s} failed: no date/time")

@@ -43,7 +43,11 @@ def savefile
 
     if success then
       logfile=File.read(@upload.doc.path)
-      results=Log.import(logfile, user, callsign, location, params[:upload][:doc_no_create]=="1", params[:upload][:doc_ignore_error]=="1")
+      if @upload.doc.path.match(".csv") then
+         results=Log.import_csv(logfile, user, callsign, location, params[:upload][:doc_no_create]=="1", params[:upload][:doc_ignore_error]=="1")
+      else
+         results=Log.import(logfile, user, callsign, location, params[:upload][:doc_no_create]=="1", params[:upload][:doc_ignore_error]=="1")
+      end 
       logs=results[:logs]
       errors=results[:errors]
       success=results[:success]

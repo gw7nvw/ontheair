@@ -603,8 +603,8 @@ function linkHandler(entity_name) {
     clearTimeout(refreshInterval);
 
     if(entity_name=='back_link') {
-      history.back();
       site_back=true;
+      history.back();
     } else {
        site_back=false;
     } 
