@@ -7,6 +7,13 @@
       <%= collection_select( :asset_type, :name, AssetType.all.order(:display_name), :name, :display_name,{default: @asset_type}) %>
     </div>
   </div>
+  <div class="erow" style="margin-bottom:6px">
+  <span title="Include places that are not valid for NZOnTheAir in the results. This includes duplicate place names, names of groups of islands and lakes, reserves that are smaller than the minimum size, Queen's chain reserves, special purpose reserves, and others."><div class="rowtitle">ZLOTA only</div></span>
+  <div class="rowtext">
+    <input id="minor" name="minor" type="checkbox" checked="checked">
+  </div>
+  </div>
+
   <div class="erow">
     <div class="rowtitle">Find:</div>
     <div class="rowtext">

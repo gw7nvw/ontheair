@@ -56,6 +56,10 @@
   <div class="rowtext">
     <input type="text" name="searchtext" value='<%=@searchtext%>'/>
   </div>
+  <div class="rowtext" style="display:none">
+    <input id="minor" name="minor" type="checkbox" checked="checked">
+  </div>
+
   <div class="buttonshort">
     <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
   </div>

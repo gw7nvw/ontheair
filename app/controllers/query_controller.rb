@@ -6,7 +6,7 @@ def index
   if not params[:active] then
     whereclause="is_active is true"
   end
-  if not params[:minor] then
+  if params[:minor] then
     whereclause+=" and minor is not true"
   end
   if params[:asset_type] and params[:asset_type][:name] and params[:asset_type][:name]!='' and params[:asset_type][:name]!='all' then

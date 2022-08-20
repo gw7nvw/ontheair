@@ -220,7 +220,7 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
       #my calls
       value=fields[1]
       if value and value.length>0 and value.strip.length>0 then
-         callsign=value.strip
+         callsign=value.strip.upcase
          #remove suffix
          if callsign['/'] then callsign=Log.remove_suffix(callsign) end
          protolog.callsign1=callsign
@@ -267,7 +267,7 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
       #other call
        value=fields[7]
       if value and value.length>0 and value.strip.length>0 then
-        callsign=value.strip
+        callsign=value.strip.upcase
         #remove suffix
         if callsign['/'] then callsign=Log.remove_suffix(callsign) end
         contact.callsign2=callsign
@@ -480,7 +480,7 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
  
            when "station_callsign"
               if value and value.length>0 and value.strip.length>0 then
-                callsign=value.strip
+                callsign=value.strip.upcase
                 #remove suffix
                 if callsign['/'] then callsign=Log.remove_suffix(callsign) end
                 protolog.callsign1=callsign
@@ -488,7 +488,7 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
               end
            when "operator"
               if value and value.length>0 and value.strip.length>0 then
-                callsign=value.strip
+                callsign=value.strip.upcase
                 #remove suffix
                 if callsign['/'] then callsign=Log.remove_suffix(callsign) end
                 protolog.callsign1=callsign
@@ -606,7 +606,7 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
               end
            when "call"
               if value and value.length>0 and value.strip.length>0 then
-                callsign=value.strip
+                callsign=value.strip.upcase
                 #remove suffix
                 if callsign['/'] then callsign=Log.remove_suffix(callsign) end
                 contact.callsign2=callsign

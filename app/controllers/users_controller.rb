@@ -44,7 +44,7 @@ class UsersController < ApplicationController
      @count_type=params[:count_type]
      @asset_type=params[:asset_type]
 
-     @asset_codes=@user.assets_by_type(@asset_type, @count_type) 
+     @asset_codes=@user.assets_by_type(@asset_type, @count_type, true) 
      @assets = Asset.find_by_sql [ " select asset_type, minor, is_active, id, name, code from assets where code in (?) ",@asset_codes ] 
   end
 

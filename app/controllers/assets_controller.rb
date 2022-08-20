@@ -10,7 +10,7 @@ class AssetsController < ApplicationController
       whereclause="is_active is true"
     end
 
-    if not params[:minor] then
+    if params[:minor] then
       whereclause+=" and minor is not true"
     end
     asset_type=params[:type]

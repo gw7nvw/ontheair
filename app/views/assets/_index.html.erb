@@ -66,9 +66,9 @@ $(function () {
     <input type="text" name="searchtext" value='<%=@searchtext%>'/>
   </div>
   <div class="erow">
-  <span title="Include places that are not valid for NZOnTheAir in the results. This includes duplicate place names, names of groups of islands and lakes, reserves that are smaller than the minimum size, Queen's chain reserves, special purpose reserves, and others."><div class="rowtitle">Include non-qualifying:</div></span>
+  <span title="Include places that are not valid for NZOnTheAir in the results. This includes duplicate place names, names of groups of islands and lakes, reserves that are smaller than the minimum size, Queen's chain reserves, special purpose reserves, and others."><div class="rowtitle">Include ZLOTA only:</div></span>
   <div class="rowtext">
-    <input id="minor" name="minor" type="checkbox" value="0">
+    <input id="minor" name="minor" type="checkbox" checked="checked">
   </div>
   </div>
   <% if signed_in? and (current_user.is_admin or current_user.is_modifier) then %>
