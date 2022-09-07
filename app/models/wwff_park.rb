@@ -141,6 +141,7 @@ def self.import
              short_name=short_name.gsub("Te","")
              puts "no exact match, try like: "+short_name
              zps=Asset.find_by_sql [" select id, name, code, asset_type, location from assets where asset_type='park' and name ilike '%%#{short_name.strip}%%' and is_active=true" ]
+             id=nil
              if zps and zps.count>1 then
                  puts "==========================================================="
                  count=0
@@ -153,7 +154,7 @@ def self.import
                  if id and id.length>1 and id[0]!="a" then zps=[zps[id.to_i]] end
              end
            end
-           if !zps or zps.count==0 then
+           if !zps or zps.count==0 or id[0]=="a" then
              puts "enter asset id to match: "
              code=gets
              zps=Asset.where(code: code.strip)

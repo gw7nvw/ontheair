@@ -22,7 +22,7 @@ var site_current_click_layer=null;
 //layers
 var polygon_layer;
 var polygon_simple_layer;
-var polygon_very_simple_layer;
+var polygon_detail_layer;
 var points_layer;
 var site_map_layers={}
 var site_default_point_layers=['hut','island','summit']
@@ -258,9 +258,9 @@ function site_points_style_function(feature, resoluton) {
 
 function site_add_vector_layers() {
   site_set_map_filters('polygon',site_default_polygon_layers);
-  polygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon",site_polygon_style_function,true,12,32,'polygon');
+  polygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon",site_polygon_style_function,true,12,15,'polygon');
   polygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_simple",site_polygon_style_function,true,9,12,'polygon');
-//  polygon_very_simple_layer=map_add_vector_layer("Polygon Very Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_very_simple",site_polygon_style_function,true,8,9,'polygon');
+  polygon_detail_layer=map_add_vector_layer("Polygon Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_detail",site_polygon_style_function,true,15,32,'polygon');
 
   site_set_map_filters('point',site_default_point_layers);
   points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,7,32,'point');
@@ -268,7 +268,7 @@ function site_add_vector_layers() {
 
   map_map.addLayer(polygon_layer);
   map_map.addLayer(polygon_simple_layer);
-//  map_map.addLayer(polygon_very_simple_layer);
+  map_map.addLayer(polygon_detail_layer);
   map_map.addLayer(points_layer);
   map_map.addLayer(contacts_layer);
 }
@@ -960,7 +960,7 @@ function site_refresh_layer(filter) {
     setTimeout( function() { points_layer.getSource().clear(); }, 1000);
   } else {
     setTimeout( function() { polygon_layer.getSource().clear();polygon_simple_layer.getSource().clear();
-      //polygon_very_simple_layer.getSource().clear();
+      polygon_detail_layer.getSource().clear();
     }, 1000);
   };
 
