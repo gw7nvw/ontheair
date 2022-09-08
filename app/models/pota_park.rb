@@ -54,25 +54,88 @@ class PotaPark < ActiveRecord::Base
   end
 
 def self.import
-  pps=self.all
-  pps.each do |pp|
-     pp.destroy
-  end
 
-  urls=["https://api.pota.us/park/grids/-47.5/165/-40/180/0", "https://api.pota.us/park/grids/-40/165/-34/180/0"]
+  urls=["https://api.pota.app/park/grids/-47.5/165/-40/180/0", "https://api.pota.app/park/grids/-40/165/-34/180/0"]
   urls.each do |url|
     data = JSON.parse(open(url).read)
     if data then
+      puts "Found "+data["features"].count.to_s+" parks"
       data["features"].each do |feature|
          properties=feature["properties"]
-         p=PotaPark.new
+         puts properties.to_json
+         p=PotaPark.find_by(reference: properties["reference"])
+         new=false
+         if !p then 
+           p=PotaPark.new
+           new=true
+           puts "New park"
+         end
          p.reference=properties["reference"]
          puts p.reference
          p.name=properties["name"]
-         p.location='POINT('+properties["longitude"].to_s+' '+properties["latitude"].to_s+')'
+         puts p.name
+         #p.location='POINT('+properties["longitude"].to_s+' '+properties["latitude"].to_s+')'
+         if new==true or p.location == nil then
+           #try to match against park
+           searchname=p.name.gsub("'","''")
+           zps=Asset.find_by_sql [" select id, name, code, asset_type, location from assets where asset_type='park' and name='#{searchname}' and is_active=true" ]
+           id=[""]
+           if !zps or zps.count==0 then
+             #look for best name match
+             short_name=searchname
+             short_name=short_name.gsub("Forest","")
+             short_name=short_name.gsub("Regional","")
+             short_name=short_name.gsub("Conservation","")
+             short_name=short_name.gsub("Park","")
+             short_name=short_name.gsub("Area","")
+             short_name=short_name.gsub("Scenic","")
+             short_name=short_name.gsub("Reserve","")
+             short_name=short_name.gsub("Marine","")
+             short_name=short_name.gsub("Wildlife","")
+             short_name=short_name.gsub("Ecological","")
+             short_name=short_name.gsub("National","")
+             short_name=short_name.gsub("Wilderness","")
+             short_name=short_name.gsub("Te","")
+             short_name=short_name.gsub("  "," ")
+             puts "no exact match, try like: "+short_name
+             zps=Asset.find_by_sql [" select id, name, code, asset_type, location from assets where asset_type='park' and name ilike '%%#{short_name.strip}%%' and is_active=true" ]
+           end
+           if zps and zps.count>1 then
+                 puts "==========================================================="
+                 count=0
+                 zps.each do |p|
+                   puts count.to_s+" - "+p.name+" - "+p.code+" == "+self.name
+                   count+=1
+                 end
+                 puts "Select match (or 'a' to skip):"
+                 id=gets
+                 if id and id.length>1 and id[0]!="a" then zps=[zps[id.to_i]] end
+           end
+
+           if !zps or zps.count==0 or id[0]=="a" then
+             puts "enter asset id to match: "
+             code=gets
+             zps=Asset.where(code: code.strip)
+           end
+
+           if zps and zps.count==1 then
+             park=zps.first
+             p.location=park.location
+             puts "Matched #{p.name} with #{park.name}"
+           else
+             puts "Could not find match. No location"
+           end
+         else
+           puts "Existing POTA park"
+         end
+
          p.save
-         a=Asset.add_pota_park(p)
-         a.add_links
+         a=Asset.add_pota_park(p, park)
+         if new then
+           a.add_region
+           a.add_area
+           a.add_links
+         end
       end
     end
   end

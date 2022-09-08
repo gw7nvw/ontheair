@@ -586,23 +586,33 @@ def self.add_pota_parks
   end
 end
 
-def self.add_pota_park(p)
+def self.add_pota_park(p, existing_asset)
     a=Asset.find_by(asset_type: 'pota park', code: p.reference)
     if !a then a=Asset.new end
     a.asset_type="pota park"
     a.code=p.reference
     a.safecode=p.reference.gsub('/','_')
-    if p.park then
-      a.url='/parks/'+p.park.id.to_s
-      a.is_active=p.park.is_active
-    else
-      a.is_active=true
-    end
+    a.is_active=true
     a.name=p.name
-    a.location=p.location
-    if p.park then
-      if  p.park.doc_park then a.boundary=p.park.doc_park.WKT else a.boundary=p.park.boundary end end
-    a.save
+    if a.id and (a.name!=p.name or a.location!=p.location) then
+      puts "Exiting asset needs updating"
+      name=p.name.gsub("'","''")
+      if existing_asset  then
+        ActiveRecord::Base.connection.execute("update assets set code='"+p.reference+"', name='"+name+"', is_active=true, location=ST_GeomFromText('POINT(#{p.location.x} #{p.location.y})',4326), boundary=(select boundary from assets where id="+existing_asset.id.to_s+") where id="+a.id.to_s+";")
+      else
+        ActiveRecord::Base.connection.execute("update assets set code='"+p.reference+"', name='"+name+"', is_active=true, location=ST_GeomFromText('POINT(#{p.location.x} #{p.location.y})',4326) where id="+a.id.to_s+";")
+      end
+    elsif !a.id then
+      puts "Adding data to new asset"
+      a.name=p.name
+      a.location=p.location
+      a.save
+      if existing_asset  then
+        ActiveRecord::Base.connection.execute("update assets set boundary=(select boundary from assets where id="+existing_asset.id.to_s+") where id="+a.id.to_s+";")
+        a.add_simple_boundary
+      end
+    end
+
     puts a.code
     a
 end

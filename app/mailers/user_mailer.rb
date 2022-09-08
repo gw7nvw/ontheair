@@ -66,7 +66,7 @@ class UserMailer < ActionMailer::Base
       attachments['map.jpg'] = File.read(@item.end_item.image.path)
     end
     if user and user.email then
-      mail to: user.email, subject: "ontheair.nz: New post from "+@item.end_item.updated_by_name+" in your followed topics"
+      mail to: user.email, subject: "ontheair.nz: New post from "+@item.end_item.updated_by_name+" in "+item.topic.name
     end
   end
 
