@@ -100,20 +100,16 @@ class StaticPagesController < ApplicationController
       if current_user then tzid=current_user.timezone end
       @tz=Timezone.find(tzid)
     
-      @all==false
-      if params[:all] then
-        @all=true
+      @zone="OC"
+      if params[:zone] then
+        @zone=params[:zone]
       end
 
       #check for new spots from external servers (maybe move this to a scheduled job?)
       ExternalSpot.fetch
 
       #read spots from db
-      if @all then
-        @all_spots=ExternalSpot.where("time>'"+onehourago+"'")
-      else
-        @all_spots=ExternalSpot.find_by_sql ["select * from external_spots where time>'"+onehourago+"' and (code like 'VK%%' or code like 'ZL%%');"]
-      end
+      @all_spots=ExternalSpot.where("time>'"+onehourago+"'")
      
       items=Item.where(:topic_id => 35, :item_type => "post").order(:created_at).reverse
       @hota_spots=[]
@@ -139,6 +135,10 @@ class StaticPagesController < ApplicationController
       end 
  
       if @all_spots then @all_spots.sort_by!{|hsh| hsh[:date].to_s+hsh[:time].to_s}.reverse! end
+
+      if @zone and @zone!="all" then
+        @all_spots=@all_spots.select{|spot| DxccPrefix.continent_from_call(spot[:activatorCallsign])==@zone}
+      end
 
       if params[:class] then
         @class=params[:class]

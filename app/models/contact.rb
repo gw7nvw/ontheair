@@ -16,7 +16,7 @@ class Contact < ActiveRecord::Base
 
  
   before_save { self.before_save_actions }
-#  after_save { self.update_scores }
+  after_save { self.update_scores }
   before_destroy { self.update_scores }
 
   validates :callsign1,  presence: true, length: { maximum: 50 }

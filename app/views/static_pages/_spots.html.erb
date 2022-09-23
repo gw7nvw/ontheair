@@ -48,11 +48,15 @@
 
   <p><span id="retrieved">Retrieved at <%=Time.now.in_time_zone(@tz.name).strftime("%H:%M:%S")%> (<%=@tz.name%>) </span><i><%=  link_to "Refresh Now", '/spots?'+raw(@parameters), remote: true,  :onclick => "linkHandler('refresh_link')"%> </i></p>
   <p>
-  <% new_parameters=@parameters.gsub(/all=[A-Za-z]+/,'') %>
-  <% if @all then %>
-    <b>Showing all DXCCs</b>.  <i><%=link_to "Show only ZL/VK", "/spots?#{raw(new_parameters)}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+  <% new_parameters=@parameters.gsub(/zone=[A-Za-z]+/,'') %>
+  <% if @zone=='all' then %>
+    <b>Showing all DXCCs</b>.  <i>Show only: 
+      <% Continent.all.each do |cont| %>
+        <%=link_to cont.name, "/spots?#{raw(new_parameters)}&zone=#{cont.code}", remote: true, id: "add",   :onclick => "linkHandler('add')"%>,
+      <% end %>
+    </i>
   <% else %>
-    <b>Showing VK/ZL</b> spots.  <i><%=link_to "Show All DXCC", "/spots?#{raw(new_parameters)}&all=true", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+    <b>Showing <%=Continent.name_from_code(@zone)%></b> spots.  <i><%=link_to "Show All DXCC", "/spots?#{raw(new_parameters)}&zone=all", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
   <% end %>
   ||
   <% new_class_parameters=@parameters.gsub(/class=[A-Za-z]+/,'')%>

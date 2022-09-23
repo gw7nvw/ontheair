@@ -3,13 +3,13 @@
     <tr>
       <td><%if spot[:spot_type]=="ZLOTA" then %><b><%=spot[:spot_type]%></b><% else %><%=spot[:spot_type]%> <% end %></td>
         <td><%if spot[:time] then %><%=spot[:time].in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=spot[:time].in_time_zone(@tz.name).strftime("%H:%M:%S")%></b> (<%=@tz.name%>)<% end %></td>
-        <td><b><%user=User.find_by_full_callsign(spot[:activatorCallsign])%>
+        <td><span title="<%=DxccPrefix.name_from_call(spot[:activatorCallsign].upcase)%>"><b><%user=User.find_by_full_callsign(spot[:activatorCallsign])%>
           <% if user then %>
             <%=link_to spot[:activatorCallsign].upcase, "users/"+user.callsign, remote: true,  :id => 'link', :onclick => "linkHandler('link')" %>
           <% else %>
             <%=spot[:activatorCallsign].upcase%>
           <% end %>
-        </b></td>
+        </b></span></td>
         <td>@ 
           <% codes=spot[:code] %>
           <% if codes.kind_of?(Array)==false then codes=[codes] end %>
@@ -26,13 +26,13 @@
             <% end %>
           <% end %>
         </td>
-        <td><i>de: <%user=User.find_by_full_callsign(spot[:callsign])%>
+        <td><i>de: <span title="<%=DxccPrefix.name_from_call(spot[:callsign].upcase)%>"><%user=User.find_by_full_callsign(spot[:callsign])%>
           <% if user then %>
             <%=link_to spot[:callsign].upcase, "users/"+user.callsign, remote: true,  :id => 'link', :onclick => "linkHandler('link')" %>
           <% else %>
             <%=spot[:callsign].upcase%>
           <% end %>
-        </i></td>
+        </span></i></td>
 
         <td><%=if spot[:frequency] and spot[:frequency]!="" then spot[:frequency].to_f.round(5) else "" end%>-<%=spot[:mode]%></td>
       </tr>

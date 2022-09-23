@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220819193405) do
+ActiveRecord::Schema.define(version: 20220921200441) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -219,6 +219,11 @@ ActiveRecord::Schema.define(version: 20220819193405) do
   add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"
   add_index "contacts", ["callsign2"], :name => "index_contacts_on_callsign2"
 
+  create_table "continents", force: true do |t|
+    t.string "name"
+    t.string "code"
+  end
+
   create_table "crownparks", force: true do |t|
     t.spatial "WKT",             limit: {:srid=>4326, :type=>"multi_polygon"}
     t.integer "napalis_id"
@@ -244,6 +249,14 @@ ActiveRecord::Schema.define(version: 20220819193405) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.spatial  "boundary",      limit: {:srid=>4326, :type=>"multi_polygon"}
+  end
+
+  create_table "dxcc_prefixes", force: true do |t|
+    t.string "name"
+    t.string "prefix"
+    t.string "itu_zone"
+    t.string "cq_zone"
+    t.string "continent_code"
   end
 
   create_table "external_spots", force: true do |t|

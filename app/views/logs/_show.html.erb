@@ -95,7 +95,7 @@
         <tr>
           <td><%=link_to 'View', '/contacts/'+contact.id.to_s, :remote => true,  :onclick => "linkHandler('index')"%></td>
           <td> <%= if contact.time then contact.localtime(current_user) else '' end %> <%=contact.localtimezone(current_user) %></td>
-          <td> <%=link_to contact.callsign2, '/users/'+contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler('user')"  %> </td>
+          <td><span title="<%=DxccPrefix.name_from_call(contact.callsign2)%>"> <%=link_to contact.callsign2, '/users/'+contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler('user')"  %> </span></td>
           <td> <%= if contact.is_qrp2 then "Yes" else "no" end%></td>
           <td> <%= if contact.is_portable2 then "Yes" else "no" end%></td>
           <td> <%= contact.mode %> </td>
