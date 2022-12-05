@@ -59,6 +59,10 @@
          PIN*: <%= @user.pin %>
      </div>
 
+     <div class="erow" id="acctnumber">
+         Mobile no.**: <%= @user.acctnumber %>
+     </div>
+
      <div class="erow" id="email">
          Email: <%= @user.email %>
      </div>
@@ -75,6 +79,7 @@
 
 <%     if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
   <p><i><br/>* PIN is used for access to the Inreach/Email SPOT / ALERT gateway.</i></p>
+  <p><i><br/>** Mobile number is required if you wish to access SMS gateway.</i></p>
 <% end %>
 
 <div class="erow">

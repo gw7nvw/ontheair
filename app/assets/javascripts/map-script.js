@@ -623,7 +623,38 @@ function map_mapLayers() {
 function map_set_coord_format() {
    	var prefix=map_current_projname+": ";
         $('.ol-mouse-position').attr('data-before',prefix);
-	map_mpc.setCoordinateFormat(createStringXY(map_current_projdp))
+        if(map_current_projname=='Maidenhead') {
+          map_mpc.setCoordinateFormat(createMaidenheadString);
+        } else {
+	  map_mpc.setCoordinateFormat(createStringXY(map_current_projdp));
+        }
+}
+
+function createMaidenheadString(coord) {
+        dec_lon=coord[0]+180
+        o1=parseInt(dec_lon/20)
+        dec_lon=dec_lon-o1*20
+        o2=parseInt(dec_lon/2)
+        dec_lon=dec_lon-2*o2
+        o3=parseInt(dec_lon*12)
+
+        dec_lat=coord[1]+90
+        a1=parseInt(dec_lat/10)
+        dec_lat=dec_lat-a1*10
+        a2=parseInt(dec_lat)
+        dec_lat=dec_lat-a2
+        a3=parseInt(dec_lat*24)
+
+        o1=o1+65
+        a1=a1+65
+        o2=o2+48
+        a2=a2+48
+        o3=o3+97
+        a3=a3+97
+   
+        str_out=String.fromCharCode(o1)+String.fromCharCode(a1)+String.fromCharCode(o2)+String.fromCharCode(a2)+String.fromCharCode(o3)+String.fromCharCode(a3) 
+
+        return str_out
 }
 
 

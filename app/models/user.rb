@@ -23,6 +23,9 @@ class User < ActiveRecord::Base
   VALID_EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i
   has_secure_password
 
+  VALID_PHONE_REGEX = /\A\+[1-9]\d{1,14}\z/i
+  validates :acctnumber, allow_blank: true, format: { with: VALID_PHONE_REGEX }
+
   def User.new_token
     SecureRandom.urlsafe_base64
   end

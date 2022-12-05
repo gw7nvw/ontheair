@@ -3,7 +3,7 @@ class Scorer
 
   def self.perform()   
     puts "SCORER: Got called"
-    sleep 1
+   # sleep 1
     us=User.where(outstanding: true)
     us.each do |u|
       puts "SCORER: Got user "+u.callsign

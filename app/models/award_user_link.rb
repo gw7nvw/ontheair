@@ -28,28 +28,29 @@ def region
 end
 
 def publicise
-  post=Post.new
-  post.title="New award for "+self.user.callsign
-  post.description=self.user.callsign+" has earned "+self.award.name+" award"
-  if self.award_type=="threshold" then
-    post.description+=" - "+threshold_name+" ("+threshold.to_s+")"
+  if self.user.activated then
+    post=Post.new
+    post.title="New award for "+self.user.callsign
+    post.description=self.user.callsign+" has earned "+self.award.name+" award"
+    if self.award_type=="threshold" then
+      post.description+=" - "+threshold_name+" ("+threshold.to_s+")"
+    end
+    if self.award_type=="district" then
+      post.description+=" - "+activity_type.capitalize+" - for district "+self.district.name
+    end
+    if self.award_type=="region" then
+      post.description+=" - "+activity_type.capitalize+" - for region "+self.region.name
+    end
+  
+    post.created_by_id=self.user.id
+    post.save
+  
+    item=Item.new
+    item.topic_id=AWARDS_TOPIC
+    item.item_type="post"
+    item.item_id=post.id
+    item.save
+    #if !post.do_not_publish then item.send_emails end
   end
-  if self.award_type=="district" then
-    post.description+=" - "+activity_type.capitalize+" - for district "+self.district.name
-  end
-  if self.award_type=="region" then
-    post.description+=" - "+activity_type.capitalize+" - for region "+self.region.name
-  end
-
-  post.created_by_id=self.user.id
-  post.save
-
-  item=Item.new
-  item.topic_id=AWARDS_TOPIC
-  item.item_type="post"
-  item.item_id=post.id
-  item.save
-  #if !post.do_not_publish then item.send_emails end
 end
 end
-

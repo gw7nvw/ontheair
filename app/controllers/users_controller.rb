@@ -83,9 +83,10 @@ class UsersController < ApplicationController
   end
 
   def show
-    if(!(@user = User.where(callsign: params[:id]).first))
+    if(!(users = User.find_by_sql [ "select * from users where callsign='#{params[:id]}' or id=#{params[:id].to_i}" ] )) then
       redirect_to '/'
-    else 
+    elsif users and users.count>0 then
+      @user=users.first
       @contacts=Contact.find_by_sql [ "select * from contacts where (user1_id="+@user.id.to_s+" or user2_id="+@user.id.to_s+")" ]
       activationsSites1=Contact.find_by_sql [ " select distinct location1 from contacts where user1_id=#{@user.id.to_s};" ];
       activationsSites2=Contact.find_by_sql [ " select distinct location2 as location1 from contacts where user2_id=#{@user.id.to_s};" ];
@@ -225,6 +226,7 @@ def update
             index_prep()
             render 'index'
           else
+            show()
             render 'show'
           end
         else
@@ -300,7 +302,7 @@ end
   private
 
     def user_params
-      params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin)
+      params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin, :acctnumber)
     end
 
 

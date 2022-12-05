@@ -15,7 +15,7 @@
          <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
          &nbsp;--&gt;&nbsp;
          <%if @user.id%>
-            <b><%=link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true, :id => 'user', :onclick => "linkHandler('user')" %>
+            <b><%=link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true, :id => 'user', :onclick => "linkHandler('user')" %></b>
             &nbsp;--&gt;&nbsp;
             <b>Edit</b>
          <% else %>
@@ -69,14 +69,16 @@
       <%= f.label :password_confirmation, "Confirmation" %>
       <%= f.password_field :password_confirmation %>
 
-<div class="erow"><i>Password rules: any combination of letters and numbers. No spaces or extended characters</i></div>
+<div class="erow"><small><i>Password rules: any combination of letters and numbers. No spaces or extended characters<br/></i></small></div>
 
       <%= f.label :pin, "PIN" %>
       <%= f.text_field :pin %>
+<div class="erow"><i><small>PIN is for access to the SPOT/ALERT gateway from inreach/email only. PIN rules: any 4-character combination of letters and numbers. No spaces or extended characters. InReach may send messages containing your PIN across the internet as unencrypted plain-text or display them to others with access to your InReach web portal. Do not reuse PINs you use elsewhere.<br/></i></small></div> 
 
-<div class="erow"><i>PIN is for access to the SPOT/ALERT gateway from inreach/email only. PIN rules: any 4-character combination of letters and numbers. No spaces or extended characters. InReach may send messages containing your PIN across the internet as unencrypted plain-text or display them to others with access to your InReach web portal. Do not reuse PINs you use elsewhere.</i></div> 
 
-<div>
+      <%= f.label :acctnuyber, "Mobile phone (for SMS gateway)" %>
+      <%= f.text_field :acctnumber %>
+      <div class="erow"><i><small>E.164 (International) format, no spaces. e.g: +64271234567<br/></i></small></div>
       <%= f.submit @submit_button, onclick: "signupHandler();", class: "btn btn-small btn-primary btn-highlight" %>
 </div>
 

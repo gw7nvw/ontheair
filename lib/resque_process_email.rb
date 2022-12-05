@@ -8,6 +8,7 @@ class EmailReceive
 #  ALERT_TOPIC_ID=32
 
   def self.perform(from, to, subject, body, attachment)
+     via=""
      posttype=nil
      if to[0..3].upcase=="SPOT" then
        puts "DEBUG: SPOT" 
@@ -77,10 +78,29 @@ class EmailReceive
     else 
      #check for correct format
      if body["inr.ch"] then
+      via="InReach"
       msg=body.split('inr.ch')[0]
       msgs=msg.split(' ') 
       sub_callsign=msgs[0].upcase
       passkey=msgs[1].upcase
+      user=User.find_by(callsign: sub_callsign)
+      if !user then puts "Unknown callsign: "+sub_callsign; return(false) end
+
+      #should check a password here
+      if !user.pin or passkey[0..3]!=user.pin[0..3] then puts "PIN does not match";return(false) end
+     elsif subject["SMSForwarder"] then
+      via="SMS"
+      puts "DEBUG SMS"
+      msg="SMS "+body
+      puts "DEBUG body: "+body
+      msgs=msg.split(' ') 
+      passkey=nil
+      acctnumber=subject.split(':')[1]
+      puts "DEBUG subject: "+subject
+      puts "DEBUG from number: "+acctnumber
+      user=User.find_by(acctnumber: acctnumber.strip.gsub(" ",""))
+     end
+     if user then
       callsign=msgs[2].upcase
       if callsign=="!" then callsign=sub_callsign end
       asset_code=msgs[3].upcase
@@ -88,45 +108,51 @@ class EmailReceive
       mode=msgs[5].upcase
       if posttype=="spot" then
         comments=msgs[6..-1].join(' ')
-        al_date=Time.now.in_time_zone("Pacific/Auckland").strftime('%Y-%m-%d')
-        al_time=Time.now.in_time_zone("Pacific/Auckland").strftime('%H:%M')
+        al_date=Time.now.in_time_zone("UTC").strftime('%Y-%m-%d')
+        al_time=Time.now.in_time_zone("UTC").strftime('%H:%M')
       else
         al_date=msgs[6]
         al_time=msgs[7]
         comments=msgs[8..-1].join(' ')
       end
  
-      user=User.find_by(callsign: sub_callsign)
-      if !user then puts "Unknown callsign: "+sub_callsign; return(false) end
-
-      #should check a password here
-      if !user.pin or passkey[0..3]!=user.pin[0..3] then puts "PIN does not match";return(false) end
 
       @post=Post.new
       #fill in details
 
       #check asset
       assets=Asset.assets_from_code(asset_code)
-      if !assets or assets.count==0 or assets.first[:code]==nil then puts "Asset not known:"+asset_code ;return(false) end
+     # if !assets or assets.count==0 or assets.first[:code]==nil then puts "Asset not known:"+asset_code ;return(false) end
+      if !assets or assets.count==0 or assets.first[:code]==nil then 
+         puts "Asset not known:"+asset_code+" ... trying to continue"
+         a_code=""
+         a_name="Unrecognised location: "+asset_code
+         a_ext=false
+      else
+         a_code=assets.first[:code]
+         a_name=assets.first[:name]
+         a_ext=assets.first[:external]
+      end
       @post.mode=mode.upcase
+      @post.callsign=callsign
       @post.freq=freq 
-      @post.asset_codes=[assets.first[:code]]
+      if a_code!="" then @post.asset_codes=[a_code] else @post.asset_codes=[] end
       @post.created_by_id=user.id 
       @post.updated_by_id=user.id 
-      @post.description=comments+" (via InReach)"
+      @post.description=comments+" (via "+via+")"
       @post.referenced_time=al_time
       @post.referenced_date=al_date
       @post.updated_at=Time.now
-      if comments[0..4].upcase=="DEBUG" or comments[0..3].upcase=="TEST" then debug=true else debug=false end  
-     puts "DEBUG: assets - "+assets.first[:name]
+      if comments.upcase["DEBUG"] or comments.upcase["TEST"] then debug=true else debug=false end  
+     puts "DEBUG: assets - "+a_name
       if posttype=="spot" then
         topic_id=SPOT_TOPIC_ID
-        @post.title="SPOT: "+callsign+" spotted portable at "+assets.first[:name]+"["+assets.first[:code]+"] on "+freq+"/"+mode+" at "+Time.now.in_time_zone("Pacific/Auckland").strftime('%Y-%m-%d %H:%M')+"NZ"
+        @post.title="SPOT: "+callsign+" spotted portable at "+a_name+"["+a_code+"] on "+freq+"/"+mode+" at "+Time.now.in_time_zone("Pacific/Auckland").strftime('%Y-%m-%d %H:%M')+"NZ"
       else
         topic_id=ALERT_TOPIC_ID
-        @post.title="ALERT: "+callsign+" going portable to "+assets.first[:name]+"["+assets.first[:code]+"] on "+freq+"/"+mode+" at "+al_date+" "+al_time+" UTC"
+        @post.title="ALERT: "+callsign+" going portable to "+a_name+"["+a_code+"] on "+freq+"/"+mode+" at "+al_date+" "+al_time+" UTC"
       end
-      if assets.first[:external]==false then
+      if a_ext==false then
         res=@post.save
 
         item=Item.new

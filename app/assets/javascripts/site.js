@@ -1,4 +1,4 @@
-LINZ_API_KEY='c01g444rznshdekryq5dtb2ekef'
+LINZ_API_KEY='d01gerrwb5fqmwwhpx3s65p62hj'
 var site_map_size=1;
 var contacts_layer;
 var site_show_polygon=true;
