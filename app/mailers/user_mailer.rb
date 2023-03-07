@@ -71,7 +71,8 @@ class UserMailer < ActionMailer::Base
         mail to: user.email, subject: callsign+" spotted on "+(if (@item.end_item.freq and @item.end_item.freq.length>0) or (@item.end_item.mode and @item.end_item.mode.length>0) then @item.end_item.freq+" - "+@item.end_item.mode else "UNKNOWN" end)
 
       elsif item.topic.is_alert then
-        mail to: user.email, subject: callsign+" alerted for "+(if @item.end_item.referenced_date then @item.end_item.referenced_date.strftime("%Y-%m-%d") else "" end)+" "+(if @item.end_item.referenced_time then @item.end_item.referenced_time.strftime("%H:%M (UTC)") else "" end)+" at "+(if @item.end_item.site then @item.end_item.site else "UNKNOWN" end)
+        sites=@item.end_item.site.split('; ')
+        mail to: user.email, subject: callsign+" alerted for "+(if @item.end_item.referenced_date then @item.end_item.referenced_date.strftime("%Y-%m-%d") else "" end)+" "+(if @item.end_item.referenced_time then @item.end_item.referenced_time.strftime("%H:%M (UTC)") else "" end)+" at "+(if sites and sites.count>0 then sites.first+(if sites and sites.count>1 then " et al." else "" end) else "UNKNOWN" end)
 
       else
         mail to: user.email, subject: "ontheair.nz: New post from "+@item.end_item.updated_by_name+" in "+item.topic.name
