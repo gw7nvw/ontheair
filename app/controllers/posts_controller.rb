@@ -123,7 +123,7 @@ def update
          @post.site=""
          @post.asset_codes.each do |ac|
           assets=Asset.assets_from_code(ac)
-          @post.site+=(if assets and assets.count>0 then assets.first[:name] else "" end)+" ["+ac+"] "+(if assets and assets.count>0 and assets.first[:asset] then "{"+assets.first[:asset].maidenhead+"}" else "" end)
+          @post.site+=(if assets and assets.count>0 then assets.first[:name] else "" end)+" ["+ac+"] "+(if assets and assets.count>0 and assets.first[:asset] then "{"+assets.first[:asset].maidenhead+"}; " else "" end)
         end
 
          if topic.is_alert then 
@@ -174,13 +174,13 @@ def create
     if signed_in? and @topic and (@topic.is_public or current_user.is_admin or (@topic.owner_id==current_user.id and @topic.is_owners)) then
       @post=Post.new(post_params)
       if params[:post][:asset_codes] then 
-         @post.asset_codes=params[:post][:asset_codes].gsub('{','').gsub('}','').split(',')
+         @post.asset_codes=params[:post][:asset_codes].upcase.gsub('{','').gsub('}','').split(',')
       end
 
       @post.site=""
       @post.asset_codes.each do |ac|
         assets=Asset.assets_from_code(ac)
-        @post.site+=(if assets and assets.count>0 then assets.first[:name]||"" else "" end)+" ["+ac+"] "+(if assets and assets.count>0 and assets.first[:asset] then "{"+assets.first[:asset].maidenhead+"}" else "" end)
+        @post.site+=(if assets and assets.count>0 then assets.first[:name]||"" else "" end)+" ["+ac+"] "+(if assets and assets.count>0 and assets.first[:asset] then "{"+assets.first[:asset].maidenhead+"}; " else "" end)
       end
       @post.created_by_id = current_user.id #current_user.id
       @post.updated_by_id = current_user.id #current_user.id

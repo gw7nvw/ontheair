@@ -1,22 +1,42 @@
 Hello <%= @user.callsign %>
 
+================================
+
+<% if @item.topic.is_spot then %>
+<% if @item.item_type=="post" and @item.end_item.callsign and @item.end_item.callsign.length>0 then%><%=@item.end_item.callsign.upcase%> <%else%><%=@item.end_item.updated_by_name.upcase%> <%end%>spotted portable
+
+<% if @item.item_type=="post" and @item.end_item.referenced_date then %> UTC: <%=@item.end_item.referenced_date.strftime("%Y-%m-%d")%> <%=if @item.end_item.referenced_time then @item.end_item.referenced_time.strftime("%H:%M") end%><%end%>
+<%if @item.end_item.referenced_date then %>NZT: <%=@item.end_item.referenced_date.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d")%> <%=if @item.end_item.referenced_time then @item.end_item.referenced_time.in_time_zone('Pacific/Auckland').strftime("%H:%M") end%><%end%>
+<% if @item.item_type=="post" and @item.end_item.site then%><%sites=@item.end_item.site.split('; ')%><%sites.each do |site|%>Location: <%=site%>
+<%end%><%end%><%if (@item.end_item.freq and @item.end_item.freq.length>0) or (@item.end_item.mode and @item.end_item.mode.length>0) then%>Frequency: <%= @item.end_item.freq%> - <%= @item.end_item.mode%><%end%>
+
+Posted by: <%=@item.end_item.updated_by_name.upcase%>
+<% elsif @item.topic.is_alert then %>
+<% if @item.item_type=="post" and @item.end_item.callsign and @item.end_item.callsign.length>0 then%><%=@item.end_item.callsign.upcase%> <%else%><%=@item.end_item.updated_by_name.upcase%> <%end%>alerted: going portable
+
+<% if @item.item_type=="post" and @item.end_item.referenced_date then %> UTC: <%=@item.end_item.referenced_date.strftime("%Y-%m-%d")%> <%=if @item.end_item.referenced_time then @item.end_item.referenced_time.strftime("%H:%M") end%><%end%>
+<%if @item.end_item.referenced_date then %>NZT: <%=@item.end_item.referenced_date.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d")%> <%=if @item.end_item.referenced_time then @item.end_item.referenced_time.in_time_zone('Pacific/Auckland').strftime("%H:%M") end%><%if @item.end_item.duration then%> for <%=(@item.end_item.duration||1).to_s%> day(s)<%end%><%end%>
+<% if @item.item_type=="post" and @item.end_item.site then%><%sites=@item.end_item.site.split('; ')%><%sites.each do |site|%>Location: <%=site%><%end%><%end%>
+<%if (@item.end_item.freq and @item.end_item.freq.length>0) or (@item.end_item.mode and @item.end_item.mode.length>0) then%>Frequency: <%= @item.end_item.freq%> - <%= @item.end_item.mode%><%end%>
+
+Posted by: <%=@item.end_item.updated_by_name.upcase%>
+
+<% else %>
 New <%=@item.item_type%> on ontheair.nz in the topic "<%=@item.topic.name%>" 
 
-===
+================================
 
-<%= @item.end_item.updated_by_name %> <%=if @item.end_item.updated_at > @item.end_item.created_at then " updated in '" else " posted in '" end %><%=@item.topic.name%>' on <%=@item.end_item.updated_at.in_time_zone('UTC').strftime("%Y-%m-%d %H:%M (UTC)")+@item.end_item.updated_at.in_time_zone('Pacific/Auckland').strftime(" / %Y-%m-%d %H:%M (Pacific/Auckland)")%>
 
 Subject: <%=@item.end_item.title%>
 
-<% if @item.item_type=="post" and @item.end_item.callsign then%>Operating Callsign: <%=@item.end_item.callsign%>
-<% end %><% if @item.item_type=="post" and @item.end_item.referenced_date then %>Date/time: <%=@item.end_item.topic.name%> on/from <%=@item.end_item.referenced_date.strftime("%Y-%m-%d")%> <%=if @item.end_item.referenced_time then @item.end_item.referenced_time.strftime("%H:%M (UTC)") end%> / <%if @item.end_item.referenced_date then %><%=@item.end_item.referenced_date.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d")%> <%=if @item.end_item.referenced_time then @item.end_item.referenced_time.in_time_zone('Pacific/Auckland').strftime("%H:%M (Pacific/Auckland)") end%> <%if @item.end_item.duration then%> for <%=(@item.end_item.duration||1).to_s%> day(s)<%end%>
-<% end %><% end %><% if @item.item_type=="post" and @item.end_item.site then%><%=@item.end_item.site%>
-<% end %><%if (@item.end_item.freq and @item.end_item.freq.length>0) or (@item.end_item.mode and @item.end_item.mode.length>0) then%>Freq: <%= @item.end_item.freq%> - <%= @item.end_item.mode%>
-<%end%>
+<%= @item.end_item.updated_by_name %> <%=if @item.end_item.updated_at > @item.end_item.created_at then " updated in '" else " posted in '" end %><%=@item.topic.name%>' on <%=@item.end_item.updated_at.in_time_zone('UTC').strftime("%Y-%m-%d %H:%M (UTC)")+@item.end_item.updated_at.in_time_zone('Pacific/Auckland').strftime(" / %Y-%m-%d %H:%M (Pacific/Auckland)")%>
+<% end %>
+
+================================
 
 <%=convert_to_text(@item.end_item.description.gsub("<div>","").gsub("</div>","<br>"))%>
 
-===
+================================
 
 <%="Visit http://ontheair.nz/posts/"+@item.end_item.id.to_s+" to view the full post"%>
 

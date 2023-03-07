@@ -631,30 +631,32 @@ function map_set_coord_format() {
 }
 
 function createMaidenheadString(coord) {
-        dec_lon=coord[0]+180
-        o1=parseInt(dec_lon/20)
-        dec_lon=dec_lon-o1*20
-        o2=parseInt(dec_lon/2)
-        dec_lon=dec_lon-2*o2
-        o3=parseInt(dec_lon*12)
+   a=coord[0]+180
+   b=coord[1]+90
+   a_int=parseInt(a/20)
+   b_int=parseInt(b/10)
+   a_rem=a-a_int*20
+   b_rem=b-b_int*10 
+   out_str=String.fromCharCode(a_int+65)+String.fromCharCode(b_int+65)
+   lon=a_rem/2
+   lat=b_rem
+   for(i = 1; i < 4; i++) {
+     a_int=parseInt(lon)
+     b_int=parseInt(lat)
+     a_rem=lon-a_int
+     b_rem=lat-b_int
+     if(i==2) {
+       out_str=out_str+String.fromCharCode(a_int+97)+String.fromCharCode(b_int+97)
+       lon=10*a_rem
+       lat=10*b_rem
+     } else {
+       out_str=out_str+String.fromCharCode(a_int+48)+String.fromCharCode(b_int+48) 
+       lon=24*a_rem
+       lat=24*b_rem
+     }
 
-        dec_lat=coord[1]+90
-        a1=parseInt(dec_lat/10)
-        dec_lat=dec_lat-a1*10
-        a2=parseInt(dec_lat)
-        dec_lat=dec_lat-a2
-        a3=parseInt(dec_lat*24)
-
-        o1=o1+65
-        a1=a1+65
-        o2=o2+48
-        a2=a2+48
-        o3=o3+97
-        a3=a3+97
-   
-        str_out=String.fromCharCode(o1)+String.fromCharCode(a1)+String.fromCharCode(o2)+String.fromCharCode(a2)+String.fromCharCode(o3)+String.fromCharCode(a3) 
-
-        return str_out
+   }
+   return out_str
 }
 
 

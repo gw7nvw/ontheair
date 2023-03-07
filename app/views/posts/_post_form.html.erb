@@ -103,10 +103,12 @@
           </tr>
         </table>
       <% end %>
+      <% if !@topic.is_spot and !@topic.is_alert then %>
       <span>
         <%=f.label :title %>
         <%= f.text_field :title %>
       </span>
+      <% end %>
     
       <%=f.label :description%>
       <div id="editPanel"></div>

@@ -156,15 +156,15 @@ class StaticPagesController < ApplicationController
       if current_user then tzid=current_user.timezone end
       @tz=Timezone.find(tzid)
 
-     # url="https://api2.sota.org.uk/api/alerts/12?client=sotawatch&user=anon"
-     # alerts=JSON.parse(open(url).read)
-     # if alerts then
-     #   zl_alerts=alerts.find_all { |l| l["associationCode"][0..1]=="ZL" }
-     #   vk_alerts=alerts.find_all { |l| l["associationCode"][0..1]=="VK" }
-     #   zlvk_sota_alerts=zl_alerts+vk_alerts
-     # else
+      #url="https://api2.sota.org.uk/api/alerts/12?client=sotawatch&user=anon"
+      #alerts=JSON.parse(open(url).read)
+      #if alerts then
+      #  zl_alerts=alerts.find_all { |l| l["associationCode"][0..1]=="ZL" }
+      #  vk_alerts=alerts.find_all { |l| l["associationCode"][0..1]=="VK" }
+      #  zlvk_sota_alerts=zl_alerts+vk_alerts
+      #else
         zlvk_sota_alerts=[]
-     # end
+      #end
 
      # pota_alerts=get_pota_alerts
      # if pota_alerts then

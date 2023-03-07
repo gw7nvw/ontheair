@@ -66,7 +66,16 @@ class UserMailer < ActionMailer::Base
       attachments['map.jpg'] = File.read(@item.end_item.image.path)
     end
     if user and user.email then
-      mail to: user.email, subject: "ontheair.nz: New post from "+@item.end_item.updated_by_name+" in "+item.topic.name
+      if @item.end_item.callsign and @item.end_item.callsign.length>0 then callsign=@item.end_item.callsign.upcase else callsign=@item.end_item.updated_by_name end
+      if item.topic.is_spot then
+        mail to: user.email, subject: callsign+" spotted on "+(if (@item.end_item.freq and @item.end_item.freq.length>0) or (@item.end_item.mode and @item.end_item.mode.length>0) then @item.end_item.freq+" - "+@item.end_item.mode else "UNKNOWN" end)
+
+      elsif item.topic.is_alert then
+        mail to: user.email, subject: callsign+" alerted for "+(if @item.end_item.referenced_date then @item.end_item.referenced_date.strftime("%Y-%m-%d") else "" end)+" "+(if @item.end_item.referenced_time then @item.end_item.referenced_time.strftime("%H:%M (UTC)") else "" end)+" at "+(if @item.end_item.site then @item.end_item.site else "UNKNOWN" end)
+
+      else
+        mail to: user.email, subject: "ontheair.nz: New post from "+@item.end_item.updated_by_name+" in "+item.topic.name
+      end
     end
   end
 

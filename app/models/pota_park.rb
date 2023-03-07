@@ -55,12 +55,13 @@ class PotaPark < ActiveRecord::Base
 
 def self.import
 
-  urls=["https://api.pota.app/park/grids/-47.5/165/-40/180/0", "https://api.pota.app/park/grids/-40/165/-34/180/0"]
+  urls=["https://api.pota.app/park/grids/-47.5/165/-40/180/0", "https://api.pota.app/park/grids/-40/165/-34/180/0", "https://api.pota.app/park/grids/-55.0/165/-47.5/180/0", "https://api.pota.app/park/grids/-45/-178/-42/-175/0"]
   urls.each do |url|
     data = JSON.parse(open(url).read)
     if data then
       puts "Found "+data["features"].count.to_s+" parks"
       data["features"].each do |feature|
+         is_invalid=false
          properties=feature["properties"]
          puts properties.to_json
          p=PotaPark.find_by(reference: properties["reference"])
@@ -124,17 +125,20 @@ def self.import
              puts "Matched #{p.name} with #{park.name}"
            else
              puts "Could not find match. No location"
+             is_invalid=true
            end
          else
            puts "Existing POTA park"
          end
 
-         p.save
-         a=Asset.add_pota_park(p, park)
-         if new then
-           a.add_region
-           a.add_area
-           a.add_links
+         if is_invalid==false then
+           p.save
+           a=Asset.add_pota_park(p, park)
+           if new then
+             a.add_region
+             a.add_area
+             a.add_links
+           end
          end
       end
     end
