@@ -265,12 +265,8 @@ def send_to_sota(debug, from, callsign, a_code, freq, mode, description)
     asset_type=Asset.get_asset_type_from_code(a_code)
     puts ":"+asset_type+":"
     if asset_type=='SOTA' or asset_type=="summit" then
-      secret='1379ce34-e5d1-4c59-bf4b-297faf633d58'
-      user='ZL4NVW'
-      client_id='smsremote'
-      password='sotDog3l!fe'
 
-      jscreds=Keycloak::Client.get_token(user, password, client_id, secret)
+      jscreds=Keycloak::Client.get_token(SOTA_USER, SOTA_PASSWORD, SOTA_CLIENT_ID, SOTA_SECRET)
       creds=JSON.parse(jscreds)
       access_token=creds["access_token"]
       id_token=creds["id_token"]

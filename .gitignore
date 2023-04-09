@@ -5,6 +5,7 @@ log
 tmp
 database.yml
 config/database.yml
+config/initializers/secrets.rb
 db/*.sqlite3
 db/*.sqlite3-journal
 public/system
