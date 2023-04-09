@@ -79,6 +79,13 @@
       <%= f.label :acctnuyber, "Mobile phone (for SMS gateway)" %>
       <%= f.text_field :acctnumber %>
       <div class="erow"><i><small>E.164 (International) format, no spaces. e.g: +64271234567<br/></i></small></div>
+
+      <span title="All activations falling in a POTA park will be sent to the POTA spotting cluster. By selecting this option you commit to submit logs to POTA for all activations that fall in parks. "><%= "Also publish my SPOTs on POTA when in a park" %></span><br/>
+      <%= f.check_box :logs_pota%><br/><br/>
+
+      <span title="All activations falling in a WWFF park will be sent to the WWFF spotting cluster. By selecting this option you commit to submit logs to WWFF for all activations that fall in parks. "><%= "Also publish my SPOTs on WWFF when in a park" %></span><br/>
+      <%= f.check_box :logs_wwff%><br/><br/>
+
       <%= f.submit @submit_button, onclick: "signupHandler();", class: "btn btn-small btn-primary btn-highlight" %>
 </div>
 

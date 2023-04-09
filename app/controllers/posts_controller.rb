@@ -32,10 +32,10 @@ def new
     @post=Post.new
     @topic=Topic.find_by_id(params[:topic_id])
     @tz=Timezone.find_by_id(current_user.timezone||3)
-    t=Time.now.in_time_zone(@tz.name).strftime('%H:%M')
-    d=Time.now.in_time_zone(@tz.name).strftime('%Y-%m-%d')
-    if @topic.is_spot then @post.referenced_date=d end
-    if @topic.is_spot then @post.referenced_time=t end
+    t=Time.now.in_time_zone(@tz.name)
+    d=Time.now.in_time_zone(@tz.name).strftime('%Y-%m-%d 00:00 UTC').to_time
+    if @topic.is_spot then @post.referenced_date=d.to_time end
+    if @topic.is_spot then @post.referenced_time=t.to_time end
     if params[:title] then @post.title=params[:title] end
     if !@topic then 
       redirect_to '/'
@@ -58,8 +58,8 @@ def edit
       redirect_to '/'
     end
     if @post.referenced_time then 
-      @post.referenced_time=@post.referenced_time.in_time_zone(@tz.name).strftime('%H:%M')
-      @post.referenced_date=@post.referenced_date.in_time_zone(@tz.name).strftime('%Y-%m-%d')
+      @post.referenced_time=@post.referenced_time.in_time_zone(@tz.name)
+      @post.referenced_date=@post.referenced_date.in_time_zone(@tz.name).strftime('%Y-%m-%d 00:00 UTC').to_time
     end
     @topic=Topic.find_by_id(@post.topic_id)
 end
@@ -127,8 +127,8 @@ def update
         end
 
          if topic.is_alert then 
-           @post.referenced_time=(params[:post][:referenced_date]+' '+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC')
-           @post.referenced_date=(params[:post][:referenced_date]+' '+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC')
+           @post.referenced_time=(params[:post][:referenced_date]+' '+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC').to_time
+           @post.referenced_date=(params[:post][:referenced_date]+' '+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC').to_time
          end
 
          @post.updated_by_id=current_user.id
@@ -185,8 +185,8 @@ def create
       @post.created_by_id = current_user.id #current_user.id
       @post.updated_by_id = current_user.id #current_user.id
       if @topic.is_alert then
-        @post.referenced_time=(params[:post][:referenced_date]+" "+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC')
-        @post.referenced_date=(params[:post][:referenced_date]+" "+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC')
+        @post.referenced_time=(params[:post][:referenced_date]+" "+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC').to_time
+        @post.referenced_date=(params[:post][:referenced_date]+" "+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC').to_time
       end
 
       if @topic.is_spot then 
@@ -216,16 +216,11 @@ def create
         @edit=true
 
 
-        if params[:pnp]=="on" then 
-            res=@post.send_to_pnp(debug,@topic,@post.referenced_date.strftime('%Y-%m-%d'),@post.referenced_time.strftime('%H:%M'),'UTC')
-            if res and res!="" then
-              debugstart=res.body.index("INSERT")
-              if debugstart then
-                flash[:success]=res.body[debugstart..-1]
-              end
-            else
-              flash[:error]="Failed to send to PnP. Did you specify a valid place, frequency, mode & callsign?"
-            end
+        if params[:pnp]=="on" then
+            success=@post.send_to_all(debug,current_user,@post.callsign,@post.asset_codes,@post.freq,@post.mode,@post.description,@topic,@post.referenced_date.strftime('%Y-%m-%d'),@post.referenced_time.strftime('%H:%M'),'UTC') 
+            puts "DEBUG: controller success: "+success.to_s
+            if success[:result]==false then flash[:error]=success[:messages] end
+            if success[:result]==true and success[:messages]!="" then flash[:success]=success[:messages] end
         end
        
         if debug then 
@@ -246,7 +241,7 @@ end
 
   private
   def post_params
-    params.require(:post).permit(:title, :description, :image, :do_not_publish, :referenced_date, :referenced_time, :duration, :is_hut, :is_park, :is_island,:is_summit, :site, :freq, :mode, :hut, :park, :island, :summit, :callsign, :asset_codes)
+    params.require(:post).permit(:title, :description, :image, :do_not_publish, :duration, :is_hut, :is_park, :is_island,:is_summit, :site, :freq, :mode, :hut, :park, :island, :summit, :callsign, :asset_codes)
   end
 
 end

@@ -30,6 +30,57 @@
              <span title="Click to edit row"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/awards/'+award.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
           <% end %>
           <%= link_to award.name, '/awards/'+award.id.to_s, remote: true, :id => 'award_link_'+award.id.to_s, :onclick => "linkHandler('award_link_"+award.id.to_s+"')" %>
+          <% if award.count_based then %>
+             <% details=[] %>
+             <% AwardThreshold.order(:threshold).reverse.each do |t| %>
+               <% recipients = AwardUserLink.find_by_sql [ "select count(id) as id from award_user_links where award_id=#{award.id.to_s} and threshold=#{t.threshold.to_s}; " ] %>
+               <% if recipients.count>0 and recipients.first.id>0 then %>
+                  <%details.push(t.name.capitalize+": "+recipients.first.id.to_s)%>
+               <% end %>
+             <% end %> 
+             <% if details.count and details.count>0 then %>
+               <%=details.join(", ") %>
+             <% end %>
+          <% end %>
+          <% if award.all_district then %>
+            <% details=[] %>
+            <% districts=District.all %>
+            <% districts.order(:name).each do |district| %>
+             <% recipients = AwardUserLink.find_by_sql [ "select count(id) as id from award_user_links where award_id=#{award.id.to_s} and linked_id=#{district.id.to_s}; " ] %>
+               <% if recipients.count>0 and recipients.first.id>0 then %>
+                  <%details.push(district.name.capitalize+": "+recipients.first.id.to_s)%>
+               <% end %>
+             <% end %>
+             <% if details.count and details.count>0 then %>
+               <%=details.join(", ") %>
+             <% end %>
+          <% end %>
+          <% if award.all_region then %>
+            <% details=[] %>
+            <% districts=Region.all %>
+            <% districts.order(:name).each do |district| %>
+             <% recipients = AwardUserLink.find_by_sql [ "select count(id) as id from award_user_links where award_id=#{award.id.to_s} and linked_id=#{district.id.to_s}; " ] %>
+               <% if recipients.count>0 and recipients.first.id>0 then %>
+                  <%details.push(district.name.capitalize+": "+recipients.first.id.to_s)%>
+               <% end %>
+             <% end %>
+             <% if details.count and details.count>0 then %>
+               <%=details.join(", ") %>
+             <% end %>
+          <% end %>
+          <% if award.all_programme then %>
+             <% recipients = AwardUserLink.find_by_sql [ "select count(id) as id from award_user_links where award_id=#{award.id.to_s}; " ] %>
+             <% if recipients.count>0 and recipients.first.id>0 then %>
+                <%details.push(district.name.capitalize+": "+recipients.first.id.to_s)%>
+             <% end %>
+             <% if details.count and details.count>0 then %>
+               <%="Recipients: "+details.join(", ") %>
+             <% end %>
+          <% end %>
+
+
+
+
         </li>
     <% end end %>
   </ul>

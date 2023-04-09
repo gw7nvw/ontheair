@@ -1,0 +1,13 @@
+{
+  "realm": "SOTA",
+  "auth-server-url": "https://sso.sota.org.uk/auth",
+  "ssl-required": "external",
+  "resource": "my_application",
+  "credentials": {
+    "client_id": "smsremote",
+    "secret": "1379ce34-e5d1-4c59-bf4b-297faf633d58",
+    "scope": "openid"
+  },
+  "confidential-port": 0,
+  "policy-enforcer": {}
+}

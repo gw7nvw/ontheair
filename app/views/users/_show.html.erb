@@ -75,11 +75,20 @@
      <div class="erow" id="email">
          Timezone: <%= @user.timezonename %>
      </div>
+
+     <div class="erow" id="logs_pota">
+         Logs to POTA: <%= if @user.logs_pota==false then "No" else "Yes" end %>
+     </div>
+
+     <div class="erow" id="logs_wwff">
+         Logs to WWFF: <%= if @user.logs_wwff==false then "No" else "Yes" end %>
+     </div>
+
 </div>
 
 <%     if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
   <p><i><br/>* PIN is used for access to the Inreach/Email SPOT / ALERT gateway.</i></p>
-  <p><i><br/>** Mobile number is required if you wish to access SMS gateway.</i></p>
+  <p><i><br/>** Mobile number is required if you wish to access SMS gateway or post spots to SOTAiwatch.</i></p>
 <% end %>
 
 <div class="erow">

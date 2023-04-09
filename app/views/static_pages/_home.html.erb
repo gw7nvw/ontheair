@@ -94,7 +94,7 @@
      </div>
   </div>
 
-  <div class="sectiontitle"><br/><br/>Recent actvity<br/><br/></div>
+  <h2><%=link_to "Recent Activity", '/recent',  remote: true,:onclick => "linkHandler('recent')"%></h2>
 
   <%=render 'logs/list' %>
 

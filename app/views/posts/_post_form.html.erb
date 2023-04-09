@@ -128,7 +128,11 @@
       <% if topic.is_spot or topic.is_alert then %>
           <br/>
           <span>
-            Publish on Parks n Peaks
+            <% if topic.is_spot then %>
+              Publish on SOTA/WWFF/ParksnPeaks
+            <% else %>
+              Publish on Parks n Peaks
+            <% end %>
             <input id="pnp" name="pnp" type="checkbox" checked="checked">
             </span>
             <%  if(@submit_button != "Save Changes" and current_user and current_user.is_admin) %>

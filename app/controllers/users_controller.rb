@@ -83,8 +83,21 @@ class UsersController < ApplicationController
   end
 
   def show
-    if(!(users = User.find_by_sql [ "select * from users where callsign='#{params[:id]}' or id=#{params[:id].to_i}" ] )) then
-      redirect_to '/'
+    users = User.find_by_sql [ "select * from users where callsign='#{params[:id]}' or id=#{params[:id].to_i}" ] 
+    if !users or users.count<1 then
+      users=UserCallsign.where(callsign: params[:id])
+      if users and users.count>0 then
+         user=users.first.user
+         if user then
+           redirect_to '/users/'+user.callsign
+         else
+           flash[:error]="Callsign "+params[:id]+" not found"
+           redirect_to '/'
+         end
+      else
+        flash[:error]="Callsign "+params[:id]+" not found"
+        redirect_to '/'
+      end
     elsif users and users.count>0 then
       @user=users.first
       @contacts=Contact.find_by_sql [ "select * from contacts where (user1_id="+@user.id.to_s+" or user2_id="+@user.id.to_s+")" ]
@@ -278,6 +291,7 @@ end
     flash[:error] = "Error locating user or topic specified"
   end
   @topics=Topic.where(is_active=true)
+  show()
   render 'show'
 
   end
@@ -296,13 +310,14 @@ end
     flash[:error] = "Error locating user or topic specified"
   end
   @topics=Topic.where(is_active=true)
+  show()
   render 'show'
 end
 
   private
 
     def user_params
-      params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin, :acctnumber)
+      params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin, :acctnumber, :logs_pota, :logs_wwff)
     end
 
 

@@ -96,43 +96,72 @@ class EmailReceive
       msgs=msg.split(' ') 
       passkey=nil
       acctnumber=subject.split(':')[1]
+      acctnumber=acctnumber.strip.gsub(" ","")
       puts "DEBUG subject: "+subject
       puts "DEBUG from number: "+acctnumber
-      user=User.find_by(acctnumber: acctnumber.strip.gsub(" ",""))
+      user=User.find_by(acctnumber: acctnumber)
      end
-     if user then
-      callsign=msgs[2].upcase
-      if callsign=="!" then callsign=sub_callsign end
-      asset_code=msgs[3].upcase
-      freq=msgs[4]
-      mode=msgs[5].upcase
-      if posttype=="spot" then
+
+
+     callsign=msgs[2].upcase
+     if callsign=="!" then callsign=sub_callsign end
+     asset_code=msgs[3].upcase
+     if asset_code.include?("/") or asset_code.include?("-") then
+        puts "DEBUG: asset code appears to be complete"
+     else
+        puts "DEBUG: asset code looks like SOTA-spot format"
+        asset_suffix=msgs[4]
+        if !asset_suffix.include?("-") then
+          puts "DEBUG: asset suffix with no '-'"
+          asset_suffix=asset_suffix.gsub(/([a-zA-Z])([0-9])/,'\1-\2')
+        end
+        asset_code=asset_code+"/"+asset_suffix
+        for cnt in 4..msgs.length-2
+          msgs[cnt]=msgs[cnt+1]
+        end
+        msgs.delete_at(msgs.length-1)
+        puts "DEBUG: concatenated asset code = "+asset_code
+     end
+     freq=msgs[4]
+     mode=msgs[5].upcase
+     if posttype=="spot" then
         comments=msgs[6..-1].join(' ')
         al_date=Time.now.in_time_zone("UTC").strftime('%Y-%m-%d')
         al_time=Time.now.in_time_zone("UTC").strftime('%H:%M')
-      else
+     else
         al_date=msgs[6]
         al_time=msgs[7]
         comments=msgs[8..-1].join(' ')
-      end
+     end
  
+     @post=Post.new
+     if comments.upcase["DEBUG"] then debug=true else debug=false end  
+     
 
-      @post=Post.new
-      #fill in details
-
-      #check asset
-      assets=Asset.assets_from_code(asset_code)
+     #check asset
+     assets=Asset.assets_from_code(asset_code)
      # if !assets or assets.count==0 or assets.first[:code]==nil then puts "Asset not known:"+asset_code ;return(false) end
-      if !assets or assets.count==0 or assets.first[:code]==nil then 
+     if !assets or assets.count==0 or assets.first[:code]==nil then 
          puts "Asset not known:"+asset_code+" ... trying to continue"
          a_code=""
          a_name="Unrecognised location: "+asset_code
          a_ext=false
-      else
+     else
          a_code=assets.first[:code]
          a_name=assets.first[:name]
          a_ext=assets.first[:external]
-      end
+     end
+
+     asset_type=Asset.get_asset_type_from_code(a_code)
+     if posttype=="spot" and (asset_type=='SOTA' or asset_type=="summit") then
+         puts "DEBUG: sending to SOTA"
+         result=@post.send_to_sota(debug,acctnumber,callsign,a_code,freq,mode,comments+" (ontheair.nz)")
+         puts "DEBUG: "+result.to_s
+     end
+
+     if user then
+
+      #fill in details
       @post.mode=mode.upcase
       @post.callsign=callsign
       @post.freq=freq 
@@ -140,11 +169,11 @@ class EmailReceive
       @post.created_by_id=user.id 
       @post.updated_by_id=user.id 
       @post.description=comments+" (via "+via+")"
-      @post.referenced_time=al_time
-      @post.referenced_date=al_date
+
+      @post.referenced_time=(al_date+" "+al_time+" UTC").to_time
+      @post.referenced_date=(al_date+" 00:00:00 UTC").to_time
       @post.updated_at=Time.now
-      if comments.upcase["DEBUG"] or comments.upcase["TEST"] then debug=true else debug=false end  
-     puts "DEBUG: assets - "+a_name
+      puts "DEBUG: assets - "+a_name
       if posttype=="spot" then
         topic_id=SPOT_TOPIC_ID
         @post.title="SPOT: "+callsign+" spotted portable at "+a_name+"["+a_code+"] on "+freq+"/"+mode+" at "+Time.now.in_time_zone("Pacific/Auckland").strftime('%Y-%m-%d %H:%M')+"NZ"
@@ -163,10 +192,21 @@ class EmailReceive
         if debug==false then item.send_emails end
       end
       @topic=Topic.find_by_id(topic_id)
-      res=@post.send_to_pnp(debug,@topic,al_date,al_time,'UTC')
-     end
+        @post.asset_codes.each do |ac| 
+        asset_type=Asset.get_asset_type_from_code(ac)
+        if asset_type=='pota park' or asset_type=="POTA" then
+          puts "DEBUG: sending to POTA"
+          success=@post.send_to_pota(debug, user.callsign, @post.callsign, ac, @post.freq, @post.mode, @post.description)
+          puts "DEBUG: success = "+success.to_s
+        elsif !(asset_type=='SOTA' or asset_type=="summit") then
+          puts "DEBUG: sending to PnP"
+          res=@post.send_to_pnp(debug,ac,@topic,al_date,al_time,'UTC')
+          puts "DEBUG: success = "+res.to_s
+        end
+      end
     end
   end
+end
 
 def self.api_authenticate(username, pin)
   puts "DEBUG: authenticating"

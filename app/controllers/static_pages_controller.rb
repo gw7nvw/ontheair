@@ -37,7 +37,7 @@ class StaticPagesController < ApplicationController
 
       @static_page=true
       @brief=true
-      @fulllogs=Log.find_by_sql [ " select * from logs order by date desc " ]
+      @fulllogs=Log.find_by_sql [ " select * from logs order by date desc limit 20 " ]
       @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
    
       @items=Item.find_by_sql [ "select * from items where (topic_id = 4 or topic_id=42 )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;" ]
@@ -106,7 +106,7 @@ class StaticPagesController < ApplicationController
       end
 
       #check for new spots from external servers (maybe move this to a scheduled job?)
-      ExternalSpot.fetch
+      #ExternalSpot.fetch
 
       #read spots from db
       @all_spots=ExternalSpot.where("time>'"+onehourago+"'")

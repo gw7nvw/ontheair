@@ -1,0 +1,5 @@
+do_get_spots:
+  every: 60s
+  class: GetSpots
+  args:
+  description: Runs the perform method in GetSpots
