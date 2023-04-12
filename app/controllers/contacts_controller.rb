@@ -45,38 +45,38 @@ class ContactsController < ApplicationController
  
     #back compatibility
     if params[:type] then params[:class]=params[:type] end
-#    if params[:class] and params[:class]!="all" then  
-#      @class=params[:class]
-#      as=[]
-#      cs=[]
-#      @fullcontacts.each do |contact|
-#        if contact.callsign2==@user.callsign then contact=contact.reverse end
-#        assets=Asset.assets_from_code(contact.asset1_codes.join(','))
-#        assets.each do |a|
-#          if a[:asset] and a[:type]==@class then
-#            contact.asset1_codes=[a[:code]]
-#            as.push(contact)
-#          end
-#        end
-#        assets=Asset.assets_from_code(contact.asset2_codes.join(','))
-#        assets.each do |a|
-#          if a[:asset] and a[:type]==@class then
-#            contact.asset2_codes=[a[:code]]
-#            cs.push(contact)
-#          end
-#        end
-#      end
-#      if params[:activator] then
-#        @fullcontacts=as
-#        @activator="on"
-#      elsif params[:chaser] then 
-#        @fullcontacts=cs
-#        @chaser="on"
-#      else 
-#        @fullcontacts=cs+as
-#      end
-#      @fullcontacts=@fullcontacts.uniq
-#    end
+    if params[:class] and params[:class]!="all" then  
+      @class=params[:class]
+      as=[]
+      cs=[]
+      @fullcontacts.each do |contact|
+        if contact.callsign2==@user.callsign then contact=contact.reverse end
+        assets=Asset.assets_from_code(contact.asset1_codes.join(','))
+        assets.each do |a|
+          if a[:asset] and a[:type]==@class then
+            contact.asset1_codes=[a[:code]]
+            as.push(contact)
+          end
+        end
+        assets=Asset.assets_from_code(contact.asset2_codes.join(','))
+        assets.each do |a|
+          if a[:asset] and a[:type]==@class then
+            contact.asset2_codes=[a[:code]]
+            cs.push(contact)
+          end
+        end
+      end
+      if params[:activator] then
+        @fullcontacts=as
+        @activator="on"
+      elsif params[:chaser] then 
+        @fullcontacts=cs
+        @chaser="on"
+      else 
+        @fullcontacts=cs+as
+      end
+      @fullcontacts=@fullcontacts.uniq
+    end
 
 
     if params[:pagelen] then @page_len=params[:pagelen].to_i else @page_len=20 end

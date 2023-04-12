@@ -30,7 +30,7 @@
         <% count=0; valid_count=0; invalid_count=0; @assets.uniq.sort_by { |asset| asset[:name] }.each do |a|; count+=1 %>
           <tr>
             <td>
-              <%if a.minor==true or a.is_active==false or a.type.keep_score!=true %>
+              <%if a.minor==true or a.is_active==false or a.type.keep_score!=true or not @valid_codes.include?(a.code) %>
                 <%=link_to a.name+" ["+a.code+"]", '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :class => "link_to", :onclick => "linkHandler('asset')" %>
                 <% invalid_count+=1 %>
               <%else%>

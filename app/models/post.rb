@@ -144,7 +144,7 @@ end
     end
     newcodes=newcodes.uniq
     #filter out POTA / WWFF if user does not use those schemes
-    user=User.find_by(callsign: self.callsign.upcase)
+    if self.callsign then user=User.find_by(callsign: self.callsign.upcase) end
     if(user and user.logs_pota==false) then newcodes=newcodes.select {|code| Asset.get_asset_type_from_code(code)!="pota park" } end
     if(user and user.logs_wwff==false) then newcodes=newcodes.select {|code| Asset.get_asset_type_from_code(code)!="wwff park" } end
     newcodes

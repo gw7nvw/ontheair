@@ -291,8 +291,9 @@ def authenticated?(attribute, token)
     ats.each do |asset_type|
        self.score[asset_type.name]=self.bagged(asset_type.name).count
        self.score_total[asset_type.name]=0
-       self.activated_count[asset_type.name]=self.activated_all(asset_type.name).count
-       self.activated_count_total[asset_type.name]=self.activated_by_year(asset_type.name).count
+       codes=self.activated_all(asset_type.name)
+       self.activated_count[asset_type.name]=self.filter_by_min_qso(codes,asset_type.name).count
+       self.activated_count_total[asset_type.name]=self.filter_by_min_qso_by_year(codes,asset_type.name).count
        self.chased_count[asset_type.name]=self.chased(asset_type.name).count
        self.chased_count_total[asset_type.name]=self.chased_by_day(asset_type.name).count
     end
@@ -348,6 +349,62 @@ def authenticated?(attribute, token)
         codes=self.bagged(asset_type, include_minor)
       end
     end   
+    codes
+  end
+
+  def filter_by_min_qso_by_year(codes,asset_type)
+        #filter by min qso
+        at=AssetType.find_by(name: asset_type)
+        if at and at.min_qso and at.min_qso>1 then
+          qual_codes=Asset.find_by_sql [ " 
+              select code, 
+                unnest(array(
+                  select concat(a.code, ' ', year) as yearcode from (
+                    select extract('year' from date) as year, count(qso_count) as act_count from (
+                      select * from (
+                        select date, count(*) as qso_count from (
+                          select distinct callsign1, callsign2, date from (
+                              select id, callsign1, callsign2, date from contacts c where (c.callsign1='#{self.callsign}' and a.code=ANY(c.asset1_codes)) 
+                            union 
+                              select id, callsign2 as callsign1, callsign1 as callsign2, date  from contacts c where  (c.callsign2='#{self.callsign}' and a.code=ANY(c.asset2_codes))
+                          ) as uniquecontacts 
+                        ) as uniqueactivatons group by date 
+                      ) as actcount where qso_count>=#{at.min_qso} 
+                    ) as yearcount group by year
+                  ) as validcount where act_count>0 group by yearcode
+                )) as yearcode from assets a
+                where a.code in (?)
+             ;", codes ]
+          codes=qual_codes.map{|qc| qc.code}
+        end
+    codes
+  end
+  def filter_by_min_qso(codes,asset_type)
+        #filter by min qso
+        at=AssetType.find_by(name: asset_type)
+        if at and at.min_qso and at.min_qso>1 then
+          qual_codes=Asset.find_by_sql [ " 
+              select code from (
+                select  code, 
+                  (
+                    select count(*) from (
+                      select * from (
+                        select date, count(*) as qso_count from (
+                          select distinct callsign1, callsign2, date from (
+                              select id, callsign1, callsign2, date from contacts c where (c.callsign1='#{self.callsign}' and a.code=ANY(c.asset1_codes)) 
+                            union 
+                              select id, callsign2 as callsign1, callsign1 as callsign2, date  from contacts c where  (c.callsign2='#{self.callsign}' and a.code=ANY(c.asset2_codes))
+                          ) as uniquecontacts 
+                        ) as uniqueactivatons group by date 
+                      ) as actcount where qso_count>=#{at.min_qso}
+                    ) as valid_count 
+                  ) as count from assets a 
+                where a.code in (?)
+              ) as valid_activations 
+              where valid_activations.count>0;", codes ]
+          codes=qual_codes.map{|qc| qc.code}
+        end
+    codes
   end
 
   def contacts_by_type(asset_type, count_type)
