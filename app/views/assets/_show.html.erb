@@ -140,6 +140,12 @@
       <div class="rowtitle" <%= if @asset.is_active then "" else "style='color:#bb0000'" end%>><%= "Active?" %></div>
       <div class="textext"><%= if @asset.is_active then "Yes" else "No" end %></div>
    </div>
+   <% if @asset.is_nzart==true or @asset.is_nzart==false then %>
+     <div class="erow" id="email" <%= if @asset.is_nzart then "" else "style='color:#bb0000'" end%>>
+       <div class="rowtitle" <%= if @asset.is_nzart then "" else "style='color:#bb0000'" end%>><%= "Valid for NZART awards?" %></div>
+       <div class="textext"><%= if @asset.is_nzart then "Yes" else "No" end %></div>
+     </div>
+   <% end %>
    <% if @asset.minor then %>
    <div class="erow" id="email" style='color:#bb0000 !important'>
       <span title="Places can be marked as invalid for a number of reasons. This includes duplicate place names, names of groups of islands and lakes that are included individually, reserves that are smaller than the minimum 10ha size, Queen's chain reserves, special purpose reserves, and others.">

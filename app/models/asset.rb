@@ -616,12 +616,40 @@ def self.add_pota_park(p, existing_asset)
     a
 end
 
+def self.add_lighthouses
+  ps=Lighthouse.where('code is not null')
+  ps.each do |p|
+    Asset.add_lighthouse(p, nil)
+  end
+end
+
 def self.add_wwff_parks
   ps=WwffPark.all
   ps.each do |p|
     Asset.add_wwff_park(p, nil)
   end
 end
+
+def self.add_lighthouse(p, existing_asset)
+    a=Asset.find_by(asset_type: 'lighthouse', code: p.code)
+    if !a then
+       a=Asset.new
+       puts "Adding new lighthouse"
+    end
+    a.asset_type="lighthouse"
+    a.description=(p.loc_type||"").capitalize+" based "+(if p.str_type=="lighthouse" then "lighthouse" else "light/beacon" end)+(if p.status then " ("+p.status+")" else "" end)
+    a.code=p.code
+    a.is_active=true
+    a.name=p.name
+    a.location=p.location 
+    a.region=p.region
+    if a.name and a.name.length>0 then a.is_active=true else a.is_active=false end
+    a.save 
+    puts a.code
+    puts a.name
+    a
+end
+
 
 def self.add_wwff_park(p, existing_asset)
     a=Asset.find_by(asset_type: 'wwff park', code: p.code)

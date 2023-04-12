@@ -86,6 +86,12 @@
       <% else %>
         <%= f.check_box :is_active, :readonly => true%><br/><br/>
       <% end %>
+      <%= "Valid for NZART awards? " %><br/>
+      <% if current_user and (current_user.is_admin or current_user.is_modifier)%> 
+        <%= f.check_box :is_nzart%><br/><br/>
+      <% else %>
+        <%= f.check_box :is_nzart, :readonly => true%><br/><br/>
+      <% end %>
       <%= "Not valid for OnTheAir? " %><br/>
       <% if current_user and (current_user.is_admin or current_user.is_modifier)%> 
         <%= f.check_box :minor%><br/><br/>
