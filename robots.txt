@@ -32,6 +32,9 @@ Disallow: /assets/*/*
 Disallow: /users/*/*
 Disallow: */new
 Disallow: */refresh_sota
+Disallow: /?sortby*
+Disallow: /?scoreby*
+Disallow: /spots?class*
 Disallow: *.gpx
 Disallow: *.csv
 Sitemap: https://ontheair.nz/sitemap.xml

@@ -10,6 +10,8 @@ mount Resque::Server.new, at: "/resque"
 
 get "proxy" => "proxy#get", :as => "proxy"
 
+match '/sitemap.xml', to: 'sitemaps#index', via: 'get', as: "sitemap", defaults: { format: "xml" }
+
 match '/about',   to: 'static_pages#about',   via: 'get'
 match '/help',   to: 'static_pages#help',   via: 'get'
 match '/faq',   to: 'static_pages#faq',   via: 'get'

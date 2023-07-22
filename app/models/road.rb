@@ -25,9 +25,9 @@ def self.add_distance_to_assets
    puts startid.first.id.to_s+" to "+endid.first.id.to_s
 
    puts "Point assets - all in one operation"
-   ActiveRecord::Base.connection.execute("UPDATE assets a set nearest_road_id = (select r.id from roads r ORDER BY ST_Distance(a.location, r.linestring) LIMIT 1)  where a.boundary is null;")
+   ActiveRecord::Base.connection.execute("UPDATE assets a set nearest_road_id = (select r.id from roads r ORDER BY ST_Distance(a.location, r.linestring) LIMIT 1)  where a.boundary is null and a.nearest_road_id is null;")
      # Calculate distance from nearest road in meters
-   ActiveRecord::Base.connection.execute("UPDATE assets a set road_distance = (SELECT ST_Distance(ST_Transform(a.location, 2193), ST_Transform(r.linestring,2193)) from roads r where r.id=a.nearest_road_id) where a.boundary is null and ST_Y(a.location)>-90;")
+   ActiveRecord::Base.connection.execute("UPDATE assets a set road_distance = (SELECT ST_Distance(ST_Transform(a.location, 2193), ST_Transform(r.linestring,2193)) from roads r where r.id=a.nearest_road_id) where a.boundary is null and road_distance is null and ST_Y(a.location)>-90;")
 
    puts "Polygon assets - one at a time"
    ids=Asset.find_by_sql [ " select id, code from assets where boundary is not null and nearest_road_id is null order by id asc" ]

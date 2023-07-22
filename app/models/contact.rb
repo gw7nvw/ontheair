@@ -251,6 +251,8 @@ end
     if rawmode=="SSB" then found=true end
     if rawmode=="DSTAR" then found=true end
     if rawmode=="FT8" then found=true end
+    if rawmode=="FT4" then found=true end
+    if rawmode=="JS8" then found=true end
    
     if found==true then mode=rawmode end
     if rawmode=="DATA" then 
@@ -263,6 +265,12 @@ end
     self.timezone||=Timezone.find_by(name: "UTC").id
     self.is_qrp1=true
   end
+
+ def self.band_from_freq(freq)
+   c=Contact.new
+   c.frequency=freq
+   band=c.band
+ end
 
  def band
    band=""

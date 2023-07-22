@@ -4,8 +4,9 @@ class EmailReceive
   @queue = :ontheair
   SPOT_TOPIC_ID=35
   ALERT_TOPIC_ID=1
-#  SPOT_TOPIC_ID=32
-#  ALERT_TOPIC_ID=32
+  TEST_SPOT_TOPIC_ID=43
+  TEST_ALERT_TOPIC_ID=44
+
 
   def self.perform(from, to, subject, body, attachment)
      via=""
@@ -33,9 +34,9 @@ class EmailReceive
       :from     => from
     }
     puts "DEBUG body: "+body
-    puts "DEBUG subject: "+subject
-    puts "DEBUG from: "+from
-    puts "DEBUG to: "+to
+    puts "DEBUG subject: "+(subject||"")
+    puts "DEBUG from: "+(from||"")
+    puts "DEBUG to: "+(to||"")
 
     # forward mail to zl-sota
     if posttype=="zlsota" then
@@ -77,9 +78,31 @@ class EmailReceive
 
     else 
      #check for correct format
-     if body["inr.ch"] then
-      via="InReach"
-      msg=body.split('inr.ch')[0]
+     if body["inr.ch"] or body["js8.gate"] or body["INR.CH"] or body["JS8.GATE"] or body["/eom"] or body["/EOM"] then
+      if body["inr.ch"]  then 
+        via="InReach"
+        splt="inr.ch" 
+      elsif body["INR.CH"]  then  
+        via="InReach"
+        splt="INR.CH" 
+      elsif body["js8.gate"]  then 
+        via="JS8Gate"
+        splt="js8.gate"
+      elsif body["JS8.GATE"]  then  
+        via="JS8Gate"
+        splt="JS8.GATE"
+      elsif body["/eom"] then
+        via="Email"
+        splt="/eom"
+      else
+        via="Email"
+        splt="/EOM"
+      end
+      
+      msg=body.split(splt)[0]
+      if msg["/bom"] then msg=msg.split('/bom')[1] end
+      if msg["/BOM"] then msg=msg.split('/BOM')[1] end
+
       msgs=msg.split(' ') 
       sub_callsign=msgs[0].upcase
       passkey=msgs[1].upcase
@@ -175,13 +198,22 @@ class EmailReceive
       @post.updated_at=Time.now
       puts "DEBUG: assets - "+a_name
       if posttype=="spot" then
-        topic_id=SPOT_TOPIC_ID
+        if debug then 
+          topic_id=TEST_SPOT_TOPIC_ID
+        else
+          topic_id=SPOT_TOPIC_ID
+        end
         @post.title="SPOT: "+callsign+" spotted portable at "+a_name+"["+a_code+"] on "+freq+"/"+mode+" at "+Time.now.in_time_zone("Pacific/Auckland").strftime('%Y-%m-%d %H:%M')+"NZ"
       else
-        topic_id=ALERT_TOPIC_ID
+        if debug then 
+          topic_id=TEST_ALERT_TOPIC_ID
+        else
+          topic_id=ALERT_TOPIC_ID
+        end
         @post.title="ALERT: "+callsign+" going portable to "+a_name+"["+a_code+"] on "+freq+"/"+mode+" at "+al_date+" "+al_time+" UTC"
       end
       if a_ext==false then
+        @post.add_map_image
         res=@post.save
 
         item=Item.new
@@ -189,12 +221,12 @@ class EmailReceive
         item.item_type="post"
         item.item_id=@post.id
         item.save
-        if debug==false then item.send_emails end
+        item.send_emails
       end
       @topic=Topic.find_by_id(topic_id)
         @post.asset_codes.each do |ac| 
         asset_type=Asset.get_asset_type_from_code(ac)
-        if asset_type=='pota park' or asset_type=="POTA" then
+        if posttype=="spot" and asset_type=='pota park' or asset_type=="POTA" then
           puts "DEBUG: sending to POTA"
           success=@post.send_to_pota(debug, user.callsign, @post.callsign, ac, @post.freq, @post.mode, @post.description)
           puts "DEBUG: success = "+success.to_s

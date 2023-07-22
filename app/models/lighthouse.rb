@@ -18,6 +18,7 @@ def self.import(filename)
       p.status=newplace["status"]
       p.str_type=newplace["type"]
       p.location=newplace["WKT"]
+      p.mnz_id=newplace["MNZ_id"]
       p.save
       puts p.name
       puts p.id

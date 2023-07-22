@@ -4,10 +4,34 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
   before_filter :set_cache_headers
   before_filter :log_visit
+  before_action :store_last_index_page
+
 
   include SessionsHelper
   include RgeoHelper
 
+  helper_method :retrieve_last_index_page_or_default
+
+  def store_last_index_page
+    if session[:last_index_page]==nil then 
+      session[:last_index_page]=[] 
+    end
+
+
+    if params[:back] then 
+      session[:last_index_page].pop
+    else
+      if not ["/styles.js","/query","/layerswitcher","/legend"].include?(request.fullpath.split("?").first) then 
+        session[:last_index_page].push(request.fullpath).split("?back=true").first.split("&back=true").first
+      end
+    end
+  end
+
+  def retrieve_last_index_page_or_default(default_path: root_path)
+    if (session[:last_index_page][-2] || default_path).include?("?") then concat_char="&" else concat_char="?" end
+
+    (session[:last_index_page][-2] || default_path)+concat_char+"back=true"
+  end
 
   def signed_in_user
       redirect_to signin_url+"?referring_url="+URI.escape(request.fullpath), notice: "Please sign in." unless signed_in?

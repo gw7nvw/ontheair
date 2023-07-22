@@ -7,7 +7,7 @@ Hello <%= @user.callsign %>
 
 <% if @item.item_type=="post" and @item.end_item.referenced_date then %> UTC: <%=@item.end_item.referenced_date.strftime("%Y-%m-%d")%> <%=if @item.end_item.referenced_time then @item.end_item.referenced_time.strftime("%H:%M") end%><%end%>
 <%if @item.end_item.referenced_date then %>NZT: <%=@item.end_item.referenced_date.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d")%> <%=if @item.end_item.referenced_time then @item.end_item.referenced_time.in_time_zone('Pacific/Auckland').strftime("%H:%M") end%><%end%>
-<% if @item.item_type=="post" and @item.end_item.site then%><%sites=@item.end_item.site.split('; ')%><%sites.each do |site|%>Location: <%=site%>
+<% if @item.item_type=="post" and @item.end_item.asset_codes then maidenhead=Asset.get_maidenhead_from_location(@item.end_item.get_most_accurate_location); @item.end_item.asset_codes.each do |code| asset=Asset.find_by(code: code); if asset then %>Location: <%=asset.name+" ["+asset.code+"] {"+maidenhead+"}"%><%end%>
 <%end%><%end%><%if (@item.end_item.freq and @item.end_item.freq.length>0) or (@item.end_item.mode and @item.end_item.mode.length>0) then%>Frequency: <%= @item.end_item.freq%> - <%= @item.end_item.mode%><%end%>
 
 Posted by: <%=@item.end_item.updated_by_name.upcase%>

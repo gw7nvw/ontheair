@@ -7,6 +7,7 @@ class Asset < ActiveRecord::Base
  after_save {self.add_links}
 
 def assign_calculated_fields
+  if !self.valid_from then self.valid_from=Time.new('1900-01-01') end
   if self.minor!=true then self.minor=false end
 
   if self.code==nil or self.code=="" then
@@ -22,6 +23,18 @@ def assign_calculated_fields
   self.url='assets/'+self.safecode
   #add links
 #  self.add_links
+end
+
+def name_and_location
+  text=self.name+" ["+self.code+"]"
+  if location then text=text+" {"+self.maidenhead+"}" end
+  text
+end
+
+def self.get_maidenhead_from_location(location)
+  a=Asset.new
+  a.location=location
+  a.maidenhead
 end
 
 def maidenhead
@@ -637,12 +650,13 @@ def self.add_lighthouse(p, existing_asset)
        puts "Adding new lighthouse"
     end
     a.asset_type="lighthouse"
-    a.description=(p.loc_type||"").capitalize+" based "+(if p.str_type=="lighthouse" then "lighthouse" else "light/beacon" end)+(if p.status then " ("+p.status+")" else "" end)
+    if a.description=nil or a.description=="" then a.description=(p.loc_type||"").capitalize+" based "+(if p.str_type=="lighthouse" then "lighthouse" else "light/beacon" end)+(if p.status then " ("+p.status+")" else "" end) end
     a.code=p.code
     a.is_active=true
     a.name=p.name
     a.location=p.location 
     a.region=p.region
+    if p.mnz_id != nil and p.mnz_id!="" then a.category="Maritime NZ" end
     if a.name and a.name.length>0 then a.is_active=true else a.is_active=false end
     a.save 
     puts a.code

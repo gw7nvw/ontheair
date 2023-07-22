@@ -173,6 +173,7 @@ def create
     @topic=Topic.find_by_id(params[:topic_id])
     if signed_in? and @topic and (@topic.is_public or current_user.is_admin or (@topic.owner_id==current_user.id and @topic.is_owners)) then
       @post=Post.new(post_params)
+      if @post.callsign==nil or @post.callsign=="" then @post.callsign=current_user.callsign end
       if params[:post][:asset_codes] then 
          @post.asset_codes=params[:post][:asset_codes].upcase.gsub('{','').gsub('}','').split(',')
       end

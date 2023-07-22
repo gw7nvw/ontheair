@@ -14,6 +14,7 @@ before_save { self.before_save_actions }
 
 def before_save_actions
   self.add_child_codes
+  if self.callsign then self.callsign=self.callsign.upcase end
 end
 
 def update_item
@@ -233,7 +234,7 @@ def send_to_pota(debug, from, callsign, a_code, freq, mode, description)
 
         res=http.request(req)
         puts "DEBUG: POTA response"
-        puts res.body
+        puts res.body.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
         pspots=JSON.parse(res.body)
         ourspot=pspots.find { |ps| ps["activator"]==callsign.upcase and ps["reference"]==region.upcase+"-"+subcode and ps["mode"]==mode.upcase and (ps["frequency"]).to_i == ((freq.to_f)*1000).to_i }
         if !ourspot then 
@@ -388,6 +389,35 @@ def send_to_pnp(debug,ac,topic,idate,itime,tzname)
     end
 
     {result: result, messages: messages}
+end
+
+def get_most_accurate_location
+   location=nil
+   loc_point=false
+   accuracy=999999999999
+   self.asset_codes.each do |code|
+     puts "DEBUG: assessing code1 #{code}"
+     assets=Asset.find_by_sql [ " select id, asset_type, location, area from assets where code='#{code}' limit 1" ]
+     if assets then asset=assets.first else asset=nil end
+     if asset then
+       if asset.type.has_boundary then
+         if loc_point==false and asset.area and asset.area<accuracy then
+           location=asset.location
+           accuracy=asset.area
+           loc_point=false
+           puts "DEBUG: Assigning polygon locn"
+         end
+       else
+         if loc_point==true then
+           puts "Multiple POINT locations found for post #{self.id.to_s}"
+         end
+         location=asset.location
+         loc_point=true
+         puts "DEBUG: Assigning point locn"
+       end
+     end
+   end
+   location
 end
 
 end

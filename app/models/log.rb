@@ -600,6 +600,10 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
               if value and value.length>0 and value.strip.length>0 then
                 contact.mode=value.strip
               end
+           when "submode"
+              if value and value.length>0 and value.strip.length>0 then
+                contact.mode=value.strip
+              end
            when "name"
               if value and value.length>0 and value.strip.length>0 then
                 contact.name2=value.strip
