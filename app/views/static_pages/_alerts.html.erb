@@ -40,20 +40,14 @@
         <td><%=if post.referenced_date then link_to post.referenced_date.in_time_zone(@tz.name).strftime("%Y-%m-%d"),'/posts/'+post.id.to_s, remote: true,  :id => 'home', :onclick => "linkHandler('home')"  end%></td>
         <td><%=if post.referenced_time then post.referenced_time.in_time_zone(@tz.name).strftime("%H:%M") end%></td>
         <td><%=if post.duration then post.duration.to_s end%></td>
-        <td><%user=User.find_by_full_callsign(u)%>
-          <% if user then %>
-            <%=link_to u, "users/"+user.callsign, remote: true,  :id => 'link', :onclick => "linkHandler('link')" %>
-          <% else %>
-            <%=u%>
-          <% end %>
-        </td>
+        <td><%=render :partial => 'callsign',  :locals => {:this_callsign => u} %></td>
         <td>
           <% if post.asset_codes and post.asset_codes.count>0 %>
               <% post.asset_codes.each do |code| %>
                 <% asset=Asset.assets_from_code(code) %>
                 <% if asset and asset.count>0 and asset.first[:code]!=nil then %>
                   <% if asset.first[:external] then %>
-                    <%=link_to "["+asset.first[:code]+"] ",asset.first[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">&nbsp
+                    <%=link_to "["+asset.first[:code]+"] ",asset.first[:url], target: "_blank"%><img src="/assets/external-link-symbol-12.png">&nbsp
                   <% else %>
                    <%=link_to "["+asset.first[:code]+"} "+asset.first[:name],asset.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>&nbsp;
                   <% end %>
@@ -85,17 +79,11 @@
       <tr>
         <td><%=alert[:type]%>
         <td><%=alert[:starttime]%></td>
-        <td><%user=User.find_by_full_callsign(alert[:activatingCallsign])%>
-          <% if user then %>
-            <%=link_to alert[:activatingCallsign], "users/"+user.callsign, remote: true,  :id => 'link', :onclick => "linkHandler('link')" %>
-          <% else %>
-            <%=alert[:activatingCallsign]%>
-          <% end %>
-        </td>
+        <td><%=render :partial => 'callsign',  :locals => {this_callsign: alert[:activatingCallsign]} %></td>
         <td><%link=Asset.assets_from_code(alert[:code]) %>
           <% if link and link.first then %>
             <% if link.first[:external] then %>
-             <%=link_to alert[:code],link.first[:url], target: "_blank"%><img src="/assets/external-link-symbol.png"> 
+             <%=link_to alert[:code],link.first[:url], target: "_blank"%><img src="/assets/external-link-symbol-12.png"> 
             <% else %>
              <%=link_to alert[:code],link.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
             <% end %> 

@@ -73,6 +73,90 @@
         </div>
      </div>
    <% end %>
+   <% if @asset.public_access==false %>
+     <div class="erow" id="publicaccess" style='color:#bb0000'">
+        <div class="rowtitle" style='color:#bb0000'><%= "Public access to AZ" %></div>
+        <div class="rowtext" >
+           No
+        </div>
+     </div>
+   <% end %>
+
+   <% if @asset.public_access==true %>
+     <div class="erow" id="publicaccess" style="color:#00bb00">
+        <div class="rowtitle" style="color:#00bb00"><%= "Public access to AZ" %></div>
+        <div class="rowtext">
+           Yes
+        </div>
+     </div>
+   <% end %>
+   <% if @asset.public_access==true %>
+       <% if @asset.access_road_ids !=nil then %>
+         <div class="erow" id="roadids">
+           <div class="rowtitle"></div>
+           <div class="rowtext" style="color:#00bb00"> 
+           Via public road(s): <span style="color:#333">
+             <% unnamed_road=0 %>
+             <% road_names=[] %>
+             <% @asset.access_road_ids.each do |rid| %>
+               <% r=Road.find_by(id: rid) %>
+               <% if r and r.name and r.name.length>0 %>
+                 <% road_names+=[r.name.downcase.titlecase]%>
+               <% else unnamed_road+=1 end %>
+             <% end %>
+             <% if unnamed_road>0 then road_names+=[unnamed_road.to_s+" unnamed road(s)"] end%>
+             <%= road_names.uniq.join('; ') %>
+           </span>
+         </div>
+       </div>
+     <% end %>
+
+     <% if @asset.access_track_ids != nil then %>
+       <div class="erow" id="trackids">
+         <div class="rowtitle"></div>
+         <div class="rowtext" style="color:#00bb00"> 
+           Via DOC track(s): <span style="color:#333">
+             <% unnamed_track=0 %>
+             <% track_names=[] %>
+             <% @asset.access_track_ids.each do |rid| %>
+               <% r=DocTrack.find_by(id: rid) %>
+               <% if r and r.name and r.name.length>0 %>
+                 <% track_names+=[r.name.downcase.titlecase]%>
+               <% else unnamed_track+=1 %>
+               <% end %>
+             <% end %>
+             <% if unnamed_track>0 then track_names+=[unnamed_track.to_s+" unnamed track(s)"] end %>
+             <%= track_names.uniq.join('; ') %>
+           </span>
+         </div>
+       </div>
+     <% end %>
+
+     <% if @asset.access_park_ids != nil then %>
+       <div class="erow" id="parkids">
+         <div class="rowtitle"></div>
+         <div class="rowtext" style="color:#00bb00"> 
+           Via park(s): <span style="color:#333">
+             <% park_names=[] %>
+             <% @asset.access_park_ids.each do |rid| %>
+               <% r=Asset.find_by(id: rid) %>
+               <% park_names+=[r.name] %>
+             <% end %>
+             <%= park_names.uniq.join('; ') %>
+           </span>
+         </div>
+       </div>
+     <% end %>
+
+     <% if @asset.access_road_ids == nil and @asset.access_legal_road_ids != nil then %>
+       <div class="erow" id="legalrods">
+         <div class="rowtitle"></div>
+         <div class="rowtext" style="color:#00bb00"> 
+           Via unformed legal road(s) 
+         </div>
+       </div>
+     <% end %>
+   <% end %>
    <% if @asset.road_distance and @asset.road_distance>0 %>
      <div class="erow" id="name">
         <div class="rowtitle"><%= "Distance from nearest road" %></div>

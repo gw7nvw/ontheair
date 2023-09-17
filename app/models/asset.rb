@@ -1036,5 +1036,71 @@ def self.get_custom_connection(identifier, dbname, dbuser, password)
     return eval("Custom_#{identifier}.connection")
 end
 
+def get_access
+  #roads
+  ActiveRecord::Base.connection.execute("update assets set access_road_ids=(select array_agg(r.id) as road_ids from assets a, roads r where (ST_intersects (a.boundary, r.linestring) or ST_intersects (a.location, r.linestring)) and a.code='#{self.code}') where code='#{self.code}'")
+ 
+  #legal_roads
+  ActiveRecord::Base.connection.execute("update assets set access_legal_road_ids=(select array_agg(r.id) as legal_road_ids from assets a, legal_roads r where (ST_intersects (a.boundary, r.boundary) or ST_intersects (a.location, r.boundary)) and a.code='#{self.code}') where code='#{self.code}'")
+
+  #parks
+  ActiveRecord::Base.connection.execute("update assets set access_park_ids=(select array_agg(r.id) as park_ids from assets a, assets r where (ST_intersects (a.boundary, r.boundary) or ST_intersects (a.location, r.boundary)) and a.code='#{self.code}' and r.asset_type='park') where code='#{self.code}'")
+
+  #tracks
+  ActiveRecord::Base.connection.execute("update assets set access_track_ids=(select array_agg(r.id) as track_ids from assets a, doc_tracks r where (ST_intersects (a.boundary, r.linestring) or ST_intersects (a.location, r.linestring)) and a.code='#{self.code}') where code='#{self.code}'")
+
+  self.reload
+  if self.access_legal_road_ids==nil and self.access_track_ids==nil and self.access_park_ids==nil then 
+    ActiveRecord::Base.connection.execute("update assets set public_access=false where code='#{self.code}'")
+  else
+    ActiveRecord::Base.connection.execute("update assets set public_access=true where code='#{self.code}'")
+  end
+  self.reload
+end
+
+def get_access_with_buffer(buffer)
+  if self.boundary then
+     queryfield='a.boundary'
+  else
+     queryfield='a.location'
+  end
+
+  #roads
+  ActiveRecord::Base.connection.execute("update assets set access_road_ids=(select array_agg(r.id) as road_ids from assets a, roads r where ST_DWithin(ST_Transform(#{queryfield},2193), ST_Transform(r.linestring,2193), #{buffer}) and a.code='#{self.code}') where code='#{self.code}'")
+ 
+  #legal_roads
+  ActiveRecord::Base.connection.execute("update assets set access_legal_road_ids=(select array_agg(r.id) as legal_road_ids from assets a, legal_roads r where ST_DWithin(ST_Transform(#{queryfield},2193), ST_Transform(r.boundary,2193), #{buffer}) and a.code='#{self.code}') where code='#{self.code}'")
+
+  #parks
+  ActiveRecord::Base.connection.execute("update assets set access_park_ids=(select array_agg(r.id) as park_ids from assets a, assets r where ST_DWithin(ST_Transform(#{queryfield},2193), ST_Transform(r.boundary,2193), #{buffer}) and a.code='#{self.code}' and r.asset_type='park') where code='#{self.code}'")
+
+  #tracks
+  ActiveRecord::Base.connection.execute("update assets set access_track_ids=(select array_agg(r.id) as track_ids from assets a, doc_tracks r where ST_DWithin(ST_Transform(#{queryfield},2193), ST_Transform(r.linestring,2193), #{buffer}) and a.code='#{self.code}') where code='#{self.code}'")
+
+  self.reload
+  if self.access_legal_road_ids==nil and self.access_track_ids==nil and self.access_park_ids==nil then 
+    ActiveRecord::Base.connection.execute("update assets set public_access=false where code='#{self.code}'")
+  else
+    ActiveRecord::Base.connection.execute("update assets set public_access=true where code='#{self.code}'")
+  end
+  self.reload
+end
+
+def self.get_sota_access
+  as=Asset.where(asset_type: 'summit')
+  as.each do |a|
+    puts a.code
+    a.get_access
+  end
+end
+
+def self.get_lake_access
+  as=Asset.where(asset_type: 'lake')
+  as.each do |a|
+    puts a.code
+    a.get_access_with_buffer(500)
+  end
+end
+
 end
 

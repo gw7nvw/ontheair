@@ -2,6 +2,12 @@ class Region < ActiveRecord::Base
 
 require 'csv'
 
+def self.add_simple_boundaries
+    ActiveRecord::Base.connection.execute( 'update regions set boundary_simplified=ST_Simplify("boundary",0.002) where boundary_simplified is null;')
+    ActiveRecord::Base.connection.execute( 'update regions set boundary_very_simplified=ST_Simplify("boundary",0.02) where boundary_very_simplified is null;')
+    ActiveRecord::Base.connection.execute( 'update regions set boundary_quite_simplified=ST_Simplify("boundary",0.0002) where boundary_quite_simplified is null;')
+end
+
 
 def self.import(filename)
   h=[]

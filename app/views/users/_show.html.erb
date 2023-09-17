@@ -26,7 +26,7 @@
    <%= render 'flash' %>
 
    <div class="sectiontitle" id="page_title">
-     <%= @user.callsign.upcase %><br/>
+     <b><%=link_to @user.callsign.upcase, 'https://qrz.com/db/'+@user.callsign.upcase, target: "_blank", class: "non_member" %></b> <img src="/assets/external-link-symbol.png"><br/>
      <br/>
    </div>
 

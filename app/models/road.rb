@@ -8,9 +8,9 @@ def self.import(filename)
   CSV.foreach(filename, :headers => true) do |row|
     place=row.to_hash
     wkt=place.first[1]
-    puts place['t250_fid'], place['name_ascii'], wkt.length
+    puts place['t50_fid'], place['name'], wkt.length
     if place  and wkt then
-      ActiveRecord::Base.connection.execute("insert into roads (id, hway_num, lane_count, surface, linestring) values ('"+place['t250_fid']+"','"+(place['hway_num']||"")+"','"+(place['lane_count']||0)+"','"+(place['surface']||"")+"',ST_GeomFromText('"+wkt+"',4326));")
+      ActiveRecord::Base.connection.execute("insert into roads (id, name, linestring) values ('"+place['t50_fid']+"','"+(place['name']||"").gsub("'","")+"',ST_Multi(ST_GeomFromText('"+wkt+"',4326)));")
     end
 
   end; true

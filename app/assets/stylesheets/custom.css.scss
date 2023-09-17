@@ -153,6 +153,11 @@ textarea {
 .tt-input {
     z-index: 9999 !important;
 }
+.non_member {
+   color: #440000;
+   font-style: normal;
+}
+
 .link_to {
    color: #440000;
    border-bottom: 1px dotted;
@@ -273,6 +278,16 @@ p {
 
 
 /* header */
+
+.heading2 { 
+  a {
+    font-size: 1.2em;
+    letter-spacing: -1px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: $gray;
+  }
+}
 
 #main_page{
  width: 100%;

@@ -175,7 +175,7 @@ def create
       @post=Post.new(post_params)
       if @post.callsign==nil or @post.callsign=="" then @post.callsign=current_user.callsign end
       if params[:post][:asset_codes] then 
-         @post.asset_codes=params[:post][:asset_codes].upcase.gsub('{','').gsub('}','').split(',')
+         @post.asset_codes=params[:post][:asset_codes].upcase.gsub('{','').gsub('}','').split(',').map(&:strip)
       end
 
       @post.site=""

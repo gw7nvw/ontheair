@@ -8,10 +8,21 @@
     </li>
   <% end %>
 </ul>
-
 <div id="point_layers">
+<ul style="list-style-type:none;padding:0;margin:0;">
+  <li>
+       <% if params[:territorylayers] and params[:territorylayers].include?("district") then checked=true else checked=false end %>
+    <%=check_box_tag "Districts", "1", checked, :onclick => "site_toggle_district_layer()"%>
+    <%="Districts"%>
+  </li>
+  <li>
+       <% if params[:territorylayers] and params[:territorylayers].include?("region") then checked=true else checked=false end %>
+    <%=check_box_tag "Regions", "1", checked, :onclick => "site_toggle_region_layer()"%>
+    <%="Regions"%>
+  </li>
+</ul>
+
 <h2>Point Layers</h2>
-<% puts params[:pointlayers] %>
 <ul style="list-style-type:none;padding:0;margin:0;">
   <% AssetType.where("name != 'all'").each do |a| %>
     <% if a.has_location then %>
@@ -26,9 +37,9 @@
 <%=  link_to "Apply", '#', class: "btn btn-small btn-primary", :onclick => "site_refresh_layer('point');return(false);" %>
 </div>
 
+
 <div id="polygon_layers">
 <h2>Polygon Layers</h2>
-<% puts params[:poygonlayers] %>
 <ul style="list-style-type:none;padding:0;margin:0;">
   <% AssetType.where("name != 'all'").each do |a| %>
     <% if a.has_boundary then %>

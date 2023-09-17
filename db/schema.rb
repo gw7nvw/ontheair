@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230412190834) do
+ActiveRecord::Schema.define(version: 20230915075218) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -111,6 +111,11 @@ ActiveRecord::Schema.define(version: 20230412190834) do
     t.datetime "valid_from"
     t.datetime "valid_to"
     t.boolean  "is_nzart"
+    t.string   "access_road_ids",                                                         default: [], array: true
+    t.string   "access_legal_road_ids",                                                   default: [], array: true
+    t.string   "access_park_ids",                                                         default: [], array: true
+    t.string   "access_track_ids",                                                        default: [], array: true
+    t.boolean  "public_access"
   end
 
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
@@ -250,7 +255,18 @@ ActiveRecord::Schema.define(version: 20230412190834) do
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.spatial  "boundary",      limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary",                  limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary_quite_simplified", limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary_simplified",       limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
+  end
+
+  create_table "doc_tracks", force: true do |t|
+    t.string   "name"
+    t.string   "object_type"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.spatial  "linestring",  limit: {:srid=>4326, :type=>"multi_line_string"}
   end
 
   create_table "dxcc_prefixes", force: true do |t|
@@ -426,6 +442,12 @@ ActiveRecord::Schema.define(version: 20230412190834) do
     t.datetime "updated_at"
   end
 
+  create_table "legal_roads", force: true do |t|
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.spatial  "boundary",   limit: {:srid=>4326, :type=>"multi_polygon"}
+  end
+
   create_table "lighthouses", force: true do |t|
     t.string   "t50_fid"
     t.string   "loc_type"
@@ -565,16 +587,17 @@ ActiveRecord::Schema.define(version: 20230412190834) do
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.spatial  "boundary",   limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary",                  limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary_quite_simplified", limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary_simplified",       limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
   end
 
   create_table "roads", force: true do |t|
-    t.string   "hway_num"
-    t.integer  "lane_count"
-    t.string   "surface"
+    t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.spatial  "linestring", limit: {:srid=>4326, :type=>"line_string"}
+    t.spatial  "linestring", limit: {:srid=>4326, :type=>"multi_line_string"}
   end
 
   create_table "sessions", force: true do |t|

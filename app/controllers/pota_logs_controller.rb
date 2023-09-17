@@ -49,9 +49,10 @@ def show
         if p[:asset] then las=p[:asset].linked_assets_by_type('pota park') end
         if las and las.count>0 then other_park_code=las.first.code end
       end
-
-      if contact.band.length>0 and contact.adif_mode.length>0 and contact.time and contact.time.strftime("%H%M").length==4 and not ((callsigns.include? other_callsign) and (not other_park_code))  then
-        callsigns.push(other_callsign)
+      
+      unique_details=other_callsign+"|"+contact.band+"|"+contact.mode
+      if contact.band.length>0 and contact.adif_mode.length>0 and contact.time and contact.time.strftime("%H%M").length==4 and not ((callsigns.include? unique_details) and (not other_park_code))  then
+        callsigns.push(unique_details)
         if contact.is_portable2 and other_callsign[-2..-1]!="/P" then other_callsign+="/P" end
         @pota_log+="<call:"+other_callsign.length.to_s+">"+other_callsign
         @pota_log+="<station_callsign:"+@user.callsign.length.to_s+">"+@user.callsign
@@ -63,7 +64,7 @@ def show
         if other_park_code then @pota_log+="<sig_info:"+other_park_code.length.to_s+">"+other_park_code end
         @pota_log+="<eor>\n"
       else 
-        if ((callsigns.include? other_callsign) and (not other_park_code)) then 
+        if ((callsigns.include? unique_details) and (not other_park_code)) then 
           @duplicate_contacts.push(contact)
         else 
           errors=""
@@ -94,6 +95,10 @@ def download
     contact.submitted_to_pota=true
     contact.save
   end
+  @duplicate_contacts.each do |contact|
+    contact.submitted_to_pota=true
+    contact.save
+  end
 
   respond_to do |format|
     format.adi {
@@ -111,6 +116,10 @@ def send_email
       UserMailer.pota_log_submission(@user,@park,@logdate,@filename,@pota_log,@address).deliver
       #UserMailer.pota_log_submission(@user,@park,@logdate,@filename,@pota_log,"mattbriggs@yahoo.com").deliver
       @contacts.each do |contact|
+        contact.submitted_to_pota=true
+        contact.save
+      end
+      @duplicate_contacts.each do |contact|
         contact.submitted_to_pota=true
         contact.save
       end

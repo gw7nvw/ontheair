@@ -45,6 +45,7 @@ def show
     @wwff_log=""
     @invalid_contacts=[]
     @contacts=wwff_log[:contacts]  
+    @dups=wwff_log[:dups]  
     lastdate='19000101'
     wwff_log[:contacts].each do |contact|
       other_park=nil
@@ -85,6 +86,7 @@ def show
     @address=""
     if callnumber then 
       @address="simmopa@iprimus.com.au"
+      #@address="mattbriggs@yahoo.com"
     end
     @logdate=params[:date]
     @park=park
@@ -102,6 +104,16 @@ def send_email
       #UserMailer.wwff_log_submission(@user,@park,@filename,@wwff_log,@address).deliver
       UserMailer.wwff_log_submission(@user,@park,@filename,@wwff_log,@address).deliver
       @contacts.each do |contact|
+        contact.submitted_to_wwff=true
+        contact.save
+      end
+      #also mark duplicates and invalds as sent so as not to retry them next time
+      @dups.each do |contact|
+        contact.submitted_to_wwff=true
+        contact.save
+      end
+      @invalid_contacts.each do |ic|
+        contact=ic[:contact]
         contact.submitted_to_wwff=true
         contact.save
       end

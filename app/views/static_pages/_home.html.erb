@@ -36,8 +36,8 @@
 
 <% if signed_in? and @items and @items.count>0 then %>
   <h2>
-    <%=link_to "What's New", '/topics/4',  remote: true,:onclick => "linkHandler('more')"%> 
-    <%=  link_to "Hide", 'ack_news', remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler('acklink')"%>
+    <span class="heading2"><%=link_to "What's New", '/topics/4',  remote: true,:onclick => "linkHandler('more')"%></span>
+    <%=link_to "Hide", 'ack_news', remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler('acklink')"%>
   </h2>
 
   <% @items.each do |item| %>
@@ -71,13 +71,21 @@
      </div>
   </div>
 
-  <h2>
-    <%= link_to 'Latest ZL / VK Spots', '/spots', remote: true,:onclick => "linkHandler('results')"%>
-    <%=  link_to "Auto-Refresh", '/spots', remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler('refresh_link')"%>
-  </h2>
+  <div>
+    <span class="heading2"><%= link_to 'Latest Oceania Spots', '/spots', remote: true, :onclick => "linkHandler('results')"%></span>
+    <i><%=  link_to "More (with auto-refresh)...", '/spots', remote: true, :onclick => "linkHandler('refresh_link')"%></i>
+  </div>
   <% @all_spots=@all_spots[0..9] %>
   <%=render 'spot_list'%>
-  <h2><%=link_to "Top ten", '/results',  remote: true,:onclick => "linkHandler('results')"%></h2>
+  
+  <div class="erow">
+     <div class="hrline">
+        <hr noshade size="4">
+     </div>
+  </div>
+
+  <span class="heading2"><%=link_to "Top ten", '/results',  remote: true, :onclick => "linkHandler('results')"%></span>
+  <i><%=link_to "More ...", '/results',  remote: true, :onclick => "linkHandler('results')"%></i>
 
   <div class="erow">
      <div class="hrline">
@@ -94,7 +102,9 @@
      </div>
   </div>
 
-  <h2><%=link_to "Recent Activity", '/recent',  remote: true,:onclick => "linkHandler('recent')"%></h2>
+  <span class="heading2"><%=link_to "Recent Activity", '/recent', remote: true,:onclick => "linkHandler('recent')"%></span>
+  <i><%=link_to "More ...", '/recent', remote: true,:onclick => "linkHandler('recent')"%></i>
+
 
   <%=render 'logs/list' %>
 

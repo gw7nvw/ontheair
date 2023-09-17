@@ -2,6 +2,7 @@ LINZ_API_KEY='d01gerrwb5fqmwwhpx3s65p62hj'
 var site_map_size=1;
 var contacts_layer;
 var site_show_polygon=true;
+var site_territory_layers=[];
 var site_map_pinned=false;
 var site_show_controls=true;
 var site_back = false;
@@ -20,6 +21,12 @@ var site_current_style=null;
 var site_current_click_layer=null;
 
 //layers
+var district_layer;
+var region_layer;
+var district_simple_layer;
+var region_simple_layer;
+var district_detail_layer;
+var region_detail_layer;
 var polygon_layer;
 var polygon_simple_layer;
 var polygon_detail_layer;
@@ -31,14 +38,18 @@ var site_default_polygon_layers=[]
 
 //styles
 var site_docland_style;
+var site_district_style;
+var site_region_style;
 var site_island_style;
 var site_lake_style;
+var site_public_lake_point_style;
 var site_lake_point_style;
 var site_island_point_style;
 var site_parks_style;
 var site_beacon_style;
 var site_huts_style;
 var site_summits_style;
+var site_public_summits_style;
 var site_contacts_style;
 var site_highlight_polygon;
 var site_red_polygon;
@@ -50,6 +61,16 @@ var site_red_circle;;
 var site_green_circle;
 var site_docland_styles=[];
 
+Array.prototype.remove = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};
 
 function site_init() {
   if(typeof(map_map)=='undefined') {
@@ -248,8 +269,10 @@ function site_docland_style_function(feature, resoluton) {
 
 function site_points_style_function(feature, resoluton) {
   if(feature.get('asset_type')=="hut")  return site_huts_style;
+  if((feature.get('asset_type')=="lake") && (feature.get('public_access')=='t')) return site_public_lake_point_style;
   if(feature.get('asset_type')=="lake")  return site_lake_point_style;
   if(feature.get('asset_type')=="island")  return site_island_point_style;
+  if((feature.get('asset_type')=="summit") && (feature.get('public_access')=='t')) return site_public_summits_style;
   if(feature.get('asset_type')=="summit")  return site_summits_style;
   if(feature.get('asset_type')=="lighthouse")  return site_beacon_style;
   if(feature.get('asset_type')=="park")  return site_park_point_style;
@@ -263,11 +286,23 @@ function site_add_vector_layers() {
   polygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon",site_polygon_style_function,true,12,15,'polygon');
   polygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_simple",site_polygon_style_function,true,9,12,'polygon');
   polygon_detail_layer=map_add_vector_layer("Polygon Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_detail",site_polygon_style_function,true,15,32,'polygon');
+  district_layer=map_add_vector_layer("District", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district",site_district_style,false,12,15);
+  district_simple_layer=map_add_vector_layer("District Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_simple",site_district_style,false,7,12);
+  district_detail_layer=map_add_vector_layer("District Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_detail",site_district_style,false,15,32);
+  region_layer=map_add_vector_layer("Region", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region",site_region_style,false,12,15);
+  region_simple_layer=map_add_vector_layer("Region Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_simple",site_region_style,false,7,12);
+  region_detail_layer=map_add_vector_layer("Region Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_detail",site_region_style,false,15,32);
 
   site_set_map_filters('point',site_default_point_layers);
   points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,7,32,'point');
   contacts_layer=map_add_vector_layer("Contacts", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "contacts",site_contacts_style,false,1,32);
 
+  map_map.addLayer(district_layer);
+  map_map.addLayer(district_simple_layer);
+  map_map.addLayer(district_detail_layer);
+  map_map.addLayer(region_layer);
+  map_map.addLayer(region_simple_layer);
+  map_map.addLayer(region_detail_layer);
   map_map.addLayer(polygon_layer);
   map_map.addLayer(polygon_simple_layer);
   map_map.addLayer(polygon_detail_layer);
@@ -325,12 +360,16 @@ function site_init_styles() {
   site_pota_point_style=map_create_style("x", 6, "#770077", "#770077", 1);
   site_wwff_point_style=map_create_style("x", 6, "#994499", "#994499", 1);
   site_island_point_style=map_create_style("triangle", 4, "#ff8c00", "#ff8c00", 1);
-  site_lake_point_style=map_create_style("x", 6, "#0000ff", "#0000dd", 1);
+  site_lake_point_style=map_create_style("x", 6, "#3366ff", "#3366ff", 1);
+  site_public_lake_point_style=map_create_style("x", 6, "#0000cc", "#0000cc", 1);
   site_beacon_style=map_create_style("triangle", 6, "#ffff00", "#ffff00", 1);
-  site_summits_style=map_create_style("triangle", 4, "#6c0dc4", "#6c0dc4", 1);
+  site_summits_style=map_create_style("triangle", 4, "#cc66ff", "#cc66ff", 1);
+  site_public_summits_style=map_create_style("triangle", 4, "#6600cc", "#6600cc", 1);
   site_contacts_style=map_create_style("circle", 4, "#2222ff", "#22ffff", 1);
   site_highlight_polygon=map_create_style("", null, 'rgba(128,0,0,0.3)', "#660000", 2);
   site_red_polygon=map_create_style("", null, 'rgba(256,0,0,0.6)', "#880000", 2);
+  site_district_style=map_create_style("", null, 'rgba(0,0,0,0.0)', "#880088", 4);
+  site_region_style=map_create_style("", null, 'rgba(0,0,0,0.0)', "#AA0044", 4);
   site_green_polygon=map_create_style("", null, 'rgba(0,256,0,0.6)', "#008800", 2);
   site_pota_style=map_create_style('',0, 'rgba(128,0,128,0.2)', "#900090", 2);
   site_wwff_style=map_create_style('',0, 'rgba(150,30,150,0.2)', "#901090", 2);
@@ -909,7 +948,7 @@ function site_mapLayers() {
           },
           type: "GET",
           timeout: 60000,
-          url: "/layerswitcher?baselayer="+map_current_layer+"&pointlayers=["+site_map_layers.point+"]&polygonlayers=["+site_map_layers.polygon+"]",
+          url: "/layerswitcher?baselayer="+map_current_layer+"&pointlayers=["+site_map_layers.point+"]&polygonlayers=["+site_map_layers.polygon+"]&territorylayers=["+site_territory_layers+"]",
           error: function() {
               document.getElementById("info_details2").innerHTML = 'Error contacting server';
           },
@@ -936,6 +975,34 @@ function site_toggle_vector_layers(filter, layer) {
     site_map_layers[filter].push(layer);
   }; 
   site_set_map_filters(filter,site_map_layers[filter]);
+}
+
+function site_toggle_region_layer() { 
+  if (site_territory_layers.includes("region")) {
+    region_layer.setVisible(false);
+    region_simple_layer.setVisible(false);
+    region_detail_layer.setVisible(false);
+    site_territory_layers.remove("region");
+  } else {
+    region_layer.setVisible(true);
+    region_simple_layer.setVisible(true);
+    region_detail_layer.setVisible(true);
+    site_territory_layers.push("region");
+  }
+}
+
+function site_toggle_district_layer() { 
+  if (site_territory_layers.includes("district")) {
+    district_layer.setVisible(false);
+    district_simple_layer.setVisible(false);
+    district_detail_layer.setVisible(false);
+    site_territory_layers.remove("district");
+  } else {
+    district_layer.setVisible(true);
+    district_simple_layer.setVisible(true);
+    district_detail_layer.setVisible(true);
+    site_territory_layers.push("district");
+  }
 }
 
 function site_clear_vector_layers(filter, layer) { 

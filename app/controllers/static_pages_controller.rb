@@ -115,7 +115,11 @@ class StaticPagesController < ApplicationController
       @hota_spots=[]
       items.each do |i|
         p=Post.find(i.item_id)
-        if p and p.referenced_date and p.referenced_date>Time.now.to_date-1.days then @hota_spots.push(p) end
+        if p and p.referenced_date and p.referenced_date>Time.now.to_date-1.days then 
+        if (p.referenced_time and p.referenced_time>Time.now-1.hours) or not p.referenced_time then
+          @hota_spots.push(p)
+        end
+      end
       end
      
       @hota_spots.each do |post|

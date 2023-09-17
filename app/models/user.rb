@@ -465,6 +465,7 @@ def authenticated?(attribute, token)
      contact_count=contacts1.count
      ids=[]
      contacts=[]
+     dups=[]
      contacts1.each do |contact| ids.push({id: contact.user2_id,date: contact.date.to_date, band: contact.band}) end
      ids=ids.uniq
      contacts_count=ids.count
@@ -477,16 +478,17 @@ def authenticated?(attribute, token)
        bands=[]
        contacts1.each do |c|
        #if contacts1 and contacts1.count>0 then 
-         if !bands.include?(c.band) then
+         if !bands.include?(c.band+"|"+c.mode) then
            contacts.push(c)
-           bands.push(c.band)
+           bands.push(c.band+"|"+c.mode)
          else
            puts "Dropping "+c.callsign1+" "+c.callsign2+" "+c.date.to_date.to_s+" "+c.band 
+           dups.push(c)
          end
        end
      end
      
-     if contacts_count>0 then wwff_logs.push({park: park, count: contacts_count, contacts: contacts.sort_by{|c| c.date}}) end
+     if contacts_count>0 then wwff_logs.push({park: park, count: contacts_count, contacts: contacts.uniq.sort_by{|c| c.date}, dups: dups.uniq}) end
    end
   wwff_logs
   end
