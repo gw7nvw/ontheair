@@ -48,6 +48,7 @@ def new
         @post.title=@post.callsign+" spotted portable" 
       end
     end
+    if params[:code] then @post.asset_codes=[params[:code].gsub('_','/')] end
 end
 
 def edit
@@ -168,6 +169,8 @@ def update
 end
 
 def create
+    invalid=false
+    errors=""
     @tz=Timezone.find_by_id(current_user.timezone||3)
     if params[:debug] then debug=true else debug=false end
     @topic=Topic.find_by_id(params[:topic_id])
@@ -186,8 +189,13 @@ def create
       @post.created_by_id = current_user.id #current_user.id
       @post.updated_by_id = current_user.id #current_user.id
       if @topic.is_alert then
-        @post.referenced_time=(params[:post][:referenced_date]+" "+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC').to_time
-        @post.referenced_date=(params[:post][:referenced_date]+" "+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC').to_time
+        if params[:post][:referenced_date] and params[:post][:referenced_date].length>0 and params[:post][:referenced_time] and params[:post][:referenced_time].length>0 then
+          @post.referenced_time=(params[:post][:referenced_date]+" "+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC').to_time
+          @post.referenced_date=(params[:post][:referenced_date]+" "+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC').to_time
+        else
+          invalid=true
+          errors+="Date / time are required; "
+        end
       end
 
       if @topic.is_spot then 
@@ -201,7 +209,7 @@ def create
       @topic.last_updated = Time.now
 
 
-      if debug or (!debug and @post.save) then
+      if !invalid and (debug or (!debug and @post.save)) then
         if @topic.is_spot or @topic.is_alert then
            @post.add_map_image
         end
@@ -230,7 +238,8 @@ def create
           render 'show'
         end
       else
-        flash[:error] = "Error creating post"
+        errors="Error creating post: "+errors
+        flash[:error] = errors
         @edit=true
         render 'new'
       end
@@ -242,7 +251,7 @@ end
 
   private
   def post_params
-    params.require(:post).permit(:title, :description, :image, :do_not_publish, :duration, :is_hut, :is_park, :is_island,:is_summit, :site, :freq, :mode, :hut, :park, :island, :summit, :callsign, :asset_codes)
+    params.require(:post).permit(:title, :description, :image, :do_not_publish, :duration, :is_hut, :is_park, :is_island,:is_summit, :site, :freq, :mode, :hut, :park, :island, :summit, :callsign, :asset_codes, :do_not_lookup)
   end
 
 end

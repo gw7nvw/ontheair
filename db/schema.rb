@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230915075218) do
+ActiveRecord::Schema.define(version: 20231223033245) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -116,6 +116,7 @@ ActiveRecord::Schema.define(version: 20230915075218) do
     t.string   "access_park_ids",                                                         default: [], array: true
     t.string   "access_track_ids",                                                        default: [], array: true
     t.boolean  "public_access"
+    t.integer  "az_radius"
   end
 
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
@@ -169,6 +170,14 @@ ActiveRecord::Schema.define(version: 20230915075218) do
     t.boolean  "all_region"
     t.boolean  "all_programme"
     t.boolean  "p2p"
+  end
+
+  create_table "comments", force: true do |t|
+    t.text     "comment"
+    t.string   "code"
+    t.integer  "updated_by_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "contacts", force: true do |t|
@@ -489,6 +498,7 @@ ActiveRecord::Schema.define(version: 20230915075218) do
     t.spatial  "location1",      limit: {:srid=>4326, :type=>"point"}
     t.string   "asset_codes",                                          default: [],   array: true
     t.integer  "user_id"
+    t.boolean  "do_not_lookup"
   end
 
   create_table "maplayers", force: true do |t|
@@ -560,6 +570,7 @@ ActiveRecord::Schema.define(version: 20230915075218) do
     t.string   "callsign"
     t.string   "asset_codes",         default: [], array: true
     t.integer  "user_id"
+    t.boolean  "do_not_lookup"
   end
 
   create_table "pota_parks", force: true do |t|
@@ -619,6 +630,21 @@ ActiveRecord::Schema.define(version: 20230915075218) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "user_id"
+    t.integer  "sota_activation_id"
+  end
+
+  create_table "sota_chases", force: true do |t|
+    t.string   "callsign"
+    t.string   "summit_code"
+    t.integer  "summit_sota_id"
+    t.integer  "user_id"
+    t.integer  "sota_activation_id"
+    t.string   "band"
+    t.string   "mode"
+    t.date     "date"
+    t.time     "time"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "sota_peaks", force: true do |t|

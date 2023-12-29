@@ -1,0 +1,17 @@
+     <div class="bordered_box">
+        <div class="box_header">
+           <%= link_to @comment.updated_by_name, '/users/'+@comment.updated_by_name,remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
+           <%=if @comment.updated_at > @comment.created_at then " updated comment on " else " commented on  " end %>
+           <%= if @comment.code then link_to @comment.code, '/assets/'+@comment.code.gsub('/','_'),remote: true,  :id => 'user', :onclick => "linkHandler('user')" else "nothing " end%>&nbsp;
+           <%=if @comment.updated_at then @comment.updated_at.in_time_zone(@tz.name).strftime("%Y-%m-%d") else "" end%>
+
+           <% if (current_user.id==@comment.updated_by_id or current_user.is_admin) then %>
+             <%=  link_to "Edit", '/comments/'+@comment.id.to_s+'/edit', class: 'link_to', remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
+             <%= link_to "Delete", '/comments/'+@comment.id.to_s+'/delete', confirm: "Delete comment: Are you sure?", class: 'link_to', remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+           <% end %>
+         </div>
+         <div class="box_contents">
+           <div class="sectiontext"><%=raw (@comment.comment).gsub(/(?<=<style type=\"text\/css\">).+(?=<\/style>)/m,'')%></div>
+         </div>
+     </div>
+

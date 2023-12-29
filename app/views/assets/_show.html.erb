@@ -73,8 +73,16 @@
         </div>
      </div>
    <% end %>
+   <% if @asset.az_radius and @asset.az_radius>0 %>
+     <div class="erow" id="name">
+        <div class="rowtitle"><%= "Radius of Activation Zone" %></div>
+        <div class="rowtext"> 
+          <%= @asset.az_radius %>km
+        </div>
+     </div>
+   <% end %>
    <% if @asset.public_access==false %>
-     <div class="erow" id="publicaccess" style='color:#bb0000'">
+     <div class="erow" id="publicaccess" style='color:#bb0000'>
         <div class="rowtitle" style='color:#bb0000'><%= "Public access to AZ" %></div>
         <div class="rowtext" >
            No
@@ -258,7 +266,7 @@
    <% if c then %>
      <div class="erow" id="doc">
        <div class="rowtitle"><%= "First activation" %></div>
-       <% if c.id>0 then%>
+       <% if c.callsign2!=nil then%>
          <div class="textext"><%=link_to c.callsign1+' -> '+c.callsign2+c.time.strftime(' (%Y-%m-%d)'), '/contacts/'+c.id.to_s, remote: true, :onclick => "linkHandler('first')" %></div>
        <% else %>
          <div class="textext"><%= c.callsign1+' -> '+c.callsign2+c.time.strftime(' (%Y-%m-%d)')%></div>
@@ -317,11 +325,11 @@
 
    <div class="sectiontitle_bold">Chased by:</div>
    <div class="erow">
-     <% if not @asset.chasers or (@asset.chasers and @asset.chasers.count==0) then %>
+     <% if not @asset.chasers_including_sota or (@asset.chasers_including_sota and @asset.chasers_including_sota.count==0) then %>
         <i>No-one has chased this place yet. Be the first!</i></br>
      <% end %>
 
-     <% @asset.chasers.each do |user| %>
+     <% @asset.chasers_including_sota.each do |user| %>
          <%=link_to user.callsign, '/users/'+user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp
      <% end %>
    </div> 
@@ -336,6 +344,7 @@
          <%=link_to user.callsign, '/users/'+user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp
      <% end %>
    </div> 
+   <div class="sectiontitle_bold">Logged here:</div>
    <div class="erow">
      <% if @asset.logs and @asset.logs.count>0 then %>
          <b><%=@asset.activations.to_s+" Activations "%><%=link_to "(View)", '/logs/?asset='+@asset.safecode+"&user=ALL", remote: true,  :id => 'user', :onclick => "linkHandler('logs')" %></b>
@@ -346,6 +355,8 @@
    </div>
    <% if write_access? %>
             <%=  link_to "Add Contacts", '/logs/new?asset1='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+            <%=  link_to "Add Spot", '/posts/new?topic_id='+SPOT_TOPIC.to_s+'&code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+            <%=  link_to "Add Alert", '/posts/new?topic_id='+ALERT_TOPIC.to_s+'&code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
    <% end %>
 
    <div class="erow">
@@ -401,8 +412,45 @@
      </tr>
    <% end %>
    </table>
-
 <% end %>
+
+
+   <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+   </div>
+   <div class="erow">
+     <div class="sectiontitle_bold">Comments</div>
+   </div>
+
+   <% if @comments.count==0 %>
+     <p><i>No-one has commented yet, be the first! </i><p>
+   <% end %>
+
+   <% @comments.each do |comment|%>
+     <div class="bordered_box">
+        <div class="box_header">
+           <%= link_to comment.updated_by_name, '/users/'+comment.updated_by_name,remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
+           <%=if comment.updated_at > comment.created_at then " updated comment " else " commented " end %>
+           <%=if comment.updated_at then comment.updated_at.in_time_zone('UTC').strftime("%Y-%m-%d") else "" end%>
+
+           <% if (current_user.id==comment.updated_by_id or current_user.is_admin) then %>
+             <%=  link_to "Edit", '/comments/'+comment.id.to_s+'/edit', class: 'link_to', remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
+             <%= link_to "Delete", '/comments/'+comment.id.to_s+'/delete', confirm: "Delete post: Are you sure?", class: 'link_to', remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+           <% end %>
+         </div>
+         <div class="box_contents">
+           <div class="sectiontext"><%=raw (comment.comment).gsub(/(?<=<style type=\"text\/css\">).+(?=<\/style>)/m,'')%></div>
+         </div>
+     </div>
+  <% end %>
+  <div class="erow">
+     <% if write_access? then %>
+       <%=link_to "Add Comment", '/comments/new?asset='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('comment')" %>
+     <% end %>
+   </div>
+
 
 <script>
     document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;

@@ -205,6 +205,10 @@ end
 def update
  if signed_in? and (current_user.is_admin or current_user.id == params[:id].to_i) then
    if params[:commit]=="Delete" then
+      callsigns = UserCallsign.where(user_id: params[:id].to_i)
+      callsigns.each do |c|
+         c.destroy
+      end
       user = User.find_by_id(params[:id].to_i)
       if user and user.destroy then
         flash[:success] = "User deleted, callsign:"+params[:id]

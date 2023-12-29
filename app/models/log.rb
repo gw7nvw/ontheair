@@ -11,6 +11,7 @@ class Log < ActiveRecord::Base
     self.check_codes_in_location
     self.get_most_accurate_location
     self.remove_suffix
+    self.callsign1=self.callsign1.strip.upcase
   end
 
   def add_user_ids
@@ -75,7 +76,26 @@ class Log < ActiveRecord::Base
   end
 
   def add_child_codes
-    self.asset_codes=self.get_all_asset_codes
+    self.replace_master_codes
+    if !self.do_not_lookup==true then
+      self.asset_codes=self.get_all_asset_codes
+      self.replace_master_codes
+    end
+  end
+
+  def replace_master_codes
+    newcodes=[]
+    self.asset_codes.each do |code|
+      a=Asset.find_by(code: code)
+
+      if a and a.is_active==false
+        if a.master_code then
+          code=a.master_code
+        end
+      end
+      newcodes+=[code]
+    end
+    self.asset_codes=newcodes.uniq
   end
 
   def get_all_asset_codes
@@ -198,7 +218,7 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
   skip_count=0
   lines.each do |line|
     fields=line.split(',')
-    if fields[0]=='V2' and fields.count>=9 then
+    if fields[0].upcase=='V2' and fields.count>=9 then
       contact=Contact.new
       protolog=Log.new
       if user then 
@@ -475,7 +495,7 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
            len=key.split(':')[1]
            value=parm.split('>')[1]
            if len then value=value[0..len-1] end
-           #puts "DEBUG: "+key.downcase
+           puts "DEBUG: "+key.downcase
            case (key.downcase)
  
            when "station_callsign"
@@ -498,6 +518,16 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
               if value and value.length>0 and value.strip.length>0 then
                 protolog.date=value.strip
                 contact.date=value.strip
+              end
+           when "my_wwff_ref"
+              if value and value.length>0 and value.strip.length>0 then
+                values=value.split(',')
+                values.each do |val|
+                  protolog.asset_codes.push(val.strip)
+                  contact.asset1_codes.push(val.strip)
+                  protolog.is_portable1=true
+                  contact.is_portable1=true
+                end
               end
            when "my_sota_ref"
               if value and value.length>0 and value.strip.length>0 then
@@ -624,6 +654,14 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
                 contact.power2=value.strip
                 if value.strip.to_f<=10 then 
                   contact.is_qrp2=true
+                end
+              end
+           when "wwff_ref"
+              if value and value.length>0 then
+                values=value.split(',')
+                values.each do |val|
+                  contact.asset2_codes.push(val.strip)
+                  contact.is_portable2=true
                 end
               end
            when "sota_ref"

@@ -88,46 +88,5 @@ def word_wrap(txt, line_length)
     end * "\n"
 end
 
-def send_alert_to_pnp(params,dbtext)
-              uri = URI('http://parksnpeaks.org/api/ALERT'+dbtext)
-              http=Net::HTTP.new(uri.host, uri.port)
-              req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
-              req.body = params.to_json
-              res = http.request(req)
-#              flash[:error]="Sorry - sending spots to PnP not yet implemented"
-
-              puts res
-              puts res.body
-              res
-end
-
-def send_spot_to_pnp(params,dbtext)
-              uri = URI('http://parksnpeaks.org/api/SPOT'+dbtext)
-puts "DEBUG: http://parksnpeaks.org/api/SPOT"+dbtext
-              http=Net::HTTP.new(uri.host, uri.port)
-              req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
-              req.body = params.to_json
-              res = http.request(req)
-
-              puts res
-              puts res.body
-              res
-end
-
-def send_spot_to_pota(params,dbtext)
-              uri = URI('https://api.pota.app/spot'+dbtext)
-puts "DEBUG: https://api.pota.app/spot"+dbtext
-              http=Net::HTTP.new(uri.host, uri.port)
-              http.use_ssl=true
-              http.verify_mode=OpenSSL::SSL::VERIFY_NONE
-
-              req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
-              req.body = params.to_json
-              res = http.request(req)
-
-              puts res
-              puts res.body
-              res
-end
 
 end

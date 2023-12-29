@@ -7,7 +7,7 @@ VALID_NAME_REGEX = /\A[a-zA-Z\d\s]*\z/i
 validates :callsign,  presence: true, length: { maximum: 50 },
                 format: { with: VALID_NAME_REGEX }
 
-before_save { self.callsign = callsign.upcase }
+before_save { self.callsign = callsign.strip.upcase }
 
 # Check is callsign is unique for sepcified period
 # -> If unique: PASS

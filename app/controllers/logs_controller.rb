@@ -257,7 +257,7 @@ def edit
   if !@log then @log = Log.find_by_id(params[:id]) end
   if @log then @user=User.find_by_callsign_date(@log.callsign1.upcase,@log.date) end
 
-  if @log and current_user and (current_user.id==@user.id or current_user.is_admin) then
+  if @log and current_user and ((@user and current_user.id==@user.id) or current_user.is_admin) then
     @contacts = Contact.where(log_id: @log.id).order(:time)
     @contacts.each do |c|  
       c.timetext=c.localtime(current_user)
@@ -378,7 +378,7 @@ end
 
 private
   def log_params
-      params.require(:log).permit(:id, :callsign1, :user1_id, :power1, :signal1, :transceiver1, :antenna1, :comments1, :location1, :park1, :date, :time, :timezone,  :frequency, :mode, :loc_desc1,:x1, :y1, :altitude1, :location1,  :is_active, :hut1_id, :park1_id, :island1_id, :is_qrp1, :is_portable1, :summit1_id, :asset_codes)
+      params.require(:log).permit(:id, :callsign1, :user1_id, :power1, :signal1, :transceiver1, :antenna1, :comments1, :location1, :park1, :date, :time, :timezone,  :frequency, :mode, :loc_desc1,:x1, :y1, :altitude1, :location1,  :is_active, :hut1_id, :park1_id, :island1_id, :is_qrp1, :is_portable1, :summit1_id, :asset_codes, :do_not_lookup)
 end
 
   def upload_params

@@ -5,6 +5,7 @@ class ApplicationController < ActionController::Base
   before_filter :set_cache_headers
   before_filter :log_visit
   before_action :store_last_index_page
+#  before_action :check_resque_workers
 
 
   include SessionsHelper

@@ -13,7 +13,10 @@ after_save :update_item
 before_save { self.before_save_actions }
 
 def before_save_actions
+  self.replace_master_codes
   self.add_child_codes
+  #again to vet child codes added
+  self.replace_master_codes
   if self.callsign then self.callsign=self.callsign.upcase end
 end
 
@@ -49,7 +52,7 @@ end
   end
 
   def asset_code_names
-    if self.asset_codes then asset_names=self.asset_codes.map{|ac| asset=Asset.assets_from_code(ac).first; "["+asset[:code]+"] "+asset[:name]} else asset_names=[] end
+    if self.asset_codes then asset_names=self.asset_codes.map{|ac| asset=Asset.assets_from_code(ac).first; if asset then "["+asset[:code]+"] "+asset[:name] else "" end} else asset_names=[] end
     if !asset_names then asset_names=[] end
     asset_names
   end
@@ -130,9 +133,27 @@ def item
   item
 end
 
+  def replace_master_codes
+    newcodes=[]
+    self.asset_codes.each do |code|
+      a=Asset.find_by(code: code)
+
+      if !a and (!(self.description||"").include?("Unknown location: "+code)) then self.description=(self.description||"")+"; Unknown location: "+code end
+      if a and a.is_active==false
+        if a.master_code then 
+          code=a.master_code
+        end
+      end
+      newcodes+=[code]
+    end 
+    self.asset_codes=newcodes.uniq
+  end
+
   def add_child_codes
-    if self.asset_codes then
+    if !self.do_not_lookup==true then
+      if self.asset_codes then
        self.asset_codes=self.get_all_asset_codes
+      end
     end
   end
 
@@ -231,16 +252,22 @@ def send_to_pota(debug, from, callsign, a_code, freq, mode, description)
 #        req = Net::HTTP::Get.new("#{url.path}?".concat(payloadspot.collect { |k,v| "#{k}=#{CGI::escape(v.to_s)}" }.join('&')), 'Content-Type' => 'application/json' )
         req = Net::HTTP::Post.new("#{url.path}?", 'Content-Type' => 'application/json' )
         req.body=payloadspot.to_json
-
-        res=http.request(req)
-        puts "DEBUG: POTA response"
-        puts res.body.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
-        pspots=JSON.parse(res.body)
-        ourspot=pspots.find { |ps| ps["activator"]==callsign.upcase and ps["reference"]==region.upcase+"-"+subcode and ps["mode"]==mode.upcase and (ps["frequency"]).to_i == ((freq.to_f)*1000).to_i }
-        if !ourspot then 
-           result=false
-           puts "DUBUG: spot not accepted by POTA"
-           messages="Spot not accepted by POTA for: "+a_code+"; "
+        begin
+          res=http.request(req)
+        rescue
+          puts "Send to POTA failed"
+          result=false
+          messages="Failed to contact POTA server"
+        else
+          puts "DEBUG: POTA response"
+          puts res.body.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
+          pspots=JSON.parse(res.body)
+          ourspot=pspots.find { |ps| ps["activator"]==callsign.upcase and ps["reference"]==region.upcase+"-"+subcode and ps["mode"]==mode.upcase and (ps["frequency"]).to_i == ((freq.to_f)*1000).to_i }
+          if !ourspot then 
+             result=false
+             puts "DUBUG: spot not accepted by POTA"
+             messages="Spot not accepted by POTA for: "+a_code+"; "
+          end
         end
       else
         puts "Invalid POTA code: "+a_code
@@ -248,7 +275,7 @@ def send_to_pota(debug, from, callsign, a_code, freq, mode, description)
         result=false
       end
     else
-        if debug then
+       if debug then
           puts "Not a POTA asset: "+a_code
           messages="Not a POTA asset: "+a_code+"; "
           result=false
@@ -303,9 +330,16 @@ def send_to_sota(debug, from, callsign, a_code, freq, mode, description)
         req = Net::HTTP::Get.new("#{url.path}?".concat(payloadspot.collect { |k,v| "#{k}=#{CGI::escape(v.to_s)}" }.join('&')), 'Content-Type' => 'application/json', 'Authorization' => "bearer "+access_token, 'id_token' => id_token, 'connection' => 'keep-alive')
 
 
-        res=http.request(req)
-        puts "DEBUG: SOTA response"
-        puts res.body
+        begin
+          res=http.request(req)
+        rescue
+          puts "Send to SOTA failed"
+          result=false
+          messages="Failed to contact SOTA server"
+        else
+          puts "DEBUG: SOTA response"
+          puts res.body
+        end
       else
         puts "Invalid SOTA code: "+a_code
         messages="Invalid SOTA code: "+a_code+"; "
@@ -355,7 +389,18 @@ def send_to_pnp(debug,ac,topic,idate,itime,tzname)
         if pnp_class and pnp_class!="" then
           puts "sending alert to PnP"
           params = {"actClass" => pnp_class,"actCallsign" => self.updated_by_name,"actSite" => code,"actMode" => self.mode.strip,"actFreq" => self.freq.strip,"actComments" => convert_to_text(self.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2","alDate" => if tt then tt.strftime('%Y-%m-%d') else "" end,"alTime" => if tt then tt.strftime('%H:%M') else "" end,"optDay" => if dayflag then "1" else "0" end}
-          response=send_alert_to_pnp(params,dbtext)
+          uri = URI('http://parksnpeaks.org/api/ALERT'+dbtext)
+          http=Net::HTTP.new(uri.host, uri.port)
+          req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
+          req.body = params.to_json
+          begin
+            response = http.request(req)
+          rescue
+            messages="Failed to contact PnP server"
+          else
+            puts response
+            puts response.body
+          end
         end
     end
     if topic.is_spot then
@@ -369,7 +414,19 @@ def send_to_pnp(debug,ac,topic,idate,itime,tzname)
         if pnp_class and pnp_class!="" then
           params = {"actClass" => pnp_class,"actCallsign" => (self.callsign||self.updated_by_name),"actSite" => code,"mode" => self.mode.strip,"freq" => self.freq.strip,"comments" => convert_to_text(self.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2"}
           puts "sending spot to PnP"
-          response=send_spot_to_pnp(params,dbtext)
+          uri = URI('http://parksnpeaks.org/api/SPOT'+dbtext)
+puts "DEBUG: http://parksnpeaks.org/api/SPOT"+dbtext
+          http=Net::HTTP.new(uri.host, uri.port)
+          req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
+          req.body = params.to_json
+          begin
+            response = http.request(req)
+          rescue
+            messages="Failed to contact PnP server"
+          else
+            puts response
+            puts response.body
+          end
         end
     end
     if response and response!="" then
@@ -384,7 +441,7 @@ def send_to_pnp(debug,ac,topic,idate,itime,tzname)
         messages="PnP responsed with: "+response.body[debugstart..-1]
       end
     else
-      messages="Failed to send "+ac+" to PnP. Did you specify a valid place, frequency, mode & callsign?; "
+      if !messages or messages=="" then messages="Failed to send "+ac+" to PnP. Did you specify a valid place, frequency, mode & callsign?; " end
       result=false
     end
 

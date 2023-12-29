@@ -26,9 +26,13 @@ class Contact < ActiveRecord::Base
 #  validates :frequency,  presence: true
 #  validates :mode,  presence: true
 
+  def log
+    Log.find_by(id: self.log_id)
+  end
+
   def before_save_actions
-    self.callsign1 = callsign1.upcase
-    self.callsign2 = callsign2.upcase
+    self.callsign1 = callsign1.strip.upcase
+    self.callsign2 = callsign2.strip.upcase
     self.add_user_ids
     self.check_codes_in_location
     self.get_most_accurate_location
@@ -85,6 +89,22 @@ class Contact < ActiveRecord::Base
    newcodes.uniq
  end
 
+
+  def replace_master_codes2
+    newcodes=[]
+    self.asset2_codes.each do |code|
+      a=Asset.find_by(code: code)
+
+      if a and a.is_active==false
+        if a.master_code then
+          code=a.master_code
+        end
+      end
+      newcodes+=[code]
+    end
+    self.asset2_codes=newcodes.uniq
+  end
+
  def get_all_asset2_codes
    codes=self.asset2_codes
    newcodes=codes
@@ -116,8 +136,12 @@ class Contact < ActiveRecord::Base
  end
 
  def add_child_codes
-   self.asset1_codes=self.get_all_asset1_codes
+   if !self.log.do_not_lookup==true then
+     self.asset1_codes=self.get_all_asset1_codes
+   end
+   self.replace_master_codes2
    self.asset2_codes=self.get_all_asset2_codes
+   self.replace_master_codes2
  end
 
  def get_most_accurate_location(force = false)

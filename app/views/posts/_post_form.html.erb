@@ -111,11 +111,16 @@
       <% end %>
     
       <%=f.label :description%>
-      <div id="editPanel"></div>
+      <div id="editPanel">
         <span id="descrSpan">
           <%= f.text_area :description %>
         </span>
       </div>      
+
+      <div class="erow">
+        <%=f.label "I will specify parks manually - do not add automatically" %>
+        <%= f.check_box :do_not_lookup %>
+      </div>
 
       <div class="erow">   
         <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Posting ...');" %>

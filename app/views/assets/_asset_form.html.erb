@@ -47,6 +47,14 @@
       <div class="sectiontitle">Description</div>
       <%= f.text_area :description %>
 
+<%if current_user and current_user.is_admin%>
+      <div class="sectiontitle">AZ Radius (km)</div>
+      <%= f.text_field :az_radius %>
+
+      <div class="sectiontitle">Points</div>
+      <%= f.text_field :points %>
+<%end%>
+
      <div class="erow">
            <div class="leftbuttons">
               <span title="Click to draw location on map">

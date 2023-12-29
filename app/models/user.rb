@@ -8,10 +8,10 @@ class User < ActiveRecord::Base
 
   attr_accessor :remeber_token, :activation_token, :reset_token
 
-  before_save { if self.email then self.email = email.downcase end }
-  before_save { if self.timezone==nil then self.timezone=Timezone.find_by(name: 'UTC').id end }
-  before_save { self.callsign = callsign.upcase }
+  before_validation { if self.email then self.email = email.downcase end }
+  before_validation { self.callsign = callsign.strip.upcase }
   
+  before_save { if self.timezone==nil then self.timezone=Timezone.find_by(name: 'UTC').id end }
   before_save { if self.pin==nil or self.pin.length<4 then self.pin=self.callsign.chars.shuffle[0..3].join end; self.pin=self.pin[0..3] }
   after_save :add_callsigns
   before_create :create_remember_token
@@ -664,12 +664,12 @@ end
 
 def region_activations(include_minor=false)
    if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
-  activations=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select date, unnest(asset1_codes) as asset1_code from contacts c where user1_id="+self.id.to_s+") union (select date, unnest(asset2_codes) as asset1_code from contacts where user2_id="+self.id.to_s+") union (select date, summit_code as asset1_code from sota_activations where user_id="+self.id.to_s+"))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where #{minor_query} and (a.valid_from is null or a.valid_from<=foo.date) and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date) group by d.sota_code, a.asset_type, a.minor; "]
+  activations=Contact.find_by_sql [" select array_agg(DISTINCT asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select date, unnest(asset1_codes) as asset1_code from contacts c where user1_id="+self.id.to_s+") union (select date, unnest(asset2_codes) as asset1_code from contacts where user2_id="+self.id.to_s+") union (select date, summit_code as asset1_code from sota_activations where user_id="+self.id.to_s+"))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where #{minor_query} and (a.valid_from is null or a.valid_from<=foo.date) and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date) group by d.sota_code, a.asset_type, a.minor; "]
 end
 
 def region_chases(include_minor=false)
    if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
-  chases=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select date, unnest(asset2_codes) as asset1_code from contacts c where user1_id="+self.id.to_s+") union (select date, unnest(asset1_codes) as asset1_code from contacts where user2_id="+self.id.to_s+"))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where #{minor_query} and (a.valid_from is null or a.valid_from<=foo.date) and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date) group by d.sota_code, a.asset_type, a.minor; "]
+  chases=Contact.find_by_sql [" select array_agg(DISTINCT asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select date, unnest(asset2_codes) as asset1_code from contacts c where user1_id="+self.id.to_s+") union (select date, unnest(asset1_codes) as asset1_code from contacts where user2_id="+self.id.to_s+"))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where #{minor_query} and (a.valid_from is null or a.valid_from<=foo.date) and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date) group by d.sota_code, a.asset_type, a.minor; "]
 end
 
 def check_region_awards
@@ -733,12 +733,12 @@ end
 
 def district_activations(include_minor=false)
    if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
-  activations=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select date, unnest(asset1_codes) as asset1_code from contacts where user1_id="+self.id.to_s+") union (select date, unnest(asset2_codes) as asset1_code from contacts where user2_id="+self.id.to_s+") union (select date, summit_code as asset1_code from sota_activations where user_id="+self.id.to_s+")) as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where #{minor_query} and (a.valid_from is null or a.valid_from<=foo.date) and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date) group by d.district_code, a.asset_type, a.minor; "]
+  activations=Contact.find_by_sql [" select array_agg(DISTINCT asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select date, unnest(asset1_codes) as asset1_code from contacts where user1_id="+self.id.to_s+") union (select date, unnest(asset2_codes) as asset1_code from contacts where user2_id="+self.id.to_s+") union (select date, summit_code as asset1_code from sota_activations where user_id="+self.id.to_s+")) as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where #{minor_query} and (a.valid_from is null or a.valid_from<=foo.date) and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date) group by d.district_code, a.asset_type, a.minor; "]
 end
 
 def district_chases(include_minor=false)
    if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
-  chases=Contact.find_by_sql [" select array_agg(asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select date, unnest(asset2_codes) as asset1_code from contacts where user1_id="+self.id.to_s+") union (select date, unnest(asset1_codes) as asset1_code from contacts where user2_id="+self.id.to_s+"))as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where #{minor_query} and (a.valid_from is null or a.valid_from<=foo.date) and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date) group by d.district_code, a.asset_type, a.minor; "]
+  chases=Contact.find_by_sql [" select array_agg(DISTINCT asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select date, unnest(asset2_codes) as asset1_code from contacts where user1_id="+self.id.to_s+") union (select date, unnest(asset1_codes) as asset1_code from contacts where user2_id="+self.id.to_s+") union (select date, summit_code as asset1_code from sota_chases where user_id="+self.id.to_s+")) as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where #{minor_query} and (a.valid_from is null or a.valid_from<=foo.date) and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date) group by d.district_code, a.asset_type, a.minor; "]
 end
 
 def check_district_awards
@@ -858,7 +858,6 @@ end
 
 def add_callsigns
   dup=UserCallsign.where(user_id: self.id, callsign: self.callsign)
-  puts self.callsign
   if !dup or dup.count==0 then
     uc=UserCallsign.new
     uc.user_id=self.id
@@ -895,7 +894,11 @@ def self.find_by_callsign_date(callsign, c_date, create=false)
 end
 
 def self.create_dummy_user(callsign)
-  puts "Check callsign: "+callsign
+  puts "Check callsign: :"+callsign+":"
+  puts "Check callsign: "+callsign.length.to_s
+  callsign.each_byte do |c|
+    puts c
+  end
   dup=UserCallsign.find_by(callsign: callsign)
   if !dup then
     puts "Create callsign: "+callsign

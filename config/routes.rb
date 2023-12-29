@@ -26,6 +26,8 @@ patch 'callsigns/:id', to: 'callsigns#update'
 resources :sessions, only: [:new, :create, :destroy]
 resources :asset_web_links, only: [:create]
 resources :awards
+resources :comments
+get 'comments/:id/delete', to: 'comments#delete'
 resources :asset_links, only: [:create]
 get 'asset_web_links/:id/delete', to: 'asset_web_links#delete'
 get 'asset_links/:id/delete', to: 'asset_links#delete'

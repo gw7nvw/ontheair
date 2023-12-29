@@ -213,15 +213,18 @@ class EmailReceive
         @post.title="ALERT: "+callsign+" going portable to "+a_name+"["+a_code+"] on "+freq+"/"+mode+" at "+al_date+" "+al_time+" UTC"
       end
       if a_ext==false then
-        @post.add_map_image
         res=@post.save
+        if res then 
+          @post.add_map_image
+          res=@post.save
 
-        item=Item.new
-        item.topic_id=topic_id
-        item.item_type="post"
-        item.item_id=@post.id
-        item.save
-        item.send_emails
+          item=Item.new
+          item.topic_id=topic_id
+          item.item_type="post"
+          item.item_id=@post.id
+          item.save
+          item.send_emails
+        end
       end
       @topic=Topic.find_by_id(topic_id)
         @post.asset_codes.each do |ac| 

@@ -1,0 +1,2 @@
+if ((window.history.pushState!=null) && (site_back!=true)) window.history.pushState(null, '', '/comments?<%=raw(@parameters)%>');
+$('#right_panel').html("<%= escape_javascript(render(:partial => 'comments/index')).html_safe %>");

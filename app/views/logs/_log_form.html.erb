@@ -85,10 +85,20 @@
              <%= f.text_field :asset_codes, :readonly => true, :style => 'display:none' %>
           </td>
         </tr>
+
         <%= f.hidden_field :x1 %>
         <%= f.hidden_field :y1 %>
         <%= f.hidden_field :location1 %>
-        <td colspan=8> <%= f.submit @submit_button, id: 'submit_button', class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Saving ...');" %></td>
+
+        <tr>
+          <td colspan=3> <%= f.submit @submit_button, id: 'submit_button', class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Saving ...');" %></td>
+          <td class="td-l" colspan=4>
+            <%=f.label "I will specify parks manually - do not add automatically" %>
+          </td>
+          <td class="td-d">
+            <%= f.check_box :do_not_lookup %>
+          </td>
+        </tr>
 
       </table>
     <% end %>   

@@ -14,7 +14,7 @@ include SessionsHelper
   password=params[:session][:password]
 
   user = User.find_by(email: params[:session][:email].downcase)
-  if !user then  user = User.find_by(callsign: params[:session][:email].upcase) end
+  if !user then  user = User.find_by(callsign: params[:session][:email].strip.upcase) end
 
   if user && user.authenticate(password)
       if user.activated?

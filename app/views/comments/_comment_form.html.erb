@@ -1,0 +1,78 @@
+  <script type="text/javascript">
+     bkLib.onDomLoaded(startEdit);
+  
+    function startEdit() {
+      nicEditors.allTextAreas();
+    }
+  </script>
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+   document.title = '... On The Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+</script>
+
+<div class="fullform">
+  <%= form_for @comment, remote: true, :html => {:name => 'commentform'}  do |f| %>
+    <div id="actionbar" class="span7">
+      <div id="crumbs">
+        <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+        &nbsp;--&gt;&nbsp;
+        <%=link_to "Comments", "/comment", remote: true,  :id => 'comment', :onclick => "linkHandler('comment')"%>
+        &nbsp;--&gt;&nbsp;
+          <b><%=if @comment.code then link_to @comment.code, '/assets/'+@comment.code.gsub('/','_'), remote: true,  :id => 'comment', :onclick => "linkHandler('comment')" else "nothing" end%></b>
+        &nbsp;--&gt;&nbsp;
+        <%if @comment.id%>
+          <b><%=link_to @comment.id.to_s, '/comments/'+@comment.id.to_s, remote: true,  :id => 'comment', :onclick => "linkHandler('comment')"%></b>
+          &nbsp;--&gt;&nbsp;
+          <b>Edit</b>
+        <% else %>
+          <b>New</b>
+        <% end %>
+      </div>
+      <div id="controls">
+        <% if @comment.id %><% if params[:referring]=='index'%>
+            <%=  link_to "Cancel", '/comments', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+          <% else %>
+            <%=  link_to "Cancel", '/comments/'+@comment.id.to_s, class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+        <% end %> <% end %>
+
+        <%=render 'map_controls'%>
+      </div>
+    </div>
+    <%= render 'shared/error_messages' %>	
+
+    <div id="right_scroll">
+      <%= render 'flash' %>
+      <%= render 'shared/error_messages' %>
+
+      <%=f.hidden_field(:code)%>
+
+      <%=f.label :comment%>
+      <div id="editPanel">
+        <span id="descrSpan">
+          <%= f.text_area :comment %>
+        </span>
+      </div>      
+
+      <div class="erow">   
+        <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Commenting ...');" %>
+        <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@comment.created_by_id)) %>
+          <%= f.submit "Delete Comment", confirm: "Delete comment: Are you sure?", class: "btn btn-small btn-primary", id:  "deletebutton",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+        <% end %>
+      </div>
+
+   </div>
+  <% end %>
+</div>
+<script>
+
+function addmore(count) {
+  document.getElementById('row'+(count+1)).style="display:";
+}
+document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+
+  startEdit();
+</script>
+

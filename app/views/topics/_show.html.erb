@@ -98,7 +98,7 @@
 
   <ul>
     <% @items.each do |item| %>
-      <li><%=link_to item.end_item.title, "#post"+item.id.to_s %></li>
+      <li><%=if item.end_item then link_to item.end_item.title, "#post"+item.id.to_s else "" end %></li>
     <% end %>
   </ul>
 

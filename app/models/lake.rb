@@ -5,9 +5,14 @@ require 'csv'
 
 def self.import
   Nzgdb.where(feat_type: 'Lake', is_active: true).each do |place|
-    lake=Lake.find_by(id: place.name_id) 
+    lake=Lake.find_by(topo50_fid: place.feat_id) 
     if !lake then
       lake=Lake.new
+      puts "Adding new lake "+place.name
+    else
+      if place.WKT!=lake.location or place.name != lake.name then
+        puts "Updating old place #{lake.name} to #{place.name} at #{lake.location} to #{place.WKT}"
+      end
     end
     lake.topo50_fid=place.feat_id
     lake.name=place.name
@@ -46,17 +51,27 @@ def self.remove_duplicates
 end
 
 def self.add_codes
-  ps=Lake.where(is_active: true).order(:name)
-  rec=1
+  ps=Lake.where(is_active: true, code: nil).order(:name)
   ps.each do |p|
-   p.code='ZLL/'+rec.to_s.rjust(4,'0')
-   rec+=1
+   p.code=Lake.get_next_code
    p.save
      puts p.code
   end 
 true
 end
 
+def self.get_next_code
+  ps=Lake.find_by_sql [ "select code from lakes where code is not null order by code desc limit 1" ]
+  if ps and ps.count>0 then 
+     last_code=ps.first.code
+  else
+      last_code='ZLL/0000'
+  end
+  codenum=last_code[-4..-1].to_i
+  codenum+=1
+  next_code='ZLL/'+codenum.to_s.rjust(4,'0')
+end
+  
 #ZLL/XX-#### code based on region
   def self.add_dist_codes
      lakes=Lake.find_by_sql [ " select * from lakes where dist_code='' or dist_code is null order by coalesce(ST_Area(boundary),0) desc" ]
@@ -108,7 +123,7 @@ def add_region
 end
 
 def self.get_polygons
-  ls=Lake.where(is_active: true)
+  ls=Lake.where(is_active: true, boundary: nil)
   ls.each do |l|
     lakes=LakeOld.find_by_sql [ %q{select * from lake_olds where is_active=true and ST_Within(ST_GeomFromText('}+l.location.as_text+%q{',4326), boundary);} ]
     if !lakes or lakes.count==0 then
