@@ -44,7 +44,10 @@ $(function () {
             <%=  link_to "Add", '/assets/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('add')" %>
        <% end %>
        <% if signed_in? %>
-         <%=  link_to "Download", '/assets.csv?type='+@asset_type.name, class: "btn btn-small btn-primary"%>
+         <%=  link_to "-> CSV", '/assets.csv?type='+@asset_type.name, class: "btn btn-small btn-primary"%>
+       <% end %>
+       <% if signed_in? %>
+         <%=  link_to "-> GPX", '/assets.gpx?type='+@asset_type.name, class: "btn btn-small btn-primary"%>
        <% end %>
        <%=render 'map_controls'%>
    </div>

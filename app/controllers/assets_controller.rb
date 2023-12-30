@@ -1,4 +1,6 @@
 class AssetsController < ApplicationController
+include PostsHelper
+
   before_action :signed_in_user, only: [:edit, :update, :create, :new]
 
 
@@ -34,7 +36,7 @@ class AssetsController < ApplicationController
        @limit=500 #20
     end
 
-    @fullassets=Asset.find_by_sql [ "select id,name,code,asset_type,url,is_active,safecode,category,minor,description,region from assets where id in (select id from assets where "+whereclause+" order by name limit #{@limit}) order by name" ]
+    @fullassets=Asset.find_by_sql [ "select id,name,code,asset_type,url,is_active,safecode,category,minor,description,region,location,altitude from assets where id in (select id from assets where "+whereclause+" order by name limit #{@limit}) order by name" ]
     @assets=@fullassets.paginate(:per_page => 40, :page => params[:page])
     counts=Asset.find_by_sql [ 'select count(id) as id from assets where '+whereclause ]
     #@count=0;
@@ -54,7 +56,8 @@ class AssetsController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.csv { send_data asset_to_csv(Asset.all), filename: "assets-#{Date.today}.csv" }
+      format.csv { send_data asset_to_csv(@fullassets), filename: "assets-#{Date.today}.csv" }
+      format.gpx { send_data asset_to_gpx(@fullassets), filename: "assets-#{Date.today}.gpx" }
     end
     end
   end
@@ -200,19 +203,19 @@ def associations
 
 end
 
-  def asset_to_csv(items)
-      require 'csv'
-      csvtext=""
-      if items and items.first then
-        columns=["code"]; items.first.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") and !name.include?("_link") then columns << name end end
-        csvtext << columns.to_csv
-        items.each do |item|
-           fields=[item.code]; item.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") and !name.include?("_link") then fields << value end end
-           csvtext << fields.to_csv
-        end
-     end
-     csvtext
-  end
+#  def asset_to_csv(items)
+#      require 'csv'
+#      csvtext=""
+#      if items and items.first then
+#        columns=["code"]; items.first.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") and !name.include?("_link") then columns << name end end
+#        csvtext << columns.to_csv
+#        items.each do |item|
+#           fields=[item.code]; item.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") and !name.include?("_link") then fields << value end end
+#           csvtext << fields.to_csv
+#        end
+#     end
+#     csvtext
+#  end
 
   private
   def asset_params

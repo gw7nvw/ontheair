@@ -100,20 +100,6 @@ def asset
 
 end
 
- def asset_to_csv(items)
-      require 'csv'
-      csvtext=""
-      if items and items.first then
-        columns=[]; items.first.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") and !name.include?("_link") then columns << name end end
-        csvtext << columns.to_csv
-        items.each do |item|
-           fields=[]; item.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") and !name.include?("_link") then fields << value end end
-           csvtext << fields.to_csv
-        end
-     end
-     csvtext
-  end
-
 def logs_post
 
   if api_authenticate(params) then
@@ -174,23 +160,4 @@ def api_authenticate(params)
 end
 
 
-def asset_to_gpx(assets)
-   xml = REXML::Document.new
-   gpx = xml.add_element 'gpx', {'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
-     'xmlns' => 'http://www.topografix.com/GPX/1/0',
-     'xsi:schemaLocation' => 'http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd',
-     'version' => '1.0', 'creator' => 'http://routeguides.co.nz/'}
-
-   assets.each do |a|
-     if a.location then
-       wpt = gpx.add_element 'wpt'
-       wpt.add_element('url').add REXML::Text.new('https://ontheair.nz/'+a.url)
-       wpt.add_attributes({'lat' => a.location.y.to_s, 'lon' => a.location.x.to_s})
-       wpt.add_element('ele').add(REXML::Text.new(a.altitude.to_s))
-       wpt.add_element('name').add(REXML::Text.new(a.name+" ("+a.code+")"+if(a.r_field('points')) then " ["+a.r_field('points').to_s+"]" else "" end))
-     end
-   end
-
-   xml
-end
 end
