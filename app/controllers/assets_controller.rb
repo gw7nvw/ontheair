@@ -29,11 +29,13 @@ include PostsHelper
     @asset_type=AssetType.find_by(name: asset_type)
 
     @searchtext=params[:searchtext] || ""
+    if !@limit then  
     if params[:searchtext] and params[:searchtext]!="" then
        @limit=500 #100
        whereclause=whereclause+" and (unaccent(lower(name)) like '%%"+@searchtext.downcase+"%%' or lower(code) like '%%"+@searchtext.downcase+"%%')"
     else
        @limit=500 #20
+    end
     end
 
     @fullassets=Asset.find_by_sql [ "select id,name,code,asset_type,url,is_active,safecode,category,minor,description,region,location,altitude from assets where id in (select id from assets where "+whereclause+" order by name limit #{@limit}) order by name" ]
@@ -51,6 +53,7 @@ include PostsHelper
     else
 
     @parameters=params_to_query
+    if request.path.match('gpx') or request.path.match('csv') then @limit=30000 end
 
     index_prep()
     respond_to do |format|
