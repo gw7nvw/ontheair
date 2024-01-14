@@ -259,8 +259,9 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
       if value and value.length>0 and value.strip.length>0 then
          values=value.split(';')
          values.each do |val|
-           protolog.asset_codes.push(val.strip)
-           contact.asset1_codes.push(val.strip)
+           val=Asset.correct_separators(val.strip)
+           protolog.asset_codes.push(val)
+           contact.asset1_codes.push(val)
            protolog.is_portable1=true
            contact.is_portable1=true
          end
@@ -298,7 +299,8 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
       if value and value.length>0 then
         values=value.split(',')
         values.each do |val|
-          contact.asset2_codes.push(val.strip)
+          val=Asset.correct_separators(val.strip)
+          contact.asset2_codes.push(val)
           contact.is_portable2=true
         end
       end
@@ -523,8 +525,9 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
               if value and value.length>0 and value.strip.length>0 then
                 values=value.split(',')
                 values.each do |val|
-                  protolog.asset_codes.push(val.strip)
-                  contact.asset1_codes.push(val.strip)
+                  val=Asset.correct_separators(val.strip)
+                  protolog.asset_codes.push(val)
+                  contact.asset1_codes.push(val)
                   protolog.is_portable1=true
                   contact.is_portable1=true
                 end
@@ -533,8 +536,9 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
               if value and value.length>0 and value.strip.length>0 then
                 values=value.split(',')
                 values.each do |val|
-                  protolog.asset_codes.push(val.strip)
-                  contact.asset1_codes.push(val.strip)
+                  val=Asset.correct_separators(val.strip)
+                  protolog.asset_codes.push(val)
+                  contact.asset1_codes.push(val)
                   protolog.is_portable1=true
                   contact.is_portable1=true
                 end
@@ -543,8 +547,9 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
               if value and value.length>0 and value.strip.length>0 then
                 values=value.split(',')
                 values.each do |val|
-                  protolog.asset_codes.push(val.strip)
-                  contact.asset1_codes.push(val.strip)
+                  val=Asset.correct_separators(val.strip)
+                  protolog.asset_codes.push(val)
+                  contact.asset1_codes.push(val)
                   protolog.is_portable1=true
                   contact.is_portable1=true
                 end
@@ -660,7 +665,8 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
               if value and value.length>0 then
                 values=value.split(',')
                 values.each do |val|
-                  contact.asset2_codes.push(val.strip)
+                  val=Asset.correct_separators(val.strip)
+                  contact.asset2_codes.push(val)
                   contact.is_portable2=true
                 end
               end
@@ -668,7 +674,8 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
               if value and value.length>0 then
                 values=value.split(',')
                 values.each do |val|
-                  contact.asset2_codes.push(val.strip)
+                  val=Asset.correct_separators(val.strip)
+                  contact.asset2_codes.push(val)
                   contact.is_portable2=true
                 end
               end
@@ -676,7 +683,8 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
               if value and value.length>0 then
                 values=value.split(',')
                 values.each do |val|
-                  contact.asset2_codes.push(val.strip)
+                  val=Asset.correct_separators(val.strip)
+                  contact.asset2_codes.push(val)
                   contact.is_portable2=true
                 end
               end

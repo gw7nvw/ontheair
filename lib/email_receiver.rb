@@ -19,7 +19,7 @@ class EmailReceive
     if mail.multipart?
       part = mail.parts.select { |p| p.content_type =~ /text\/plain/ }.first rescue nil
       attachment = mail.parts.select { |p| p.content_type =~ /application\/octet-stream/ }.first rescue nil
-      file=attachment.decoded
+      if attachment then file=attachment.decoded end
       unless part.nil?
         message = part.body.decoded
       end

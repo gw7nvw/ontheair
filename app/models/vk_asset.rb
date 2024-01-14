@@ -9,6 +9,10 @@ def minor
    false
 end
 
+def maidenhead
+ ""
+end
+
 def is_active
    true
 end

@@ -137,7 +137,7 @@ end
     newcodes=[]
     self.asset_codes.each do |code|
       a=Asset.find_by(code: code)
-
+      if !a then  a=VkAsset.find_by(code: code) end
       if !a and (!(self.description||"").include?("Unknown location: "+code)) then self.description=(self.description||"")+"; Unknown location: "+code end
       if a and a.is_active==false
         if a.master_code then 

@@ -393,7 +393,6 @@
        <% end %>
      </div>
    </div>
- </div>
 
 <% @asset.parent_classes.each do |parent_class| %>
    <div class="erow">
@@ -425,7 +424,9 @@
    </div>
 
    <% if @comments.count==0 %>
-     <p><i>No-one has commented yet, be the first! </i><p>
+     <div class="erow">
+       <p><i>No-one has commented yet, be the first! </i><p>
+     </div>
    <% end %>
 
    <% @comments.each do |comment|%>

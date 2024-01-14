@@ -6,6 +6,17 @@ class Asset < ActiveRecord::Base
  before_validation { self.assign_calculated_fields }
  after_save {self.add_links}
 
+def self.correct_separators(code)
+  #ZLOTA
+  if code.match(/^[zZ][lL][a-zA-Z][-_\/][a-zA-Z]{2}[-_\/]\d{3,4}/) then
+     code[3]='/'
+     code[6]='-'
+  elsif code.match(/^[Zz][Ll][a-zA-Z][-_\/]\d{4}/) then
+     code[3]='/'
+  end
+  code 
+end
+
 def assign_calculated_fields
   if !self.valid_from then self.valid_from=Time.new('1900-01-01') end
   if self.minor!=true then self.minor=false end
