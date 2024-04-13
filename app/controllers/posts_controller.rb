@@ -32,7 +32,7 @@ def new
     @post=Post.new
     @topic=Topic.find_by_id(params[:topic_id])
     @tz=Timezone.find_by_id(current_user.timezone||3)
-    t=Time.now.in_time_zone(@tz.name)
+    t=Time.now.in_time_zone(@tz.name).at_beginning_of_minute
     d=Time.now.in_time_zone(@tz.name).strftime('%Y-%m-%d 00:00 UTC').to_time
     if @topic.is_spot then @post.referenced_date=d.to_time end
     if @topic.is_spot then @post.referenced_time=t.to_time end
@@ -49,6 +49,28 @@ def new
       end
     end
     if params[:code] then @post.asset_codes=[params[:code].gsub('_','/')] end
+    if params[:spot] then 
+      @post.do_not_lookup=true
+      @post.referenced_time=Time.now().in_time_zone('UTC').at_beginning_of_minute
+      @post.referenced_date=Time.now().in_time_zone('UTC').at_beginning_of_minute
+      if params[:spot].to_i>0 then
+        spot=ExternalSpot.find(params[:spot].to_i)
+        if spot then 
+          @post.callsign=spot.activatorCallsign
+          @post.freq=spot.frequency
+          @post.mode=spot.mode
+          if spot.code then @post.asset_codes=[spot.code.gsub('_','/')] end
+        end  
+      else
+        spot=Post.find(-params[:spot].to_i)
+        if spot then
+          @post.callsign=spot.callsign
+          @post.freq=spot.freq
+          @post.mode=spot.mode
+          @post.asset_codes=spot.asset_codes
+        end
+      end
+    end
 end
 
 def edit

@@ -7,9 +7,11 @@
         <td>@ 
           <% codes=spot[:code] %>
           <% if codes.kind_of?(Array)==false then codes=[codes] end %>
+          <% validlink=false %>
           <% codes.each do |code| %>
             <% link=Asset.assets_from_code(code)%>
             <% if link and link.count>0 then %>
+              <% validlink=true %>
               <% if link.first[:external] then %>
                 <%=link_to code.upcase,link.first[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
               <% else %>
@@ -29,6 +31,10 @@
         <td colspan=7>
           <%=spot[:name]%> -
           <%=spot[:comments]%>
+          <i><small><%if signed_in? and validlink  %> 
+            <%=link_to '(respot)','/posts/new?topic_id='+SPOT_TOPIC.to_s+'&spot='+spot[:id].to_s, remote: true,  :id => 'respot', :onclick => "linkHandler('respot')" %>
+            <%=link_to '(log chase)','/contacts/new?spot='+spot[:id].to_s, remote: true,  :id => 'chase', :onclick => "linkHandler('chase')" %>
+          <% end%></small></i>
         </td>
       </tr>
   <% end %>

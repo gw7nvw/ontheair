@@ -85,7 +85,7 @@
      <div class="erow" id="publicaccess" style='color:#bb0000'>
         <div class="rowtitle" style='color:#bb0000'><%= "Public access to AZ" %></div>
         <div class="rowtext" >
-           No
+           No <%= link_to image_tag("/assets/info.png"), ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  <small><i><%= link_to '(what does this mean?)', ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></i></small>
         </div>
      </div>
    <% end %>
@@ -94,7 +94,8 @@
      <div class="erow" id="publicaccess" style="color:#00bb00">
         <div class="rowtitle" style="color:#00bb00"><%= "Public access to AZ" %></div>
         <div class="rowtext">
-           Yes
+           Yes <%= link_to image_tag("/assets/info.png"), ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  <small><i><%= link_to '(what does this mean?)', ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></i></small>
+
         </div>
      </div>
    <% end %>
@@ -228,10 +229,11 @@
       <div class="textext"><%=@asset.category%></div>
    </div>
    <% end %>
-   <div class="erow" id="email" <%= if @asset.is_active then "" else "style='color:#bb0000'" end%>>
-      <div class="rowtitle" <%= if @asset.is_active then "" else "style='color:#bb0000'" end%>><%= "Active?" %></div>
-      <div class="textext"><%= if @asset.is_active then "Yes" else "No" end %></div>
+   <div class="erow" id="active" <%= if @asset.is_active then "style=color:#00bb00" else "style=color:#bb0000" end%>>
+     <div class="rowtitle" <%= if @asset.is_active then "style=color:#00bb00" else "style=color:#bb0000" end%>><%= "Active?" %></div>
+     <div class="textext"><%= if @asset.is_active then "Yes" else "No" end %></div>
    </div>
+
    <% if @asset.is_nzart==true or @asset.is_nzart==false then %>
      <div class="erow" id="email" <%= if @asset.is_nzart then "" else "style='color:#bb0000'" end%>>
        <div class="rowtitle" <%= if @asset.is_nzart then "" else "style='color:#bb0000'" end%>><%= "Valid for NZART awards?" %></div>

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20231223033245) do
+ActiveRecord::Schema.define(version: 20240412000213) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -298,6 +298,18 @@ ActiveRecord::Schema.define(version: 20231223033245) do
     t.string   "spot_type"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "humps", force: true do |t|
+    t.string   "dxcc"
+    t.string   "region"
+    t.string   "code"
+    t.string   "name"
+    t.string   "elevation"
+    t.string   "prominence"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.spatial  "location",   limit: {:srid=>4326, :type=>"point"}
   end
 
   create_table "hut_photo_links", force: true do |t|
@@ -656,6 +668,8 @@ ActiveRecord::Schema.define(version: 20231223033245) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.spatial  "location",    limit: {:srid=>4326, :type=>"point"}
+    t.datetime "valid_from"
+    t.datetime "valid_to"
   end
 
   create_table "sota_regions", force: true do |t|

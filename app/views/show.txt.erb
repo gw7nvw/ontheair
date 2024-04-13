@@ -1,0 +1,14 @@
+
+      **Your Details**
+      |Callsign:|<%=@log.callsign1 %>|Date:| <% if signed_in? then %><%= @log.localdate(current_user)%> <% else %> <%= @log.localdate(nil)%><% end %> | QRP | <%= if @log.is_qrp1 then "Yes" else "no" end%> |
+      |Timezone:|<%= if current_user then current_user.timezonename else Timezone.find_by(name: 'UTC').name end %>|Power:|<%= @log.power1%>|Portable?|<%= if @log.is_portable1 then "Yes" else "no" end %>|
+      |||||||
+      |Location|<%= @log.loc_desc1%>| <% if @log.asset_codes.count>0 then %> <% @log.asset_codes.each do |cal|%> <%links=Asset.assets_from_code(cal)%> <% links.each do |link| %> <% if link[:external] then %> <%= link[:code]%> <% else %> <%link[:asset].codename %> <% end %> <% end %> <% end %> <% end %> |
+
+     | Time | Callsign | QRP? | Portable? | Mode | Freq | Name | Location | RST Sent | RST Rec'd |
+     |------|----------|------|-----------|------|------|------|----------|----------|-----------|
+      <%contacts=Contact.find_by_sql [ " select * from contacts where log_id = "+@log.id.to_s+" order by time asc ;" ] %>
+      <% contacts.each do |contact| %>
+          |<%= if contact.time then contact.localtime(current_user) else '' end %> <%=contact.localtimezone(current_user) %> | <%= contact.callsign2 %> | <%= if contact.is_qrp2 then "Yes" else "no" end%> | <%= if contact.is_portable2 then "Yes" else "no" end%> | <%= contact.mode %> | <%= if contact.frequency then '%.3f' % contact.frequency else '' end%> | <%= contact.name2 %> | <% if contact.asset2_codes.count>0 then %> <% contact.asset2_codes.each do |cal|%> <%links=Asset.assets_from_code(cal)%> <% links.each do |link| %> <% if link[:external] then %> <%=link[:code %> <% else %> <%= link[:asset].codename %> <% end %> <% end %> <% end %> <% else %> <%= contact.loc_desc2 %> <% end %> | <%= contact.signal2 %> | <%= contact.signal1 %> |
+      <% end %> 
+

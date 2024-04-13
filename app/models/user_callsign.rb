@@ -36,7 +36,7 @@ def record_is_unique
 end
 
 def user
-  User.find(self.user_id)
+  User.find_by(id: self.user_id)
 end
 
 end

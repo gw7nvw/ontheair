@@ -254,14 +254,14 @@ def send_to_pota(debug, from, callsign, a_code, freq, mode, description)
         req.body=payloadspot.to_json
         begin
           res=http.request(req)
+          puts "DEBUG: POTA response"
+          puts res.body.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
+          pspots=JSON.parse(res.body)
         rescue
           puts "Send to POTA failed"
           result=false
           messages="Failed to contact POTA server"
         else
-          puts "DEBUG: POTA response"
-          puts res.body.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
-          pspots=JSON.parse(res.body)
           ourspot=pspots.find { |ps| ps["activator"]==callsign.upcase and ps["reference"]==region.upcase+"-"+subcode and ps["mode"]==mode.upcase and (ps["frequency"]).to_i == ((freq.to_f)*1000).to_i }
           if !ourspot then 
              result=false

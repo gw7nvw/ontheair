@@ -30,6 +30,13 @@ class Contact < ActiveRecord::Base
     Log.find_by(id: self.log_id)
   end
 
+  def create_log
+    log=Log.new
+    log.callsign1=self.callsign1
+    log.date=self.date
+    log
+  end
+
   def before_save_actions
     self.callsign1 = callsign1.strip.upcase
     self.callsign2 = callsign2.strip.upcase
@@ -136,7 +143,7 @@ class Contact < ActiveRecord::Base
  end
 
  def add_child_codes
-   if !self.log.do_not_lookup==true then
+   if self.log and !self.log.do_not_lookup==true then
      self.asset1_codes=self.get_all_asset1_codes
    end
    self.replace_master_codes2

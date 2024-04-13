@@ -602,7 +602,7 @@ def authenticated?(attribute, token)
   def pota_logs
    pota_logs=[]
 
-   contacts2=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where user1_id = "+self.id.to_s+" and 'pota park'=ANY(asset1_classes)) as sq where asset1_codes  like 'ZL-%%'" ]
+   contacts2=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where user1_id = "+self.id.to_s+" and 'pota park'=ANY(asset1_classes)) as sq where asset1_codes  like 'NZ-%%'" ]
 
    parks=[]
    contacts2.each do |contact|

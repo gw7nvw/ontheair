@@ -48,6 +48,8 @@ var site_island_point_style;
 var site_parks_style;
 var site_beacon_style;
 var site_huts_style;
+var site_humps_style;
+var site_public_humps_style;
 var site_summits_style;
 var site_public_summits_style;
 var site_contacts_style;
@@ -272,6 +274,8 @@ function site_points_style_function(feature, resoluton) {
   if((feature.get('asset_type')=="lake") && (feature.get('public_access')=='t')) return site_public_lake_point_style;
   if(feature.get('asset_type')=="lake")  return site_lake_point_style;
   if(feature.get('asset_type')=="island")  return site_island_point_style;
+  if((feature.get('asset_type')=="hump") && (feature.get('public_access')=='t')) return site_public_humps_style;
+  if(feature.get('asset_type')=="hump")  return site_humps_style;
   if((feature.get('asset_type')=="summit") && (feature.get('public_access')=='t')) return site_public_summits_style;
   if(feature.get('asset_type')=="summit")  return site_summits_style;
   if(feature.get('asset_type')=="lighthouse")  return site_beacon_style;
@@ -363,6 +367,8 @@ function site_init_styles() {
   site_lake_point_style=map_create_style("x", 6, "#3366ff", "#3366ff", 1);
   site_public_lake_point_style=map_create_style("x", 6, "#0000cc", "#0000cc", 1);
   site_beacon_style=map_create_style("triangle", 6, "#ffff00", "#ffff00", 1);
+  site_humps_style=map_create_style("triangle", 4, "#e60000", "#e60000", 1);
+  site_public_humps_style=map_create_style("triangle", 4, "#800000", "#800000", 1);
   site_summits_style=map_create_style("triangle", 4, "#cc66ff", "#cc66ff", 1);
   site_public_summits_style=map_create_style("triangle", 4, "#6600cc", "#6600cc", 1);
   site_contacts_style=map_create_style("circle", 4, "#2222ff", "#22ffff", 1);

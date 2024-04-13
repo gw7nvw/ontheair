@@ -68,6 +68,7 @@ class EmailReceive
             res={success: true, message: "Warnings: "+logs[:errors].join(", ")}
          end
       else
+         puts "DEBUG: Authenticaton failed '#{username}', '#{pin}'"
          res={success: false, message: 'Login failed using supplied credentials'}
       end
       puts "Result: "+res[:message]
@@ -98,7 +99,13 @@ class EmailReceive
         via="Email"
         splt="/EOM"
       end
-      
+     
+      if subject and subject["Predefined 1-way message from SOTAmat user"] then
+        via="SOTAmat"
+        validated_user=subject.split(" ").last
+      end
+      puts "DEBUG: via "+via
+ 
       msg=body.split(splt)[0]
       if msg["/bom"] then msg=msg.split('/bom')[1] end
       if msg["/BOM"] then msg=msg.split('/BOM')[1] end
@@ -110,7 +117,11 @@ class EmailReceive
       if !user then puts "Unknown callsign: "+sub_callsign; return(false) end
 
       #should check a password here
-      if !user.pin or passkey[0..3]!=user.pin[0..3] then puts "PIN does not match";return(false) end
+      if validated_user  then
+        if validated_user.upcase!=sub_callsign then puts "Account name '"+validated_user.upcase+"' does not match callsign '"+sub_callsign+"'";return(false)  end
+      else  
+        if !user.pin or passkey[0..3]!=user.pin[0..3] then puts "PIN does not match";return(false) end
+      end
      elsif subject["SMSForwarder"] then
       via="SMS"
       puts "DEBUG SMS"

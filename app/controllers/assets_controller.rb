@@ -32,7 +32,7 @@ include PostsHelper
     if !@limit then  
     if params[:searchtext] and params[:searchtext]!="" then
        @limit=500 #100
-       whereclause=whereclause+" and (unaccent(lower(name)) like '%%"+@searchtext.downcase+"%%' or lower(code) like '%%"+@searchtext.downcase+"%%')"
+       whereclause=whereclause+" and (unaccent(lower(name)) like '%%"+@searchtext.downcase+"%%' or lower(code) like '%%"+@searchtext.downcase+"%%' or lower(old_code) like '%%"+@searchtext.downcase+"%%')"
     else
        @limit=500 #20
     end

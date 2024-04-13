@@ -95,7 +95,64 @@ class ContactsController < ApplicationController
     end
  @contacts=(@fullcontacts||[]).paginate(:per_page => @page_len, :page => params[:page]) 
   end
-  
+
+  def new
+     @contact=Contact.new
+     if params[:spot] then
+       spotid=params[:spot].to_i
+       if spotid>0 then
+         spot=ExternalSpot.find(spotid)
+         if spot then
+           @contact.callsign2=spot.activatorCallsign
+           @contact.date=Time.now().in_time_zone('UTC').at_beginning_of_minute
+           @contact.time=Time.now().in_time_zone('UTC').at_beginning_of_minute
+           @contact.frequency=spot.frequency
+           @contact.mode=spot.mode
+           @contact.asset2_codes=[spot.code]
+         end
+       else
+         spot=Post.find(-spotid)
+         if spot then
+           @contact.callsign2=spot.callsign
+           @contact.date=Time.now().in_time_zone('UTC').at_beginning_of_minute
+           @contact.time=Time.now().in_time_zone('UTC').at_beginning_of_minute
+           @contact.frequency=spot.freq
+           @contact.mode=spot.mode
+           @contact.asset2_codes=spot.asset_codes
+         end
+       end
+     end
+     @contact.callsign1=current_user.callsign
+ 
+  end
+ 
+def create
+  if signed_in?  then
+    if params[:commit] then
+      @contact = Contact.new(contact_params)
+      puts ":"+params[:contact][:asset2_codes]+":"
+      @contact.asset2_codes=params[:contact][:asset2_codes].gsub('[','').gsub(']','').gsub('"','').split(',')
+      @contact.createdBy_id=current_user.id
+      @log=@contact.create_log
+      @log.save
+      @contact.log_id=@log.id
+      if @contact.save then
+        @contact.reload
+        @id=@contact.id
+        params[:id]=@contact
+        @user=User.find_by_callsign_date(@contact.callsign1.upcase,@contact.date)
+        redirect_to '/spots'
+      else
+        render 'new'
+      end
+    else
+      redirect_to '/'
+    end
+  else
+  redirect_to '/'
+  end
+end
+ 
   def index
     @parameters=params_to_query
 

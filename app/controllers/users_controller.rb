@@ -126,6 +126,9 @@ class UsersController < ApplicationController
         c.date=a.date
         c.time=a.date
         asset=Asset.find_by(code: a.summit_code)
+        if !asset then
+           asset=Asset.find_by(old_code: a.summit_code)
+        end
         c.location1=asset.location
         @contacts.push(c)
       end

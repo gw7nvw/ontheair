@@ -134,7 +134,8 @@ class StaticPagesController < ApplicationController
             frequency: post.freq,
             mode: post.mode,
             name: post.site,
-            comments: (post.title || "") + ' - ' + (post.description || "")
+            comments: (post.title || "") + ' - ' + (post.description || ""),
+            id: -post.id
          ))
       end 
  

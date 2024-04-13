@@ -305,7 +305,7 @@ def get_external_url
     code=self.code.lstrip
     if code.match(/^[a-zA-Z0-9]{1,2}-\d{4,5}/)  then
         #POTA
-        if code[0..1].upcase=='VK' then
+        if code[0..1].upcase=='VK' or code[0..1].upcase=='AU' then
           url='https://parksnpeaks.org/getPark.php?actPark='+code+'&submit=Process'
         else
           url='http://pota.app/#/park/'+code
@@ -339,17 +339,20 @@ end
 
 def self.get_pnp_class_from_code(code)
   aa=Asset.assets_from_code(code)
-  a=aa.first 
   pnp_class="QRP" 
-  if a and a[:type] and a[:external]==false then 
-     ac=AssetType.find_by(name: a[:type])
-     pnp_class=ac.pnp_class
-  elsif a[:title][0..3]=="WWFF" then pnp_class="WWFF"
-  elsif a[:title][0..3]=="POTA" then pnp_class="POTA"
-  elsif a[:title][0..3]=="HEMA" then pnp_class="HEMA"
-  elsif a[:title][0..4]=="SiOTA" then pnp_class="SiOTA"
+  if aa then
+    a=aa.first 
+    if a then 
+      if a and a[:type] and a[:external]==false then 
+         ac=AssetType.find_by(name: a[:type])
+         pnp_class=ac.pnp_class
+      elsif a[:title][0..3]=="WWFF" then pnp_class="WWFF"
+      elsif a[:title][0..3]=="POTA" then pnp_class="POTA"
+      elsif a[:title][0..3]=="HEMA" then pnp_class="HEMA"
+      elsif a[:title][0..4]=="SiOTA" then pnp_class="SiOTA"
+      end
+    end
   end
-
   pnp_class
 end
 
@@ -411,6 +414,9 @@ def self.assets_from_code(codes)
 	    if code then
 	      code=code.upcase
 	      a=Asset.find_by(code: code.split(' ')[0])
+              if !a then
+	        a=Asset.find_by(old_code: code.split(' ')[0])
+              end
 	      va=VkAsset.find_by(code: code.split(' ')[0])
 	      if a then
 		  asset[:asset]=a
@@ -460,7 +466,7 @@ def self.assets_from_code(codes)
 	      elsif thecode=code.match(/^[a-zA-Z0-9]{1,2}-\d{4,5}/)  then
 		#POTA
 		puts "POTA"
-		if code[0..1].upcase=='VK' then
+		if code[0..1].upcase=='VK' or code[0..1].upcase=='AU'then
 		  asset[:name]=code
 		  asset[:url]='https://parksnpeaks.org/getPark.php?actPark='+thecode.to_s+'&submit=Process'
 		  asset[:external]=true
@@ -595,7 +601,7 @@ def self.assets_from_code(codes)
 	end
 	def self.add_sota_peak(p)
 	    a=Asset.find_by(asset_type: 'summit', code: p.summit_code)
-	    if !a then a=Asset.new end
+	    if !a then puts "New peak: "+p.summit_code;a=Asset.new end
 	    a.asset_type="summit"
 	    a.code=p.summit_code
 	    a.safecode=a.code.gsub('/','_')
@@ -605,6 +611,8 @@ def self.assets_from_code(codes)
 	    a.location=p.location
 	    a.points=p.points
 	    a.altitude=p.alt
+	    if p.valid_to!="0001-01-01 00:00:00" then puts "retured summit: "+a.code; a.valid_to=p.valid_to else a.valid_to=nil end
+	    if p.valid_from!="0001-01-01 00:00:00" then a.valid_from=p.valid_from else a.valid_from=nil end
 	    a.save
 	    puts a.code
 	    a
@@ -647,6 +655,12 @@ def self.assets_from_code(codes)
 	    a
 	end
 
+	def self.add_humps
+	  ps=Hump.where('code is not null')
+	  ps.each do |p|
+	    Asset.add_hump(p, nil)
+	  end
+	end
 	def self.add_lighthouses
 	  ps=Lighthouse.where('code is not null')
 	  ps.each do |p|
@@ -681,6 +695,29 @@ def self.assets_from_code(codes)
 	    puts a.name
 	    a
 	end
+
+        def self.add_hump(p, existing_asset)
+            a=Asset.find_by(asset_type: 'hump', code: p.code)
+            if !a then
+               a=Asset.new
+               puts "Adding new hump"
+            end
+            a.asset_type="hump"
+            a.code=p.code
+            a.is_active=true
+            a.name=p.name
+            if a.name==nil or a.name==="" then
+              a.name=a.code
+            end
+            a.location=p.location
+            a.region=p.region
+            a.altitude=p.elevation
+            if a.name and a.name.length>0 then a.is_active=true else a.is_active=false end
+            a.save
+            puts a.code
+            puts a.name
+            a
+        end
 
 
 	def self.add_wwff_park(p, existing_asset)
@@ -1035,8 +1072,17 @@ def self.add_sota_activation_zones
      end
 end
 
+def self.add_hema_activation_zones
+     count=0
+     as=Asset.where(asset_type: 'hump')
+     as.each do |a|
+       count+=1
+       a.add_sota_activation_zone
+     end
+end
+
 def add_sota_activation_zone
-  if self.asset_type=="summit" then
+  if self.asset_type=="summit" or self.asset_type=="hump" then
     puts self.code
     dem=Asset.get_custom_connection("cps",'dem30','mbriggs','littledog')
     location=self.location
@@ -1089,6 +1135,7 @@ end
 
 def get_access_with_buffer(buffer)
   if self.boundary then
+     puts "boundary"
      queryfield='a.boundary'
   else
      queryfield='a.location'
@@ -1113,6 +1160,14 @@ def get_access_with_buffer(buffer)
     ActiveRecord::Base.connection.execute("update assets set public_access=true where code='#{self.code}'")
   end
   self.reload
+end
+
+def self.get_hema_access
+  as=Asset.where(asset_type: 'hump')
+  as.each do |a|
+    puts a.code
+    a.get_access
+  end
 end
 
 def self.get_sota_access

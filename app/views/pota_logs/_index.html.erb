@@ -41,7 +41,7 @@
              if !c.submitted_to_pota then submitted_to_pota=false end 
            end
         %>
-        <td><%=if !submitted_to_pota then  link_to "Sumbit Log", '/pota_logs/'+logday[:park][:potapark]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" else link_to "Resend Log", '/pota_logs/'+logday[:park][:potapark]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" end%></td>
+        <td><%=if !submitted_to_pota then  link_to "Submit Log", '/pota_logs/'+logday[:park][:potapark]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" else link_to "Resend Log", '/pota_logs/'+logday[:park][:potapark]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" end%></td>
       </tr>
     <% end%>
   </table>

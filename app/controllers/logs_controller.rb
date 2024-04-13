@@ -10,6 +10,11 @@ def show
   end
   @parameters=params_to_query
 
+  respond_to do |format|
+    format.html
+    format.js
+    format.text
+  end
 end
 
 def load

@@ -69,6 +69,8 @@ def self.import
         ss.summit_code=s["summitCode"]
         ss.name=s["name"]
         ss.short_code=s["shortCode"]
+        ss.valid_to=s["validTo"]
+        ss.valid_from=s["validFrom"]
         ss.alt=s["altM"]
         ss.location="POINT("+s["longitude"].to_s+" "+s["latitude"].to_s+")"
         ss.points=s["points"]

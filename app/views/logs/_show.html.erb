@@ -9,6 +9,7 @@
      </div>
    <div id="controls">
        <% if write_access? and @log.id and (@log.user1_id==current_user.id or current_user.is_admin) then %>
+          <%=  link_to ":as Markdown", '/logs/'+@log.id.to_s+'.txt', class: "btn btn-small btn-primary", :blank => true%>
           <%=  link_to "Edit", '/logs/'+@log.id.to_s+'/edit', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('edit')"%>
        <% end %>
        <%=  link_to "Index", '/logs/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
@@ -119,8 +120,8 @@
               <%= contact.loc_desc2 %>
             <% end %>
           </ul></td>
-          <td> <%= contact.signal1 %></td>
           <td> <%= contact.signal2 %></td>
+          <td> <%= contact.signal1 %></td>
  
         </tr>
       <% end %> 
