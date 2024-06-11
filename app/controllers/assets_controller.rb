@@ -222,7 +222,7 @@ end
 
   private
   def asset_params
-    params.require(:asset).permit(:id, :name, :description, :altitude, :is_active, :is_nzart, :minor, :is_doc, :park_id, :asset_type, :code, :valid_from, :valid_to, :az_radius, :points)
+    params.require(:asset).permit(:id, :name, :description, :altitude, :is_active, :is_nzart, :minor, :is_doc, :park_id, :asset_type, :code, :valid_from, :valid_to, :az_radius, :points, :public_access)
   end
 
   def convert_location_params(x,y)

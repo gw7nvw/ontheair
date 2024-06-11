@@ -133,6 +133,7 @@ def self.get_next_code(asset_type, region)
   if asset_type=='park' then prefix='ZLP/' end
   if asset_type=='island' then prefix='ZLI/' end
   if asset_type=='lake' then prefix='ZLL/'; use_region=false end
+  if asset_type=='lighthouse' then prefix='ZLB/'; use_region=false end
 
   if prefix then 
     if use_region and region and region!="" then
@@ -856,6 +857,31 @@ def self.assets_from_code(codes)
 	  users=self.baggers+self.sota_activators
 	  users.uniq
 	end
+        def traditional_owners
+            buffer=5000 #meters
+            if self.type.has_boundary then
+               tos1=NzTribalLand.find_by_sql [ "select tl.id, tl.name from nz_tribal_lands tl join assets a on a.id=#{self.id} where ST_Within(a.boundary, tl.wkb_geometry) "]
+               tos2=NzTribalLand.find_by_sql [ "select tl.id, tl.name from nz_tribal_lands tl join assets a on a.id=#{self.id} where ST_DWithin(ST_Transform(a.boundary,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});" ]
+            else
+               tos1=NzTribalLand.find_by_sql [ "select tl.id, tl.name from nz_tribal_lands tl join assets a on a.id=#{self.id} where ST_Within(a.location, tl.wkb_geometry) "]
+               tos2=NzTribalLand.find_by_sql [ "select tl.id, tl.name from nz_tribal_lands tl join assets a on a.id=#{self.id} where ST_DWithin(ST_Transform(a.location,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});" ]
+
+            end
+            ids1=[]; tos1.each do |t| ids1.push(t["id"]) end 
+            ids2=[]; tos2.each do |t| ids2.push(t["id"]) end 
+            if ids2 and ids2.count>0 then
+              if ids1.sort!=ids2.sort then
+                names=[]; tos2.each do |t| names.push(t["name"]) end 
+                trad_owners="In or near "+names.join(", ")+" country"
+              else
+                names=[]; tos1.each do |t| names.push(t["name"]) end 
+                trad_owners=names.join(", ")+" country"
+              end 
+            else
+              trad_owners=nil
+            end 
+          trad_owners
+        end
 	def add_region
 	    if self.location then region=Region.find_by_sql [ %q{select id, sota_code, name from regions where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), "boundary");} ] else puts "ERROR: place without location. Name: "+self.name+", id: "+self.id.to_s end
 	    if self.id and region and region.count>0 and self.region != region.first.sota_code then
@@ -1062,35 +1088,52 @@ def self.get_altitudes_from_sota
   end
 end
 
-def self.add_sota_activation_zones
-     count=0
-     a=Asset.first_by_id
-     while a do
-       count+=1
-       a.add_sota_activation_zone
-       a=Asset.next(a.id)
-     end
+def add_buffered_activation_zone
+  puts "update assets set boundary=ST_Transform(ST_Buffer(ST_Transform(a.location,2193),#{self.az_radius*1000}),4326) where a.id=#{self.id}"
+ ActiveRecord::Base.connection.execute("update assets a set boundary=ST_Multi(ST_Transform(ST_Buffer(ST_Transform(a.location,2193),#{self.az_radius*1000}),4326)) where a.id=#{self.id}")
 end
 
-def self.add_hema_activation_zones
+def self.add_sota_activation_zones(force=false)
      count=0
-     as=Asset.where(asset_type: 'hump')
+     if force==false then
+       as=Asset.where(asset_type: 'summit', boundary: nil)
+     else
+       as=Asset.where(asset_type: 'summit')
+     end
      as.each do |a|
        count+=1
        a.add_sota_activation_zone
+       a.get_access
+     end
+end
+def self.add_hema_activation_zones(force=false)
+     count=0
+     if force==false then
+       as=Asset.where(asset_type: 'hump', boundary: nil)
+     else
+       as=Asset.where(asset_type: 'hump')
+     end
+     as.each do |a|
+       count+=1
+       a.add_sota_activation_zone
+       a.get_access
      end
 end
 
 def add_sota_activation_zone
   if self.asset_type=="summit" or self.asset_type=="hump" then
     puts self.code
-    dem=Asset.get_custom_connection("cps",'dem30','mbriggs','littledog')
+#    dem=Asset.get_custom_connection("cps",'dem30','mbriggs','littledog')
+    dem=Asset.get_custom_connection("cps",'dem15','mbriggs','littledog')
     location=self.location
     alt_min=self.altitude-25
     alt_max=5000
-    dist_max=0.02 #degrees
-    puts " select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(st_clip(rast,  st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem30s) as foo where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326));"
-    az_poly=dem.exec_query(" select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(st_clip(rast,  st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem30s) as foo where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326));")   
+    dist_max=0.04 #degrees
+#    puts " select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(st_clip(rast,  st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem30s) as foo where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326));"
+#    az_poly=dem.exec_query(" select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(st_clip(rast,  st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem30s) as foo where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326));")   
+    #az_poly=dem.exec_query(" select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(st_clip(rast,  st_envelope(st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max})))),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem16) as foo where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326));")   
+    puts " select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(rast),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem16 where st_intersects(rast,st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))) as bar where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326)); "
+    az_poly=dem.exec_query(" select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(rast),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem16 where st_intersects(rast,st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))) as bar where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326)); ")
     if az_poly and az_poly.count>0 and az_poly.first["geom"] then
       puts az_poly.first["geom"]
       boundary=make_multipolygon(az_poly.first["geom"])

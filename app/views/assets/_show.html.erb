@@ -205,6 +205,14 @@
         </div>
      </div>
    <% end %>
+   <% if @asset.traditional_owners %>
+     <div class="erow" id="district2">
+        <div class="rowtitle">Iwi</div>
+        <div class="rowtext"> 
+          <%=@asset.traditional_owners %>
+        </div>
+     </div>
+   <% end %>
    <div class="erow" id="location">
       <div class="rowtitle"><%= "Location" %></div>
       <% if @asset.x and @asset.y %>

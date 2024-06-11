@@ -20,12 +20,21 @@
    </div>
 </div>
 
-
 <div id="right_scroll">
    <%= render 'flash' %>
     <div class="erow">
-      <div class="sectiontitle" style="margin-top: 12px;"><%=if @asset_type == 'qrp' then "QRP" else @asset_type.capitalize.pluralize end%></div>
-      Current ZLOTA sites <%=@count_type%>: <span id="valid_count"></span> (<%=@assets.uniq.count.to_s%> total) </li>
+      <div class="sectiontitle" style="margin-top: 12px;"><%=if @asset_type == 'qrp' then "QRP" else @asset_type.capitalize.pluralize end%> <%=@count_type%></div>
+      <% if @count_type=='activated' then %>
+        Unique sites qualified: <span id="valid_count"></span> (total qualifying activations: <%=@user.activated_count_total[@asset_type]%>) <br/>
+        Total sites activated: <%=@assets.uniq.count.to_s%> (including non-qualifying activations)<br/> 
+      <% end %>
+      <% if @count_type=='chased' then %>
+        Qualifying sites chased: <span id="valid_count"></span> (total qualifying chases: <%=@user.chased_count_total[@asset_type]%>)<br/>
+        Total sites chased: <%=@assets.uniq.count.to_s%> (including non-qualifying sites)</li>
+      <% end %>
+      <% if @count_type=='bagged' then %>
+        Qualifying sites bagged: <span id="valid_count"></span> (total sites bagged: <%=@assets.uniq.count.to_s%>) </li>
+      <% end %>
       <table>
         <% count=0; valid_count=0; invalid_count=0; @assets.uniq.sort_by { |asset| asset[:name] }.each do |a|; count+=1 %>
           <tr>
@@ -33,6 +42,8 @@
               <%if a.minor==true or a.is_active==false or a.type.keep_score!=true or not @valid_codes.include?(a.code) %>
                 <%=link_to a.name+" ["+a.code+"]", '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :class => "link_to", :onclick => "linkHandler('asset')" %>
                 <% invalid_count+=1 %>
+                <%if a.minor==true or a.is_active==false or a.type.keep_score!=true%> - site does not qualify<%end%>
+                <%if not @valid_codes.include?(a.code)%> - insufficient contacts<%end%>
               <%else%>
                 <%=link_to a.name+" ["+a.code+"]", '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
                 <% valid_count+=1 %>

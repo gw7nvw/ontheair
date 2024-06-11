@@ -54,7 +54,7 @@
         </tr>
         <tr>
           <td class="td-l">Timezone:</td>
-          <td colspan=2 class="td-d"><%= collection_select( :log, :timezone, Timezone.all.order(:name), :id, :name, {}, {}) %></td>
+          <td colspan=2 class="td-d"><%= collection_select( :log, :timezone, Timezone.all.order(:name), :id, :name, {}, {:disabled => true}) %></td>
           <td class="td-l">Power:</td>
           <td colspan=2 class="td-d"> <%= f.text_field :power1%></td>
 

@@ -8,6 +8,12 @@ root 'static_pages#home'
   get "password_reset/edit"
 mount Resque::Server.new, at: "/resque"
 
+get "humps", to: 'assets#index', defaults: {type: 'hump'}
+get "lighthouses", to: 'assets#index', defaults: {type: 'lighthouse'}
+get "wwff", to: 'assets#index', defaults: {type: 'wwff park'}
+get "pota", to: 'assets#index', defaults: {type: 'pota park'}
+#get "summits", to: 'assets#index', defaults: {type: 'summits'}
+
 get "proxy" => "proxy#get", :as => "proxy"
 
 match '/sitemap.xml', to: 'sitemaps#index', via: 'get', as: "sitemap", defaults: { format: "xml" }

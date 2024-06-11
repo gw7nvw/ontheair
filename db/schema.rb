@@ -524,6 +524,14 @@ ActiveRecord::Schema.define(version: 20240412000213) do
     t.datetime "updated_at"
   end
 
+  create_table "nz_tribal_lands", primary_key: "ogc_fid", force: true do |t|
+    t.spatial "wkb_geometry", limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.decimal "id",                                                         precision: 10, scale: 0
+    t.string  "name",         limit: 80
+  end
+
+  add_index "nz_tribal_lands", ["wkb_geometry"], :name => "nz_tribal_lands_wkb_geometry_geom_idx", :spatial => true
+
   create_table "parks", force: true do |t|
     t.string   "name"
     t.string   "doc_link"

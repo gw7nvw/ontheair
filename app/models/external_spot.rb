@@ -11,6 +11,8 @@ end
 
 def self.fetch
 
+    spots=nil
+
     #only fetch if last read > 30 secs past
     thirtysecondsago=Time.at(Time.now().to_i-30).in_time_zone('UTC').to_s
     as=AdminSettings.first
@@ -22,27 +24,55 @@ def self.fetch
       #clear old spots > 1 year ago from DB
       oneyearago=Time.at(Time.now().to_i-60*60*24*365).in_time_zone('UTC').to_s
 
-      #read new spots
-      url="https://api2.sota.org.uk/api/spots/50/all?client=sotawatch&user=anon"
-      spots=JSON.parse(open(url).read)
+      begin
+        Timeout::timeout(30) {
+          #read new spots
+          url="https://api2.sota.org.uk/api/spots/50/all?client=sotawatch&user=anon"
+          spots=JSON.parse(open(url).read)
+        }
+      rescue Timeout::Error
+        puts "ERROR: SOTA Timeout"
+      else
+      end
+
       if spots then
         zlvk_sota_spots=spots
       else
-       zlvk_sota_spots=[]
+        zlvk_sota_spots=[]
       end
 
 
-      url="https://api.pota.app/spot/activator"
-      spots=JSON.parse(open(url).read)
+      begin
+        Timeout::timeout(30) {
+          url="https://api.pota.app/spot/activator"
+          spots=JSON.parse(open(url).read)
+      }
+      rescue Timeout::Error
+        puts "ERROR: POTA Timeout"
+      else
+      end
+
       if spots then
         zlvk_pota_spots=spots
       else
-       zlvk_pota_spots=[]
+        zlvk_pota_spots=[]
       end
 
+      begin
+        Timeout::timeout(30) {
+        url="http://www.parksnpeaks.org/api/ALL"
+        spots=JSON.parse(open(url).read)
+      }
+      rescue Timeout::Error
+        puts "ERROR: PnP Timeout"
+      else
+      end
 
-      url="http://www.parksnpeaks.org/api/ALL"
-      pnp_spots=JSON.parse(open(url).read)
+      if spots then
+        pnp_spots=spots
+      else
+        pnp_spots=[]
+      end
 
       #add to db
       zlvk_sota_spots.each do |spot|

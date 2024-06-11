@@ -15,7 +15,7 @@ Please check that the following log is correct, and click the <b>Send Log</b> bu
 Filename: <%=@filename%><br/>
 Email to send to: <%=@address%><br/>
 <br/>
-<%=@wwff_log%>
+<%=raw(@wwff_log.gsub('<','&lt;').gsub('>','&gt;').gsub('&lt;eor&gt;','&lt;eor&gt;<br/>'))%>
 <br/>
 <br/>
 Invalid contacts rejected: <%=@invalid_contacts.count%><br/>

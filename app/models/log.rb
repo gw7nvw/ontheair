@@ -11,7 +11,7 @@ class Log < ActiveRecord::Base
     self.check_codes_in_location
     self.get_most_accurate_location
     self.remove_suffix
-    self.callsign1=self.callsign1.strip.upcase
+    self.callsign1=self.callsign1.strip.upcase.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
   end
 
   def add_user_ids
@@ -164,7 +164,7 @@ class Log < ActiveRecord::Base
       cle.x1=self.x1
       cle.y1=self.y1
       cle.location1=self.location1
-      cle.convert_to_utc(User.find_by_callsign_date(cle.callsign1, cle.date))
+      #cle.convert_to_utc(User.find_by_callsign_date(cle.callsign1, cle.date))
       cle.asset1_codes=self.asset_codes
       cle.save
     end
@@ -392,6 +392,7 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
   logs.each do |log|
     if contacts_per_log[lc]>0 and !invalid_log[lc] then 
       if errors.empty? or ignore_error then
+        logs[lc].asset_codes=nil
         if logs[lc].save then
            logs[lc].reload
            good_logs+=1
@@ -446,7 +447,10 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
   #check encoding
   if !filestr.valid_encoding? then
     filestr=filestr.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
+    puts "Invalid"
   end
+
+  filestr =filestr.encode('ASCII', :invalid=>:replace, :replace=>"?").encode('UTF-8')
 
   # remove header
   if filestr["<EOH>"] or filestr["<eoh>"] then
@@ -470,8 +474,8 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
      contact=Contact.new
      protolog=Log.new
      if user then 
-       contact.callsign1=default_callsign
-       protolog.callsign1=default_callsign
+       contact.callsign1=default_callsign.encode('UTF-8')
+       protolog.callsign1=default_callsign.encode('UTF-8')
      end
      logid=nil
      timestr=nil
@@ -493,10 +497,21 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
        line.split("<").each do |parm|
          if parm and parm.length>0 then
            key=parm.split('>')[0]
-           key=key.split(':')[0]
            len=key.split(':')[1]
+           key=key.split(':')[0]
            value=parm.split('>')[1]
-           if len then value=value[0..len-1] end
+           if value then
+           puts "value: "+value.to_s
+           puts "length: "+value.length.to_s
+           puts "len: "+len.to_s
+           puts "key: "+key
+           end
+
+           if len and len.to_i>0 then 
+             puts "Truncate"
+             value=value[0..(len.to_i)-1] 
+             puts "length: "+value.length.to_s
+           end
            puts "DEBUG: "+key.downcase
            case (key.downcase)
  
@@ -778,6 +793,9 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
   logs.each do |log|
     if contacts_per_log[lc]>0 and !invalid_log[lc] then 
       if errors.empty? or ignore_error then
+        puts logs[lc].callsign1.inspect
+        puts logs[lc].callsign1.length
+        puts "SAVE: "+logs[lc].to_json
         if logs[lc].save then
            logs[lc].reload
            good_logs+=1

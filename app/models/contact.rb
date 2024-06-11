@@ -38,13 +38,15 @@ class Contact < ActiveRecord::Base
   end
 
   def before_save_actions
-    self.callsign1 = callsign1.strip.upcase
-    self.callsign2 = callsign2.strip.upcase
     self.add_user_ids
     self.check_codes_in_location
     self.get_most_accurate_location
     self.remove_suffix
     self.update_classes
+    self.callsign1 = callsign1.strip.upcase.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
+
+    self.callsign2 = callsign2.strip.upcase.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
+
   end
   def add_user_ids
     #look up callsign1 at contact.time
@@ -498,9 +500,9 @@ end
 
 
  end
-  def convert_to_utc(current_user)
+  def convert_to_utc(user)
     if self.time and self.date then
-        if current_user then tz=Timezone.find_by_id(current_user.timezone) else tz=Timezone.find_by(name: 'UTC') end
+        if user then tz=Timezone.find_by_id(user.timezone) else tz=Timezone.find_by(name: 'UTC') end
         t=(self.date.strftime('%Y-%m-%d')+" "+self.time.strftime('%H:%M')).in_time_zone(tz.name)
         self.date=t.in_time_zone('UTC').strftime('%Y-%m-%d')
         self.time=t.in_time_zone('UTC')

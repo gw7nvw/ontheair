@@ -466,23 +466,23 @@ def authenticated?(attribute, token)
      ids=[]
      contacts=[]
      dups=[]
-     contacts1.each do |contact| ids.push({id: contact.user2_id,date: contact.date.to_date, band: contact.band}) end
+     contacts1.each do |contact| ids.push({callsign: contact.callsign2,date: contact.date.to_date, band: contact.band}) end
      ids=ids.uniq
      contacts_count=ids.count
 
      ids.each do |cs|
 
        #TODO: should also check band differs
-       contacts1=Contact.where('user1_id= ? and user2_id = ? and date >= ? and date < ? and (? = ANY(asset1_codes))'+resubmit_str,  self.id,  cs[:id], cs[:date].beginning_of_day,cs[:date].end_of_day, park[:wwffpark])
+       contacts1=Contact.where('user1_id= ? and callsign2 = ? and date >= ? and date < ? and (? = ANY(asset1_codes))'+resubmit_str,  self.id,  cs[:callsign], cs[:date].beginning_of_day,cs[:date].end_of_day, park[:wwffpark])
        count=0
        bands=[]
        contacts1.each do |c|
        #if contacts1 and contacts1.count>0 then 
-         if !bands.include?(c.band+"|"+c.mode) then
+         if !bands.include?(c.band+"|"+c.mode+"|"+c.callsign2) then
            contacts.push(c)
-           bands.push(c.band+"|"+c.mode)
+           bands.push(c.band+"|"+c.mode+"|"+c.callsign2)
          else
-           puts "Dropping "+c.callsign1+" "+c.callsign2+" "+c.date.to_date.to_s+" "+c.band 
+           puts "Dropping "+c.callsign1+" "+c.callsign2+" "+c.date.to_date.to_s+" "+c.band+"-"+c.mode 
            dups.push(c)
          end
        end

@@ -31,6 +31,7 @@ def savefile
 
     #get callsign from form
     location=params[:upload][:doc_location]
+    if location and location.length>0 then location=location.upcase end
 
     if params[:upload][:doc_callsign] then
       puts "Got callsign: "+params[:upload][:doc_callsign]
@@ -263,6 +264,9 @@ def edit
   if @log then @user=User.find_by_callsign_date(@log.callsign1.upcase,@log.date) end
 
   if @log and current_user and ((@user and current_user.id==@user.id) or current_user.is_admin) then
+    @tz=Timezone.find_by_id(current_user.timezone)
+    @log.timezone=@tz.id
+
     @contacts = Contact.where(log_id: @log.id).order(:time)
     @contacts.each do |c|  
       c.timetext=c.localtime(current_user)
