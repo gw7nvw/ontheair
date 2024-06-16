@@ -157,6 +157,7 @@ class Log < ActiveRecord::Base
     contacts.each do |cle|
       cle.callsign1=self.callsign1
       cle.date=self.date
+      cle.time=Time.iso8601(self.date.strftime("%Y-%m-%d")+"T"+cle.time.strftime("%H:%M:%SZ")) #pick up changes in date and apply to time
       cle.loc_desc1=self.loc_desc1
       cle.is_qrp1=self.is_qrp1
       cle.power1=self.power1
