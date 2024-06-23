@@ -1,9 +1,7 @@
+<% params='/spots?'+raw(@parameters)%>
+
 <script>
-   reset_map_controllers();
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
-   document.title = '... On The Air'
-   document.getElementById('logo').innerHTML='... On The Air'
+   try {
    refreshInterval = setTimeout(function(){
      //only if we're still on spots page
      if(document.getElementById('spots')) {
@@ -14,7 +12,8 @@
          },
          type: "GET",
          timeout: 20000,
-         url: `/spots?<%=raw(@parameters)%>`,
+         url: "<%=params%>",
+//         url: `/spots?<%=raw(@parameters)%>`,
          complete: function(jqXHR, thrownError) {
            /* complete also fires when error ocurred, so only clear if no error has been shown */
            if(thrownError=="timeout" || thrownError=="error") {
@@ -23,7 +22,19 @@
          }
        });
      };
-  }, 60000) /* time in milliseconds (ie 60 seconds)*/
+  }, 60000); /* time in milliseconds (ie 60 seconds)*/
+  }
+  catch(err) {
+  } 
+  finally {
+  }
+</script>
+<script>
+   //reset_map_controllers();
+   //document.getElementById("page_status").innerHTML = '';
+   //document.body.classList.remove('loading');
+   //document.title = '... On The Air'
+   //document.getElementById('logo').innerHTML='... On The Air'
 
 </script>
 
@@ -88,10 +99,10 @@
 
 </div>
 <script>
-document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+//document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
   
- if ($(window).width() < 960) {
-   site_smaller_map();
- }
+// if ($(window).width() < 960) {
+//   site_smaller_map();
+// }
 </script>
 

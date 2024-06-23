@@ -75,6 +75,7 @@ Array.prototype.remove = function() {
 };
 
 function site_init() {
+ try {
   if(typeof(map_map)=='undefined') {
     site_init_styles();
     map_init_mapspast('map_map');
@@ -106,6 +107,12 @@ function site_init() {
       }
     });
   }
+ } 
+ catch(err) {
+   site_smaller_map();
+ }
+ finally {
+ }
 }
 
 function site_zoom_end_callback() {
