@@ -62,7 +62,9 @@ class StaticPagesController < ApplicationController
          cats=AssetType.where("keep_score = true")
          @sortby=cats[rand(0..cats.count-1)].name
       end
-      if @scoreby=="activated" then
+      if @scoreby=="qualified" then
+        scorefield="qualified_count_total"
+      elsif @scoreby=="activated" then
         scorefield="activated_count_total"
       elsif @scoreby=="chased" then
         scorefield="chased_count_total"

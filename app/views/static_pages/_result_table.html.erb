@@ -2,10 +2,12 @@
 <% if @sortby=="p2p" then
    @scoreby="bagged"
  end %>
-<% if @scoreby=="activated" then 
-   scorefield="activated_count_total"
+<% if @scoreby=="qualified" then 
+   scorefield="qualified_count_total"
    elsif @scoreby=="chased" then
    scorefield="chased_count_total"
+   elsif @scoreby=="activated" then
+   scorefield="activated_count_total"
    else
    scorefield="score"
    @scoreby="bagged" 
@@ -17,6 +19,7 @@ end%>
   <tr>
     <th <%=if @scoreby == 'bagged' then 'style=background-color:#33ff22 !important' end%>><%=link_to 'Bagged v','?scoreby=bagged&sortby='+@sortby, remote: true,:onclick => "linkHandler('bagged')"%></th>
     <th <%=if @scoreby == 'activated' then 'style=background-color:#33ff22 !important' end%>><%=link_to 'Activated v','?scoreby=activated&sortby='+@sortby, remote: true,:onclick => "linkHandler('activated')"%></th>
+    <th <%=if @scoreby == 'qualified' then 'style=background-color:#33ff22 !important' end%>><%=link_to 'Qualified v','?scoreby=qualified&sortby='+@sortby, remote: true,:onclick => "linkHandler('qualified')"%></th>
     <th <%=if @scoreby == 'chased' then 'style=background-color:#33ff22 !important' end%>><%=link_to 'Chased v','?scoreby=chased&sortby='+@sortby, remote: true,:onclick => "linkHandler('chased')"%></th>
   </tr>
 </table>

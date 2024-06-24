@@ -94,15 +94,17 @@
         <i>No-one has achieved this award yet. Be the first!</i></br>
      <% end %>
      <% @award.baggers.sort_by {|b| if b.user then b.user.callsign else "" end}.each do |ua| %>
-          <% if @award.count_based then %>
-            <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>: <%=ua.threshold_name%> (<%=ua.threshold.to_s%>). Awarded: <%=ua.created_at.to_date%>
-          <% elsif @award.all_district then %>
-            <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>: <%=ua.district.name%> (<%=ua.activity_type%>). Awarded: <%=ua.created_at.to_date%>
-          <% elsif @award.all_region then %>
-            <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>: <%=ua.region.name%> (<%=ua.award_class%> <%=ua.activity_type%>). Awarded: <%=ua.created_at.to_date%>
-          <% end %>
-          <% if ua.expired then %>
-            <%=", Expired: "+ua.expired_at.to_date.to_s%>
+          <% if ua.user %>
+            <% if @award.count_based then %>
+              <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>: <%=ua.threshold_name%> (<%=ua.threshold.to_s%>). Awarded: <%=ua.created_at.to_date%>
+            <% elsif @award.all_district then %>
+              <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>: <%=ua.district.name%> (<%=ua.activity_type%>). Awarded: <%=ua.created_at.to_date%>
+            <% elsif @award.all_region then %>
+              <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>: <%=ua.region.name%> (<%=ua.award_class%> <%=ua.activity_type%>). Awarded: <%=ua.created_at.to_date%>
+            <% end %>
+            <% if ua.expired then %>
+              <%=", Expired: "+ua.expired_at.to_date.to_s%>
+            <% end %>
           <% end %>
           <br/>
      <% end %>

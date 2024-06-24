@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240412000213) do
+ActiveRecord::Schema.define(version: 20240624014224) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -783,6 +783,8 @@ ActiveRecord::Schema.define(version: 20240412000213) do
     t.string   "acctnumber"
     t.boolean  "logs_pota"
     t.boolean  "logs_wwff"
+    t.string   "qualified_count"
+    t.string   "qualified_count_total"
   end
 
   add_index "users", ["callsign"], :name => "index_users_on_callsign"

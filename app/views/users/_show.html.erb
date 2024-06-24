@@ -215,6 +215,7 @@
         <li><%=link_to "Bagged: "+@user.score[at.name].to_s+" unique", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=bagged", remote: true,  :id => 'users', :onclick => "linkHandler('users')"%></li>
 
         <li><%=link_to "Activated: "+@user.activated_count[at.name].to_s+" unique ("+@user.activated_count_total[at.name].to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=activated", remote: true,  :id => 'users', :onclick => "linkHandler('users')"%></li>
+        <li><%=link_to "Qualified: "+@user.qualified_count[at.name].to_s+" unique ("+@user.qualified_count_total[at.name].to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=activated", remote: true,  :id => 'users', :onclick => "linkHandler('users')"%></li>
         <li><%=link_to "Chased: "+@user.chased_count[at.name].to_s+" unique ("+@user.chased_count_total[at.name].to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=chased", remote: true,  :id => 'users', :onclick => "linkHandler('users')"%></li>
       </ul>
     </div>

@@ -19,7 +19,7 @@
                <% elsif a.chased==true then %>
                  <% score=@user.chased_count_total[a.programme] %>
                <% elsif a.activated==true then %>
-                 <% score=@user.activated_count_total[a.programme] %>
+                 <% score=@user.qualified_count_total[a.programme] %>
                <% else %>
                  <% score=@user.score[a.programme] %>
                <% end%>

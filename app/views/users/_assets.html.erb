@@ -25,8 +25,8 @@
     <div class="erow">
       <div class="sectiontitle" style="margin-top: 12px;"><%=if @asset_type == 'qrp' then "QRP" else @asset_type.capitalize.pluralize end%> <%=@count_type%></div>
       <% if @count_type=='activated' then %>
-        Unique sites qualified: <span id="valid_count"></span> (total qualifying activations: <%=@user.activated_count_total[@asset_type]%>) <br/>
-        Total sites activated: <%=@assets.uniq.count.to_s%> (including non-qualifying activations)<br/> 
+        Unique sites qualified: <span id="valid_count"></span> (including repeat qualified activations: <%=@user.qualified_count_total[@asset_type]%>) <br/>
+        Unique sites activated: <%=@user.activated_count[@asset_type]%> (including non-qualifying sites: <%=@assets.uniq.count.to_s%>, including repeat activations: <%=@user.activated_count_total[@asset_type]%>)<br/> 
       <% end %>
       <% if @count_type=='chased' then %>
         Qualifying sites chased: <span id="valid_count"></span> (total qualifying chases: <%=@user.chased_count_total[@asset_type]%>)<br/>

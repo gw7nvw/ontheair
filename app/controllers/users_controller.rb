@@ -11,7 +11,7 @@ class UsersController < ApplicationController
      @user=User.find_by(callsign: params[:id].upcase)
      @activations=@user.district_activations
      @chases=@user.district_chases
-     @award_classes=AssetType.where("name != 'all' and name !='pota park' and name!='wwff park'")
+     @award_classes=AssetType.where("name != 'all' and name !='pota park' and name!='wwff park' and name!='lighthouse'")
      @district_assets=District.get_assets_with_type
      @districts=District.all.order(:region_code, :name)
   end

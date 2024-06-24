@@ -3,6 +3,8 @@ class User < ActiveRecord::Base
   serialize :score_total, Hash
   serialize :activated_count, Hash
   serialize :activated_count_total, Hash
+  serialize :qualified_count, Hash
+  serialize :qualified_count_total, Hash
   serialize :chased_count, Hash
   serialize :chased_count_total, Hash
 
@@ -95,6 +97,7 @@ def authenticated?(attribute, token)
    codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where (user2_id="+self.id.to_s+" and is_qrp2=true) or (user1_id="+self.id.to_s+" and is_qrp1=true)) as c inner join assets a on a.code = c.asset1_codes where asset1_classes in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
    codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where (user2_id="+self.id.to_s+" and is_qrp2=true) or (user1_id="+self.id.to_s+" and is_qrp1=true)) as c inner join assets a on a.code = c.asset2_codes where asset2_classes in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
    codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+   codes=codes.select{ |c| c.length>0 }
  end
 
  def bagged(asset_type = 'all', include_minor=false)
@@ -109,6 +112,7 @@ def authenticated?(attribute, token)
      codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where (user1_id="+self.id.to_s+" or user2_id="+self.id.to_s+") and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where a.asset_type='"+asset_type+"' and a.is_active=true and #{minor_query}; " ]
    end
    codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+   codes=codes.select{ |c| c.length>0 }
   end
 
   def activated_qrp(include_minor=false)
@@ -118,6 +122,7 @@ def authenticated?(attribute, token)
     codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+" and is_qrp1=true) as c inner join assets a on a.code = c.asset1_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
     codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and is_qrp2=true) as c inner join assets a on a.code = c.asset2_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",")].join(",").split(',').uniq
+   codes=codes.select{ |c| c.length>0 }
   end
 
   def activated_all(asset_type = 'all', include_minor=false)
@@ -132,6 +137,7 @@ def authenticated?(attribute, token)
         codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where a.asset_type='"+asset_type+"' and a.is_active=true and #{minor_query}; " ]
     end
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",")].join(",").split(',').uniq
+   codes=codes.select{ |c| c.length>0 }
   end
 
   def chased_qrp(include_minor=false)
@@ -141,6 +147,7 @@ def authenticated?(attribute, token)
     codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id="+self.id.to_s+" and is_qrp2=true) as c inner join assets a on a.code = c.asset1_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
     codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id="+self.id.to_s+" and is_qrp1=true) as c inner join assets a on a.code = c.asset2_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+   codes=codes.select{ |c| c.length>0 }
   end
 
   def chased(asset_type = 'all', include_minor=false)
@@ -155,6 +162,7 @@ def authenticated?(attribute, token)
       codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id="+self.id.to_s+" and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where a.asset_type='"+asset_type+"' and a.is_active=true and #{minor_query}; " ]
     end
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+   codes=codes.select{ |c| c.length>0 }
   end
 
   def chased_by_day(asset_type = 'all', include_minor=false)
@@ -170,6 +178,7 @@ def authenticated?(attribute, token)
       codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id="+self.id.to_s+" and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where a.asset_type='"+asset_type+"' and a.is_active=true and #{minor_query}; " ]
     end
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+   codes=codes.select{ |c| c.length>0 }
   end
 
   def chased_qrp_by_day(include_minor=false)
@@ -179,6 +188,7 @@ def authenticated?(attribute, token)
     codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id="+self.id.to_s+" and is_qrp2=true) as c inner join assets a on a.code = c.asset1_codes  where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query} ; " ]
     codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id="+self.id.to_s+" and is_qrp1=true) as c inner join assets a on a.code = c.asset2_codes  where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+   codes=codes.select{ |c| c.length>0 }
   end
 
   def activated_by_day(asset_type = 'all', include_minor=false)
@@ -193,6 +203,7 @@ def authenticated?(attribute, token)
       codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || time::date) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where a.asset_type='"+asset_type+"' and a.is_active=true and #{minor_query}; " ]
     end
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+   codes=codes.select{ |c| c.length>0 }
   end
 
   def activated_by_year(asset_type = 'all', include_minor=false)
@@ -208,6 +219,7 @@ def authenticated?(attribute, token)
       codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where a.asset_type='"+asset_type+"' and a.is_active=true and #{minor_query}; " ]
     end
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+   codes=codes.select{ |c| c.length>0 }
 
   end
 
@@ -218,6 +230,7 @@ def authenticated?(attribute, token)
     codes1=Contact.find_by_sql [" select distinct(asset1_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+" and is_qrp1=true) as c inner join assets a on a.code = c.asset1_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
     codes2=Contact.find_by_sql [" select distinct(asset2_codes || ' ' || date_part('year', time)) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and is_qrp2=true) as c inner join assets a on a.code = c.asset2_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
     codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",")].join(",").split(',').uniq
+   codes=codes.select{ |c| c.length>0 }
   end
 
 
@@ -292,8 +305,10 @@ def authenticated?(attribute, token)
        self.score[asset_type.name]=self.bagged(asset_type.name).count
        self.score_total[asset_type.name]=0
        codes=self.activated_all(asset_type.name)
-       self.activated_count[asset_type.name]=self.filter_by_min_qso(codes,asset_type.name).count
-       self.activated_count_total[asset_type.name]=self.filter_by_min_qso_by_year(codes,asset_type.name).count
+       self.activated_count[asset_type.name]=self.activated_all(asset_type.name).count
+       self.activated_count_total[asset_type.name]=self.activated_by_year(asset_type.name).count
+       self.qualified_count[asset_type.name]=self.filter_by_min_qso(codes,asset_type.name).count
+       self.qualified_count_total[asset_type.name]=self.filter_by_min_qso_by_year(codes,asset_type.name).count
        self.chased_count[asset_type.name]=self.chased(asset_type.name).count
        self.chased_count_total[asset_type.name]=self.chased_by_day(asset_type.name).count
     end
@@ -303,8 +318,8 @@ def authenticated?(attribute, token)
 
     self.score["qrp"]=self.bagged_qrp.count
     self.score_total["qrp"]=0
-    self.activated_count["qrp"]=self.activated_qrp.count
-    self.activated_count_total["qrp"]=self.activated_qrp_by_year.count
+    self.qualified_count["qrp"]=self.activated_qrp.count
+    self.qualified_count_total["qrp"]=self.activated_qrp_by_year.count
     self.chased_count["qrp"]=self.chased_qrp.count
     self.chased_count_total["qrp"]=self.chased_qrp_by_day.count
 
@@ -355,7 +370,7 @@ def authenticated?(attribute, token)
   def filter_by_min_qso_by_year(codes,asset_type)
         #filter by min qso
         at=AssetType.find_by(name: asset_type)
-        if at and at.min_qso and at.min_qso>1 then
+        if at and at.min_qso and at.min_qso>0 then
           qual_codes=Asset.find_by_sql [ " 
               select code, 
                 unnest(array(
@@ -364,9 +379,9 @@ def authenticated?(attribute, token)
                       select * from (
                         select date, count(*) as qso_count from (
                           select distinct callsign1, callsign2, date from (
-                              select id, callsign1, callsign2, date from contacts c where (c.callsign1='#{self.callsign}' and a.code=ANY(c.asset1_codes)) 
+                              select id, callsign1, callsign2, date from contacts c where (c.user1_id='#{self.id}' and a.code=ANY(c.asset1_codes)) 
                             union 
-                              select id, callsign2 as callsign1, callsign1 as callsign2, date  from contacts c where  (c.callsign2='#{self.callsign}' and a.code=ANY(c.asset2_codes))
+                              select id, callsign2 as callsign1, callsign1 as callsign2, date  from contacts c where  (c.user2_id='#{self.id}' and a.code=ANY(c.asset2_codes))
                           ) as uniquecontacts 
                         ) as uniqueactivatons group by date 
                       ) as actcount where qso_count>=#{at.min_qso} 
@@ -391,9 +406,9 @@ def authenticated?(attribute, token)
                       select * from (
                         select date, count(*) as qso_count from (
                           select distinct callsign1, callsign2, date from (
-                              select id, callsign1, callsign2, date from contacts c where (c.callsign1='#{self.callsign}' and a.code=ANY(c.asset1_codes)) 
+                              select id, callsign1, callsign2, date from contacts c where (c.user1_id='#{self.id}' and a.code=ANY(c.asset1_codes)) 
                             union 
-                              select id, callsign2 as callsign1, callsign1 as callsign2, date  from contacts c where  (c.callsign2='#{self.callsign}' and a.code=ANY(c.asset2_codes))
+                              select id, callsign2 as callsign1, callsign1 as callsign2, date  from contacts c where  (c.user2_id='#{self.id}' and a.code=ANY(c.asset2_codes))
                           ) as uniquecontacts 
                         ) as uniqueactivatons group by date 
                       ) as actcount where qso_count>=#{at.min_qso}
@@ -830,7 +845,7 @@ def check_awards()
          if award.activated==true and award.chased == true then
            #we need a complete count! 
          elsif award.activated==true then
-           score=user.activated_count_total[award.programme]
+           score=user.qualified_count_total[award.programme]
          elsif award.chased==true then
            score=user.chased_count_total[award.programme]
          else
