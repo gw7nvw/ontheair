@@ -447,11 +447,11 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
   contact_count=0
   #check encoding
   if !filestr.valid_encoding? then
-    filestr=filestr.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
+    filestr=filestr.encode("UTF-16be", :invalid=>:replace, :undef=>:replace, :replace=>"?").encode('UTF-8')
     puts "Invalid"
   end
 
-  filestr =filestr.encode('ASCII', :invalid=>:replace, :replace=>"?").encode('UTF-8')
+  filestr =filestr.encode('ASCII', :invalid=>:replace, :undef=>:replace, :replace=>"?").encode('UTF-8')
 
   # remove header
   if filestr["<EOH>"] or filestr["<eoh>"] then
