@@ -9,7 +9,7 @@ class Log < ActiveRecord::Base
   def before_save_actions
     self.add_user_ids
     self.check_codes_in_location
-    self.get_most_accurate_location
+    #self.get_most_accurate_location
     self.remove_suffix
     self.callsign1=self.callsign1.strip.upcase.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
   end
@@ -40,6 +40,7 @@ class Log < ActiveRecord::Base
         end
       end
     end
+    self.get_most_accurate_location
     self.add_child_codes
   end
 
@@ -50,26 +51,27 @@ class Log < ActiveRecord::Base
 
     accuracy=999999999999
     codes.each do |code|
-      #puts "DEBUG: assessing code #{code}"
+      puts "DEBUG: assessing code #{code}"
       assets=Asset.find_by_sql [ " select id, asset_type, location, area from assets where code='#{code}' limit 1" ]
 
       if assets then asset=assets.first else asset=nil end
 
       if asset then
         if asset.type.has_boundary then
-          if loc_point==false and asset.area and asset.area<accuracy then
+          if loc_point==false and ((!(asset.area.nil?) and asset.area<accuracy) or (asset.area.nil? and (accuracy == 999999999999))) then
             self.location1=asset.location 
             accuracy=asset.area
             loc_point=false
-            #puts "DEBUG: Assigning polygon locn"
+            puts "DEBUG: Assigning polygon locn"
           end
         else
           if loc_point==true then
-            #puts "Multiple POINT locations found for log #{self.id.to_s}"
+            puts "Multiple POINT locations found for log #{self.id.to_s}"
+            #do not overwrite
           end
-          locaton1=asset.location
+          self.location1=asset.location
           loc_point=true
-          #puts "DEBUG: Assigning point locn"
+          puts "DEBUG: Assigning point locn"
         end
       end
     end
@@ -101,8 +103,8 @@ class Log < ActiveRecord::Base
   def get_all_asset_codes
     codes=self.asset_codes
     newcodes=codes
+    newcodes=newcodes+Asset.child_codes_from_location(self.location1)
     codes.each do |code|
-      newcodes=newcodes+Asset.child_codes_from_parent(code)
       newcodes=newcodes+VkAsset.child_codes_from_parent(code)
     end
     newcodes.uniq
@@ -198,7 +200,7 @@ def self.migrate_to_distcodes
   end
 end
 
-def self.import_csv(filestr,user,default_callsign,default_location,no_create=false, ignore_error=false)
+def self.import_csv(filestr,user,default_callsign,default_location,no_create=false, ignore_error=false, do_not_lookup=false)
 
   logs=[]
   contacts=[]
@@ -222,6 +224,7 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
     if fields[0].upcase=='V2' and fields.count>=9 then
       contact=Contact.new
       protolog=Log.new
+      protolog.do_not_lookup=do_not_lookup
       if user then 
         contact.callsign1=default_callsign
         protolog.callsign1=default_callsign
@@ -435,7 +438,7 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
 end
  
      
-def self.import(filestr,user,default_callsign,default_location,no_create=false, ignore_error=false)
+def self.import(filestr,user,default_callsign,default_location,no_create=false, ignore_error=false,  do_not_lookup=false)
 
   logs=[]
   contacts=[]
@@ -474,6 +477,7 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
   lines.each do |line|
      contact=Contact.new
      protolog=Log.new
+     protolog.do_not_lookup=do_not_lookup
      if user then 
        contact.callsign1=default_callsign.encode('UTF-8')
        protolog.callsign1=default_callsign.encode('UTF-8')

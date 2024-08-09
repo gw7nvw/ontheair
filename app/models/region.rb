@@ -17,6 +17,17 @@ def self.import(filename)
   end; true
 end
 
+def self.update(filename)
+  h=[]
+  CSV.foreach(filename, :headers => true) do |row|
+    place=row.to_hash
+    if place and place['prefix'] and place['WKT'] then
+      puts place['prefix']
+      ActiveRecord::Base.connection.execute("update regions set boundary=ST_GeomFromText('"+place['WKT']+"',4326) where sota_code='"+place['prefix']+"';")
+    end
+  end; true
+end
+
 def self.add_sota_codes
 names=[["Northland Region","NL"],
  ["Auckland Region","AK"],

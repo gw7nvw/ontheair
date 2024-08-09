@@ -208,7 +208,7 @@ var actionRenderer = function (instance, td, row, col, prop, value, cellProperti
   var tzindex=7000-row*10;
   h1='<li><a href="#", onclick="search_assets(\'row_'+row+'\');return false;">... from list</a></li>';
   h2='<li><a href="#",  onclick="site_selectPlace('+row+',\'asset2_codes\',\'asset2_names\',\'location2\',\'x2\',\'y2\', null, null, site_green_star,true);return false;">.. from map</a></li>';
-  h3='<li><a href="#",  onclick="site_clear_elementData('+row+',[\'asset2_codes\',\'asset2_names\' ]);map_clear_scratch_layer(null,site_green_star);return false;">Clear</a></li>';
+  h3='<li><a href="#",  onclick="site_clear_elementData('+row+',[\'asset2_codes\',\'asset2_names\',\'location2\' ]);map_clear_scratch_layer(null,site_green_star);return false;">Clear</a></li>';
 
   var $button = $('<div class="navbar ilnb" style="padding:0; margin:0;"><ul style="float: left;margin: 0;z-index:'+tzindex+'" class="nav pull-left" id="menus"> <li id="fat-menu" class="dropdown ildd" > <a href="#" class="dropdown-toggle" data-toggle="dropdown" > Add Place <b class="caret"></b> </a> <ul class="dropdown-menu ildd-menu"> '+h1+h2+h3+' </ul> </li> </ul></div>');
   tzindex=tzindex-100;

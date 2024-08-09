@@ -61,6 +61,7 @@ var site_red_star;
 var site_green_star;
 var site_red_circle;;
 var site_green_circle;
+var site_yellow_circle;
 var site_docland_styles=[];
 
 Array.prototype.remove = function() {
@@ -357,6 +358,7 @@ function site_init_styles() {
   site_blue_dot=map_create_style("circle", 4, "#2222ff", "#22ffff", 1);
   site_red_circle=map_create_style("circle", 5, "#ff2222", "#880000", 1);
   site_green_circle=map_create_style("circle", 5, "#22ff22", "#008800", 1);
+  site_yellow_circle=map_create_style("circle", 5, "#ffd700", "#008800", 1);
   site_purple_star=map_create_style("star", 10, "#8b008b", "#8b008b", 1);
   site_red_star=map_create_style("star", 10, "#990000","#990000", 1);
   site_green_star=map_create_style("star", 10, "#009900", "#009900", 1);

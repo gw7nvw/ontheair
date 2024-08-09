@@ -44,7 +44,12 @@ class UsersController < ApplicationController
      @count_type=params[:count_type]
      @asset_type=params[:asset_type]
 
-     @asset_codes=@user.assets_by_type(@asset_type, @count_type, true) 
+     if @asset_type=='summit' then 
+       @asset_codes=@user.assets_by_type('summit', @count_type, true)+@user.assets_by_type('hump', @count_type, true) 
+     else
+       @asset_codes=@user.assets_by_type(@asset_type, @count_type, true) 
+     end
+
      #filter by min qso requirements
      if @count_type=='activated' then
        @valid_codes=@user.filter_by_min_qso(@asset_codes,@asset_type)
@@ -107,31 +112,45 @@ class UsersController < ApplicationController
       end
     elsif users and users.count>0 then
       @user=users.first
-      @contacts=Contact.find_by_sql [ "select * from contacts where (user1_id="+@user.id.to_s+" or user2_id="+@user.id.to_s+")" ]
-      activationsSites1=Contact.find_by_sql [ " select distinct location1 from contacts where user1_id=#{@user.id.to_s};" ];
-      activationsSites2=Contact.find_by_sql [ " select distinct location2 as location1 from contacts where user2_id=#{@user.id.to_s};" ];
-      chaseSites1=Contact.find_by_sql [ " select distinct location2 as location1 from contacts where user1_id=#{@user.id.to_s};" ];
-      chaseSites2=Contact.find_by_sql [ " select distinct location1 from contacts where user2_id=#{@user.id.to_s};" ];
-      @activationSites=activationsSites1+activationsSites2
-      @chaseSites=chaseSites1+chaseSites2
+      activationSites=[]
+      qualifySites=[]
+      asset_types=AssetType.where("name != 'all'")
+      asset_types.each do |at|
+        activationSite=@user.assets_by_type(at.name,'activated')
+        qualifySites+=@user.filter_by_min_qso(activationSite,at.name)
+        activationSites+=activationSite
+      end
+      chaseSites=@user.assets_by_type('all','chased')
+      activationSites=activationSites-qualifySites
+      @chaseSites=Asset.find_by_sql [ " select location from assets where code in (?); ",chaseSites ] 
+      @activationSites=Asset.find_by_sql [ " select location from assets where code in (?);",activationSites  ] 
+      @qualifySites=Asset.find_by_sql [ " select location from assets where code in (?);",qualifySites  ] 
+
+#      @contacts=Contact.find_by_sql [ "select * from contacts where (user1_id="+@user.id.to_s+" or user2_id="+@user.id.to_s+")" ]
+#      activationsSites1=Contact.find_by_sql [ " select distinct location1 from contacts where user1_id=#{@user.id.to_s};" ];
+#      activationsSites2=Contact.find_by_sql [ " select distinct location2 as location1 from contacts where user2_id=#{@user.id.to_s};" ];
+#      chaseSites1=Contact.find_by_sql [ " select distinct location2 as location1 from contacts where user1_id=#{@user.id.to_s};" ];
+#      chaseSites2=Contact.find_by_sql [ " select distinct location1 from contacts where user2_id=#{@user.id.to_s};" ];
+#      @activationSites=activationsSites1+activationsSites2
+#      @chaseSites=chaseSites1+chaseSites2
       @callsign=UserCallsign.new
       @callsign.user_id=@user.id
-      as=SotaActivation.find_by_sql [ "select * from sota_activations where user_id="+@user.id.to_s+"" ]
+#      as=SotaActivation.find_by_sql [ "select * from sota_activations where user_id="+@user.id.to_s+"" ]
 
-      as.each do |a|
-        c=Contact.new
-        c.callsign1=a.callsign
-        c.user1_id=a.user_id
-        c.callsign2=""
-        c.date=a.date
-        c.time=a.date
-        asset=Asset.find_by(code: a.summit_code)
-        if !asset then
-           asset=Asset.find_by(old_code: a.summit_code)
-        end
-        c.location1=asset.location
-        @contacts.push(c)
-      end
+#     as.each do |a|
+#        c=Contact.new
+#        c.callsign1=a.callsign
+#        c.user1_id=a.user_id
+#        c.callsign2=""
+#        c.date=a.date
+#        c.time=a.date
+#        asset=Asset.find_by(code: a.summit_code)
+#        if !asset then
+#           asset=Asset.find_by(old_code: a.summit_code)
+#        end
+#        c.location1=asset.location
+#        @contacts.push(c)
+#      end
     end
 
   end

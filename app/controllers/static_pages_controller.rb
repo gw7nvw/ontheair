@@ -190,8 +190,13 @@ class StaticPagesController < ApplicationController
       end
       if @hota_alerts and @hota_alerts.count>0 then @hota_alerts=@hota_alerts.sort_by { |h| if h.referenced_date then h.referenced_date.strftime("%Y-%m-%d")+" "+if h.referenced_time then h.referenced_time.strftime("%H:%M") else "" end else "" end }.reverse end
 
+      begin
       url="http://parksnpeaks.org/api/ALERTS/"
       pnp_alerts=JSON.parse(open(url).read)
+      rescue
+        flash[:error]="Received invalid alert data from Parks'n'Peaks. Showing only local alerts"
+        pnp_alerts=[]
+      end
 
       @all_alerts=[]
       zlvk_sota_alerts.each do |alert|

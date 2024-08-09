@@ -38,7 +38,7 @@ include PostsHelper
     end
     end
 
-    @fullassets=Asset.find_by_sql [ "select id,name,code,asset_type,url,is_active,safecode,category,minor,description,region,location,altitude from assets where id in (select id from assets where "+whereclause+" order by name limit #{@limit}) order by name" ]
+    @fullassets=Asset.find_by_sql [ "select id,name,code,asset_type,url,is_active,safecode,category,minor,district,region,altitude,location,description from assets where id in (select id from assets where "+whereclause+" order by name limit #{@limit}) order by name" ]
     @assets=@fullassets.paginate(:per_page => 40, :page => params[:page])
     counts=Asset.find_by_sql [ 'select count(id) as id from assets where '+whereclause ]
     #@count=0;
@@ -222,7 +222,7 @@ end
 
   private
   def asset_params
-    params.require(:asset).permit(:id, :name, :description, :altitude, :is_active, :is_nzart, :minor, :is_doc, :park_id, :asset_type, :code, :valid_from, :valid_to, :az_radius, :points, :public_access)
+    params.require(:asset).permit(:id, :name, :description, :altitude, :is_active, :is_nzart, :minor, :is_doc, :park_id, :asset_type, :code, :valid_from, :valid_to, :az_radius, :points, :public_access, :region, :district)
   end
 
   def convert_location_params(x,y)

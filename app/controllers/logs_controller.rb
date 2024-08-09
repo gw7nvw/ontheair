@@ -28,6 +28,7 @@ end
 
 def savefile
     @upload = Upload.new(upload_params)
+    do_not_lookup=false
 
     #get callsign from form
     location=params[:upload][:doc_location]
@@ -44,16 +45,20 @@ def savefile
     end
     if !callsign then callsign=user.callsign end
 
+    if params[:upload][:doc_do_not_lookup] and params[:upload][:doc_do_not_lookup]=="1" then
+      do_not_lookup=true
+    end
     success=@upload.save
 
 
     if success then
       logfile=File.read(@upload.doc.path)
       if @upload.doc.path.match(".csv") then
-         results=Log.import_csv(logfile, user, callsign, location, params[:upload][:doc_no_create]=="1", params[:upload][:doc_ignore_error]=="1")
+         results=Log.import_csv(logfile, user, callsign, location, params[:upload][:doc_no_create]=="1", params[:upload][:doc_ignore_error]=="1", do_not_lookup)
       else
-         results=Log.import(logfile, user, callsign, location, params[:upload][:doc_no_create]=="1", params[:upload][:doc_ignore_error]=="1")
+         results=Log.import(logfile, user, callsign, location, params[:upload][:doc_no_create]=="1", params[:upload][:doc_ignore_error]=="1", do_not_lookup)
       end 
+
       logs=results[:logs]
       errors=results[:errors]
       success=results[:success]
@@ -159,7 +164,10 @@ def save
       cle.asset1_codes=log.asset_codes
       if cle.asset1_codes==nil then cle.asset1_codes=[''] end
       cle.asset2_codes=row[13]
-      if cle.asset2_codes==nil then cle.asset2_codes=[''] end
+       puts "DEBUG asset codes"
+       puts cle.asset2_codes
+       puts cle.loc_desc2
+      if cle.asset2_codes==nil or cle.asset2_codes==[] then cle.asset2_codes=[''] end
       cle.location2=row[14]
       cle.x2=row[15]
       cle.y2=row[16]

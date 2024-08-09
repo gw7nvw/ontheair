@@ -464,18 +464,22 @@ function map_clear_scratch_layer(type,style) {
     var features = map_scratch_source.getFeatures();
      if (features != null && features.length > 0) {
          for (x in features) {
-            var thistype = features[x].getGeometry().getType();
-            if (type==null || type == thistype) {
-              if (style==null) {
-                map_scratch_source.removeFeature(features[x]);
-              } else {
-                var thisstyle=features[x].getStyle();
-                if (style == thisstyle) {
-                   map_scratch_source.removeFeature(features[x]);
+            try {
+              var thistype = features[x].getGeometry().getType();
+              if (type==null || type == thistype) {
+                if (style==null) {
+                  map_scratch_source.removeFeature(features[x]);
+                } else {
+                  var thisstyle=features[x].getStyle();
+                  if (style == thisstyle) {
+                     map_scratch_source.removeFeature(features[x]);
+                  }
                 }
               }
-            }
-          }
+            } catch(err) {
+              errtext="failed"
+            }; 
+         }
       }
   }
 }

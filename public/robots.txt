@@ -26,7 +26,10 @@ Disallow: /wwff_logs
 Disallow: /layerswitcher
 Disallow: /password_resets
 Disallow: /legend
+Disallow: /spots
 Disallow: /queries
+Disallow: /regions/*
+Disallow: /districts/*
 Disallow: /api/*
 Disallow: /assets/*/*
 Disallow: /users/*/*

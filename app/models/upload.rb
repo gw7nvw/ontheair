@@ -9,6 +9,6 @@ validates_attachment :doc,
 validates_attachment_content_type :doc, :content_type =>["application/text","text/plain","application/octet-stream","text/csv"],
              :message => ', Only ADIF files are permitted '
 
-
+  attr_accessor :doc_do_not_lookup
 
 end

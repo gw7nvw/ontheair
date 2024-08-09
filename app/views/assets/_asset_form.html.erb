@@ -39,7 +39,10 @@
       <%= f.collection_select( :asset_type, AssetType.where("name != 'all'").order(:name), :name, :display_name) %>
 
       <div class="sectiontitle">Region</div>
-      <%= f.collection_select( :name, Region.all.order(:name), :sota_code, :name,{selected: @asset.region, include_blank: 'None'}, style: "margin-bottom: 0px;height: 24px;") %>
+      <%= f.collection_select( :region, Region.all.order(:name), :sota_code, :name,{selected: @asset.region, include_blank: 'None'}, style: "margin-bottom: 0px;height: 24px;") %>
+
+      <div class="sectiontitle">District</div>
+      <%= f.collection_select( :district, District.all.order(:name), :district_code, :name,{selected: @asset.district, include_blank: 'None'}, style: "margin-bottom: 0px;height: 24px;") %>
 
       <div class="sectiontitle">Name</div>
       <%= f.text_field :name %>

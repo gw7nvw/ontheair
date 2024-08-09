@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240624014224) do
+ActiveRecord::Schema.define(version: 20240806031238) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -651,6 +651,7 @@ ActiveRecord::Schema.define(version: 20240624014224) do
     t.datetime "updated_at"
     t.integer  "user_id"
     t.integer  "sota_activation_id"
+    t.string   "asset_type"
   end
 
   create_table "sota_chases", force: true do |t|
@@ -665,6 +666,7 @@ ActiveRecord::Schema.define(version: 20240624014224) do
     t.time     "time"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "asset_type"
   end
 
   create_table "sota_peaks", force: true do |t|

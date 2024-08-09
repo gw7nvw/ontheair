@@ -64,6 +64,7 @@ def self.update_sota_activation(summit)
         #data["activations"].each do |activation|
         data.each do |activation|
           sa=SotaActivation.new
+          sa.asset_type='summit'
           sa.sota_activation_id=activation["id"].to_i
           #sa.callsign=activation["ownCallsign"].strip
           sa.callsign=Log.remove_suffix(activation["ownCallsign"].strip)
@@ -119,6 +120,7 @@ def self.update_sota_activation(summit)
           data["chases"].each do |chase|
             if chase["SummitCode"].strip==summit.code then #check not chaseof another summit same day
               sc=SotaChase.new
+              sc.asset_type='summit'
               sc.sota_activation_id=aid
               sc.callsign=Log.remove_suffix(chase["OwnCallsign"].strip)
               sc.band=chase["Band"]
@@ -165,6 +167,7 @@ def self.update_pota_activation(asset)
       newcount=0
       data.each do |activation|
         sa=SotaActivation.new
+        sa.asset_type='pota park'
         sa.callsign=Log.remove_suffix(activation["activeCallsign"].strip)
         sa.summit_code=asset.code.strip
         sa.summit_sota_id=nil

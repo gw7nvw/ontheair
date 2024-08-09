@@ -248,10 +248,13 @@
 </div>
 <script>
   <% if @chaseSites then @chaseSites.each do |chaseSite| %>
-           <% if chaseSite.location1 then %> map_add_feature_from_wkt('<%=chaseSite.location1%>', 'EPSG:4326',site_red_circle); <% end %>
+           <% if chaseSite.location then %> map_add_feature_from_wkt('<%=chaseSite.location%>', 'EPSG:4326',site_red_circle); <% end %>
+  <% end end %>
+  <% if @qualifySites then @qualifySites.each do |qualifySite| %>
+           <% if qualifySite.location then %> map_add_feature_from_wkt('<%=qualifySite.location%>', 'EPSG:4326',site_green_circle); <% end %>
   <% end end %>
   <% if @activationSites then @activationSites.each do |activationSite| %>
-           <% if activationSite.location1 then %> map_add_feature_from_wkt('<%=activationSite.location1%>', 'EPSG:4326',site_green_circle); <% end %>
+           <% if activationSite.location then %> map_add_feature_from_wkt('<%=activationSite.location%>', 'EPSG:4326',site_yellow_circle); <% end %>
   <% end end %>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>

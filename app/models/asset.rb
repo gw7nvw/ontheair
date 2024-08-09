@@ -398,6 +398,15 @@ def self.add_parks
   true
 end
 
+def self.child_codes_from_location(location)
+  if !location.nil? and location.to_s.length>0 then
+     codes=Asset.find_by_sql [ "select code from assets a inner join asset_types at on at.name=a.asset_type where a.is_active=true and at.has_boundary=true and ST_Within(ST_GeomFromText('#{location}',4326), a.boundary); " ];
+  else
+     codes=[]
+  end
+  codelist=codes.map{|c| c.code}
+end
+
 def self.child_codes_from_parent(code)
   code=code.upcase
   codes=AssetLink.find_by_sql [ "select child_code from asset_links al inner join assets a on al.child_code = a.code where parent_code='#{code}' and is_active=true;" ]
@@ -805,7 +814,7 @@ def self.assets_from_code(codes)
 
 	def activators
 	  cals=Contact.where("? = ANY(asset1_codes)", self.code);
-	  callsigns=cals.map{|cal| User.find_by_callsign_date(cal.callsign1, cal.date).callsign};
+	  callsigns=cals.map{|cal| u=User.find_by_callsign_date(cal.callsign1, cal.date); if u then u.callsign end};
 	  users=User.where(callsign: callsigns).order(:callsign)
 	end
 
@@ -820,7 +829,7 @@ def self.assets_from_code(codes)
 
 	def sota_activators
 	  cals=SotaActivation.where(summit_code: self.code);
-	  callsigns=cals.map{|cal| cal.callsign};
+	  callsigns=cals.map{|cal| if cal then cal.callsign end};
 	  users=User.where(callsign: callsigns).order(:callsign)
 	end
 
@@ -905,30 +914,81 @@ def self.assets_from_code(codes)
 	end
 
 
-	def add_links
-	    linked_assets=Asset.find_by_sql [ %q{select b.id as id,b.code as code, b.is_active as is_active from assets a inner join assets b on ST_Within(a.location, b.boundary)  where b.area>a.area*0.9 and a.id = }+self.id.to_s ]
-	    linked_assets.each do |la|
-	      if la.is_active then
-		dup=AssetLink.where(:parent_code=> self.code, :child_code => la.code)
-        if (!dup or dup.count==0) and la.code!=self.code then
-          al=AssetLink.new
-          al.parent_code=self.code
-          al.child_code=la.code  
-          al.save
-        end
-      end
-  end
-#    linked_assets=Asset.find_by_sql [ %q{ select b.code as code from assets a inner join assets b on b.is_active=true and ST_Within(b.location, a.boundary)  where a.id = }+self.id.to_s ]
-    linked_assets=ActiveRecord::Base.connection.execute( %q{ select b.code as code from assets a inner join assets b on b.is_active=true and ST_Within(b.location, a.boundary)  where (b.area is null or b.area<a.area*1.1) and a.id = }+self.id.to_s )
-    linked_assets.each do |la|
-        dup=AssetLink.where(:parent_code=> la['code'], :child_code => self.code)
-        if (!dup or dup.count==0) and la['code']!=self.code  then
-          al=AssetLink.new
-          al.child_code=self.code
-          al.parent_code=la['code']
-          al.save
-        end
-    end
+	def add_links(flush=true)
+          if flush==true then
+            las=AssetLink.where(:parent_code=> self.code)
+            puts "DEBUG: deleting #{las.count.to_s} old parent links"
+            las.destroy_all
+            las=AssetLink.where(:child_code=> self.code)
+            puts "DEBUG: deleting #{las.count.to_s} old child links"
+            las.destroy_all
+          end
+
+          if self.is_active then
+          puts "DEBUG: places containing us"
+          #places containing us
+	    linked_assets=Asset.find_by_sql [ %q{select b.id as id,b.code as code, b.is_active as is_active from assets a inner join assets b on ST_Within(a.location, b.boundary) and a.id = }+self.id.to_s ]
+          puts "DEBUG: Found "+linked_assets.count.to_s
+	  linked_assets.each do |la|
+	    if la.is_active then
+               matched=false
+               #for assets which are polygons, eliminate any that are not at least 90% contained
+               #(need to fudge to >90% due to boundary mapping errors)
+               if self.type.has_boundary and self.area and self.area>0 then
+                  overlap=ActiveRecord::Base.connection.execute( " select ST_Area(ST_intersection(a.boundary, b.boundary)) as overlap, ST_Area(a.boundary) as area from assets a join assets b on b.id=#{la.id.to_s} where a.id=#{self.id.to_s}; ")
+                  prop_overlap=overlap.first["overlap"].to_f/overlap.first["area"].to_f
+                  puts "DEBUG: overlap #{prop_overlap.to_s} "+la.code
+                  if prop_overlap>0.9 then 
+                    matched=true
+                  end
+               else
+                  matched=true
+                  puts "Point: "+la.code
+               end
+               if matched==true then
+	  	  dup=AssetLink.where(:parent_code=> self.code, :child_code => la.code)
+                  if (!dup or dup.count==0) and la.code!=self.code then
+                    al=AssetLink.new
+                    al.parent_code=self.code
+                    al.child_code=la.code  
+                    al.save
+                  end
+               end
+            end
+            end
+          end
+
+          puts "DEBUG: places we contain"
+          #places we contain
+#         linked_assets=Asset.find_by_sql [ %q{ select b.code as code from assets a inner join assets b on b.is_active=true and ST_Within(b.location, a.boundary)  where a.id = }+self.id.to_s ]
+         linked_assets=ActiveRecord::Base.connection.execute( %q{ select b.code as code, at.has_boundary as has_boundary, (b.boundary is not null) as boundary from assets a inner join assets b on b.is_active=true and ST_Within(b.location, a.boundary) inner join asset_types at on at.name=b.asset_type  where (b.area is null or b.area<a.area*1.1) and a.id = }+self.id.to_s )
+         linked_assets.each do |la|
+           matched=false
+           #for assets which are polygons, check if they are at least 90% contained
+           #(need to fudge to >90% due to boundary mapping errors)
+           if la['has_boundary']=='t' and la['boundary']=='t' then
+              overlap=ActiveRecord::Base.connection.execute( " select ST_Area(ST_intersection(a.boundary, b.boundary)) as overlap, ST_Area(a.boundary) as area from assets a join assets b on b.id=#{self.id.to_s} where a.code='#{la['code']}'; ")
+              prop_overlap=overlap.first["overlap"].to_f/overlap.first["area"].to_f
+              puts "DEBUG: overlap #{prop_overlap.to_s} "+la['code']
+              if prop_overlap>0.9 then 
+                matched=true
+              end
+           else
+              #for point locations, always include them
+              matched=true
+              puts "DEBUG: point "+la['code']
+           end
+           if matched==true then
+
+             dup=AssetLink.where(:parent_code=> la['code'], :child_code => self.code)
+             if (!dup or dup.count==0) and la['code']!=self.code  then
+               al=AssetLink.new
+               al.child_code=self.code
+               al.parent_code=la['code']
+               al.save
+             end
+           end
+         end
 end
 
 def post_process
