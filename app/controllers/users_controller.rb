@@ -116,11 +116,11 @@ class UsersController < ApplicationController
       qualifySites=[]
       asset_types=AssetType.where("name != 'all'")
       asset_types.each do |at|
-        activationSite=@user.assets_by_type(at.name,'activated')
+        activationSite=@user.activated_all(at.name)
         qualifySites+=@user.filter_by_min_qso(activationSite,at.name)
         activationSites+=activationSite
       end
-      chaseSites=@user.assets_by_type('all','chased')
+      chaseSites=@user.chased
       activationSites=activationSites-qualifySites
       @chaseSites=Asset.find_by_sql [ " select location from assets where code in (?); ",chaseSites ] 
       @activationSites=Asset.find_by_sql [ " select location from assets where code in (?);",activationSites  ] 
