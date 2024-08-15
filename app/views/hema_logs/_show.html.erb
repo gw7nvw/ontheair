@@ -18,7 +18,7 @@
 </div>
   <%= hidden_field_tag(:referring, @referring) %>
   <div class="erow">
-    <p>Please check that the following log is correct, enter your HEMA credentials and click the <b>Send Log</b> button to upload it to HEMA. The upload process takes 2-3 seconds per log entry, so please be patient.</p>
+    <p>Please check that the following log is correct, enter your HEMA credentials and click the <b>Submit</b> button to upload it to HEMA. The upload process takes 2-3 seconds per log entry, so please be patient.</p>
     <br/>
   </div>
 
@@ -37,7 +37,7 @@
         </div>
       </div>
 
-      <%= submit_tag "Submit", class: "btn btn-small btn-primary btn-hightlight"%>
+      <%= submit_tag "Submit", class: "btn btn-small btn-primary btn-hightlight", :onclick => "submitHandler('Uploading ...');"%>
 
       <%=link_to "Cancel", '/hema_logs?user='+@log.callsign1, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
     </form>
@@ -118,5 +118,6 @@
 </div>
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+  reset_map_controllers(); 
 </script>
 
