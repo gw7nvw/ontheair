@@ -1,0 +1,2 @@
+module HemaLogsHelper
+end
