@@ -193,6 +193,11 @@ def send_to_all(debug, from, callsign, assets, freq, mode, description, topic,id
         result=(result and sota_response[:result])
         messages=messages+sota_response[:messages]
         matched=true
+      elsif asset_type=='HEMA' or asset_type=="hump" then
+        puts "DEBUG: send "+ac+" to HEMA"
+        hema_response=Post.send_to_hema(debug, from.acctnumber, callsign, ac, freq, mode, description)
+        result=(result and hema_response[:result])
+        messages=messages+hema_response[:messages]
       end
       if result==false or matched==false then
         puts "DEBUG: send "+ac+" to PnP"
@@ -282,6 +287,39 @@ def send_to_pota(debug, from, callsign, a_code, freq, mode, description)
         end
     end
     {result: result, messages: messages}
+end
+
+def self.send_to_hema(debug, from, callsign, a_code, freq, mode, description)
+  result=false
+  messages=""
+  asset=Asset.find_by(code: a_code)
+  asset_type=Asset.get_asset_type_from_code(a_code)
+  if asset and (asset_type=="hump" or asset_type=="HEMA") then
+    modes={"AM" =>1,"FM" => 2,"CW" => 3,"SSB" => 4, "USB" => 4, "LSB" => 4, "DATA" => 7,"OTHER" => 9}
+    mode=mode.upcase
+    modekey=modes[mode]
+    if !modekey then modekey=7 end
+    puts modekey, mode
+   
+    params = '?number='+asset.old_code+'&frequency='+freq.to_s+'&callsign='+callsign+'&modeKey='+modekey.to_s+'&seededPair=2C1CD544EC774B90884839AC4DECEB9F2E2638EABBFF4CEB8B4085AE1CD26283'
+
+    puts "sending spot to HEMA"
+    uri = URI('http://www.hema.org.uk/submitMobileSpot.jsp')
+    puts "DEBUG: http://www.hema.org.uk/submitMobileSpot.jsp"+params
+    http=Net::HTTP.new(uri.host, uri.port)
+    req = Net::HTTP::Get.new(uri.path+params)
+    begin
+      response = http.request(req)
+      if response then result=true end
+    rescue
+      messages="Failed to contact HEMA server"
+    else
+      puts response
+      puts response.body
+    end
+  end
+  {result: result, messages: messages}
+
 end
 
 

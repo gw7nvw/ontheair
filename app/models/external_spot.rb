@@ -74,6 +74,30 @@ def self.fetch
         pnp_spots=[]
       end
 
+      hemaspots=[]
+      begin
+        Timeout::timeout(30) {
+        url="http://hema.org.uk/spotsMobile.jsp"
+        spots_string=open(url).read
+        spots_list=spots_string.split('=')
+        spots_list[1..-1].each do |spotstring|
+          if spotstring and spotstring[";"] then
+            puts spotstring
+            spot=spotstring.split(";")
+            hemaspot={time: spot[0], activatorCallsign: spot[2], code: spot[3], name: spot[4], frequency: spot[5].split(" ")[0], mode: (spot[5]||"").split("(")[1].split(")")[0], callsign: (spot[6]||"").split("(")[1].split(")")[0], comments: (spot[6]||"").split(" ")[1], spot_type: 'HEMA'}
+            if hemaspot[:time].to_datetime then hemaspot[:time]=hemaspot[:time].to_datetime.in_time_zone("UTC") else hemaspot[:time]=nil end
+            hemaspots+=[hemaspot]  
+            puts "done"
+          end
+        end
+      }
+      rescue Timeout::Error
+        puts "ERROR: HEMA Timeout"
+      else
+      end
+
+      
+
       #add to db
       zlvk_sota_spots.each do |spot|
          new_spot=ExternalSpot.create(
@@ -113,6 +137,12 @@ def self.fetch
            spot_type: "PnP: "+spot["actClass"])
       end
 
+      hemaspots.each do |spot|
+        dups=ExternalSpot.where(spot) 
+        if !(dups and dups.count>0) then
+           newspot=ExternalSpot.create(spot)
+        end
+      end
     end
 end
 

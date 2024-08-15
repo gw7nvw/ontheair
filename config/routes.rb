@@ -60,6 +60,10 @@ match '/api/assettypes', to: 'api#assettype',    via:'get'
 match '/api/assetlinks', to: 'api#assetlink',    via:'get'
 match '/api/logs', to: 'api#logs_post',    via:'post'
 
+resources :hema_logs
+match "/hema_logs/:id/submit", :to => "hema_logs#submit", :as => "hema_send_log", :via => "get"
+match "/hema_logs/:id/delete", :to => "hema_logs#delete", :as => "hema_delete_log", :via => "get"
+match "/hema_logs/:id/finalise", :to => "hema_logs#finalise", :as => "hema_finalise_log", :via => "get"
 resources :sota_logs
 resources :pota_logs
 match "/pota_logs/:id/send", :to => "pota_logs#send_email", :as => "send_log", :via => "get"

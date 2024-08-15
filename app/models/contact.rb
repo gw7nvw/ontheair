@@ -308,6 +308,40 @@ end
    band=c.band
  end
 
+ def hema_band
+   band=""
+   if self.frequency then 
+     if self.frequency>=1.8 and self.frequency<=2 then band="1.8MHz" end
+     if self.frequency>=3.5 and self.frequency<=4 then band="3.6MHz" end
+     if self.frequency>=5.351 and self.frequency<=5.367 then band="5MHz" end
+     if self.frequency>=7 and self.frequency<=7.3 then band="7MHz" end
+     if self.frequency>=10.1 and self.frequency<=10.15 then band="10MHz" end
+     if self.frequency>=14.0 and self.frequency<=14.35 then band="14MHz" end
+     if self.frequency>=18.068 and self.frequency<=18.168 then band="18Mhz" end
+     if self.frequency>=21.0 and self.frequency<=21.45 then band="21MHz" end
+     if self.frequency>=24.89 and self.frequency<=24.99 then band="24MHz" end
+     if self.frequency>=28.0 and self.frequency<=29.7 then band="28MHz" end
+     if self.frequency>=50 and self.frequency<=54 then band="50MHz" end
+     if self.frequency>=70 and self.frequency<=71 then band="70MHz" end
+     if self.frequency>=144 and self.frequency<=148 then band="144MHz" end
+     if self.frequency>=222 and self.frequency<=225 then band="220MHz" end
+     if self.frequency>=420 and self.frequency<=450 then band="430MHz" end
+     if self.frequency>=902 and self.frequency<=928 then band="900MHz" end
+     if self.frequency>=1240 and self.frequency<=1300 then band="1.24GHz" end
+     if self.frequency>=2300 and self.frequency<=2450 then band="2.3GHz" end
+     if self.frequency>=3300 and self.frequency<=3500 then band="3.4GHz" end
+     if self.frequency>=5650 and self.frequency<=5925 then band="5.7GHz" end
+     if self.frequency>=10000 and self.frequency<=10500 then band="10GHz" end
+     if self.frequency>=24000 and self.frequency<=24250 then band="24GHz" end
+     if self.frequency>=47000 and self.frequency<=47200 then band="47GHz" end
+     if self.frequency>=75500 and self.frequency<=81000 then band="76GHz" end
+     if self.frequency>=119980 and self.frequency<=120020 then band="122GHz" end
+     if self.frequency>=142000 and self.frequency<=149000 then band="136GHz" end
+     if self.frequency>=241000 and self.frequency<=250000 then band="248GHz" end
+   end
+   band
+ end
+
  def band
    band=""
    if self.frequency then 

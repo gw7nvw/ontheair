@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240806031238) do
+ActiveRecord::Schema.define(version: 20240814073508) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -230,6 +230,7 @@ ActiveRecord::Schema.define(version: 20240806031238) do
     t.string   "name2"
     t.string   "asset1_classes",                                          default: [],   array: true
     t.string   "asset2_classes",                                          default: [],   array: true
+    t.boolean  "submitted_to_hema"
   end
 
   add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"

@@ -25,4 +25,88 @@ def self.import(filename)
       puts p.location
     end
   end
+
+def self.get_keys(user,pass)
+  regions=[
+     {d: 'ZL1', r: 'HAK'},
+     {d: 'ZL1', r: 'HNL'},
+     {d: 'ZL1', r: 'HWK'},
+     {d: 'ZL1', r: 'HBP'},
+     {d: 'ZL1', r: 'HTN'},
+     {d: 'ZL1', r: 'HHB'},
+     {d: 'ZL1', r: 'HWL'},
+     {d: 'ZL3', r: 'HTM'},
+     {d: 'ZL3', r: 'HMB'},
+     {d: 'ZL3', r: 'HCB'},
+     {d: 'ZL3', r: 'HOT'},
+     {d: 'ZL3', r: 'HSL'}
+  ]
+  # d: 'ZL1', r: 'HMW'
+  # d: 'ZL3', r: 'HWC'
+  creds=nil
+
+  uri=URI("http://www.hema.org.uk/indexDatabase.jsp")
+  http=Net::HTTP.new(uri.host, uri.port)
+  req = Net::HTTP::Get.new(uri.path)
+  response = http.request(req)
+
+ cookie=response.get_fields('set-cookie')[0].split('; ')[0]+";"
+
+  params = 'userID='+user+'&password='+pass
+
+  uri = URI('http://www.hema.org.uk/indexDatabase.jsp?logonAction=logon&action=')
+  http=Net::HTTP.new(uri.host, uri.port)
+  req = Net::HTTP::Post.new(
+    uri.path+"?logonAction=logon&action=",
+    'Content-Type' => 'application/x-www-form-urlencoded',
+    'Cookie' => cookie,
+    'Host' => 'www.hema.org.uk',
+    'Origin' => 'http://www.hema.org.uk',
+    'Referrer' => 'http://www.hema.org.uk/indexDatabase.jsp'
+  )
+  req.body = params
+  response = http.request(req)
+
+
+  summits=[]
+  regions.each do |reg|
+    region=reg[:r]
+    dxcc=reg[:d] 
+
+    uri=URI('http://www.hema.org.uk/selectSummit.jsp')
+    http=Net::HTTP.new(uri.host, uri.port)
+    req = Net::HTTP::Get.new(
+      uri.path+"?regionCode="+region+"&action=activationNew&summitKey=0&countryCode="+dxcc+"&genericKey=0",
+      'Cookie' => cookie,
+      'Host' => 'www.hema.org.uk',
+      'Origin' => 'http://www.hema.org.uk',
+    )
+
+    response = http.request(req)
+    rows=response.body.split("id='summitKey'")[1].split('</td>')[0].split(/\n/)
+
+    rows.each do |r|
+      if r["Option value"]
+        value=r.split("'")[1]
+        codename=r.split(">")[1].split("<")[0]
+        code=dxcc+"/"+region+"-"+codename[0..2]
+        name=codename[6..-1]
+        summits+=[{id: value, code: code, name: name}]
+      end
+    end
+  end
+
+  summits.each do |summit|
+    asset=Asset.find_by(code: summit[:code])
+    if asset then
+      puts "found "+asset.code
+      asset.old_code=summit[:id].to_s
+      asset.save
+    else
+      puts "not found: "+summit[:code]
+    end
+  end
+end
+
+
 end

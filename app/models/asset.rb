@@ -220,7 +220,7 @@ def first_activated
      c.callsign2=""
      c.id=-99
      #find first chase
-     acs=SotaChase.find_by_sql [ "select * from sota_chases where sota_activation_id=#{as[0].sota_activation_id} order by time asc limit 1" ]
+     if as[0].sota_activation_id then acs=SotaChase.find_by_sql [ "select * from sota_chases where sota_activation_id=#{as[0].sota_activation_id} order by time asc limit 1" ] end
      if acs and acs.count>0 then
        ac=acs.first
        c.callsign2=ac.callsign

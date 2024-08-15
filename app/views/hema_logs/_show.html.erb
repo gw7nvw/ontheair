@@ -1,0 +1,123 @@
+<div class="fullform">
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>HEMA Logs</b>
+   </div>
+   <div id="controls">
+     <%=render 'map_controls'%>
+   </div>
+</div>
+
+<div id=right_scroll">
+    <br/>
+    <br/>
+  <div class="erow">
+  <%= render 'flash' %>
+</div>
+  <%= hidden_field_tag(:referring, @referring) %>
+  <div class="erow">
+    <p>Please check that the following log is correct, enter your HEMA credentials and click the <b>Submit</b> button to upload it to HEMA. The upload process takes 2-3 seconds per log entry, so please be patient.</p>
+    <br/>
+  </div>
+
+  <div class='erow'>   
+    <%= form_tag '/hema_logs/'+@log.id.to_s+'/submit', :name => 'sendlog', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+      <div class="erow">
+        <div class="rowtitle">HEMA Username:</div>
+        <div class="rowtext">
+          <input type="text" name="hema_user"/>
+        </div>
+      </div>
+      <div class="erow">
+        <div class="rowtitle">HEMA Password:</div>
+        <div class="rowtext">
+          <input type="password" name="hema_pass"/>
+        </div>
+      </div>
+
+      <%= submit_tag "Submit", class: "btn btn-small btn-primary btn-hightlight", :onclick => "submitHandler('Uploading ...');"%>
+
+      <%=link_to "Cancel", '/hema_logs?user='+@log.callsign1, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
+    </form>
+  </div>
+
+  <div class='erow'>
+    <br/>
+    <table style="table-layout: fixed">
+      <tr>
+        <td class="td-l">Callsign</td>
+        <td colspan=2 class="td-d"> <%=@log.callsign1 %></td>
+        <td class="td-l">Date:</td>
+        <td colspan=2 class="td-d">
+           <% if signed_in? then %><%= @log.localdate(current_user)%> <% else %> <%= @log.localdate(nil)%><% end %>
+        </td>
+
+        <td class="td-l">QRP?</td>
+        <td class="td-d"> <%= if @log.is_qrp1 then "Yes" else "no" end%></td>
+      </tr>
+      <tr>
+        <td class="td-l">Location</td>
+        <td colspan=2 class="td-d"> <%= @log.loc_desc1%></td>
+        <td>
+        </td>
+        <td colspan=4 class="td-d">
+          <ul style="list-style-type:none;padding:0;margin:0;">
+            <% if @log.asset_codes.count>0 then %>
+              <% @log.asset_codes.each do |cal|%>
+                <%=cal+" "%>
+              <% end %>
+            <% end %>
+          </ul>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div class="erow">
+    <div class="hrline">
+       <hr noshade size="4">
+    </div>
+  </div>
+
+  <div class='erow'>
+    <table>
+      <tr>
+      <th>Time</th>
+        <th>Callsign</th>
+        <th>Mode</th>
+        <th>Freq</th>
+        <th>Location</th>
+        <th>RST Sent</th>
+        <th>RST Rec'd</th>
+      </tr>
+      <%contacts=Contact.find_by_sql [ " select * from contacts where log_id = "+@log.id.to_s+" order by time asc ;" ] %>
+      <% contacts.each do |contact| %>
+        <tr>
+          <td> <%= if contact.time then contact.localtime(current_user) else '' end %> <%=contact.localtimezone(current_user) %></td>
+          <td><span title="<%=DxccPrefix.name_from_call(contact.callsign2)%>"> <%=contact.callsign2 %> </span></td>
+          <td> <%= contact.mode %> </td>
+          <td> <%= if contact.frequency then '%.3f' % contact.frequency else '' end%> </td>
+          <td>  <ul style="list-style-type:none;padding:0;margin:0;">
+            <% if contact.asset2_codes.count>0 then %>
+              <% contact.asset2_codes.each do |cal|%>
+                 <%=cal+" "%>
+              <% end %>
+            <% else %>
+              <%= contact.loc_desc2 %>
+            <% end %>
+          </ul></td>
+          <td> <%= contact.signal2 %></td>
+          <td> <%= contact.signal1 %></td>
+        </tr>
+      <% end %>
+    </table>
+  <br/>
+  </div>
+</div>
+</div>
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+  reset_map_controllers(); 
+</script>
+
