@@ -161,7 +161,7 @@ class Contact < ActiveRecord::Base
 #   if self.location1 and force==false then loc_point=true else loc_point=false end
 #   accuracy=999999999999
 #   codes.each do |code|
-#     puts "DEBUG: assessing code1 #{code}"
+#     logger.debug "DEBUG: assessing code1 #{code}"
 #     assets=Asset.find_by_sql [ " select id, asset_type, location, area from assets where code='#{code}' limit 1" ]
 #     if assets then asset=assets.first else asset=nil end
 #     if asset then
@@ -170,15 +170,15 @@ class Contact < ActiveRecord::Base
 #           self.location1=asset.location
 #           accuracy=asset.area
 #           loc_point=false
-#           puts "DEBUG: Assigning polygon locn"
+#           logger.debug "DEBUG: Assigning polygon locn"
 #         end
 #       else
 #         if loc_point==true then
-#           puts "Multiple POINT locations found for contact #{self.id.to_s}"
+#           logger.debug "Multiple POINT locations found for contact #{self.id.to_s}"
 #         end
 #         self.location1=asset.location
 #         loc_point=true
-#         puts "DEBUG: Assigning point locn"
+#         logger.debug "DEBUG: Assigning point locn"
 #       end
 #     end 
 #   end
@@ -190,7 +190,7 @@ class Contact < ActiveRecord::Base
    if self.location2 and force==false then loc_point=true else loc_point=false end
    accuracy=999999999999
    codes.each do |code|
-     puts "DEBUG: assessing code2 #{code}"
+     logger.debug "DEBUG: assessing code2 #{code}"
      assets=Asset.find_by_sql [ " select id, asset_type, location, area from assets where code='#{code}' limit 1" ]
      if assets then asset=assets.first else asset=nil end
      if asset then
@@ -199,15 +199,15 @@ class Contact < ActiveRecord::Base
            self.location2=asset.location 
            accuracy=asset.area
            loc_point=false
-           puts "DEBUG: Assigning polygon locn"
+           logger.debug "DEBUG: Assigning polygon locn"
          end
        else
          if loc_point==true then
-             puts "Multiple POINT locations found for contact #{self.id.to_s}"
+             logger.debug "Multiple POINT locations found for contact #{self.id.to_s}"
          end
          self.location2=asset.location
          loc_point=true
-         puts "DEBUG: Assigning point locn"
+         logger.debug "DEBUG: Assigning point locn"
        end 
      end
    end
@@ -300,7 +300,6 @@ end
 
   def set_defaults
     self.timezone||=Timezone.find_by(name: "UTC").id
-    self.is_qrp1=true
   end
 
  def self.band_from_freq(freq)
@@ -546,7 +545,7 @@ end
 def self.migrate_to_codes
    contacts=Contact.all
     contacts.each do |contact|
-      puts contact.id.to_s
+      logger.debug contact.id.to_s
       codes=[]
       if contact.hut1_id and Hut.find_by(id: contact.hut1_id) then codes.push(Hut.find_by(id: contact.hut1_id).code) end
       if contact.park1_id and Park.find_by(id: contact.park1_id) then codes.push(Park.find_by(id: contact.park1_id).code) end
@@ -589,8 +588,8 @@ def self.migrate_to_distcodes
   cs=Contact.all
   cs.each do |c|
   codes=[]
-  puts c.asset1_codes 
-  puts c.asset2_codes 
+  logger.debug c.asset1_codes 
+  logger.debug c.asset2_codes 
   c.asset1_codes.each do |a|
     asset=Asset.find_by(old_code: a)
     if !asset then asset=Asset.find_by(code: a) end

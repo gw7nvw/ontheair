@@ -11,7 +11,7 @@ class User < ActiveRecord::Base
   attr_accessor :remeber_token, :activation_token, :reset_token
 
   before_validation { if self.email then self.email = email.downcase end }
-  before_validation { self.callsign = callsign.strip.upcase }
+  before_validation { self.callsign = (callsign||"").strip.upcase }
   
   before_save { if self.timezone==nil then self.timezone=Timezone.find_by(name: 'UTC').id end }
   before_save { if self.pin==nil or self.pin.length<4 then self.pin=self.callsign.chars.shuffle[0..3].join end; self.pin=self.pin[0..3] }
@@ -41,44 +41,20 @@ def callsigns
 end
 
 def valid_callsign? 
-  valid_callsign=/d?[a-zA-Z]{1,2}\d{1,4}[a-zA-Z]{1,4}/
+  valid_callsign=/^\d{0,1}[a-zA-Z]{1,2}\d{1,4}[a-zA-Z]{1,4}$/
   if valid_callsign.match(self.callsign) then true else false end
 end
 
-def authenticated?(attribute, token)
+ def authenticated?(attribute, token)
      digest = send("#{attribute}_digest")
     return false if digest.nil?
     Digest::SHA1.hexdigest(token.to_s)==digest
-  end
+ end
 
-  # Activates an account.
-  def activate
+ # Activates an account.
+ def activate
     update_attribute(:activated,    true)
     update_attribute(:activated_at, Time.zone.now)
-  end
-
- def has_award(award, threshold)
-   if threshold==nil then
-     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_id = "+award.id.to_s+" and threshold is null" ]
-   else
-     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_id = "+award.id.to_s+" and threshold = "+threshold.threshold.to_s ]
-   end
-   if uas and uas.count>0 then true else false end
- end
-
- def has_completion_award(scale, loc_id, activity_type, award_class)
-     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_type='"+scale+"' and linked_id="+loc_id.to_s+" and activity_type='"+activity_type+"' and award_class='"+award_class+"' and expired is not true "]
-     if uas and uas.count>0 then true else false end
- end
-
- def retire_completion_award(scale, loc_id, activity_type, award_class)
-     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_type='"+scale+"' and linked_id="+loc_id.to_s+" and activity_type='"+activity_type+"' and award_class='"+award_class+"' and expired is not true "]
-     uas.each do |ua|
-       puts "Retiring "+self.callsign+" "+loc_id.to_s+" "+scale+" "+activity_type+" "+award_class
-       ua.expired=true
-       ua.expired_at=Time.now()
-       ua.save
-     end
  end
 
  def timezonename
@@ -90,7 +66,41 @@ def authenticated?(attribute, token)
    timezonename
  end
 
-##bagged
+
+##AWARDS
+ #return list of user's awards
+ def awards
+   awls=AwardUserLink.where(user_id: self.id)
+ end
+
+ #check if user has a specific award
+ def has_award(award, threshold=nil)
+   if threshold==nil then
+     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_id = "+award.id.to_s+" and threshold is null" ]
+   else
+     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_id = "+award.id.to_s+" and threshold = "+threshold.threshold.to_s ]
+   end
+   if uas and uas.count>0 then true else false end
+ end
+
+ #check if user has completion award for a locality
+ def has_completion_award(scale, loc_id, activity_type, award_class)
+     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_type='"+scale+"' and linked_id="+loc_id.to_s+" and activity_type='"+activity_type+"' and award_class='"+award_class+"' and expired is not true "]
+     if uas and uas.count>0 then true else false end
+ end
+
+ #retire an expired completion award (where locality has new assets)
+ def retire_completion_award(scale, loc_id, activity_type, award_class)
+     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_type='"+scale+"' and linked_id="+loc_id.to_s+" and activity_type='"+activity_type+"' and award_class='"+award_class+"' and expired is not true "]
+     uas.each do |ua|
+       logger.warn "Retiring "+self.callsign+" "+loc_id.to_s+" "+scale+" "+activity_type+" "+award_class
+       ua.expired=true
+       ua.expired_at=Time.now()
+       ua.save
+     end
+ end
+
+##BAGGED
 
  def bagged(params={})
    asset_type='all'
@@ -102,8 +112,8 @@ def authenticated?(attribute, token)
 
    if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
    if qrp==true then
-     qrp_query1="is_qrp1=true"
-     qrp_query2="is_qrp2=true"
+     qrp_query1="is_qrp1 is true"
+     qrp_query2="is_qrp2 is true"
    else
      qrp_query1="true"
      qrp_query2="true"
@@ -519,7 +529,7 @@ end
   def wwff_logs(resubmit)
    if resubmit==true then resubmit_str="" else resubmit_str=" and submitted_to_wwff is not true" end
    wwff_logs=[]
-   puts "resubmit: "+resubmit_str
+   logger.debug "resubmit: "+resubmit_str
    contacts2=Contact.find_by_sql [ "select asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where user1_id = "+self.id.to_s+""+resubmit_str+" and 'wwff park'=ANY(asset1_classes)) as sq where asset1_codes  like 'ZLFF-%%'" ]
 
    parks=[]
@@ -561,7 +571,7 @@ end
            contacts.push(c)
            bands.push(c.band+"|"+c.mode+"|"+c.callsign2)
          else
-           puts "Dropping "+c.callsign1+" "+c.callsign2+" "+c.date.to_date.to_s+" "+c.band+"-"+c.mode 
+           logger.debug "Dropping "+c.callsign1+" "+c.callsign2+" "+c.date.to_date.to_s+" "+c.band+"-"+c.mode 
            dups.push(c)
          end
        end
@@ -697,7 +707,7 @@ end
      pp=Asset.find_by(code: park[:potapark]);
 #     dps=pp.linked_assets_by_type("park");
 #     dpcodes=dps.map{|dp| dp.code}
-#     puts dpcodes;
+#     logger.debug dpcodes;
 #     contacts1=Contact.where(" user1_id = ? and (? = ANY(asset1_codes) or (array[?]::varchar[] && asset1_codes))", self.id, park[:potapark], dpcodes)
      contacts1=Contact.where(" user1_id = ? and (? = ANY(asset1_codes))", self.id, park[:potapark])
  
@@ -718,9 +728,6 @@ end
   pota_logs
   end
 
-def awards
-   awls=AwardUserLink.where(user_id: self.id)
-end
 
 def check_district_completion(district_id, activity_type, asset_type)
   available_codes=[]
@@ -766,7 +773,7 @@ def check_region_awards
        if site_not_act==0 then
          award_spec=Award.find_by(activated: true, programme: combo.type, all_region: true, is_active: true)
          if award_spec and !(self.has_completion_award("region", d.id, "activator", combo.type)) then
-           puts "Awarded!! "+self.callsign+" "+combo.type+" region activator "+d.name
+           logger.debug "Awarded!! "+self.callsign+" "+combo.type+" region activator "+d.name
            award=AwardUserLink.new
            award.award_type="region"
            award.linked_id=d.id
@@ -791,7 +798,7 @@ def check_region_awards
        if site_not_chased==0 then
          award_spec=Award.find_by(chased: true, programme: combo.type, all_region: true, is_active: true)
          if award_spec and !(self.has_completion_award("region", d.id, "chaser", combo.type)) then
-           puts "Awarded!! "+self.callsign+" "+combo.type+" region chaser "+d.name
+           logger.debug "Awarded!! "+self.callsign+" "+combo.type+" region chaser "+d.name
            award=AwardUserLink.new
            award.award_type="region"
            award.linked_id=d.id
@@ -835,7 +842,7 @@ def check_district_awards
        if site_not_act==0 then
          award_spec=Award.find_by(activated: true, programme: combo.type, all_district: true, is_active: true)
          if award_spec and !(self.has_completion_award("district", d.id, "activator", combo.type)) then
-           puts "Awarded!! "+self.callsign+" "+combo.type+" district activator "+d.name
+           logger.debug "Awarded!! "+self.callsign+" "+combo.type+" district activator "+d.name
            award=AwardUserLink.new
            award.award_type="district"
            award.linked_id=d.id
@@ -860,7 +867,7 @@ def check_district_awards
        if site_not_chased==0 then
          award_spec=Award.find_by(chased: true, programme: combo.type, all_district: true, is_active: true)
          if award_spec and !(self.has_completion_award("district", d.id, "chaser", combo.type)) then
-           puts "Awarded!! "+self.callsign+" "+combo.type+" district chaser "+d.name
+           logger.debug "Awarded!! "+self.callsign+" "+combo.type+" district chaser "+d.name
            award=AwardUserLink.new
            award.award_type="district"
            award.linked_id=d.id
@@ -943,7 +950,7 @@ def add_callsigns
     uc.from_date=Time.new(1900,1,1)
     uc.callsign=self.callsign
     uc.save 
-    puts "Added: "+self.callsign
+    logger.debug "Added: "+self.callsign
   end
 
 end
@@ -973,14 +980,9 @@ def self.find_by_callsign_date(callsign, c_date, create=false)
 end
 
 def self.create_dummy_user(callsign)
-  puts "Check callsign: :"+callsign+":"
-  puts "Check callsign: "+callsign.length.to_s
-  callsign.each_byte do |c|
-    puts c
-  end
   dup=UserCallsign.find_by(callsign: callsign)
   if !dup then
-    puts "Create callsign: "+callsign
+    logger.debug "Create callsign: "+callsign
     user=User.create(callsign: callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
   else
     nil

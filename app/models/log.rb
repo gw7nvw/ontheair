@@ -51,7 +51,7 @@ class Log < ActiveRecord::Base
 
     accuracy=999999999999
     codes.each do |code|
-      puts "DEBUG: assessing code #{code}"
+      logger.debug "DEBUG: assessing code #{code}"
       assets=Asset.find_by_sql [ " select id, asset_type, location, area from assets where code='#{code}' limit 1" ]
 
       if assets then asset=assets.first else asset=nil end
@@ -62,16 +62,16 @@ class Log < ActiveRecord::Base
             self.location1=asset.location 
             accuracy=asset.area
             loc_point=false
-            puts "DEBUG: Assigning polygon locn"
+            logger.debug "DEBUG: Assigning polygon locn"
           end
         else
           if loc_point==true then
-            puts "Multiple POINT locations found for log #{self.id.to_s}"
+            logger.debug "Multiple POINT locations found for log #{self.id.to_s}"
             #do not overwrite
           end
           self.location1=asset.location
           loc_point=true
-          puts "DEBUG: Assigning point locn"
+          logger.debug "DEBUG: Assigning point locn"
         end
       end
     end
@@ -313,18 +313,18 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
       protolog.check_codes_in_location
       lc=0
       logs.each do |log|
-          #puts "IMPORT: testing"
-          #puts log.callsign1, protolog.callsign1, log.callsign1==protolog.callsign1
-          #puts log.date,protolog.date,log.date==protolog.date
-          #puts log.asset_codes.join(','),protolog.asset_codes.join(','),(protolog.asset_codes-log.asset_codes).empty?
+          #logger.debug "IMPORT: testing"
+          #logger.debug log.callsign1, protolog.callsign1, log.callsign1==protolog.callsign1
+          #logger.debug log.date,protolog.date,log.date==protolog.date
+          #logger.debug log.asset_codes.join(','),protolog.asset_codes.join(','),(protolog.asset_codes-log.asset_codes).empty?
           if log.callsign1==protolog.callsign1 and log.date==protolog.date and (protolog.asset_codes-log.asset_codes).empty? then 
                   logid=lc
-                  puts "IMPORT: matched existing log: #{lc.to_s}"
+                  logger.debug "IMPORT: matched existing log: #{lc.to_s}"
           end  
           lc+=1
       end
       if logid==nil then
-         puts "IMPORT: creating new log ("+log_count.to_s+")"
+         logger.debug "IMPORT: creating new log ("+log_count.to_s+")"
          log_count=logs.count
          lstr=protolog.to_json
          invalid_log[log_count]=true
@@ -332,7 +332,7 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
          loguser=User.find_by_callsign_date(logs[log_count].callsign1,logs[log_count].date)
          if loguser and (loguser.id==user.id or user.is_admin) then
            if logs[log_count].valid? then
-             puts "Valid log "+log_count.to_s    
+             logger.debug "Valid log "+log_count.to_s    
              invalid_log[log_count]=false
            else
              errors.push("Record #{record_count.to_s}: Create log #{log_count.to_s} failed: "+logs[log_count].errors.messages.to_s)
@@ -346,7 +346,7 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
       end 
  
       contact.log_id=logid
-      #puts "IMPORT: save contact"
+      #logger.debug "IMPORT: save contact"
       cstr=contact.to_json
       c=JSON.parse(cstr)
       contact=Contact.new(c)
@@ -368,7 +368,7 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
              res=contact.valid?
              create=true
            else 
-             puts "Skipping contact with unknown call: "+contact.callsign2 
+             logger.debug "Skipping contact with unknown call: "+contact.callsign2 
              skip_count+=1
              create=false
            end
@@ -378,7 +378,7 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
            create=true
          end
          if !res then 
-           puts "IMPORT: save contact failed"
+           logger.debug "IMPORT: save contact failed"
            errors.push("Record #{record_count.to_s}: Save contact #{contact_count.to_s} failed: "+contact.errors.messages.to_s)
          end
          if res and create then
@@ -408,7 +408,7 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
         good_logs+=1
       end
     else
-      puts "Skipping empty log: "+lc.to_s
+      logger.debug "Skipping empty log: "+lc.to_s
     end
     lc+=1
   end
@@ -418,7 +418,7 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
   good_contacts=0
   contacts.each do |contact|
     if invalid_log[contact.log_id] then
-      puts "Skipping contact #{cc.to_s} as log #{contact.log_id.to_s} invalid"
+      logger.debug "Skipping contact #{cc.to_s} as log #{contact.log_id.to_s} invalid"
     else
       if errors.empty? or ignore_error then
         contact.log_id=logs[contact.log_id].id
@@ -432,8 +432,8 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
       end
     end
   end
-  puts "IMPORT: clean exit"
-  puts errors
+  logger.debug "IMPORT: clean exit"
+  logger.debug errors
   return {logs: logs, errors: errors, success: true, good_logs: good_logs, good_contacts: good_contacts}
 end
  
@@ -451,7 +451,7 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
   #check encoding
   if !filestr.valid_encoding? then
     filestr=filestr.encode("UTF-16be", :invalid=>:replace, :undef=>:replace, :replace=>"?").encode('UTF-8')
-    puts "Invalid"
+    logger.debug "Invalid"
   end
 
   filestr =filestr.encode('ASCII', :invalid=>:replace, :undef=>:replace, :replace=>"?").encode('UTF-8')
@@ -506,18 +506,18 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
            key=key.split(':')[0]
            value=parm.split('>')[1]
            if value then
-           puts "value: "+value.to_s
-           puts "length: "+value.length.to_s
-           puts "len: "+len.to_s
-           puts "key: "+key
+           logger.debug "value: "+value.to_s
+           logger.debug "length: "+value.length.to_s
+           logger.debug "len: "+len.to_s
+           logger.debug "key: "+key
            end
 
            if len and len.to_i>0 then 
-             puts "Truncate"
+             logger.debug "Truncate"
              value=value[0..(len.to_i)-1] 
-             puts "length: "+value.length.to_s
+             logger.debug "length: "+value.length.to_s
            end
-           puts "DEBUG: "+key.downcase
+           logger.debug "DEBUG: "+key.downcase
            case (key.downcase)
  
            when "station_callsign"
@@ -715,18 +715,18 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
        protolog.check_codes_in_location
        lc=0
        logs.each do |log|
-          #puts "IMPORT: testing"
-          #puts log.callsign1, protolog.callsign1, log.callsign1==protolog.callsign1
-          #puts log.date,protolog.date,log.date==protolog.date
-          #puts log.asset_codes.join(','),protolog.asset_codes.join(','),(protolog.asset_codes-log.asset_codes).empty?
+          #logger.debug "IMPORT: testing"
+          #logger.debug log.callsign1, protolog.callsign1, log.callsign1==protolog.callsign1
+          #logger.debug log.date,protolog.date,log.date==protolog.date
+          #logger.debug log.asset_codes.join(','),protolog.asset_codes.join(','),(protolog.asset_codes-log.asset_codes).empty?
           if log.callsign1==protolog.callsign1 and log.date==protolog.date and (protolog.asset_codes-log.asset_codes).empty? then 
                   logid=lc
-                  puts "IMPORT: matched existing log: #{lc.to_s}"
+                  logger.debug "IMPORT: matched existing log: #{lc.to_s}"
           end  
           lc+=1
        end
        if logid==nil then
-         puts "IMPORT: creating new log ("+log_count.to_s+")"
+         logger.debug "IMPORT: creating new log ("+log_count.to_s+")"
          log_count=logs.count
          lstr=protolog.to_json
          invalid_log[log_count]=true
@@ -734,7 +734,7 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
          loguser=User.find_by_callsign_date(logs[log_count].callsign1,logs[log_count].date)
          if loguser and (loguser.id==user.id or user.is_admin) then
            if logs[log_count].valid? then
-             puts "Valid log "+log_count.to_s    
+             logger.debug "Valid log "+log_count.to_s    
              invalid_log[log_count]=false
            else
              errors.push("Record #{record_count.to_s}: Create log #{log_count.to_s} failed: "+logs[log_count].errors.messages.to_s)
@@ -748,7 +748,7 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
        end 
 
        contact.log_id=logid
-       #puts "IMPORT: save contact"
+       #logger.debug "IMPORT: save contact"
        cstr=contact.to_json
        c=JSON.parse(cstr)
        contact=Contact.new(c)
@@ -770,7 +770,7 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
              res=contact.valid?
              create=true
            else 
-             puts "Skipping contact with unknown call: "+contact.callsign2 
+             logger.debug "Skipping contact with unknown call: "+contact.callsign2 
              skip_count+=1
              create=false
            end
@@ -780,7 +780,7 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
            create=true
          end
          if !res then 
-           puts "IMPORT: save contact failed"
+           logger.debug "IMPORT: save contact failed"
            errors.push("Record #{record_count.to_s}: Save contact #{contact_count.to_s} failed: "+contact.errors.messages.to_s)
          end
          if res and create then
@@ -798,9 +798,9 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
   logs.each do |log|
     if contacts_per_log[lc]>0 and !invalid_log[lc] then 
       if errors.empty? or ignore_error then
-        puts logs[lc].callsign1.inspect
-        puts logs[lc].callsign1.length
-        puts "SAVE: "+logs[lc].to_json
+        logger.debug logs[lc].callsign1.inspect
+        logger.debug logs[lc].callsign1.length
+        logger.debug "SAVE: "+logs[lc].to_json
         if logs[lc].save then
            logs[lc].reload
            good_logs+=1
@@ -812,7 +812,7 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
         good_logs+=1
       end
     else
-      puts "Skipping empty log: "+lc.to_s
+      logger.debug "Skipping empty log: "+lc.to_s
     end
     lc+=1
   end
@@ -822,7 +822,7 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
   good_contacts=0
   contacts.each do |contact|
     if invalid_log[contact.log_id] then
-      puts "Skipping contact #{cc.to_s} as log #{contact.log_id.to_s} invalid"
+      logger.debug "Skipping contact #{cc.to_s} as log #{contact.log_id.to_s} invalid"
     else
       if errors.empty? or ignore_error then
         contact.log_id=logs[contact.log_id].id
@@ -836,8 +836,8 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
       end
     end
   end
-  puts "IMPORT: clean exit"
-  puts errors
+  logger.debug "IMPORT: clean exit"
+  logger.debug errors
   return {logs: logs, errors: errors, success: true, good_logs: good_logs, good_contacts: good_contacts}
 end
 

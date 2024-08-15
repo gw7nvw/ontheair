@@ -126,7 +126,7 @@ end
 
 def self.get_next_code(asset_type, region)
   if !region then region="ZZ" end
-  puts "Region :"+region
+  logger.debug  "Region :"+region
   newcode=nil
   use_region=true
   if asset_type=='hut' then prefix='ZLH/' end
@@ -138,21 +138,29 @@ def self.get_next_code(asset_type, region)
   if prefix then 
     if use_region and region and region!="" then
       last_asset=Asset.where("code like '"+prefix+region+"-%%'").order(:code).last
-      puts last_asset
-      codestring=last_asset.code[7..-1]
+      if last_asset then
+        logger.debug last_asset
+        codestring=last_asset.code[7..-1]
+      else 
+        codestring="0000"
+      end
        codenumber=codestring.to_i
        codenumber+=1
        newcode=prefix+region+'-'+(codenumber.to_s.rjust(codestring.length,'0'))
     else
       last_asset=Asset.where(:asset_type => asset_type).order(:code).last
-      codestring=last_asset.code[3..-1]
-       codenumber=codestring.to_i
-       codenumber+=1
-       newcode=prefix+(codenumber.to_s.rjust(codestring.length,'0'))
+      if last_asset then
+       codestring=last_asset.code[3..-1]
+      else 
+        codestring="000" 
+      end
+      codenumber=codestring.to_i
+      codenumber+=1
+      newcode=prefix+(codenumber.to_s.rjust(codestring.length,'0'))
     end
 
   end
-  puts "Code: "+newcode
+  logger.debug "Code: "+newcode
   newcode
 end
 
@@ -204,7 +212,6 @@ def first_activated
 
  if self.asset_type=="summit"  or self.asset_type=="pota park"then
    as=SotaActivation.find_by_sql [ "select * from sota_activations where summit_code='"+self.code+"' order by date asc limit 1" ]
-   puts as[0]
    if as and as[0] and (c==nil or as[0].date<c.date) then
      c=Contact.new
      c.callsign1=as[0].callsign
@@ -373,7 +380,7 @@ def self.add_parks
     p=Park.find_by_id(pid)
     a=Asset.find_by(asset_type: 'park', code: p.dist_code)
     if !a then  a=Asset.find_by(asset_type: 'park', code: p.code) end
-    if !a then a=Asset.new;new=true;puts "New" else new=false end
+    if !a then a=Asset.new;new=true;logger.debug "New" else new=false end
     a.asset_type="park"
     a.code=p.dist_code
     a.old_code=p.code
@@ -381,7 +388,7 @@ def self.add_parks
        cp=Crownpark.find_by_id(p.master_id)
        if cp then pp=Park.find_by_id(cp.napalis_id)  else pp=nil end
        if pp then a.master_code=pp.dist_code 
-       else puts "ERROR: failed to find park "+p.master_id.to_s+" master for "+p.dist_code+" "+p.name; p.master_id=nil; a.master_code=nil; end
+       else logger.error "ERROR: failed to find park "+p.master_id.to_s+" master for "+p.dist_code+" "+p.name; p.master_id=nil; a.master_code=nil; end
     end
     a.safecode=a.code.gsub('/','_')
     a.url='assets/'+a.safecode
@@ -393,7 +400,8 @@ def self.add_parks
     if new then a.save end
     ActiveRecord::Base.connection.execute("update assets set code='"+a.code+"', old_code='"+(a.old_code||"")+"',master_code='"+(a.master_code||"")+"', safecode='"+a.safecode+"', url='"+a.url+"', name='"+a.name+"', description='"+(a.description||"")+"', is_active="+a.is_active.to_s+", category='"+(a.category||"")+"', location=(select location from parks where id="+p.id.to_s+"),  boundary=(select boundary from parks where id="+p.id.to_s+") where id="+a.id.to_s+";")
 
-    puts a.code
+    logger.debug a.code
+
   end 
   true
 end
@@ -440,7 +448,7 @@ def self.assets_from_code(codes)
 		     asset[:external_url]=a.get_external_url
 		  end
 
-		  if a.type then asset[:title]=a.type.display_name else puts "ERROR: cannot find type "+a.asset_type end
+		  if a.type then asset[:title]=a.type.display_name else logger.error "ERROR: cannot find type "+a.asset_type end
 		  if asset[:url][0]!='/' then asset[:url]='/'+asset[:url] end
 	      elsif va then
 		  asset[:asset]=va
@@ -457,7 +465,7 @@ def self.assets_from_code(codes)
 		  asset[:title]=va.site_type
 	      elsif thecode=code.match(/^[a-zA-Z]{1,2}\d\/H[a-zA-Z]{2}-\d{3}/) then
 		#HEMA
-		 puts "HEMA"
+		 logger.debug "HEMA"
 		  asset[:name]=code
 		  asset[:url]='https://parksnpeaks.org/showAward.php?award=HEMA'
 		  asset[:external]=true
@@ -466,7 +474,7 @@ def self.assets_from_code(codes)
 		  asset[:title]="HEMA"
 	      elsif thecode=code.match(/^VK-[a-zA-Z]{3}\d{1}/)  then
 		#SiOTA
-		 puts "SiOTA"
+		 logger.debug "SiOTA"
 		  asset[:name]=code
 		  asset[:url]='https://www.silosontheair.com/silos/#'+thecode.to_s
 		  asset[:external]=true
@@ -475,7 +483,7 @@ def self.assets_from_code(codes)
 		  asset[:title]="SiOTA"
 	      elsif thecode=code.match(/^[a-zA-Z0-9]{1,2}-\d{4,5}/)  then
 		#POTA
-		puts "POTA"
+		logger.debug "POTA"
 		if code[0..1].upcase=='VK' or code[0..1].upcase=='AU'then
 		  asset[:name]=code
 		  asset[:url]='https://parksnpeaks.org/getPark.php?actPark='+thecode.to_s+'&submit=Process'
@@ -493,8 +501,8 @@ def self.assets_from_code(codes)
 		end  
 	      elsif thecode=code.match(/^[a-zA-Z]{1,2}[fF]{2}-\d{4}/) then
 		#WWFF
-		 puts "WWFF"
-		puts thecode
+		 logger.debug "WWFF"
+		logger.debug thecode
 		if code[0..1].upcase=='VK' then
 		  asset[:name]=code
 		  asset[:url]='https://parksnpeaks.org/getPark.php?actPark='+thecode.to_s+'&submit=Process'
@@ -512,7 +520,7 @@ def self.assets_from_code(codes)
 		end
 	      elsif thecode=code.match(/^[a-zA-Z]{1,2}\d{0,1}\/[a-zA-Z]{2}-\d{3}/) then
 		#SOTA
-		 puts "SOTA"
+		 logger.debug "SOTA"
 		asset[:name]=code
 		asset[:url]="https://summits.sota.org.uk/summit/"+thecode.to_s
 		asset[:external]=true
@@ -520,7 +528,7 @@ def self.assets_from_code(codes)
 		asset[:type]='summit'
 		asset[:title]="SOTA"
 	      elsif thecode=code.match(/[a-zA-Z]{1,2}\d\/H[a-zA-Z]{2}-\d{3}/) then
-		 puts "HEMA"
+		 logger.debug "HEMA"
 		#HEMA
 		asset[:name]=code
 		asset[:url]='https://parksnpeaks.org/showAward.php?award=HEMA'
@@ -555,7 +563,7 @@ def self.assets_from_code(codes)
 	    a.location=p.location
 	    a.altitude=p.altitude
 	    a.save
-	    puts a.code
+	    logger.debug a.code
 	  end
 	  true
 	end
@@ -574,7 +582,7 @@ def self.assets_from_code(codes)
 	    a.location=p.WKT
 	    a.boundary=p.boundary
 	    a.save
-	    puts a.code
+	    logger.debug a.code
 	  end
 	  true
 	end
@@ -588,7 +596,7 @@ def self.assets_from_code(codes)
 
 	def self.add_lake(l)
 	    a=Asset.find_by(asset_type: 'lake', code: l.code)
-	    if !a then a=Asset.new; puts "New" end
+	    if !a then a=Asset.new; logger.debug "New" end
 	    a.asset_type="lake"
 	    a.code=l.code
 	    a.safecode=a.code.gsub('/','_')
@@ -599,7 +607,7 @@ def self.assets_from_code(codes)
 	   a.boundary=l.boundary
 	    a.ref_id=l.topo50_fid
 	    a.save
-	    puts a.code
+	    logger.debug a.code
 	    a
 	end
 
@@ -611,7 +619,7 @@ def self.assets_from_code(codes)
 	end
 	def self.add_sota_peak(p)
 	    a=Asset.find_by(asset_type: 'summit', code: p.summit_code)
-	    if !a then puts "New peak: "+p.summit_code;a=Asset.new end
+	    if !a then logger.debug "New peak: "+p.summit_code;a=Asset.new end
 	    a.asset_type="summit"
 	    a.code=p.summit_code
 	    a.safecode=a.code.gsub('/','_')
@@ -621,10 +629,10 @@ def self.assets_from_code(codes)
 	    a.location=p.location
 	    a.points=p.points
 	    a.altitude=p.alt
-	    if p.valid_to!="0001-01-01 00:00:00" then puts "retured summit: "+a.code; a.valid_to=p.valid_to else a.valid_to=nil end
+	    if p.valid_to!="0001-01-01 00:00:00" then logger.debug "retured summit: "+a.code; a.valid_to=p.valid_to else a.valid_to=nil end
 	    if p.valid_from!="0001-01-01 00:00:00" then a.valid_from=p.valid_from else a.valid_from=nil end
 	    a.save
-	    puts a.code
+	    logger.debug a.code
 	    a
 	end
 
@@ -643,7 +651,7 @@ def self.assets_from_code(codes)
 	    a.safecode=p.reference.gsub('/','_')
 	    a.is_active=true
 	    if a.id and (a.name!=p.name or a.location!=p.location) then
-	      puts "Exiting asset needs updating"
+	      logger.warn "Exiting asset needs updating"
 	      name=p.name.gsub("'","''")
 	      if existing_asset  then
 		ActiveRecord::Base.connection.execute("update assets set code='"+p.reference+"', name='"+name+"', is_active=true, location=ST_GeomFromText('POINT(#{p.location.x} #{p.location.y})',4326), boundary=(select boundary from assets where id="+existing_asset.id.to_s+") where id="+a.id.to_s+";")
@@ -651,7 +659,7 @@ def self.assets_from_code(codes)
 		ActiveRecord::Base.connection.execute("update assets set code='"+p.reference+"', name='"+name+"', is_active=true, location=ST_GeomFromText('POINT(#{p.location.x} #{p.location.y})',4326) where id="+a.id.to_s+";")
 	      end
 	    elsif !a.id then
-	      puts "Adding data to new asset"
+	      logger.debug "Adding data to new asset"
 	      a.name=p.name
 	      a.location=p.location
 	      a.save
@@ -661,7 +669,7 @@ def self.assets_from_code(codes)
 	      end
 	    end
 
-	    puts a.code
+	    logger.debug a.code
 	    a
 	end
 
@@ -689,7 +697,7 @@ def self.assets_from_code(codes)
 	    a=Asset.find_by(asset_type: 'lighthouse', code: p.code)
 	    if !a then
 	       a=Asset.new
-	       puts "Adding new lighthouse"
+	       logger.debug "Adding new lighthouse"
 	    end
 	    a.asset_type="lighthouse"
 	    if a.description=nil or a.description=="" then a.description=(p.loc_type||"").capitalize+" based "+(if p.str_type=="lighthouse" then "lighthouse" else "light/beacon" end)+(if p.status then " ("+p.status+")" else "" end) end
@@ -701,8 +709,8 @@ def self.assets_from_code(codes)
 	    if p.mnz_id != nil and p.mnz_id!="" then a.category="Maritime NZ" end
 	    if a.name and a.name.length>0 then a.is_active=true else a.is_active=false end
 	    a.save 
-	    puts a.code
-	    puts a.name
+	    logger.debug a.code
+	    logger.debug a.name
 	    a
 	end
 
@@ -710,7 +718,7 @@ def self.assets_from_code(codes)
             a=Asset.find_by(asset_type: 'hump', code: p.code)
             if !a then
                a=Asset.new
-               puts "Adding new hump"
+               logger.debug "Adding new hump"
             end
             a.asset_type="hump"
             a.code=p.code
@@ -724,8 +732,8 @@ def self.assets_from_code(codes)
             a.altitude=p.elevation
             if a.name and a.name.length>0 then a.is_active=true else a.is_active=false end
             a.save
-            puts a.code
-            puts a.name
+            logger.debug a.code
+            logger.debug a.name
             a
         end
 
@@ -738,7 +746,7 @@ def self.assets_from_code(codes)
 	    a.is_active=true
 	    
 	    if a.id and (a.name!=p.name or a.location!=p.location) then
-	      puts "Exiting asset needs updating"
+	      logger.debug "Exiting asset needs updating"
 	      name=p.name.gsub("'","''")
 	      if existing_asset  then
 		ActiveRecord::Base.connection.execute("update assets set code='"+p.code+"', name='"+name+"', is_active=true, location=ST_GeomFromText('POINT(#{p.location.x} #{p.location.y})',4326), boundary=(select boundary from assets where id="+existing_asset.id.to_s+") where id="+a.id.to_s+";")
@@ -746,7 +754,7 @@ def self.assets_from_code(codes)
 		ActiveRecord::Base.connection.execute("update assets set code='"+p.code+"', name='"+name+"', is_active=true, location=ST_GeomFromText('POINT(#{p.location.x} #{p.location.y})',4326) where id="+a.id.to_s+";")
 	      end
 	    elsif !a.id then
-	      puts "Adding data to new asset"
+	      logger.debug "Adding data to new asset"
 	      a.name=p.name
 	      a.location=p.location
 	      a.save 
@@ -755,7 +763,7 @@ def self.assets_from_code(codes)
 		a.add_simple_boundary 
 	      end
 	    end
-	    puts a.code
+	    logger.debug a.code
 	    a
 	end
 
@@ -764,7 +772,7 @@ def self.assets_from_code(codes)
 	     count=0
 	     a=Asset.first_by_id
 	     while a do
-	       puts a.code+" "+count.to_s
+	       logger.debug a.code+" "+count.to_s
 	       count+=1
 	       a.add_region
 	       a=Asset.next(a.id)
@@ -775,7 +783,7 @@ def self.assets_from_code(codes)
 	     count=0
 	     a=Asset.first_by_id
 	     while a do
-	       puts a.code+" "+count.to_s
+	       logger.debug a.code+" "+count.to_s
 	       count+=1
 	       a.add_district
 	       a=Asset.next(a.id)
@@ -785,7 +793,7 @@ def self.assets_from_code(codes)
 	def self.add_links
 	  as=Asset.find_by_sql [ " select id,code from assets " ]
 	  as.each do |aa|
-	    puts aa.code
+	    logger.debug aa.code
 	    a=Asset.find_by_id(aa.id)
 	    a.add_links
 	  end
@@ -892,7 +900,7 @@ def self.assets_from_code(codes)
           trad_owners
         end
 	def add_region
-	    if self.location then region=Region.find_by_sql [ %q{select id, sota_code, name from regions where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), "boundary");} ] else puts "ERROR: place without location. Name: "+self.name+", id: "+self.id.to_s end
+	    if self.location then region=Region.find_by_sql [ %q{select id, sota_code, name from regions where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), "boundary");} ] else logger.error "ERROR: place without location. Name: "+self.name+", id: "+self.id.to_s end
 	    if self.id and region and region.count>0 and self.region != region.first.sota_code then
 	      ActiveRecord::Base.connection.execute("update assets set region='"+region.first.sota_code+"' where id="+self.id.to_s)
 	    end
@@ -903,7 +911,7 @@ def self.assets_from_code(codes)
 	end
 
 	def add_district
-	    if self.location then district=District.find_by_sql [ %q{select id, district_code, name from districts where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), "boundary");} ] else puts "ERROR: place without location. Name: "+self.name+", id: "+self.id.to_s end
+	    if self.location then district=District.find_by_sql [ %q{select id, district_code, name from districts where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), "boundary");} ] else logger.error "ERROR: place without location. Name: "+self.name+", id: "+self.id.to_s end
 	    if self.id and district and district.count>0 and self.district != district.first.district_code then
 	      ActiveRecord::Base.connection.execute("update assets set district='"+district.first.district_code+"' where id="+self.id.to_s)
 	    end
@@ -917,18 +925,18 @@ def self.assets_from_code(codes)
 	def add_links(flush=true)
           if flush==true then
             las=AssetLink.where(:parent_code=> self.code)
-            puts "DEBUG: deleting #{las.count.to_s} old parent links"
+            Rails.logger.warn "DEBUG: deleting #{las.count.to_s} old parent links"
             las.destroy_all
             las=AssetLink.where(:child_code=> self.code)
-            puts "DEBUG: deleting #{las.count.to_s} old child links"
+            Rails.logger.warn "DEBUG: deleting #{las.count.to_s} old child links"
             las.destroy_all
           end
 
           if self.is_active then
-          puts "DEBUG: places containing us"
+          logger.debug "DEBUG: places containing us"
           #places containing us
 	    linked_assets=Asset.find_by_sql [ %q{select b.id as id,b.code as code, b.is_active as is_active from assets a inner join assets b on ST_Within(a.location, b.boundary) and a.id = }+self.id.to_s ]
-          puts "DEBUG: Found "+linked_assets.count.to_s
+          logger.debug "DEBUG: Found "+linked_assets.count.to_s
 	  linked_assets.each do |la|
 	    if la.is_active then
                matched=false
@@ -937,13 +945,13 @@ def self.assets_from_code(codes)
                if self.type.has_boundary and self.area and self.area>0 then
                   overlap=ActiveRecord::Base.connection.execute( " select ST_Area(ST_intersection(a.boundary, b.boundary)) as overlap, ST_Area(a.boundary) as area from assets a join assets b on b.id=#{la.id.to_s} where a.id=#{self.id.to_s}; ")
                   prop_overlap=overlap.first["overlap"].to_f/overlap.first["area"].to_f
-                  puts "DEBUG: overlap #{prop_overlap.to_s} "+la.code
+                  logger.debug "DEBUG: overlap #{prop_overlap.to_s} "+la.code
                   if prop_overlap>0.9 then 
                     matched=true
                   end
                else
                   matched=true
-                  puts "Point: "+la.code
+                  logger.debug "Point: "+la.code
                end
                if matched==true then
 	  	  dup=AssetLink.where(:parent_code=> self.code, :child_code => la.code)
@@ -958,7 +966,7 @@ def self.assets_from_code(codes)
             end
           end
 
-          puts "DEBUG: places we contain"
+          logger.debug "DEBUG: places we contain"
           #places we contain
 #         linked_assets=Asset.find_by_sql [ %q{ select b.code as code from assets a inner join assets b on b.is_active=true and ST_Within(b.location, a.boundary)  where a.id = }+self.id.to_s ]
          linked_assets=ActiveRecord::Base.connection.execute( %q{ select b.code as code, at.has_boundary as has_boundary, (b.boundary is not null) as boundary from assets a inner join assets b on b.is_active=true and ST_Within(b.location, a.boundary) inner join asset_types at on at.name=b.asset_type  where (b.area is null or b.area<a.area*1.1) and a.id = }+self.id.to_s )
@@ -969,14 +977,14 @@ def self.assets_from_code(codes)
            if la['has_boundary']=='t' and la['boundary']=='t' then
               overlap=ActiveRecord::Base.connection.execute( " select ST_Area(ST_intersection(a.boundary, b.boundary)) as overlap, ST_Area(a.boundary) as area from assets a join assets b on b.id=#{self.id.to_s} where a.code='#{la['code']}'; ")
               prop_overlap=overlap.first["overlap"].to_f/overlap.first["area"].to_f
-              puts "DEBUG: overlap #{prop_overlap.to_s} "+la['code']
+              logger.debug "DEBUG: overlap #{prop_overlap.to_s} "+la['code']
               if prop_overlap>0.9 then 
                 matched=true
               end
            else
               #for point locations, always include them
               matched=true
-              puts "DEBUG: point "+la['code']
+              logger.debug "DEBUG: point "+la['code']
            end
            if matched==true then
 
@@ -1008,7 +1016,7 @@ def self.update_all
   while a do
      a.save
      a=Asset.next(a.id)
-     puts a.code
+     logger.debug a.code
   end
 end
 
@@ -1042,7 +1050,7 @@ end
   def self.find_all_hutbagger_photos
      a=Asset.first_by_id
      while a do
-       puts a.code
+       logger.debug a.code
        a.find_hutbagger_photos
        a=Asset.next(a.id)
      end
@@ -1081,7 +1089,7 @@ end
     a=Asset.first_by_id
      while a do
        if !a.location then
-         puts a.code
+         logger.debug a.code
          location=a.calc_location
          if location then a.location=location; a.save; end
        end
@@ -1132,7 +1140,7 @@ end
 def self.get_altitudes_from_sota
   summits=Asset.where(asset_type: "summit")
   summits.each do |summit|
-    puts "Summit: "+summit.code
+    logger.debug "Summit: "+summit.code
     url = "https://api-db.sota.org.uk/admin/find_summit?search="+summit.code
     data = JSON.parse(open(url, {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE}).read)
     if data and data[0] then
@@ -1140,7 +1148,7 @@ def self.get_altitudes_from_sota
       url = "https://api-db.sota.org.uk/admin/summit_history?summitID="+summitId.to_s
       data = JSON.parse(open(url, {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE}).read)
       if data and data["info"] and data["info"].count>0 and data["info"][0]["AltM"] then
-        puts data["info"][0]["AltM"]
+        logger.debug data["info"][0]["AltM"]
         summit.altitude=data["info"][0]["AltM"].to_i
         summit.save
       end
@@ -1149,7 +1157,7 @@ def self.get_altitudes_from_sota
 end
 
 def add_buffered_activation_zone
-  puts "update assets set boundary=ST_Transform(ST_Buffer(ST_Transform(a.location,2193),#{self.az_radius*1000}),4326) where a.id=#{self.id}"
+  logger.debug "update assets set boundary=ST_Transform(ST_Buffer(ST_Transform(a.location,2193),#{self.az_radius*1000}),4326) where a.id=#{self.id}"
  ActiveRecord::Base.connection.execute("update assets a set boundary=ST_Multi(ST_Transform(ST_Buffer(ST_Transform(a.location,2193),#{self.az_radius*1000}),4326)) where a.id=#{self.id}")
 end
 
@@ -1182,20 +1190,20 @@ end
 
 def add_sota_activation_zone
   if self.asset_type=="summit" or self.asset_type=="hump" then
-    puts self.code
+    logger.debug self.code
 #    dem=Asset.get_custom_connection("cps",'dem30','mbriggs','littledog')
     dem=Asset.get_custom_connection("cps",'dem15','mbriggs','littledog')
     location=self.location
     alt_min=self.altitude-25
     alt_max=5000
     dist_max=0.04 #degrees
-#    puts " select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(st_clip(rast,  st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem30s) as foo where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326));"
+#    logger.debug " select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(st_clip(rast,  st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem30s) as foo where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326));"
 #    az_poly=dem.exec_query(" select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(st_clip(rast,  st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem30s) as foo where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326));")   
     #az_poly=dem.exec_query(" select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(st_clip(rast,  st_envelope(st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max})))),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem16) as foo where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326));")   
-    puts " select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(rast),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem16 where st_intersects(rast,st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))) as bar where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326)); "
+    logger.debug " select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(rast),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem16 where st_intersects(rast,st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))) as bar where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326)); "
     az_poly=dem.exec_query(" select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(rast),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem16 where st_intersects(rast,st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))) as bar where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326)); ")
     if az_poly and az_poly.count>0 and az_poly.first["geom"] then
-      puts az_poly.first["geom"]
+      logger.debug az_poly.first["geom"]
       boundary=make_multipolygon(az_poly.first["geom"])
       ActiveRecord::Base.connection.execute("update assets set boundary=ST_geomfromtext('#{boundary}',4326) where id=#{self.id.to_s};");  
     end
@@ -1238,7 +1246,7 @@ end
 
 def get_access_with_buffer(buffer)
   if self.boundary then
-     puts "boundary"
+     logger.debug "boundary"
      queryfield='a.boundary'
   else
      queryfield='a.location'
@@ -1268,7 +1276,7 @@ end
 def self.get_hema_access
   as=Asset.where(asset_type: 'hump')
   as.each do |a|
-    puts a.code
+    logger.debug a.code
     a.get_access
   end
 end
@@ -1276,7 +1284,7 @@ end
 def self.get_sota_access
   as=Asset.where(asset_type: 'summit')
   as.each do |a|
-    puts a.code
+    logger.debug a.code
     a.get_access
   end
 end
@@ -1284,7 +1292,7 @@ end
 def self.get_lake_access
   as=Asset.where(asset_type: 'lake')
   as.each do |a|
-    puts a.code
+    logger.debug a.code
     a.get_access_with_buffer(500)
   end
 end
