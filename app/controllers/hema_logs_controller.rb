@@ -245,7 +245,7 @@ modes=[]
    end
 end
  
-puts "got modes: "+bands.to_json
+puts "got modes: "+modes.to_json
 log.contacts.each do |contact|
    band=bands.select{|b| b[:name]==contact.hema_band}.first
    if band then band_id=band[:id] else band_id=14 end 
