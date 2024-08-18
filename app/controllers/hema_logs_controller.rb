@@ -13,7 +13,7 @@ def index
    redirect_to '/'
   end
  
-  contacts=Contact.where("user1_id="+current_user.id.to_s+" and 'hump'=ANY(asset1_classes)")
+  contacts=Contact.where("user1_id="+@user.id.to_s+" and 'hump'=ANY(asset1_classes)")
   all_ids=contacts.map{|c| c.log_id}
   log_ids=all_ids.uniq
   logs=Log.where('id in (?)',log_ids)
