@@ -36,216 +36,376 @@ class User < ActiveRecord::Base
     Digest::SHA1.hexdigest(token.to_s)
   end
 
+###############################################################################################
+# Return all callsigns for current user 
+###############################################################################################
 def callsigns
   UserCallsign.where(user_id: self.id)
 end
 
+###############################################################################################
+# Is current callsign valid
+###############################################################################################
 def valid_callsign? 
   valid_callsign=/^\d{0,1}[a-zA-Z]{1,2}\d{1,4}[a-zA-Z]{1,4}$/
   if valid_callsign.match(self.callsign) then true else false end
 end
 
- def authenticated?(attribute, token)
-     digest = send("#{attribute}_digest")
-    return false if digest.nil?
-    Digest::SHA1.hexdigest(token.to_s)==digest
- end
+###############################################################################################
+# Returns true if a password reset has expired.
+###############################################################################################
+def password_reset_expired?
+  reset_sent_at < 2.hours.ago
+end
 
- # Activates an account.
- def activate
-    update_attribute(:activated,    true)
-    update_attribute(:activated_at, Time.zone.now)
- end
+###############################################################################################
+# Authenticate password reset token against current account 
+# Returns:
+#   True: Digest
+#   False: Nil
+###############################################################################################
+def authenticated?(attribute, token)
+  digest = send("#{attribute}_digest")
+  return false if digest.nil?
+  Digest::SHA1.hexdigest(token.to_s)==digest
+end
 
- def timezonename
-   timezonename=""
-   if self.timezone!="" then
-     tz=Timezone.find_by_id(self.timezone)
-     if tz then timezonename=tz.name end
-   end
-   timezonename
- end
+###############################################################################################
+# Activate the current account. 
+###############################################################################################
+def activate
+  update_attribute(:activated,    true)
+  update_attribute(:activated_at, Time.zone.now)
+end
 
 
-##AWARDS
- #return list of user's awards
- def awards
-   awls=AwardUserLink.where(user_id: self.id)
- end
+###############################################################################################
+# Send account actiuivation email 
+###############################################################################################
+def send_activation_email
+  UserMailer.account_activation(self).deliver
+end
 
- #check if user has a specific award
- def has_award(award, threshold=nil)
-   if threshold==nil then
-     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_id = "+award.id.to_s+" and threshold is null" ]
-   else
-     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_id = "+award.id.to_s+" and threshold = "+threshold.threshold.to_s ]
-   end
-   if uas and uas.count>0 then true else false end
- end
 
+###############################################################################################
+# Return a password reset digest for current user
+###############################################################################################
+def create_reset_digest
+  self.reset_token = User.new_token
+  update_attribute(:reset_digest,  User.digest(reset_token))
+  update_attribute(:reset_sent_at, Time.zone.now)
+end
+
+###############################################################################################
+# Send password reset email for current user
+###############################################################################################
+def send_password_reset_email
+  UserMailer.password_reset(self).deliver
+end
+
+###############################################################################################
+# Sends youve been signed up choose a password email.
+###############################################################################################
+def send_new_password_email
+  UserMailer.new_password(self).deliver
+end
+
+
+###############################################################################################
+# Returns a valid account activation digest for current user
+###############################################################################################
+def create_activation_digest
+  self.activation_token = User.new_token
+  self.activation_digest = User.digest(activation_token)
+end
+
+
+##############################################################################################
+# CALCULATED FIELDS
+##############################################################################################
+
+##############################################################################################
+# Return name of current user's timezone or "" if not set
+# Returns:
+#    (string) timezone.name
+##############################################################################################
+def timezonename
+  timezonename=""
+  if self.timezone!="" then
+    tz=Timezone.find_by_id(self.timezone)
+    if tz then timezonename=tz.name end
+  end
+  timezonename
+end
+
+##############################################################################################
+# Return all contacts for this user including those enmtered by others 
+# Returns:
+#    [Contact]
+##############################################################################################
+def contacts
+  contacts=Contact.find_by_sql [ "select * from contacts where user1_id="+self.id.to_s+" or user2_id="+self.id.to_s+" order by date, time"]
+end
+
+##############################################################################################
+# Return all logs created by this user
+# Returns:
+#    [Log]
+##############################################################################################
+def logs
+  logs=Log.find_by_sql [ "select * from logs where user1_id="+self.id.to_s+" order by date"]
+end
+
+
+
+#############################################################################################
+# AWARDS
+#############################################################################################
+
+#############################################################################################
+# return links to all current user's awards 
+# Returns:
+#  [UserAwardLink]
+#############################################################################################
+def awards
+  awls=AwardUserLink.where(user_id: self.id)
+end
+
+#############################################################################################
+# check if current user has a specific threshold-based award
+# Input: 
+#   - award: Award
+#   - threshold: numeric value of threshold award is awarded for or nil for all
+# Returns:
+#   True / False
+#############################################################################################
+def has_award(award, threshold=nil)
+  if threshold==nil then
+    uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_id = "+award.id.to_s+" and threshold is null" ]
+  else
+    uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_id = "+award.id.to_s+" and threshold = "+threshold.threshold.to_s ]
+  end
+  if uas and uas.count>0 then true else false end
+end
+
+#############################################################################################
+# check if current user has a specific region/district completion award
+# Input:
+#   - scale: 'region' / 'district'
+#   - loc_id: id for region/district being checked
+#   - activity_type: AssetType.name for award 
+#   - award_class: Award
+# Returns:
+#   True / False
+#############################################################################################
  #check if user has completion award for a locality
  def has_completion_award(scale, loc_id, activity_type, award_class)
      uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_type='"+scale+"' and linked_id="+loc_id.to_s+" and activity_type='"+activity_type+"' and award_class='"+award_class+"' and expired is not true "]
      if uas and uas.count>0 then true else false end
  end
 
- #retire an expired completion award (where locality has new assets)
- def retire_completion_award(scale, loc_id, activity_type, award_class)
-     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_type='"+scale+"' and linked_id="+loc_id.to_s+" and activity_type='"+activity_type+"' and award_class='"+award_class+"' and expired is not true "]
-     uas.each do |ua|
-       logger.warn "Retiring "+self.callsign+" "+loc_id.to_s+" "+scale+" "+activity_type+" "+award_class
-       ua.expired=true
-       ua.expired_at=Time.now()
-       ua.save
-     end
- end
-
-##BAGGED
-
- def bagged(params={})
-   asset_type='all'
-   qrp=false
-   include_minor=false
-   if params[:asset_type] then asset_type=params[:asset_type] end
-   if params[:include_minor] then include_minor=params[:include_minor] end
-   if params[:qrp] then qrp=params[:qrp] end
-
-   if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
-   if qrp==true then
-     qrp_query1="is_qrp1 is true"
-     qrp_query2="is_qrp2 is true"
-   else
-     qrp_query1="true"
-     qrp_query2="true"
-   end
-   if asset_type=='all' then
-     ats=AssetType.where(keep_score: true)
-     at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
-     codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where ((user1_id="+self.id.to_s+" and "+qrp_query1+") or (user2_id="+self.id.to_s+" and "+qrp_query2+"))) as c inner join assets a on a.code = c.asset1_codes where a.is_active=true and #{minor_query} and a.asset_type in ("+at_list+"); " ]
-     codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where ((user1_id="+self.id.to_s+" and "+qrp_query1+") or (user2_id="+self.id.to_s+" and "+qrp_query2+"))) as c inner join assets a on a.code = c.asset2_codes where a.is_active=true and #{minor_query} and a.asset_type in ("+at_list+"); " ]
-   else
-     codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where ((user1_id="+self.id.to_s+" and "+qrp_query1+") or (user2_id="+self.id.to_s+" and "+qrp_query2+")) and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where a.asset_type='"+asset_type+"' and a.is_active=true and #{minor_query}; " ]
-     codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where ((user1_id="+self.id.to_s+" and "+qrp_query1+") or (user2_id="+self.id.to_s+" and "+qrp_query2+")) and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where a.asset_type='"+asset_type+"' and a.is_active=true and #{minor_query}; " ]
-   end
-   codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
-   codes=codes.select{ |c| c.length>0 }
+#############################################################################################
+# Retire existing award for current user for specific region/district completion award
+# E.g. after log deletion or additional assets added to that region
+# Input:
+#   - scale: 'region' / 'district'
+#   - loc_id: id for region/district being checked
+#   - activity_type: AssetType.name for award 
+#   - award_class: Award
+# Returns:
+#   
+#############################################################################################
+def retire_completion_award(scale, loc_id, activity_type, award_class)
+  uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_type='"+scale+"' and linked_id="+loc_id.to_s+" and activity_type='"+activity_type+"' and award_class='"+award_class+"' and expired is not true "]
+  uas.each do |ua|
+    logger.warn "Retiring "+self.callsign+" "+loc_id.to_s+" "+scale+" "+activity_type+" "+award_class
+    ua.expired=true
+    ua.expired_at=Time.now()
+    ua.save
   end
+end
 
-##activated
+###########################################################################################
+# SCORE CALCULATION
+###########################################################################################
 
-  def activations(params={})
-   asset_type='all'
-   include_minor=false
-   include_external=false
-   qrp=false
-   qrp_query1="true"
-   qrp_query2="true"
-   date_query=""
-   date_query_ext=""
-   codes3=[]
- 
-   if params[:asset_type] then asset_type=params[:asset_type] end
-   if params[:include_minor] then include_minor=params[:include_minor] end
-   if params[:include_external] then include_external=params[:include_external] end
-   if params[:qrp] then qrp=params[:qrp] end
-   if params[:by_day] then 
-     date_query=" || ' ' || time::date" 
-     date_query_ext=",' ', date::date"
-   end
-   if params[:by_year] then 
-     date_query=" || ' ' || date_part('year', time)" 
-     date_query_ext=",' ', extract('year' from date)"
-   end
+###########################################################################################
+# List bagged (uniques) assets for this user
+# Input:
+#  - params:
+#       [:asset_type] - Asset.type to report or 'all' (default)
+#       [:include_minor] - Also include 'minor' assets not valid for ZLOTA
+#       [:qrp] - Only QRP conatcts
+# Returns:
+#       codes: Array of asset codes
+##########################################################################################
+def bagged(params={})
+  asset_type='all'
+  qrp=false
+  include_minor=false
+  if params[:asset_type] then asset_type=params[:asset_type] end
+  if params[:include_minor] then include_minor=params[:include_minor] end
+  if params[:qrp] then qrp=params[:qrp] end
 
-   if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
-
-   if qrp==true then
-     qrp_query1="is_qrp1=true"
-     qrp_query2="is_qrp2=true"
-   end
-
-
-   if asset_type=='all' then
-      ats=AssetType.where(keep_score: true)
-      at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
-
-      codes1=Contact.find_by_sql [" select distinct(asset1_codes"+date_query+") as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+" and "+qrp_query1+") as c inner join assets a on a.code = c.asset1_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
-      codes2=Contact.find_by_sql [" select distinct(asset2_codes"+date_query+") as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and "+qrp_query2+") as c inner join assets a on a.code = c.asset2_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
-      if include_external==true
-        codes3=SotaActivation.find_by_sql [ " select concat(summit_code"+date_query_ext+") as summit_code from sota_activations where user_id='#{self.id}';"]
-      end
-   else
-      codes1=Contact.find_by_sql [" select distinct(asset1_codes"+date_query+") as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+" and "+qrp_query1+" and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where a.asset_type='"+asset_type+"' and a.is_active=true and #{minor_query}; " ]
-      codes2=Contact.find_by_sql [" select distinct(asset2_codes"+date_query+") as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and "+qrp_query2+" and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where a.asset_type='"+asset_type+"' and a.is_active=true and #{minor_query}; " ]
-      if include_external==true
-        codes3=SotaActivation.find_by_sql [ " select concat(summit_code"+date_query_ext+") as summit_code from sota_activations where user_id='#{self.id}' and asset_type='"+asset_type+"';"]
-      end
-   end
-   codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(","), codes3.map{|c| c.summit_code}.join(",")].join(",").split(',').uniq
-   codes=codes.select{ |c| c.length>0 }
+  if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
+  if qrp==true then
+    qrp_query1="is_qrp1 is true"
+    qrp_query2="is_qrp2 is true"
+  else
+    qrp_query1="true"
+    qrp_query2="true"
+  end
+  if asset_type=='all' then
+    ats=AssetType.where(keep_score: true)
+    at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+    codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where ((user1_id="+self.id.to_s+" and "+qrp_query1+") or (user2_id="+self.id.to_s+" and "+qrp_query2+"))) as c inner join assets a on a.code = c.asset1_codes where a.is_active=true and #{minor_query} and a.asset_type in ("+at_list+"); " ]
+    codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where ((user1_id="+self.id.to_s+" and "+qrp_query1+") or (user2_id="+self.id.to_s+" and "+qrp_query2+"))) as c inner join assets a on a.code = c.asset2_codes where a.is_active=true and #{minor_query} and a.asset_type in ("+at_list+"); " ]
+  else
+    codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where ((user1_id="+self.id.to_s+" and "+qrp_query1+") or (user2_id="+self.id.to_s+" and "+qrp_query2+")) and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where a.asset_type='"+asset_type+"' and a.is_active=true and #{minor_query}; " ]
+    codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where ((user1_id="+self.id.to_s+" and "+qrp_query1+") or (user2_id="+self.id.to_s+" and "+qrp_query2+")) and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where a.asset_type='"+asset_type+"' and a.is_active=true and #{minor_query}; " ]
+  end
+  codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+  codes=codes.select{ |c| c.length>0 }
 end
 
 
-## Qualified
-  def qualified(params={})
-    if params[:asset_type] then asset_type=params[:asset_type] end
-    codes=self.activations(asset_type: params[:asset_type], include_external: params[:use_external])
+###########################################################################################
+# List activated assets for this user [optionally by day / year]
+# Input:
+#  - params:
+#       [:asset_type] - Asset.type to report or 'all' (default)
+#       [:include_minor] - Also include 'minor' assets not valid for ZLOTA
+#       [:include_external] - Also include contacts from external databases (e.g. SOTA, POTA)
+#       [:qrp] - Only QRP conatcts
+#       [:by_day] - Show unique (asset, date) combinations 
+#       [:by_year] - Show unique (asset, year) combinations
+#       ...... i.e. list repeats if they happen on different years / days
+#       ...... default is list unique activations once for all time
+# Returns:
+#       codes: Array of ["(asset code)"] or ["(asset_code) (year)"] or ["(asset_code) (date)"]
+##########################################################################################
+def activations(params={})
+  asset_type='all'
+  include_minor=false
+  include_external=false
+  qrp=false
+  qrp_query1="true"
+  qrp_query2="true"
+  date_query=""
+  date_query_ext=""
+  codes3=[]
 
-      codes=self.filter_by_min_qso(codes,params)
+  if params[:asset_type] then asset_type=params[:asset_type] end
+  if params[:include_minor] then include_minor=params[:include_minor] end
+  if params[:include_external] then include_external=params[:include_external] end
+  if params[:qrp] then qrp=params[:qrp] end
+  if params[:by_day] then 
+    date_query=" || ' ' || time::date" 
+    date_query_ext=",' ', date::date"
+  end
+  if params[:by_year] then 
+    date_query=" || ' ' || date_part('year', time)" 
+    date_query_ext=",' ', extract('year' from date)"
+  end
 
-    codes=codes
+  if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
+
+  if qrp==true then
+    qrp_query1="is_qrp1=true"
+    qrp_query2="is_qrp2=true"
   end
 
 
-  def filter_by_min_qso(codes,params={})
-    asset_type='all'
-    use_external=false
-    date_group="'forever'"
- 
-    if params[:asset_type] then asset_type=params[:asset_type] end
-    if params[:use_external] then use_external=params[:use_external] end
-    if params[:by_year] then 
-       date_group="extract('year' from date)"
-    end
-    if params[:by_day] then 
-       date_group="date::date"
-    end
+  if asset_type=='all' then
+     ats=AssetType.where(keep_score: true)
+     at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
 
-    at=AssetType.find_by(name: asset_type)
-    result_codes=[]
-    if use_external then
-      qual_codes2=SotaActivation.find_by_sql [ " 
-          select concat(summit_code, ' ', "+date_group+") as summit_code 
-          from sota_activations 
-          where user_id='#{self.id}' and qso_count>=#{at.min_qso} and summit_code in (?)
-         ;", codes ]
-      result_codes=qual_codes2.map{|qc| qc.summit_code}.uniq
-    else
-      if at and at.min_qso and at.min_qso>0 then
-        qual_codes=Asset.find_by_sql [ " 
-             select code, 
-               unnest(array(
-                 select concat(a.code, ' ', period) as periodcode from (
-                   select "+date_group+" as period, count(qso_count) as act_count from (
-                     select * from (
-                       select date, count(*) as qso_count from (
-                         select distinct callsign1, callsign2, date from (
-                             select id, callsign1, callsign2, date from contacts c where (c.user1_id='#{self.id}' and a.code=ANY(c.asset1_codes)) 
-                           union 
-                             select id, callsign2 as callsign1, callsign1 as callsign2, date  from contacts c where  (c.user2_id='#{self.id}' and a.code=ANY(c.asset2_codes))
-                         ) as uniquecontacts 
-                       ) as uniqueactivatons group by date 
-                     ) as actcount where qso_count>=#{at.min_qso} 
-                   ) as periodcount group by period
-                 ) as validcount where act_count>0 group by periodcode
-               )) as periodcode from assets a
-               where a.code in (?)
-            ;", codes ]
-        result_codes=qual_codes.map{|qc| qc.code}
-      end
-    end
-    result_codes
+     codes1=Contact.find_by_sql [" select distinct(asset1_codes"+date_query+") as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+" and "+qrp_query1+") as c inner join assets a on a.code = c.asset1_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
+     codes2=Contact.find_by_sql [" select distinct(asset2_codes"+date_query+") as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and "+qrp_query2+") as c inner join assets a on a.code = c.asset2_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
+     if include_external==true
+       codes3=SotaActivation.find_by_sql [ " select concat(summit_code"+date_query_ext+") as summit_code from sota_activations where user_id='#{self.id}';"]
+     end
+  else
+     codes1=Contact.find_by_sql [" select distinct(asset1_codes"+date_query+") as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+" and "+qrp_query1+" and '"+asset_type+"'=ANY(asset1_classes)) as c inner join assets a on a.code = c.asset1_codes where a.asset_type='"+asset_type+"' and a.is_active=true and #{minor_query}; " ]
+     codes2=Contact.find_by_sql [" select distinct(asset2_codes"+date_query+") as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and "+qrp_query2+" and '"+asset_type+"'=ANY(asset2_classes)) as c inner join assets a on a.code = c.asset2_codes where a.asset_type='"+asset_type+"' and a.is_active=true and #{minor_query}; " ]
+     if include_external==true
+       codes3=SotaActivation.find_by_sql [ " select concat(summit_code"+date_query_ext+") as summit_code from sota_activations where user_id='#{self.id}' and asset_type='"+asset_type+"';"]
+     end
   end
+  codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(","), codes3.map{|c| c.summit_code}.join(",")].join(",").split(',').uniq
+  codes=codes.select{ |c| c.length>0 }
+end
+
+
+###########################################################################################
+# List qualified assets for this user
+# Input:
+#  - params:
+#       [:asset_type] - Asset.type to report ('all' is not supported for qualified)
+#       [:use_external] - ONLY use contacts from external databases (e.g. SOTA, POTA)
+# Returns:
+#       codes: Array of ["(asset code)"]
+##########################################################################################
+def qualified(params={})
+  if params[:asset_type] then asset_type=params[:asset_type] end
+  codes=self.activations(asset_type: params[:asset_type], include_external: params[:use_external])
+
+    codes=self.filter_by_min_qso(codes,params)
+
+  codes=codes
+end
+
+# Filter list of ["asset_code"] (or ["asset_code date"]) by min QSO requirements for 
+# activations of that asset by this user
+def filter_by_min_qso(codes,params={})
+  asset_type='all'
+  use_external=false
+  date_group="'forever'"
+
+  if params[:asset_type] then asset_type=params[:asset_type] end
+  if params[:use_external] then use_external=params[:use_external] end
+  if params[:by_year] then 
+     date_group="extract('year' from date)"
+  end
+  if params[:by_day] then 
+     date_group="date::date"
+  end
+
+  at=AssetType.find_by(name: asset_type)
+  result_codes=[]
+  if use_external then
+    qual_codes2=SotaActivation.find_by_sql [ " 
+        select concat(summit_code, ' ', "+date_group+") as summit_code 
+        from sota_activations 
+        where user_id='#{self.id}' and qso_count>=#{at.min_qso} and summit_code in (?)
+       ;", codes ]
+    result_codes=qual_codes2.map{|qc| qc.summit_code}.uniq
+  else
+    if at and at.min_qso and at.min_qso>0 then
+      qual_codes=Asset.find_by_sql [ " 
+           select code, 
+             unnest(array(
+               select concat(a.code, ' ', period) as periodcode from (
+                 select "+date_group+" as period, count(qso_count) as act_count from (
+                   select * from (
+                     select date, count(*) as qso_count from (
+                       select distinct callsign1, callsign2, date from (
+                           select id, callsign1, callsign2, date from contacts c where (c.user1_id='#{self.id}' and a.code=ANY(c.asset1_codes)) 
+                         union 
+                           select id, callsign2 as callsign1, callsign1 as callsign2, date  from contacts c where  (c.user2_id='#{self.id}' and a.code=ANY(c.asset2_codes))
+                       ) as uniquecontacts 
+                     ) as uniqueactivatons group by date 
+                   ) as actcount where qso_count>=#{at.min_qso} 
+                 ) as periodcount group by period
+               ) as validcount where act_count>0 group by periodcode
+             )) as periodcode from assets a
+             where a.code in (?)
+          ;", codes ]
+      result_codes=qual_codes.map{|qc| qc.code}
+    end
+  end
+  result_codes
+end
 
 
   def self.find_by_full_callsign(callsign)
@@ -362,43 +522,7 @@ end
   end
 
 
-  def send_activation_email
-    UserMailer.account_activation(self).deliver
-  end
 
-  # Sets the password reset attributes.
-  def create_reset_digest
-    self.reset_token = User.new_token
-    update_attribute(:reset_digest,  User.digest(reset_token))
-    update_attribute(:reset_sent_at, Time.zone.now)
-  end
-
-  # Sends password reset email.
-  def send_password_reset_email
-    UserMailer.password_reset(self).deliver
-  end
-
- # Sends youve been signed up choose a password email.
-  def send_new_password_email
-    UserMailer.new_password(self).deliver
-  end
-
-  # Returns true if a password reset has expired.
-  def password_reset_expired?
-    reset_sent_at < 2.hours.ago
-  end
-
-  def create_activation_digest
-    self.activation_token = User.new_token
-    self.activation_digest = User.digest(activation_token)
-  end
-
-  def contacts
-      contacts=Contact.find_by_sql [ "select * from contacts where user1_id="+self.id.to_s+" or user2_id="+self.id.to_s+" order by date, time"]
-  end
-  def logs
-      logs=Log.find_by_sql [ "select * from logs where user1_id="+self.id.to_s+" order by date"]
-  end
 
   def self.users_with_assets(sortby = "park", scoreby = "score", max_rows = 2000)
     ids=[]

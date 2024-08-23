@@ -48,7 +48,7 @@ class UserBaggedTest < ActiveSupport::TestCase
   end
 
 
-  test "QRP contacts not included unless requested" do 
+  test "QRO contacts not included if QRP requested" do 
     user1=create_test_user
     user2=create_test_user
     asset1=create_test_asset(asset_type: 'hut')
