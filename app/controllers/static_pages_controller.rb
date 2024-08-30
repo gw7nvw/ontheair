@@ -14,13 +14,11 @@ class StaticPagesController < ApplicationController
       as=AdminSettings.last
       if !as.last_sota_activation_update_at or (as.last_sota_activation_update_at+30.days)<timeNow then
         Resque.enqueue(UpdateSotaActivations)    
-            
       end
 
 
 
       spots()
-
       tzid=3
       if current_user then 
         tzid=current_user.timezone
@@ -107,22 +105,17 @@ class StaticPagesController < ApplicationController
         @zone=params[:zone]
       end
 
-      #check for new spots from external servers (maybe move this to a scheduled job?)
-      #ExternalSpot.fetch
-
       #read spots from db
       @all_spots=ExternalSpot.where("time>'"+onehourago+"'")
-     
-      items=Item.where(:topic_id => 35, :item_type => "post").order(:created_at).reverse
-      @hota_spots=[]
-      items.each do |i|
-        p=Post.find(i.item_id)
-        if p and p.referenced_date and p.referenced_date>Time.now.to_date-1.days then 
-        if (p.referenced_time and p.referenced_time>Time.now-1.hours) or not p.referenced_time then
-          @hota_spots.push(p)
-        end
-      end
-      end
+    
+      @hota_spots=Post.find_by_sql [" 
+            select * from posts p
+            inner join items i on i.item_id=p.id and i.item_type='post' 
+            where
+              i.topic_id=#{SPOT_TOPIC} and p.referenced_date>'#{Time.now.to_date-1.days}' 
+              and (p.referenced_time>'#{Time.now-1.hours}' or p.referenced_time is null)
+            order by p.created_at desc;
+      "]
      
       @hota_spots.each do |post|
          createdBy=User.find_by(id: post.created_by_id)

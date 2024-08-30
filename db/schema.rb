@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240827082640) do
+ActiveRecord::Schema.define(version: 20240830042206) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -237,6 +237,7 @@ ActiveRecord::Schema.define(version: 20240827082640) do
 
   add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"
   add_index "contacts", ["callsign2"], :name => "index_contacts_on_callsign2"
+  add_index "contacts", ["date"], :name => "index_contacts_on_date"
 
   create_table "continents", force: true do |t|
     t.string "name"
@@ -515,6 +516,8 @@ ActiveRecord::Schema.define(version: 20240827082640) do
     t.integer  "user_id"
     t.boolean  "do_not_lookup"
   end
+
+  add_index "logs", ["date"], :name => "index_logs_on_date"
 
   create_table "maplayers", force: true do |t|
     t.string   "name"
