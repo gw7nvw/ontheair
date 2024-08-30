@@ -9,8 +9,8 @@ class UsersController < ApplicationController
   def district_progress
      @parameters=params_to_query
      @user=User.find_by(callsign: params[:id].upcase)
-     @activations=@user.district_activations
-     @chases=@user.district_chases
+     @activations=@user.area_activations('district')
+     @chases=@user.area_chases('district')
      @award_classes=AssetType.where("name != 'all' and name !='pota park' and name!='wwff park' and name!='lighthouse'")
      @district_assets=District.get_assets_with_type
      @districts=District.all.order(:region_code, :name)
@@ -19,8 +19,8 @@ class UsersController < ApplicationController
   def region_progress
      @parameters=params_to_query
      @user=User.find_by(callsign: params[:id].upcase)
-     @activations=@user.region_activations
-     @chases=@user.region_chases
+     @activations=@user.area_activations('region')
+     @chases=@user.area_chases('region')
      @award_classes=AssetType.where("name != 'all'")
      @region_assets=Region.get_assets_with_type
      @regions=Region.all.order(:name)

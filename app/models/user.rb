@@ -36,14 +36,14 @@
     Digest::SHA1.hexdigest(token.to_s)
   end
 
-###############################################################################################
+#############################################################################################
 # Return all callsigns for current user 
-###############################################################################################
+#############################################################################################
 def callsigns
   UserCallsign.where(user_id: self.id)
 end
 
-###############################################################################################
+#############################################################################################
 # Is current callsign valid
 ###############################################################################################
 def valid_callsign? 
@@ -51,78 +51,78 @@ def valid_callsign?
   if valid_callsign.match(self.callsign) then true else false end
 end
 
-###############################################################################################
+#############################################################################################
 # Returns true if a password reset has expired.
-###############################################################################################
+#############################################################################################
 def password_reset_expired?
   reset_sent_at < 2.hours.ago
 end
 
-###############################################################################################
+#############################################################################################
 # Authenticate password reset token against current account 
 # Returns:
 #   True: Digest
 #   False: Nil
-###############################################################################################
+#############################################################################################
 def authenticated?(attribute, token)
   digest = send("#{attribute}_digest")
   return false if digest.nil?
   Digest::SHA1.hexdigest(token.to_s)==digest
 end
 
-###############################################################################################
+#############################################################################################
 # Activate the current account. 
-###############################################################################################
+#############################################################################################
 def activate
   update_attribute(:activated,    true)
   update_attribute(:activated_at, Time.zone.now)
 end
 
 
-###############################################################################################
+#############################################################################################
 # Send account actiuivation email 
-###############################################################################################
+#############################################################################################
 def send_activation_email
   UserMailer.account_activation(self).deliver
 end
 
 
-###############################################################################################
+#############################################################################################
 # Return a password reset digest for current user
-###############################################################################################
+#############################################################################################
 def create_reset_digest
   self.reset_token = User.new_token
   update_attribute(:reset_digest,  User.digest(reset_token))
   update_attribute(:reset_sent_at, Time.zone.now)
 end
 
-###############################################################################################
+#############################################################################################
 # Send password reset email for current user
-###############################################################################################
+#############################################################################################
 def send_password_reset_email
   UserMailer.password_reset(self).deliver
 end
 
-###############################################################################################
+#############################################################################################
 # Sends youve been signed up choose a password email.
-###############################################################################################
+#############################################################################################
 def send_new_password_email
   UserMailer.new_password(self).deliver
 end
 
 
-###############################################################################################
+#############################################################################################
 # Returns a valid account activation digest for current user
-###############################################################################################
+#############################################################################################
 def create_activation_digest
   self.activation_token = User.new_token
   self.activation_digest = User.digest(activation_token)
 end
 
 
-###############################################################################################
+#############################################################################################
 # Find user using a callsign with prefixes
-###############################################################################################
+#############################################################################################
 def self.find_by_full_callsign(callsign)
   if callsign and callsign.length>0 then 
     endpos=callsign.index("/")
@@ -135,15 +135,15 @@ def self.find_by_full_callsign(callsign)
 end
 
 
-##############################################################################################
+#############################################################################################
 # CALCULATED FIELDS
-##############################################################################################
+#############################################################################################
 
 ##############################################################################################
 # Return name of current user's timezone or "" if not set
 # Returns:
 #    (string) timezone.name
-##############################################################################################
+#############################################################################################
 def timezonename
   timezonename=""
   if self.timezone!="" then
@@ -153,29 +153,24 @@ def timezonename
   timezonename
 end
 
-##############################################################################################
-# Return all contacts for this user including those enmtered by others 
+#############################################################################################
+# Return all contacts for this user including those entered by others 
 # Returns:
 #    [Contact]
-##############################################################################################
+#############################################################################################
 def contacts
   contacts=Contact.find_by_sql [ "select * from contacts where user1_id="+self.id.to_s+" or user2_id="+self.id.to_s+" order by date, time"]
 end
 
-##############################################################################################
+#############################################################################################
 # Return all logs created by this user
 # Returns:
 #    [Log]
-##############################################################################################
+#############################################################################################
 def logs
   logs=Log.find_by_sql [ "select * from logs where user1_id="+self.id.to_s+" order by date"]
 end
 
-
-
-#############################################################################################
-# AWARDS
-#############################################################################################
 
 #############################################################################################
 # return links to all current user's awards 
@@ -186,59 +181,7 @@ def awards
   awls=AwardUserLink.where(user_id: self.id)
 end
 
-#############################################################################################
-# check if current user has a specific threshold-based award
-# Input: 
-#   - award: Award
-#   - threshold: numeric value of threshold award is awarded for or nil for all
-# Returns:
-#   True / False
-#############################################################################################
-def has_award(award, threshold=nil)
-  if threshold==nil then
-    uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_id = "+award.id.to_s+" and threshold is null" ]
-  else
-    uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_id = "+award.id.to_s+" and threshold = "+threshold.threshold.to_s ]
-  end
-  if uas and uas.count>0 then true else false end
-end
 
-#############################################################################################
-# check if current user has a specific region/district completion award
-# Input:
-#   - scale: 'region' / 'district'
-#   - loc_id: id for region/district being checked
-#   - activity_type: AssetType.name for award 
-#   - award_class: Award
-# Returns:
-#   True / False
-#############################################################################################
- #check if user has completion award for a locality
- def has_completion_award(scale, loc_id, activity_type, award_class)
-     uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_type='"+scale+"' and linked_id="+loc_id.to_s+" and activity_type='"+activity_type+"' and award_class='"+award_class+"' and expired is not true "]
-     if uas and uas.count>0 then true else false end
- end
-
-#############################################################################################
-# Retire existing award for current user for specific region/district completion award
-# E.g. after log deletion or additional assets added to that region
-# Input:
-#   - scale: 'region' / 'district'
-#   - loc_id: id for region/district being checked
-#   - activity_type: AssetType.name for award 
-#   - award_class: Award
-# Returns:
-#   
-#############################################################################################
-def retire_completion_award(scale, loc_id, activity_type, award_class)
-  uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_type='"+scale+"' and linked_id="+loc_id.to_s+" and activity_type='"+activity_type+"' and award_class='"+award_class+"' and expired is not true "]
-  uas.each do |ua|
-    logger.warn "Retiring "+self.callsign+" "+loc_id.to_s+" "+scale+" "+activity_type+" "+award_class
-    ua.expired=true
-    ua.expired_at=Time.now()
-    ua.save
-  end
-end
 
 ###########################################################################################
 # SCORE CALCULATION
@@ -423,6 +366,7 @@ end
 #       Note: QRP filter is not supported
 # Returns:
 #       codes: Array of ["(asset code)"]
+# TODO: this method is very slow.  Improve it
 ##########################################################################################
 def qualified(params={})
   if !params[:asset_type] then 
@@ -430,7 +374,7 @@ def qualified(params={})
   end
   codes=self.activations(asset_type: params[:asset_type], include_external: params[:include_external], include_minor: params[:include_minor])
 
-    codes=self.filter_by_min_qso(codes,params)
+  codes=self.filter_by_min_qso(codes,params)
 
   codes=codes
 end
@@ -503,11 +447,10 @@ def update_score
     end
     self.score[asset_type.name]=self.bagged(asset_type: asset_type.name).count
     self.score_total[asset_type.name]=0
-    codes=self.activations(asset_type: asset_type.name, include_external: include_external)
     self.activated_count[asset_type.name]=self.activations(asset_type: asset_type.name, include_external: include_external).count
-    self.activated_count_total[asset_type.name]=self.activations(by_year: true, asset_type: asset_type.name,include_external: include_external).count
-    self.qualified_count[asset_type.name]=self.filter_by_min_qso(codes, asset_type: asset_type.name).count
-    self.qualified_count_total[asset_type.name]=self.filter_by_min_qso(codes,by_year: true, asset_type: asset_type.name,use_external: include_external).count
+    self.activated_count_total[asset_type.name]=self.activations(by_year: true, asset_type: asset_type.name, include_external: include_external).count
+    self.qualified_count[asset_type.name]=self.qualified(asset_type: asset_type.name,include_external: include_external).count
+    self.qualified_count_total[asset_type.name]=self.qualified(by_year: true, asset_type: asset_type.name, include_external: include_external).count
     self.chased_count[asset_type.name]=self.chased(asset_type: asset_type.name).count
     self.chased_count_total[asset_type.name]=self.chased(asset_type: asset_type.name, by_day: true).count
   end
@@ -518,8 +461,8 @@ def update_score
 
   self.score["qrp"]=self.bagged(qrp: true).count
   self.score_total["qrp"]=0
-  self.qualified_count["qrp"]=self.activations(qrp: true).count
-  self.qualified_count_total["qrp"]=self.activations(qrp: true, by_year: true).count
+  self.activated_count["qrp"]=self.activations(qrp: true).count
+  self.activated_count_total["qrp"]=self.activations(qrp: true, by_year: true).count
   self.chased_count["qrp"]=self.chased(qrp: true).count
   self.chased_count_total["qrp"]=self.chased(qrp: true, by_day: true).count
 
@@ -642,21 +585,28 @@ def self.users_with_assets(sortby = "park", scoreby = "score", max_rows = 2000)
   users=User.find_by_sql [ "select * from users where id in ("+ids.uniq.map{|c| c.to_s}.join(",")+") and "+scoreby+" not like '%%{}%%' order by cast(substring(SUBSTRING("+scoreby+" from '"+sortby+": [0-9]{1,9}') from ' [0-9]{1,9}') as integer) desc limit "+max_rows.to_s ]
 end
 
-  def get_p2p_all
-    #all activations I make that are ZLOTA to /P
-    ats=AssetType.where(keep_score: true)
-    at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+###########################################################################################
+# List all unique P2P contacts for current user
+# Returns:
+#   p2p: [contact_details] - Array of unique values of "<date> <asset1_code> <asset2_code>" 
+#                          from all contacts for this user where one or other asset_code
+#                          is in ZLOTA
+###########################################################################################
+def get_p2p_all
+  #list of all ZLOTA asset types
+  ats=AssetType.where(keep_score: true)
+  at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
 
-    p2p=[]
-    #contacts where I'm in ZLOTA
-    contacts1=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset1_code,' ', 1) || ' ' || split_part(asset2_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset1_codes) as asset1_code, unnest(c1.asset1_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user1_id="+self.id.to_s+") as foo where asset1_class in ("+at_list+"); " ]
-    contacts2=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset1_code, ' ', 1) || ' ' || split_part(asset2_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset2_codes) as asset1_code, unnest(c1.asset2_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset1_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user2_id="+self.id.to_s+") as foo where asset1_class in ("+at_list+"); " ]
-    #contacts where other party  ZLOTA (reverse code order so my loc first
-    #to avoid double-counting ZLOTA-ZLOTA
-    contacts3=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset2_code,' ', 1) || ' ' || split_part(asset1_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset1_codes) as asset1_code, unnest(c1.asset1_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user2_id="+self.id.to_s+") as foo where asset1_class in ("+at_list+"); " ]
-    contacts4=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset2_code, ' ', 1) || ' ' || split_part(asset1_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset2_codes) as asset1_code, unnest(c1.asset2_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset1_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user1_id="+self.id.to_s+") as foo where asset1_class in ("+at_list+"); " ]
-    contacts=((contacts1+contacts2+contacts3+contacts4).map{|c| c.asset1_code}).uniq
-  end
+  p2p=[]
+  #contacts where I'm in ZLOTA
+  contacts1=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset1_code,' ', 1) || ' ' || split_part(asset2_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset1_codes) as asset1_code, unnest(c1.asset1_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user1_id="+self.id.to_s+") as foo where asset1_class in ("+at_list+"); " ]
+  contacts2=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset1_code, ' ', 1) || ' ' || split_part(asset2_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset2_codes) as asset1_code, unnest(c1.asset2_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset1_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user2_id="+self.id.to_s+") as foo where asset1_class in ("+at_list+"); " ]
+  #contacts where other party  ZLOTA (reverse code order so my loc first
+  #to avoid double-counting ZLOTA-ZLOTA
+  contacts3=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset2_code,' ', 1) || ' ' || split_part(asset1_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset1_codes) as asset1_code, unnest(c1.asset1_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user2_id="+self.id.to_s+") as foo where asset1_class in ("+at_list+"); " ]
+  contacts4=Contact.find_by_sql [ "select (time::date || ' ' || split_part(asset2_code, ' ', 1) || ' ' || split_part(asset1_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset2_codes) as asset1_code, unnest(c1.asset2_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset1_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user1_id="+self.id.to_s+") as foo where asset1_class in ("+at_list+"); " ]
+  contacts=((contacts1+contacts2+contacts3+contacts4).map{|c| c.asset1_code}).uniq
+end
 
 
 ##################################################################################
@@ -926,176 +876,117 @@ def pota_contacts(parkCode = nil)
 end
 
 ##############################################################################
-# COMPLETION AWARDS
+# AWARDS
 ##############################################################################
 
 
-def check_district_completion(district_id, activity_type, asset_type)
-  available_codes=[]
-  activated_codes=[]
-  missing_codes=[]
-  d=District.find(district_id)
-  if d then
-     as=d.assets_by_type(asset_type)
-     if as and as.count>0 then
-       available_codes=as.map{|a| a.code}
-       asset_codes=as.map{|a| "'"+a.code+"'"}.join(',') 
-       contacts1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+") as foo where asset1_codes in ("+asset_codes+")" ]
-       contacts2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+") as foo where asset2_codes in ("+asset_codes+")" ]
-       activated_codes=(contacts1+contacts2).map{|c| c.asset1_codes}.uniq
-       missing_codes=available_codes-activated_codes
-     end
-  end
-  {available: available_codes, worked: activated_codes, missing: missing_codes}
+##############################################################################
+# Find all activations for this user by region / district 
+#
+# Inputs:
+#  - scope: 'district' or 'region'
+#  - include_minor - include places marked as 'minor' (default=false)
+# Returns:
+#  - activations: [
+#                   {
+#                     type: AssetType.name
+#                     name: Region.sota_code / District.code
+#                     site_list: [string] - array of asset codes
+#                   }
+#                 ] array of ...
+############################################################################
+def area_activations(scope, include_minor=false)
+  if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
+  
+  activations=Contact.find_by_sql [" 
+    select array_agg(DISTINCT asset1_code) as site_list, 
+      a.asset_type as type, a.#{scope} as name 
+    from 
+      (
+        (
+          select date, unnest(asset1_codes) as asset1_code 
+          from contacts c 
+          where user1_id="+self.id.to_s+"
+        ) union (
+          select date, unnest(asset2_codes) as asset1_code 
+          from contacts 
+          where user2_id="+self.id.to_s+"
+        ) union (
+          select date, summit_code as asset1_code 
+          from sota_activations 
+          where user_id="+self.id.to_s+"
+        )
+      ) as foo 
+    inner join assets a on a.code=asset1_code 
+    where #{minor_query} 
+      and (a.valid_from is null or a.valid_from<=foo.date) 
+      and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date) 
+    group by a.#{scope}, a.asset_type, a.minor; 
+  "]
 end
 
-def region_activations(include_minor=false)
-   if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
-  activations=Contact.find_by_sql [" select array_agg(DISTINCT asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select date, unnest(asset1_codes) as asset1_code from contacts c where user1_id="+self.id.to_s+") union (select date, unnest(asset2_codes) as asset1_code from contacts where user2_id="+self.id.to_s+") union (select date, summit_code as asset1_code from sota_activations where user_id="+self.id.to_s+"))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where #{minor_query} and (a.valid_from is null or a.valid_from<=foo.date) and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date) group by d.sota_code, a.asset_type, a.minor; "]
+##############################################################################
+# Find all chases for this user by region / district 
+#
+# Inputs:
+#  - scope: 'district' or 'region'
+#  - include_minor - include places marked as 'minor' (default=false)
+# Returns:
+#  - chases: [
+#               {
+#                 type: AssetType.name
+#                 name: Region.sota_code / District.code
+#                 site_list: [string] - array of asset codes
+#               }
+#             ] array of ...
+############################################################################
+def area_chases(scope, include_minor=false)
+  if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
+
+  chases=Contact.find_by_sql [" 
+    select array_agg(DISTINCT asset1_code) as site_list, 
+      a.asset_type as type, a.#{scope} as name 
+    from 
+      (
+        (
+          select date, unnest(asset2_codes) as asset1_code 
+          from contacts c 
+          where user1_id="+self.id.to_s+"
+        ) union (
+          select date, unnest(asset1_codes) as asset1_code 
+          from contacts 
+          where user2_id="+self.id.to_s+"
+        )
+      ) as foo 
+    inner join assets a on a.code=asset1_code 
+    where #{minor_query} 
+      and (a.valid_from is null or a.valid_from<=foo.date) 
+      and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date) 
+    group by a.#{scope}, a.asset_type, a.minor; 
+  "]
 end
 
-def region_chases(include_minor=false)
-   if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
-  chases=Contact.find_by_sql [" select array_agg(DISTINCT asset1_code) as site_list, a.asset_type as type, d.sota_code as name from ((select date, unnest(asset2_codes) as asset1_code from contacts c where user1_id="+self.id.to_s+") union (select date, unnest(asset1_codes) as asset1_code from contacts where user2_id="+self.id.to_s+"))as foo inner join assets a on a.code=asset1_code inner join regions d on d.sota_code = a.region where #{minor_query} and (a.valid_from is null or a.valid_from<=foo.date) and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date) group by d.sota_code, a.asset_type, a.minor; "]
-end
-
-def check_region_awards
-  avail=Region.get_assets_with_type
-  activations=self.region_activations
-  chases=self.region_chases
-  avail.each do |combo|
-     activation=activations.select {|a| a.name==combo.name and a.type==combo.type}
-     chase=chases.select {|c| c.name==combo.name and c.type==combo.type}
-     if activation and activation.count>0 then
-       site_count=combo.site_list.count
-       site_act=activation.first.site_list.count
-       site_not_act=(combo.site_list-activation.first.site_list).count
-       d=Region.find_by(sota_code: combo.name)
-       if site_not_act==0 then
-         award_spec=Award.find_by(activated: true, programme: combo.type, all_region: true, is_active: true)
-         if award_spec and !(self.has_completion_award("region", d.id, "activator", combo.type)) then
-           logger.debug "Awarded!! "+self.callsign+" "+combo.type+" region activator "+d.name
-           award=AwardUserLink.new
-           award.award_type="region"
-           award.linked_id=d.id
-           award.activity_type="activator"
-           award.award_class=combo.type
-           award.user_id=self.id
-           award.award_id=award_spec.id
-           award.save
-           award.publicise
-         end
-       else
-         #check for expired award
-         self.retire_completion_award("region", d.id, "activator", combo.type) 
-       end
-     end
-
-     if chase and chase.count>0 then
-       site_count=combo.site_list.count
-       site_chased=chase.first.site_list.count
-       site_not_chased=(combo.site_list-chase.first.site_list).count
-       d=Region.find_by(sota_code: combo.name)
-       if site_not_chased==0 then
-         award_spec=Award.find_by(chased: true, programme: combo.type, all_region: true, is_active: true)
-         if award_spec and !(self.has_completion_award("region", d.id, "chaser", combo.type)) then
-           logger.debug "Awarded!! "+self.callsign+" "+combo.type+" region chaser "+d.name
-           award=AwardUserLink.new
-           award.award_type="region"
-           award.linked_id=d.id
-           award.activity_type="chaser"
-           award.award_class=combo.type
-           award.user_id=self.id
-           award.award_id=award_spec.id
-           award.save
-           award.publicise
-         end
-       else
-         #check for expired award
-         self.retire_completion_award("region", d.id, "chaser", combo.type) 
-       end
-     end
-  end 
-end
-
-def district_activations(include_minor=false)
-   if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
-  activations=Contact.find_by_sql [" select array_agg(DISTINCT asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select date, unnest(asset1_codes) as asset1_code from contacts where user1_id="+self.id.to_s+") union (select date, unnest(asset2_codes) as asset1_code from contacts where user2_id="+self.id.to_s+") union (select date, summit_code as asset1_code from sota_activations where user_id="+self.id.to_s+")) as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where #{minor_query} and (a.valid_from is null or a.valid_from<=foo.date) and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date) group by d.district_code, a.asset_type, a.minor; "]
-end
-
-def district_chases(include_minor=false)
-   if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
-  chases=Contact.find_by_sql [" select array_agg(DISTINCT asset1_code) as site_list, a.asset_type as type, d.district_code as name from ((select date, unnest(asset2_codes) as asset1_code from contacts where user1_id="+self.id.to_s+") union (select date, unnest(asset1_codes) as asset1_code from contacts where user2_id="+self.id.to_s+") union (select date, summit_code as asset1_code from sota_chases where user_id="+self.id.to_s+")) as foo inner join assets a on a.code=asset1_code inner join districts d on d.district_code = a.district where #{minor_query} and (a.valid_from is null or a.valid_from<=foo.date) and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date) group by d.district_code, a.asset_type, a.minor; "]
-end
-
-def check_district_awards
-  avail=District.get_assets_with_type
-  activations=self.district_activations
-  chases=self.district_chases
-  avail.each do |combo|
-     activation=activations.select {|a| a.name==combo.name and a.type==combo.type}
-     chase=chases.select {|c| c.name==combo.name and c.type==combo.type}
-     if activation and activation.count>0 then
-       site_count=combo.site_list.count
-       site_act=activation.first.site_list.count
-       site_not_act=(combo.site_list-activation.first.site_list).count
-       d=District.find_by(district_code: combo.name)
-       if site_not_act==0 then
-         award_spec=Award.find_by(activated: true, programme: combo.type, all_district: true, is_active: true)
-         if award_spec and !(self.has_completion_award("district", d.id, "activator", combo.type)) then
-           logger.debug "Awarded!! "+self.callsign+" "+combo.type+" district activator "+d.name
-           award=AwardUserLink.new
-           award.award_type="district"
-           award.linked_id=d.id
-           award.activity_type="activator"
-           award.award_class=combo.type
-           award.user_id=self.id
-           award.award_id=award_spec.id
-           award.save
-           award.publicise
-         end
-       else
-         #check for expired award
-         self.retire_completion_award("district", d.id, "activator", combo.type) 
-       end
-     end
-
-     if chase and chase.count>0 then
-       site_count=combo.site_list.count
-       site_chased=chase.first.site_list.count
-       site_not_chased=(combo.site_list-chase.first.site_list).count
-       d=District.find_by(district_code: combo.name)
-       if site_not_chased==0 then
-         award_spec=Award.find_by(chased: true, programme: combo.type, all_district: true, is_active: true)
-         if award_spec and !(self.has_completion_award("district", d.id, "chaser", combo.type)) then
-           logger.debug "Awarded!! "+self.callsign+" "+combo.type+" district chaser "+d.name
-           award=AwardUserLink.new
-           award.award_type="district"
-           award.linked_id=d.id
-           award.activity_type="chaser"
-           award.award_class=combo.type
-           award.user_id=self.id
-           award.award_id=award_spec.id
-           award.save
-           award.publicise
-         end
-       else
-         #check for expired award
-         self.retire_completion_award("district", d.id, "chaser", combo.type) 
-       end
-     end
-  end 
-
-end
-
-
-def check_award(award_id)
-    awarded={latest: nil, next: nil}
+##############################################################################
+# Show status of threshold-based award for this user
+#
+# Inputs:
+#  - award_id: Award.id for the award being checked
+#  - threshold: award threshold to be checked
+# Returns:
+#  - awarded: { 
+#               status: <boolean> - award achieled (at thresold level if supplied)
+#               latest:<integer> - latest threshold acheived
+#               next: <integer> - next threshold available
+#             }
+#############################################################################
+def has_award(award_id, threshold=nil)
+    awarded={status: false, latest: nil, next: nil}
     score=0
     awls=AwardUserLink.find_by_sql [" select * from award_user_links where user_id="+self.id.to_s+" and award_id="+award_id.to_s+" order by threshold desc limit 1"]
     if awls and awls.count==1 then
       awarded[:latest]=awls.first.threshold_name.capitalize+" ("+awls.first.threshold.to_s+")"
       score=awls.first.threshold
+      if score==threshold or threshold==nil then awarded[:status]=true end
     end
     if score then
       nextThreshold=AwardThreshold.find_by_sql [" select * from award_thresholds where threshold>"+score.to_s+" order by threshold asc limit 1" ]
@@ -1106,16 +997,143 @@ def check_award(award_id)
     awarded
 end
 
+#############################################################################################
+# check if current user has a specific region/district completion award
+# Input:
+#   - scope: 'region' / 'district'
+#   - loc_id: id for region/district being checked
+#   - activity_type: AssetType.name for award 
+#   - award_class: Award
+# Returns:
+#   True / False
+#############################################################################################
+def has_completion_award(scope, loc_id, activity_type, award_class)
+  uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_type='"+scope+"' and linked_id="+loc_id.to_s+" and activity_type='"+activity_type+"' and award_class='"+award_class+"' and expired is not true "]
+  if uas and uas.count>0 then true else false end
+end
+
+#############################################################################################
+# Retire existing award for current user for specific region/district completion award
+# E.g. after log deletion or additional assets added to that region
+# Input:
+#   - scale: 'region' / 'district'
+#   - loc_id: id for region/district being checked
+#   - activity_type: AssetType.name for award 
+#   - award_class: Award
+# Returns:
+#############################################################################################
+def retire_completion_award(scale, loc_id, activity_type, award_class)
+  uas=AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = "+self.id.to_s+" and award_type='"+scale+"' and linked_id="+loc_id.to_s+" and activity_type='"+activity_type+"' and award_class='"+award_class+"' and expired is not true "]
+  uas.each do |ua|
+    logger.warn "Retiring "+self.callsign+" "+loc_id.to_s+" "+scale+" "+activity_type+" "+award_class
+    ua.expired=true
+    ua.expired_at=Time.now()
+    ua.save
+  end
+end
+
+##############################################################################
+# Check is user has earned region / district awards
+#
+# Inputs:
+#  - scope: 'region' or 'district'
+#
+# Actions:
+#  - Issues new award to user if new region / district activated
+#  - Revokes old award if region / district previously activated no longer qualifies
+#  - Issues new award to user if new region / district chased
+#  - Revokes old award if region / district previously chased no longer qualifies
+#############################################################################
+def check_area_awards(scope)
+  if scope=='district' then
+    modelname=District
+    indexfield="district_code"
+    award="all_district"
+  elsif scope=='region' then
+    modelname=Region
+    indexfield="sota_code"
+    award="all_region"
+  else
+    raise "Invalid scope for area award: "+scope.to_s
+  end
+
+  avail=modelname.get_assets_with_type
+  activations=self.area_activations(scope)
+  chases=self.area_chases(scope)
+  avail.each do |combo|
+     activation=activations.select {|a| a.name==combo.name and a.type==combo.type}
+     chase=chases.select {|c| c.name==combo.name and c.type==combo.type}
+     if activation and activation.count>0 then
+       site_count=combo.site_list.count
+       site_act=activation.first.site_list.count
+       site_not_act=(combo.site_list-activation.first.site_list).count
+       d=modelname.find_by(indexfield => combo.name)
+       if site_not_act==0 then
+         award_spec=Award.find_by(activated: true, programme: combo.type, award => true, is_active: true)
+         if award_spec and !(self.has_completion_award(scope, d.id, "activator", combo.type)) then
+           logger.debug "Awarded!! "+self.callsign+" "+combo.type+" "+scope+" activator "+d.name
+           award=AwardUserLink.new
+           award.award_type=scope
+           award.linked_id=d.id
+           award.activity_type="activator"
+           award.award_class=combo.type
+           award.user_id=self.id
+           award.award_id=award_spec.id
+           award.save
+           award.publicise
+         end
+       else
+         #check for expired award
+         self.retire_completion_award(scope, d.id, "activator", combo.type) 
+       end
+     end
+
+     if chase and chase.count>0 then
+       site_count=combo.site_list.count
+       site_chased=chase.first.site_list.count
+       site_not_chased=(combo.site_list-chase.first.site_list).count
+       d=modelname.find_by(indexfield => combo.name)
+       if site_not_chased==0 then
+         award_spec=Award.find_by(chased: true, programme: combo.type, award => true, is_active: true)
+         if award_spec and !(self.has_completion_award(scope, d.id, "chaser", combo.type)) then
+           logger.debug "Awarded!! "+self.callsign+" "+combo.type+" "+scope+" chaser "+d.name
+           award=AwardUserLink.new
+           award.award_type=scope
+           award.linked_id=d.id
+           award.activity_type="chaser"
+           award.award_class=combo.type
+           award.user_id=self.id
+           award.award_id=award_spec.id
+           award.save
+           award.publicise
+         end
+       else
+         #check for expired award
+         self.retire_completion_award(scope, d.id, "chaser", combo.type) 
+       end
+     end
+  end 
+end
+
+
+
+##############################################################################
+# Check is user has earned threshold-based awards
+#
+# Inputs:
+#
+# Actions:
+#  - Issues new award to user if new threshold-based award acheived
+#############################################################################
 def check_awards()
   user=self
   awarded=[]
   awards=Award.where(:is_active => true)
   awards.each do |award|
-    if !(user.has_award(award,nil)) then
-      failcount=0
+    if !(user.has_award(award,nil)[:status]) then
       if award.count_based==true then
          if award.activated==true and award.chased == true then
-           #we need a complete count! 
+           #this is where completed awards would go, when the code supports them!
          elsif award.activated==true then
            score=user.qualified_count_total[award.programme]
          elsif award.chased==true then
@@ -1126,7 +1144,7 @@ def check_awards()
          if score then
            AwardThreshold.all.each do |threshold|
              if score >= threshold.threshold
-               if !(user.has_award(award,threshold)) then
+               if !(user.has_award(award,threshold)[:status]) then
                  a=AwardUserLink.new
                  a.award_id=award.id
                  a.threshold=threshold.threshold
@@ -1254,15 +1272,15 @@ def self.add_all_callsigns
 end
 
 
-  private
+private
 
-    def create_remember_token
-      self.remember_token = User.digest(User.new_token)
-    end
+  def create_remember_token
+    self.remember_token = User.digest(User.new_token)
+  end
 
-    def downcase_email
-      self.email = email.downcase
-    end
+  def downcase_email
+    self.email = email.downcase
+  end
 
 
 end

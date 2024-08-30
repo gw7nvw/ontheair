@@ -16,7 +16,7 @@ class UserWwffLogsTest < ActiveSupport::TestCase
     assert wwff_logs[0][:park][:wwffpark]==asset1.code, "Expect park to be correct: "+wwff_logs[0][:park].to_json
     assert wwff_logs[0][:park][:name]==asset1.name, "Expect park to be correct: "+wwff_logs[0][:park].to_json
     assert wwff_logs[0][:count]==2, "Expect 2 contacts for this park: "+wwff_logs[0][:count].to_s
-    assert wwff_logs[0][:contacts]==[contact, contact2], "Expect correct contact: "+wwff_logs[0][:contacts].to_json
+    assert wwff_logs[0][:contacts].sort==[contact, contact2].sort, "Expect correct contact: "+wwff_logs[0][:contacts].to_json
     assert wwff_logs[0][:dups]==[], "Expect duplicates to be empty: "+wwff_logs[0][:dups].to_json
   end
 

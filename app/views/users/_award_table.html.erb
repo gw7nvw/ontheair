@@ -8,7 +8,7 @@
           <th>Next</th>
         </tr>
         <% @awards.each do |a| %>
-          <% awarded=@user.check_award(a.id) %>
+          <% awarded=@user.has_award(a.id) %>
           <tr>
             <td>
                <%=link_to a.name, '/awards/'+a.id.to_s, remote: true,  :id => 'award', :onclick => "linkHandler('award')" %>

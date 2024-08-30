@@ -24,7 +24,7 @@ class UserSotaLogsTest < ActiveSupport::TestCase
   test "Non-sota sites not included" do
     user1=create_test_user
     user2=create_test_user
-    asset1=create_test_asset(asset_type: 'summit', code_prefix: 'ZLFF-0')
+    asset1=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/OT-')
     asset2=create_test_asset(asset_type: 'park')
 
     #log with both SOTA and park

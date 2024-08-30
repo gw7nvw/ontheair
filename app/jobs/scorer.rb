@@ -11,8 +11,8 @@ class Scorer
       u.save
       u.update_score
       u.check_awards
-      u.check_district_awards
-      u.check_region_awards
+      u.check_area_awards('region')
+      u.check_area_awards('district')
     end
   end
 end
