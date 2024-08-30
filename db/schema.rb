@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240814073508) do
+ActiveRecord::Schema.define(version: 20240827082640) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -67,6 +67,7 @@ ActiveRecord::Schema.define(version: 20240814073508) do
     t.string   "pnp_class"
     t.boolean  "keep_score"
     t.integer  "min_qso"
+    t.boolean  "has_elevation"
   end
 
   add_index "asset_types", ["name"], :name => "index_asset_types_on_name"
@@ -231,6 +232,7 @@ ActiveRecord::Schema.define(version: 20240814073508) do
     t.string   "asset1_classes",                                          default: [],   array: true
     t.string   "asset2_classes",                                          default: [],   array: true
     t.boolean  "submitted_to_hema"
+    t.string   "band"
   end
 
   add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"

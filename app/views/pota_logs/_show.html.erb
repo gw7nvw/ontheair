@@ -17,7 +17,9 @@
 Filename: <%=@filename%><br/>
 Email to send to: <%=@address%><br/>
 <br/>
-<%=@pota_log%>
+<% @pota_log.split('<eor>').each do |pota_log| %>
+  <%=if pota_log and pota_log.length>1 then pota_log+"<eor>" end%></br>
+<% end %>
 <br/>
 <br/>
 Duplicate contacts rejected: <%=@duplicate_contacts.count%><br/>

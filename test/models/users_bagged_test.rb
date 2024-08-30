@@ -31,6 +31,23 @@ class UserBaggedTest < ActiveSupport::TestCase
     assert user2.bagged(asset_type: 'park')==[], "Chasing user has bagged no parks"
   end
 
+
+  test "Can request multiple asset types" do
+    user1=create_test_user
+    user2=create_test_user
+    asset1=create_test_asset(asset_type: 'hut')
+    asset2=create_test_asset(asset_type: 'park')
+    log=create_test_log(user1,asset_codes: [asset1.code])
+    contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code])
+    log2=create_test_log(user1,asset_codes: [asset2.code])
+    contact2=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code])
+
+    assert user1.bagged(asset_type: 'hut, park')==[asset1.code, asset2.code], "Activating user has activated hut and park"
+    assert user1.bagged(asset_type: 'island, lighthouse')==[], "Activating user has activated no island or lighthouse"
+    assert user2.bagged(asset_type: 'hut, park')==[asset1.code, asset2.code], "Chasing user has bagged hut and park"
+    assert user2.bagged(asset_type: 'island, lighthouse')==[], "Chasing user has bagged no island or lighthouse"
+  end
+
   test "minor assets not included unless requested" do 
     user1=create_test_user
     user2=create_test_user

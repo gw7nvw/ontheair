@@ -31,17 +31,14 @@
     <% if logdays then logdays.sort_by!{|hsh| hsh[:date]}.reverse! end%>
     <% logdays.each do |logday| %>
       <tr>
-        <td><%=logday[:park][:name]%></td>
-        <td><%=logday[:park][:potapark]%></td>
+        <td><%=logday[:name]%></td>
+        <td><%=logday[:code]%></td>
         <td><%=logday[:date]%></td>
-        <td><%=logday[:contacts].count%></td>
+        <td><%=logday[:count]%></td>
         <% 
-           submitted_to_pota=true
-           logday[:contacts].each do |c| 
-             if !c.submitted_to_pota then submitted_to_pota=false end 
-           end
+           if logday[:submitted]==0 then submitted_to_pota=false else submitted_to_pota=true end 
         %>
-        <td><%=if !submitted_to_pota then  link_to "Submit Log", '/pota_logs/'+logday[:park][:potapark]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" else link_to "Resend Log", '/pota_logs/'+logday[:park][:potapark]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" end%></td>
+        <td><%=if !submitted_to_pota then  link_to "Submit Log", '/pota_logs/'+logday[:safecode]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" else link_to "Resend Log", '/pota_logs/'+logday[:safecode]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" end%></td>
       </tr>
     <% end%>
   </table>

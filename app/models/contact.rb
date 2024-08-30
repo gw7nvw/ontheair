@@ -46,8 +46,9 @@ class Contact < ActiveRecord::Base
     self.callsign1 = callsign1.strip.upcase.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
 
     self.callsign2 = callsign2.strip.upcase.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
-
+    self.band=self.get_band
   end
+
   def add_user_ids
     #look up callsign1 at contact.time
     user1=User.find_by_callsign_date(self.callsign1, self.time, true)
@@ -342,7 +343,7 @@ end
    band
  end
 
- def band
+ def get_band
    band=""
    if self.frequency then 
      if self.frequency>=0.136 and self.frequency<=0.137 then band="2190m" end
@@ -458,11 +459,13 @@ end
      if user then
        if Rails.env.production? then 
          user.outstanding=true;user.save;Resque.enqueue(Scorer) 
-       else 
+       elsif Rails.env.development? then
          user.update_score 
          user.check_awards
          user.check_district_awards
          user.check_region_awards
+       else
+         logger.debug "Not updating score for test env call manually if needed"
        end
      end
    end

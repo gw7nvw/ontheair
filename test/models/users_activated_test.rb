@@ -2,8 +2,7 @@ require "test_helper"
 
 class UserActivatedTest < ActiveSupport::TestCase
 
-#BAGGED
-  test "user activates asset with one activation but not chase chase" do 
+  test "user activates asset with one activation but not chase" do 
     user1=create_test_user
     user2=create_test_user
     asset1=create_test_asset
@@ -54,6 +53,20 @@ class UserActivatedTest < ActiveSupport::TestCase
     assert user1.activations(asset_type: 'hut')==[asset1.code], "Activating user has activated this hut"
     assert user1.activations(asset_type: 'park')==[], "Activating user has activated no parks"
     assert user2.activations(asset_type: 'hut')==[], "Chasing user has not activated this hut"
+  end
+
+  test "Can request multiple asset types" do
+    user1=create_test_user
+    user2=create_test_user
+    asset1=create_test_asset(asset_type: 'hut')
+    asset2=create_test_asset(asset_type: 'park')
+    log=create_test_log(user1,asset_codes: [asset1.code])
+    contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code])
+    log2=create_test_log(user1,asset_codes: [asset2.code])
+    contact2=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code])
+
+    assert user1.activations(asset_type: 'hut, park')==[asset1.code, asset2.code], "Activating user has activated hut and park"
+    assert user1.activations(asset_type: 'island, lighthouse')==[], "Activating user has activated no island or lighthouse"
   end
 
   test "minor assets not included unless requested" do 
@@ -217,8 +230,8 @@ class UserActivatedTest < ActiveSupport::TestCase
     assert uc.callsign==user1.callsign, "User1 callsign applied to user3 as secondary call"
 
     asset1=create_test_asset
-    log=create_test_log(user3,asset_codes: [asset1.code], date: Time.now, callsign1: uc.callsign)
-    contact=create_test_contact(user3,user2,log_id: log.id, asset1_codes: [asset1.code], callsign1: uc.callsign)
+    log=create_test_log(user3,asset_codes: [asset1.code], date: 2.days.ago, callsign1: uc.callsign)
+    contact=create_test_contact(user3,user2,log_id: log.id, asset1_codes: [asset1.code], callsign1: uc.callsign, time: 2.days.ago)
 
     assert contact.callsign1==uc.callsign, "Secondary call applied to contact"
     assert user3.activations==[asset1.code], "Activating call with correct dates has activated location 1"

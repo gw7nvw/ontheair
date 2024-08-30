@@ -499,7 +499,7 @@ def self.assets_from_code(codes)
 		  asset[:type]='pota park'
 		  asset[:title]="POTA"
 		end  
-	      elsif thecode=code.match(/^[a-zA-Z]{1,2}[fF]{2}-\d{4}/) then
+	      elsif thecode=code.match(/^\d{0,1}[a-zA-Z]{1,2}[fF]{2}-\d{4}/) then
 		#WWFF
 		 logger.debug "WWFF"
 		logger.debug thecode
@@ -518,7 +518,7 @@ def self.assets_from_code(codes)
 		  asset[:type]='wwff park'
 		  asset[:title]="WWFF"
 		end
-	      elsif thecode=code.match(/^[a-zA-Z]{1,2}\d{0,1}\/[a-zA-Z]{2}-\d{3}/) then
+	      elsif thecode=code.match(/^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/[a-zA-Z]{2}-\d{3}/) then
 		#SOTA
 		 logger.debug "SOTA"
 		asset[:name]=code
@@ -527,7 +527,7 @@ def self.assets_from_code(codes)
 		asset[:code]=thecode.to_s
 		asset[:type]='summit'
 		asset[:title]="SOTA"
-	      elsif thecode=code.match(/[a-zA-Z]{1,2}\d\/H[a-zA-Z]{2}-\d{3}/) then
+	      elsif thecode=code.match(/^\d{0,1}[a-zA-Z]{1,2}\d\/H[a-zA-Z]{2}-\d{3}/) then
 		 logger.debug "HEMA"
 		#HEMA
 		asset[:name]=code

@@ -40,17 +40,17 @@
     <% if logdays then logdays.sort_by!{|hsh| hsh[:date]}.reverse! end%>
     <% logdays.each do |logday| %>
       <tr>
-        <td><%=logday[:summit].name%></td>
-        <td><%=logday[:summit].code%></td>
+        <td><%=logday[:name]%></td>
+        <td><%=logday[:code]%></td>
         <td><%=logday[:date]%></td>
         <td><%=logday[:count]%></td>
         <% 
-           submitted_to_sota=logday[:submitted]
+           submitted_to_sota=(logday[:submitted]>0)
            #logday[:contacts].each do |c| 
            #  if !c.submitted_to_sota then submitted_to_sota=false end 
            #end
         %>
-        <td><%=if !submitted_to_sota then  link_to "Submit Log", '/sota_logs/'+logday[:summit].safecode+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" else link_to "Resend Log", '/sota_logs/'+logday[:summit].safecode+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" end%></td>
+        <td><%=if !submitted_to_sota then  link_to "Submit Log", '/sota_logs/'+logday[:safecode]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" else link_to "Resend Log", '/sota_logs/'+logday[:safecode]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" end%></td>
       </tr>
     <% end%>
   </table>

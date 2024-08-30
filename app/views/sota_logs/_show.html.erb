@@ -3,7 +3,9 @@ Please check that the following log is correct, and click the <b>Download</b> bu
 <br/>
 Filename: <%=@filename%><br/>
 <br/>
-<%=@sota_log%>
+<% @sota_log.split('<eor>').each do |sota_log| %>
+  <%=if sota_log and sota_log.length>1 then sota_log+"<eor>" end%></br>
+<% end %>
 <br/>
 <br/>
 Invalid contacts rejected: <%=@invalid_contacts.count%><br/>

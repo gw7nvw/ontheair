@@ -16,7 +16,8 @@ def index
 end
 
 def show
-    @parameters=params_to_query
+  @parameters=params_to_query
+  code=(params[:id]||"").gsub("_","/")
   if current_user then callsign=current_user.callsign else callsign="" end 
   if params[:user] then callsign=params[:user].upcase end
   if current_user and (current_user.is_admin or current_user.callsign==callsign) then
@@ -27,10 +28,10 @@ def show
      redirect_to '/'
     end
 
-    pls=@user.pota_logs
+    pls=@user.pota_contacts(code)
     pota_log=nil
     pls.each do |pl|
-      if pl[:park][:potapark]==params[:id] and pl[:date].strftime("%Y%m%d")==params[:date] then pota_log=pl end
+      if pl[:code]==code and pl[:date].strftime("%Y%m%d")==params[:date] then pota_log=pl end
     end 
   
     park=Asset.find_by(code: params[:id])

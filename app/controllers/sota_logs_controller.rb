@@ -32,16 +32,14 @@ def show
     if params[:id]=="chaser" then
       @chaser=true
       sls=@user.sota_chaser_contacts(nil, @resubmit)
-      puts sls.count
       sota_log=sls.first
-      puts sota_log.to_json
     else
       summit=Asset.find_by(code: params[:id].gsub('_','/'))
 
       sls=@user.sota_contacts(summit.code)
       sota_log=nil
       sls.each do |sl|
-        if sl[:summit].code==params[:id].gsub('_','/') and sl[:date].strftime("%Y%m%d")==params[:date] then sota_log=sl end
+        if sl[:code]==params[:id].gsub('_','/') and sl[:date].strftime("%Y%m%d")==params[:date] then sota_log=sl end
       end
 
     end 
@@ -54,20 +52,9 @@ def show
       other_summit_code=nil
       other_callsign=contact.callsign2
       if params[:id]=="chaser" then 
-        if contact.find_asset1_by_type('summit') then 
-          summit_code=contact.find_asset1_by_type('summit')[:code]
-        end
-
-        if contact.find_asset2_by_type('summit') then 
-          other_summit_code=contact.find_asset2_by_type('summit')[:code]
-        end
-      else
-        if contact.find_asset1_by_type('summit') and contact.find_asset1_by_type('summit')[:code]==summit.code then
-          summit_code=summit.code
-          if contact.find_asset2_by_type('summit') then 
-            other_summit_code=contact.find_asset2_by_type('summit')[:code]
-          end
-        end
+        #no S2S in chaser logs, must be in an activation
+        summit_code=nil
+        other_summit_code=contact.asset2_codes
       end
       if contact.band.length>0 and contact.adif_mode.length>0 and contact.time and contact.time.strftime("%H%M").length==4 then
         if contact.is_portable2 and other_callsign[-2..-1]!="/P" then other_callsign+="/P" end
@@ -115,12 +102,12 @@ def show
       format.js
       format.adi { send_data @sota_log, filename: @filename 
            @contacts.each do |contact|
-             contact.submitted_to_sota=true
-             contact.save
+             c2=Contact.find(contact.id) 
+             #Mark as sent. Use update column to avoid callbacks
+             c2.update_column(:submitted_to_sota, true)
            end
       }
     end
-
 end  
 
 
