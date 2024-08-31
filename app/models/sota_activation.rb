@@ -91,8 +91,8 @@ def self.update_sota_activation(summit)
               else
                 user.update_score
                 user.check_awards
-                user.check_area_awards('district')
-                user.check_area_awards('region')
+                user.check_completion_awards('district')
+                user.check_completion_awards('region')
               end
             end 
           end
@@ -145,8 +145,8 @@ def self.update_sota_activation(summit)
                   else
                     user.update_score
                     user.check_awards
-                    user.check_area_awards('district')
-                    user.check_area_awards('region')
+                    user.check_completion_awards('district')
+                    user.check_completion_awards('region')
                   end
                 end
               end
@@ -185,8 +185,8 @@ def self.update_pota_activation(asset)
               else
                 user.update_score
                 user.check_awards
-                user.check_area_awards('district')
-                user.check_area_awards('region')
+                user.check_completion_awards('district')
+                user.check_completion_awards('region')
               end
 
           end

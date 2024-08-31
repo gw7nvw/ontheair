@@ -879,6 +879,8 @@ end
 
 ##############################################################################
 # AWARDS
+#
+# AREA-BASED (COMPLETION) AWARDS
 ##############################################################################
 
 
@@ -958,6 +960,10 @@ def area_chases(scope, include_minor=false)
           select date, unnest(asset1_codes) as asset1_code 
           from contacts 
           where user2_id="+self.id.to_s+"
+        ) union (
+          select date, summit_code as asset1_code 
+          from sota_chases 
+          where user_id="+self.id.to_s+"
         )
       ) as foo 
     inner join assets a on a.code=asset1_code 
@@ -968,36 +974,6 @@ def area_chases(scope, include_minor=false)
   "]
 end
 
-##############################################################################
-# Show status of threshold-based award for this user
-#
-# Inputs:
-#  - award_id: Award.id for the award being checked
-#  - threshold: award threshold to be checked
-# Returns:
-#  - awarded: { 
-#               status: <boolean> - award achieled (at thresold level if supplied)
-#               latest:<integer> - latest threshold acheived
-#               next: <integer> - next threshold available
-#             }
-#############################################################################
-def has_award(award_id, threshold=nil)
-    awarded={status: false, latest: nil, next: nil}
-    score=0
-    awls=AwardUserLink.find_by_sql [" select * from award_user_links where user_id="+self.id.to_s+" and award_id="+award_id.to_s+" order by threshold desc limit 1"]
-    if awls and awls.count==1 then
-      awarded[:latest]=awls.first.threshold_name.capitalize+" ("+awls.first.threshold.to_s+")"
-      score=awls.first.threshold
-      if score==threshold or threshold==nil then awarded[:status]=true end
-    end
-    if score then
-      nextThreshold=AwardThreshold.find_by_sql [" select * from award_thresholds where threshold>"+score.to_s+" order by threshold asc limit 1" ]
-      if nextThreshold and nextThreshold.count==1 then
-        awarded[:next]=nextThreshold.first.name.capitalize+" ("+nextThreshold.first.threshold.to_s+")"
-      end
-    end
-    awarded
-end
 
 #############################################################################################
 # check if current user has a specific region/district completion award
@@ -1034,8 +1010,41 @@ def retire_completion_award(scale, loc_id, activity_type, award_class)
   end
 end
 
+#############################################################################################
+# Issue award for current user for specific region/district completion award
+# if the user does not already have the award
+# Input:
+#   - scale: 'region' / 'district'
+#   - loc_id: id for region/district being checked
+#   - activity_type: AssetType.name for award 
+#   - award_class: Award
+# Returns:
+#############################################################################################
+def issue_completion_award(scope, loc_id, activity_type, award_class)
+  award=nil
+  if activity_type=='chaser' then
+    chased=true; activated=false
+  elsif activity_type=='activator' then
+    chased=false; activated=true
+  end
+  award_spec=Award.find_by(chased: chased, activated: activated, programme: award_class, "all_"+scope => true, is_active: true)
+  if award_spec and !(self.has_completion_award(scope, loc_id, activity_type, award_class)) then
+    logger.debug "Awarded!! "+self.callsign+" "+award_class+" "+scope+" "+activity_type+" "+loc_id.to_s
+    award=AwardUserLink.new
+    award.award_type=scope
+    award.linked_id=loc_id
+    award.activity_type=activity_type
+    award.award_class=award_class
+    award.user_id=self.id
+    award.award_id=award_spec.id
+    award.save
+    award.publicise
+  end
+  award
+end
+
 ##############################################################################
-# Check is user has earned region / district awards
+# Check if user has earned region / district awards
 #
 # Inputs:
 #  - scope: 'region' or 'district'
@@ -1046,7 +1055,7 @@ end
 #  - Issues new award to user if new region / district chased
 #  - Revokes old award if region / district previously chased no longer qualifies
 #############################################################################
-def check_area_awards(scope)
+def check_completion_awards(scope)
   if scope=='district' then
     modelname=District
     indexfield="district_code"
@@ -1071,19 +1080,8 @@ def check_area_awards(scope)
        site_not_act=(combo.site_list-activation.first.site_list).count
        d=modelname.find_by(indexfield => combo.name)
        if site_not_act==0 then
-         award_spec=Award.find_by(activated: true, programme: combo.type, award => true, is_active: true)
-         if award_spec and !(self.has_completion_award(scope, d.id, "activator", combo.type)) then
-           logger.debug "Awarded!! "+self.callsign+" "+combo.type+" "+scope+" activator "+d.name
-           award=AwardUserLink.new
-           award.award_type=scope
-           award.linked_id=d.id
-           award.activity_type="activator"
-           award.award_class=combo.type
-           award.user_id=self.id
-           award.award_id=award_spec.id
-           award.save
-           award.publicise
-         end
+         #issue award if not already issued
+         self.issue_completion_award(scope, d.id, "activator", combo.type) 
        else
          #check for expired award
          self.retire_completion_award(scope, d.id, "activator", combo.type) 
@@ -1096,19 +1094,8 @@ def check_area_awards(scope)
        site_not_chased=(combo.site_list-chase.first.site_list).count
        d=modelname.find_by(indexfield => combo.name)
        if site_not_chased==0 then
-         award_spec=Award.find_by(chased: true, programme: combo.type, award => true, is_active: true)
-         if award_spec and !(self.has_completion_award(scope, d.id, "chaser", combo.type)) then
-           logger.debug "Awarded!! "+self.callsign+" "+combo.type+" "+scope+" chaser "+d.name
-           award=AwardUserLink.new
-           award.award_type=scope
-           award.linked_id=d.id
-           award.activity_type="chaser"
-           award.award_class=combo.type
-           award.user_id=self.id
-           award.award_id=award_spec.id
-           award.save
-           award.publicise
-         end
+         #issue award if not already issued
+         self.issue_completion_award(scope, d.id, "chaser", combo.type) 
        else
          #check for expired award
          self.retire_completion_award(scope, d.id, "chaser", combo.type) 
@@ -1118,6 +1105,58 @@ def check_area_awards(scope)
 end
 
 
+##############################################################################
+# THRESHOLD-BASED AWARDS
+##############################################################################
+##############################################################################
+# Show status of threshold-based award for this user
+#
+# Inputs:
+#  - award_id: Award.id for the award being checked
+#  - threshold: award threshold to be checked
+# Returns:
+#  - awarded: { 
+#               status: <boolean> - award achieled (at thresold level if supplied)
+#               latest:<integer> - latest threshold acheived
+#               next: <integer> - next threshold available
+#             }
+#############################################################################
+def has_award(award_id, threshold=nil)
+    awarded={status: false, latest: nil, next: nil}
+    score=0
+    awls=AwardUserLink.find_by_sql [" select * from award_user_links where user_id="+self.id.to_s+" and award_id="+award_id.to_s+" order by threshold desc limit 1"]
+    if awls and awls.count==1 then
+      awarded[:latest]=awls.first.threshold_name.capitalize+" ("+awls.first.threshold.to_s+")"
+      score=awls.first.threshold
+      if score==threshold or threshold==nil then awarded[:status]=true end
+    end
+    if score then
+      nextThreshold=AwardThreshold.find_by_sql [" select * from award_thresholds where threshold>"+score.to_s+" order by threshold asc limit 1" ]
+      if nextThreshold and nextThreshold.count==1 then
+        awarded[:next]=nextThreshold.first.name.capitalize+" ("+nextThreshold.first.threshold.to_s+")"
+      end
+    end
+    awarded
+end
+
+##############################################################################
+# Issue an award (if user does not already have it)
+#
+# Inputs:
+# - award: Award
+# - threshold: integer (threshold value for award)
+#############################################################################
+def issue_award(award_id, threshold)
+  if !(self.has_award(award_id,threshold)[:status]) then
+    a=AwardUserLink.new
+    a.award_id=award_id
+    a.threshold=threshold
+    a.award_type="threshold"
+    a.user_id=self.id
+    a.save
+    a.publicise
+  end
+end
 
 ##############################################################################
 # Check is user has earned threshold-based awards
@@ -1132,7 +1171,7 @@ def check_awards()
   awarded=[]
   awards=Award.where(:is_active => true)
   awards.each do |award|
-    if !(user.has_award(award,nil)[:status]) then
+    if !(user.has_award(award.id,nil)[:status]) then
       if award.count_based==true then
          if award.activated==true and award.chased == true then
            #this is where completed awards would go, when the code supports them!
@@ -1146,15 +1185,7 @@ def check_awards()
          if score then
            AwardThreshold.all.each do |threshold|
              if score >= threshold.threshold
-               if !(user.has_award(award,threshold)[:status]) then
-                 a=AwardUserLink.new
-                 a.award_id=award.id
-                 a.threshold=threshold.threshold
-                 a.award_type="threshold"
-                 a.user_id=user.id
-                 a.save
-                 a.publicise
-               end
+               user.issue_award(award,threshold.threshold)
              end
            end
         end

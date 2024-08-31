@@ -11,6 +11,12 @@ $last_suffix="AAAA"
 $last_asset="place-AAAA"
 $last_asset_code=1
 
+Region.create(sota_code: 'CB', name: "Canterbury") 
+Region.create(sota_code: 'OT', name: "Otago")
+District.create(district_code: 'CC', name: "Christchurch", region_code: "CB")
+District.create(district_code: 'WA', name: "Waimate", region_code: "CB")
+District.create(district_code: 'DU', name: "Dunedin", region_code: "OT") 
+District.create(district_code: 'CO', name: "Central Otago", region_code: "OT")
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   #
   # Note: You'll currently still have to declare fixtures explicitly in integration tests
@@ -44,7 +50,7 @@ $last_asset_code=1
   def create_test_asset(params={})
      if !params[:asset_type] then params[:asset_type]="hut" end
      if !params[:minor] then params[:minor]=false end
-     if !params[:is_active] then params[:is_active]=true end
+     if params[:is_active]==nil then params[:is_active]=true end
      if !params[:name] then 
         params[:name]=$last_asset
         $last_asset=$last_asset.next

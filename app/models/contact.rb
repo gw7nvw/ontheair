@@ -462,8 +462,8 @@ end
        elsif Rails.env.development? then
          user.update_score 
          user.check_awards
-         user.check_area_awards('region')
-         user.check_area_awards('district')
+         user.check_completion_awards('region')
+         user.check_completion_awards('district')
        else
          logger.debug "Not updating score for test env call manually if needed"
        end
@@ -477,8 +477,8 @@ end
        else 
          user.update_score 
          user.check_awards
-         user.check_area_awards('region')
-         user.check_area_awards('district')
+         user.check_completion_awards('region')
+         user.check_completion_awards('district')
        end
        user.check_awards
      end
