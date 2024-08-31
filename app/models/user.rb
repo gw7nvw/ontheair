@@ -1185,7 +1185,7 @@ def check_awards()
          if score then
            AwardThreshold.all.each do |threshold|
              if score >= threshold.threshold
-               user.issue_award(award,threshold.threshold)
+               user.issue_award(award.id,threshold.threshold)
              end
            end
         end
