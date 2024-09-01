@@ -28,6 +28,8 @@
   VALID_PHONE_REGEX = /\A\+[1-9]\d{1,14}\z/i
   validates :acctnumber, allow_blank: true, format: { with: VALID_PHONE_REGEX }
 
+  VALID_CALLSIGN_REGEX=/^\d{0,1}[a-zA-Z]{1,2}\d{1,4}[a-zA-Z]{1,4}$/
+
   def User.new_token
     SecureRandom.urlsafe_base64
   end
@@ -47,8 +49,7 @@ end
 # Is current callsign valid
 ###############################################################################################
 def valid_callsign? 
-  valid_callsign=/^\d{0,1}[a-zA-Z]{1,2}\d{1,4}[a-zA-Z]{1,4}$/
-  if valid_callsign.match(self.callsign) then true else false end
+  if VALID_CALLSIGN_REGEX.match(self.callsign) then true else false end
 end
 
 #############################################################################################
@@ -125,15 +126,12 @@ end
 #############################################################################################
 def self.find_by_full_callsign(callsign)
   if callsign and callsign.length>0 then 
-    endpos=callsign.index("/")
-    if endpos then callsign=callsign[0..endpos-1] end
-    user=User.find_by(callsign: callsign)
+    user=User.find_by(callsign: User.remove_call_suffix(callsign))
   else 
     user=nil
   end
   user
 end
-
 
 #############################################################################################
 # CALCULATED FIELDS
@@ -1198,6 +1196,28 @@ end
 # CALLSIGN HANDLING
 ###############################################################################
 
+#############################################################################################
+# Return the callsign segment of a call with prefix / suffix
+#############################################################################################
+def self.remove_call_suffix(callsign)
+  
+  theseg=nil
+  maxlen=0
+  segs=callsign.split('/')
+  #try each segment and choose 1st that matches valid callsign pattern
+  segs.each do |seg|
+    if VALID_CALLSIGN_REGEX.match(seg) then theseg=seg end
+  end
+
+  if !theseg then
+    #try each part and choose longest
+    segs.each do |seg|
+      if seg.length>maxlen then theseg=seg;maxlen=seg.length end
+    end
+  end
+  theseg
+end
+
 ###############################################################################
 # Create userCallsign entries for current user, if missing
 ###############################################################################
@@ -1278,6 +1298,11 @@ def self.reassign_userids_used_by_callsign(callsign)
   sas.each do |sa|
      sa.save
   end
+
+  scs=SotaChase.find_by_sql ["select * from sota_chases where callsign=?", callsign]
+  scs.each do |sc|
+     sc.save
+  end
 end
 
 ##########################################################################
@@ -1303,7 +1328,6 @@ def self.add_all_callsigns
     user.add_callsigns
   end
 end
-
 
 private
 

@@ -172,7 +172,7 @@ def save
       cle.x2=row[15]
       cle.y2=row[16]
       cle.log_id=id
-      cle.convert_to_utc(current_user)
+      cle.convert_user_timezone_to_utc(current_user)
 
       if !cle.save then status=500; puts "error" end
       ids << cle.id

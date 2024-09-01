@@ -3,7 +3,7 @@ class SotaActivation < ActiveRecord::Base
 before_save { self.before_save_actions }
 
 def before_save_actions
-  self.remove_suffix
+  self.remove_call_suffix
   self.add_user_ids
 end
 
@@ -13,8 +13,8 @@ def add_user_ids
     if user then self.user_id=user.id end
 end
 
-def remove_suffix
-  if self.callsign['/'] then self.callsign=Log.remove_suffix(self.callsign) end
+def remove_call_suffix
+  if self.callsign['/'] then self.callsign=User.remove_call_suffix(self.callsign) end
 end
  
 def self.import_sota
@@ -67,7 +67,7 @@ def self.update_sota_activation(summit)
           sa.asset_type='summit'
           sa.sota_activation_id=activation["id"].to_i
           #sa.callsign=activation["ownCallsign"].strip
-          sa.callsign=Log.remove_suffix(activation["ownCallsign"].strip)
+          sa.callsign=User.remove_call_suffix(activation["ownCallsign"].strip)
           puts "Activator: "+sa.callsign
           sa.summit_code=summit.code.strip
           #sa.summit_sota_id=summitId
@@ -122,7 +122,7 @@ def self.update_sota_activation(summit)
               sc=SotaChase.new
               sc.asset_type='summit'
               sc.sota_activation_id=aid
-              sc.callsign=Log.remove_suffix(chase["OwnCallsign"].strip)
+              sc.callsign=User.remove_call_suffix(chase["OwnCallsign"].strip)
               sc.band=chase["Band"]
               sc.mode=chase["Mode"]
               acttime=chase["TimeOfDay"].strip
@@ -168,7 +168,7 @@ def self.update_pota_activation(asset)
       data.each do |activation|
         sa=SotaActivation.new
         sa.asset_type='pota park'
-        sa.callsign=Log.remove_suffix(activation["activeCallsign"].strip)
+        sa.callsign=User.remove_call_suffix(activation["activeCallsign"].strip)
         sa.summit_code=asset.code.strip
         sa.summit_sota_id=nil
         if activation["qso_date"] then sa.date=activation["qso_date"].to_date  end

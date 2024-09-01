@@ -12,7 +12,7 @@ def show
      @call2=true
      @contact=@contact.reverse
   end
-  if cals=@contact.activator_asset_links then
+  if cals=@contact.activator_assets then
     cals.each do |cal| 
       if cal.photos and cal.photos.count>0 then 
         if cal.photos[photo].link_url[0..3]=="http" then
