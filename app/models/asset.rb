@@ -4,7 +4,13 @@ class Asset < ActiveRecord::Base
  validates :code, presence: true, uniqueness: true
  validates :name, presence: true
  before_validation { self.assign_calculated_fields }
- after_save {self.add_links}
+ after_save {self.post_save_actions}
+
+def post_save_actions
+  self.add_links
+  #do this here rather then before save to keep it pure PostGIS - no slow RGeo
+  if self.boundary then self.add_area end
+end
 
 def self.correct_separators(code)
   #ZLOTA
@@ -406,11 +412,32 @@ def self.add_parks
   true
 end
 
-def self.child_codes_from_location(location)
+def self.child_codes_from_location(location, asset=nil)
+  loc_type="point" 
+  codes=[]
+  if asset and asset.type.has_boundary and asset.area and asset.area>0 then 
+    loc_type="area"
+  end
+
   if !location.nil? and location.to_s.length>0 then
-     codes=Asset.find_by_sql [ "select code from assets a inner join asset_types at on at.name=a.asset_type where a.is_active=true and at.has_boundary=true and ST_Within(ST_GeomFromText('#{location}',4326), a.boundary); " ];
-  else
-     codes=[]
+    #find all assets containing this location point
+    codes=Asset.find_by_sql [ "select code from assets a inner join asset_types at on at.name=a.asset_type where a.is_active=true and at.has_boundary=true and ST_Within(ST_GeomFromText('#{location}',4326), a.boundary); " ];
+    # For locations based on a polygom:
+    # filter the list by those that overlap at least 90% of the asset
+    # defining our polygon
+    if loc_type=="area" then
+      logger.debug "Filtering codes by area overlap"
+      validcodes=[]
+      codes.each do |code|
+        overlap=ActiveRecord::Base.connection.execute( " select ST_Area(ST_intersection(a.boundary, b.boundary)) as overlap, ST_Area(a.boundary) as area from assets a join assets b on b.code='#{code.code}' where a.id=#{asset.id.to_s}; ")
+        prop_overlap=overlap.first["overlap"].to_f/overlap.first["area"].to_f
+        logger.debug "DEBUG: overlap #{prop_overlap.to_s} "+code.code
+        if prop_overlap>0.9 then
+          validcodes+=[code]
+        end
+      end
+      codes=validcodes
+    end
   end
   codelist=codes.map{|c| c.code}
 end
@@ -1297,5 +1324,53 @@ def self.get_lake_access
   end
 end
 
+def self.get_most_accurate_location(codes, loc_source="")
+  loc_asset=nil
+  location=nil
+  accuracy=999999999999
+
+  if codes.count>1 then
+    codes.each do |code|
+      logger.debug "DEBUG: assessing code2 #{code}"
+      assets=Asset.find_by_sql [ " select id, asset_type, location, area from assets where code='#{code}' limit 1" ]
+      if assets then asset=assets.first else asset=nil end
+      if asset then
+        #only consider polygon loc's if we don't already have a point loc
+        #use this location if polygon area smaller than previous polygon used
+        if asset.type.has_boundary then
+          if loc_source!="point" and loc_source!="user" and asset.area and asset.area<accuracy then
+            location=asset.location
+            loc_asset=asset
+            accuracy=asset.area
+            loc_source='area'
+            logger.debug "DEBUG: Assigning polygon locn"
+          end
+        else
+          #if there are two point locations (e.g. summit and hut)
+          #just use the last found (no way to know which is more accurate)
+          if loc_source=='point' then
+              logger.debug "Multiple POINT locations found"
+          end
+
+          #assign point location
+          location=asset.location
+          loc_asset=asset
+          loc_source='point'
+          logger.debug "DEBUG: Assigning point locn"
+        end
+      end
+    end
+  end
+  #single asset or nothing found from search, just use the first location
+  if !location and codes.count>0 then
+    assets=Asset.find_by_sql [ " select id, asset_type, location, area from assets where code='#{codes.first}' limit 1" ]
+    if assets and assets.count>0 then 
+      loc_asset=assets.first 
+      if loc_asset.type.has_boundary then loc_source='area' else loc_source='point' end
+      location=loc_asset.location
+    end
+  end
+  {location: location, source: loc_source, asset: loc_asset}
+end
 end
 

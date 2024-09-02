@@ -15,12 +15,12 @@ class Contact < ActiveRecord::Base
 
 
   def before_save_actions
+    self.remove_call_suffix
     self.add_user_ids
     self.check_codes_in_location
     self.check_for_same_place_error
-    self.get_most_accurate_location
-    self.add_child_codes 
-    self.remove_call_suffix
+    location=self.get_most_accurate_location(true)
+    self.add_child_codes(location[:asset]) 
     self.update_classes
     self.callsign1 = callsign1.strip.upcase.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
 
@@ -233,10 +233,10 @@ class Contact < ActiveRecord::Base
     self.asset2_codes=newcodes.uniq
   end
 
-  def get_all_asset2_codes
+  def get_all_asset2_codes(asset)
     codes=self.asset2_codes
     newcodes=codes
-    if self.location2 then newcodes=newcodes+Asset.child_codes_from_location(location2) end
+    if self.location2 then newcodes=newcodes+Asset.child_codes_from_location(location2, asset) end
     codes.each do |code|
       newcodes=newcodes+VkAsset.child_codes_from_parent(code)
     end
@@ -263,53 +263,38 @@ class Contact < ActiveRecord::Base
     self.asset2_classes=asset2_classes
   end
 
-  def add_child_codes
+  def add_child_codes(asset)
     #just inherit log codes for assets1
     self.asset1_codes=self.log.asset_codes
  
     #then lookup codes for assets2
     self.replace_master_codes2
-    self.asset2_codes=self.get_all_asset2_codes
+    self.asset2_codes=self.get_all_asset2_codes(asset)
     self.replace_master_codes2
   end
  
   def get_most_accurate_location(force = false)
-    loc_asset=nil
-    #just inherit location2 from log
+    #just inherit location1 from log
     self.location1=self.log.location1
- 
-    #then lookup location for asset2 by finding most accurate asset2 location
-    codes=self.asset2_codes
-    # only overwrite a location with a point locn
-    if self.location2 and force==false then loc_point=true else loc_point=false end
-    accuracy=999999999999
-    codes.each do |code|
-      logger.debug "DEBUG: assessing code2 #{code}"
-      assets=Asset.find_by_sql [ " select id, asset_type, location, area from assets where code='#{code}' limit 1" ]
-      if assets then asset=assets.first else asset=nil end
-      if asset then
-        if asset.type.has_boundary then
-          if loc_point==false and asset.area and asset.area<accuracy then 
-            self.location2=asset.location 
-            loc_asset=asset
-            accuracy=asset.area
-            loc_point=false
-            logger.debug "DEBUG: Assigning polygon locn"
-          end
-        else
-          if loc_point==true then
-              logger.debug "Multiple POINT locations found for contact #{self.id.to_s}"
-          end
-          self.location2=asset.location
-          loc_asset=asset
-          loc_point=true
-          logger.debug "DEBUG: Assigning point locn"
-        end 
-      end
-    end
 
-  loc_asset
+    #location2
+    location={location: self.location2, source: self.loc_source2, asset: nil}
+
+    if self.location2==nil then self.loc_source2=nil end
+
+    #for anything other than a user specified location
+    if self.loc_source2!='user' then
+      # only overwrite a location when asked to
+      if self.location2 and force==true then self.loc_source2=nil; self.location2=nil end
+
+      #lookup location for asset2 by finding most accurate asset2 location
+      location=Asset.get_most_accurate_location(self.asset2_codes, self.loc_source2)
+      self.loc_source2=location[:source]
+      self.location2=location[:location]
+    end
+    location
   end
+
 
   def update_scores
     if self.user1_id then

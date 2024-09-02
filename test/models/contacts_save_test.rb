@@ -7,8 +7,8 @@ class ContactSaveTest < ActiveSupport::TestCase
     user2=create_test_user
     log=create_test_log(user1)
     contact=create_test_contact(user1, user2, log_id: log.id)
-    assert contact.user1_id=user1.id, "User 1 ID assigned" 
-    assert contact.user2_id=user2.id, "User 2 ID assigned" 
+    assert contact.user1_id==user1.id, "User 1 ID assigned" 
+    assert contact.user2_id==user2.id, "User 2 ID assigned" 
   end
 
   test "save contact handles secondary callsign" do
@@ -19,16 +19,16 @@ class ContactSaveTest < ActiveSupport::TestCase
     #activator call
     log=create_test_log(user1, callsign1: uc.callsign)
     contact=create_test_contact(user1, user2, log_id: log.id, callsign1: uc.callsign)
-    assert contact.callsign1=uc.callsign, "Contact created correctly"
-    assert contact.user1_id=user1.id, "User 1 ID assigned" 
-    assert contact.user2_id=user2.id, "User 2 ID assigned" 
+    assert contact.callsign1==uc.callsign, "Contact created correctly"
+    assert contact.user1_id==user1.id, "User 1 ID assigned" 
+    assert contact.user2_id==user2.id, "User 2 ID assigned" 
 
     #chaser call
     log2=create_test_log(user2)
     contact2=create_test_contact(user2, user1, log_id: log2.id, callsign2: uc.callsign)
-    assert contact2.callsign2=uc.callsign, "Contact created correctly"
-    assert contact2.user1_id=user2.id, "User 2 ID assigned" 
-    assert contact2.user2_id=user1.id, "User 1 ID assigned" 
+    assert contact2.callsign2==uc.callsign, "Contact created correctly"
+    assert contact2.user1_id==user2.id, "User 2 ID assigned" 
+    assert contact2.user2_id==user1.id, "User 1 ID assigned" 
   end
 
   test "save contact handles suffixes and prefixes" do
@@ -37,9 +37,9 @@ class ContactSaveTest < ActiveSupport::TestCase
 
     log=create_test_log(user1)
     contact=create_test_contact(user1, user2, log_id: log.id, callsign2: "VK/"+user2.callsign+"/P")
-    assert contact.callsign2=user2.callsign, "Contact created correctly"
-    assert contact.user1_id=user1.id, "User 1 ID assigned"
-    assert contact.user2_id=user2.id, "User 2 ID assigned"
+    assert contact.callsign2==user2.callsign, "Contact created correctly"
+    assert contact.user1_id==user1.id, "User 1 ID assigned"
+    assert contact.user2_id==user2.id, "User 2 ID assigned"
   end
 
   test "band added based on frequency specified" do
@@ -48,12 +48,12 @@ class ContactSaveTest < ActiveSupport::TestCase
 
     log=create_test_log(user1)
     contact=create_test_contact(user1, user2, log_id: log.id, frequency: 18.136)
-    assert contact.band="17m", "Correct band assigned"
+    assert contact.band=="17m", "Correct band assigned"
     contact2=create_test_contact(user1, user2, log_id: log.id, frequency: 50.123)
-    assert contact2.band="6m", "Correct band assigned"
+    assert contact2.band=="6m", "Correct band assigned"
     #out of band freq gives blank band
     contact3=create_test_contact(user1, user2, log_id: log.id, frequency: 16.01)
-    assert contact3.band="", "Handles bad frequency without issues"
+    assert contact3.band=="", "Handles bad frequency without issues"
   end
 
   test "asset1 codes inherited from log" do
@@ -113,31 +113,4 @@ class ContactSaveTest < ActiveSupport::TestCase
     contact3=create_test_contact(user1, user2, log_id: log.id, asset2_codes: [asset1.code, asset2.code])
     assert contact3.asset2_codes==[asset2.code], "Only the invalid code is dropped: "+contact.asset2_codes.to_json
   end
-
-  #Get most accurate location
-  test "Point location preferred over polygon" do
-  end
-
-  test "Can handle multiple point locations" do
-  end
-
-  test "Smaller polygon preferred over larger polygon" do
-  end
-
-  test "Can handle null polygons" do
-  end
-
-  test "Ignore AZ in point locations - use point" do
-  end
-
-  test "do not overwrite existing location" do
-  end
-
-  #TODO: need to better handle polygon locations - currently juts use it's point
-  #should do a polygon in polygon with error margin (we do this somewhere else, 
-  #reuse that function, don;t rewrite)
-  test "Asset2 child codes matched using point in polygon for point location" do
-  TODO 
-  end
-
 end

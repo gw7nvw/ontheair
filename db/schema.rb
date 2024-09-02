@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240830042206) do
+ActiveRecord::Schema.define(version: 20240901205857) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -233,6 +233,7 @@ ActiveRecord::Schema.define(version: 20240830042206) do
     t.string   "asset2_classes",                                          default: [],   array: true
     t.boolean  "submitted_to_hema"
     t.string   "band"
+    t.string   "loc_source2"
   end
 
   add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"
@@ -515,6 +516,7 @@ ActiveRecord::Schema.define(version: 20240830042206) do
     t.string   "asset_codes",                                          default: [],   array: true
     t.integer  "user_id"
     t.boolean  "do_not_lookup"
+    t.string   "loc_source"
   end
 
   add_index "logs", ["date"], :name => "index_logs_on_date"

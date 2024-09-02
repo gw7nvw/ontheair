@@ -47,6 +47,12 @@ District.create(district_code: 'CO', name: "Central Otago", region_code: "OT")
    uc=UserCallsign.create(params)
   end
 
+  def create_point(x,y)
+    factory = RGeo::Geographic.spherical_factory(srid: 4326)
+
+    latlon = factory.point(x, y)
+  end
+
   def create_test_asset(params={})
      if !params[:asset_type] then params[:asset_type]="hut" end
      if !params[:minor] then params[:minor]=false end
@@ -60,9 +66,16 @@ District.create(district_code: 'CO', name: "Central Otago", region_code: "OT")
         $last_asset_code=$last_asset_code+1
         params.delete(:code_prefix)
      end
+     if params[:test_radius] then 
+       radius=params[:test_radius]
+       params.delete(:test_radius)
+       x=params[:location].x
+       y=params[:location].y
+       params[:boundary]="MULTIPOLYGON(((#{x+radius} #{y+radius}, #{x+radius} #{y-radius}, #{x-radius} #{y-radius}, #{x-radius} #{y+radius})))"
+     end
 
      asset=Asset.create(params)
-     asset
+     asset.reload
   end
 
   def create_test_log(user, params={})
