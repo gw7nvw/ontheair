@@ -422,7 +422,7 @@ def self.child_codes_from_location(location, asset=nil)
   if !location.nil? and location.to_s.length>0 then
     #find all assets containing this location point
     codes=Asset.find_by_sql [ "select code from assets a inner join asset_types at on at.name=a.asset_type where a.is_active=true and at.has_boundary=true and ST_Within(ST_GeomFromText('#{location}',4326), a.boundary); " ];
-    # For locations based on a polygom:
+    # For locations based on a polygon:
     # filter the list by those that overlap at least 90% of the asset
     # defining our polygon
     if loc_type=="area" then
