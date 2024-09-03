@@ -171,7 +171,7 @@ class UserSotaLogsTest < ActiveSupport::TestCase
     log2=create_test_log(user1,asset_codes: [asset2.code])
     contact3=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code], mode: 'SSB', frequency: 14.01, time: '2022-01-01 23:57:59'.to_time)
 
-    sota_logs=user1.sota_logs(asset1.code)
+    sota_logs=user1.sota_logs(asset1.code).sort
 
     assert sota_logs.count==2, "Expect 2 activations to be logged :"+sota_logs.count.to_s
     assert sota_logs[0][:code]==asset1.code, "Expect summit to be correct: "+sota_logs[0][:code].to_json

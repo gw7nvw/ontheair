@@ -117,6 +117,7 @@ order"
     user1=create_test_user
     user2=create_test_user
     asset1=create_test_asset
+    asset2=create_test_vkasset(award: 'HEMA', code: 'VK3/HSE-002', location: create_point(148.79, -35.61))
     log=create_test_log(user1,asset_codes: [asset1.code])
     contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], asset2_codes: ['VK3/HSE-002'], time: '2022-01-01 00:00:00'.to_time)
  
@@ -150,6 +151,8 @@ order"
     user2=create_test_user
     asset1=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/OT-')
     asset2=create_test_asset(asset_type: 'pota park', code_prefix: 'NZ-0')
+    asset3=create_test_vkasset(award: 'SOTA', code: 'VK3/CB-001', location: create_point(148.79, -35.61))
+
     log=create_test_log(user1,asset_codes: ['GM/SW-002'])
     contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: ['GM/SW-002'], asset2_codes: [asset1.code], time: '2022-01-01 00:00:00'.to_time)
     log=create_test_log(user1,asset_codes: [asset2.code])

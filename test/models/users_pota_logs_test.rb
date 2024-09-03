@@ -171,7 +171,7 @@ class UserPotaLogsTest < ActiveSupport::TestCase
     log2=create_test_log(user1,asset_codes: [asset2.code])
     contact3=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code], mode: 'SSB', frequency: 14.01, time: '2022-01-01 23:57:59'.to_time)
 
-    pota_logs=user1.pota_logs(asset1.code)
+    pota_logs=user1.pota_logs(asset1.code).sort
 
     assert pota_logs.count==2, "Expect 2 activations to be logged :"+pota_logs.count.to_s
     assert pota_logs[0][:code]==asset1.code, "Expect pota park to be correct: "+pota_logs[0][:code].to_json

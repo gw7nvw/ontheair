@@ -22,6 +22,7 @@ class UserSotaChaserContactsTest < ActiveSupport::TestCase
   test "Foreign SOTA summits included" do
     user1=create_test_user
     user2=create_test_user
+    asset1=create_test_vkasset(award: 'SOTA', code: 'VK1/SE-001', location: create_point(148.79, -35.61))
 
     log=create_test_log(user1,date: '2022-01-01'.to_date)
     contact=create_test_contact(user1,user2,log_id: log.id, asset2_codes: ['3Y/BV-001'], mode: 'SSB', frequency: 7.01, time: '2022-01-01 00:01:00'.to_time)
