@@ -223,7 +223,7 @@ uri=URI("http://www.hema.org.uk/activationNew3.jsp")
 response = http.request(req)
 
 #get bands
-rows=response.body.split('bandKey')[2].split('/select>')[0].split(/\n/)
+rows=response.body.split('bandKey')[2].split('/select>')[0][2..-1].split(/\n/)
 bands=[]
  rows.each do |r|
     if r["Option value"]
@@ -235,7 +235,7 @@ end
 
 puts "got bands: "+bands.to_json
 #get modes
-rows=response.body.split('modeKey')[2].split('/select>')[0].split(/\n/)
+rows=response.body.split('modeKey')[2].split('/select>')[0][2..-1].split(/\n/)
 modes=[]
  rows.each do |r|
     if r["Option value"]
@@ -252,14 +252,25 @@ log.contacts.each do |contact|
 
    if contact.mode=="USB" or contact.mode=="LSB" then contact.mode="SSB" end
    mode=modes.select{|m| m[:name]==contact.mode}.first
-   if !mode then mode=mode.select{|m| m[:name]=='OTHER'} end
+   if !mode then mode=modes.select{|m| m[:name]=='OTHER'} end
    mode_id=mode[:id]
+
+   #find summit ref in asset2_codes
+   asset2_codes=""
+   asset2=contact.find_asset2_by_type('hump')
+   if !asset2 then
+     asset2=contact.find_asset2_by_type('summit')
+   end
+   if asset2 then
+     asset2_codes=asset2[:code]
+   end
 
    uri=URI("http://www.hema.org.uk/activationNew3.jsp")
 
+   
    http=Net::HTTP.new(uri.host, uri.port)
    req = Net::HTTP::Get.new(
-     uri.path+"?activationKey="+pairs["activationKey"]+"&summitKey="+summit[:id].to_s+"&action=new&bandKey="+band_id.to_s+"&modeKey="+mode_id.to_s+"&callsignForeign1="+contact.callsign2+"&comments1=&callsignForeign2=&comments2=&callsignForeign3=&comments3=&callsignForeign4=&comments4=&callsignForeign5=&comments5=&fiveMore=",
+     uri.path+"?activationKey="+pairs["activationKey"]+"&summitKey="+summit[:id].to_s+"&action=new&bandKey="+band_id.to_s+"&modeKey="+mode_id.to_s+"&callsignForeign1="+contact.callsign2+"&comments1="+asset2_codes+"&callsignForeign2=&comments2=&callsignForeign3=&comments3=&callsignForeign4=&comments4=&callsignForeign5=&comments5=&fiveMore=",
      'Cookie' => cookie,
      'Host' => 'www.hema.org.uk',
      'Origin' => 'http://www.hema.org.uk',

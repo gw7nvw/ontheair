@@ -200,7 +200,7 @@ def self.migrate_to_distcodes
   end
 end
 
-def self.import_csv(filestr,user,default_callsign,default_location,no_create=false, ignore_error=false, do_not_lookup=false)
+def self.import_csv(currentuser, filestr,user,default_callsign,default_location,no_create=false, ignore_error=false, do_not_lookup=false)
 
   logs=[]
   contacts=[]
@@ -254,8 +254,14 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
       #date
       value=fields[3]
       if value and value.length>0 and value.strip.length>0 then
-         protolog.date=value.strip
-         contact.date=value.strip
+         parts=value.strip.split('/')
+         if parts[0].length==2 then #assume dd-mm-yy as per iPnP
+           protolog.date='20'+parts[2]+'/'+parts[1]+'/'+parts[0]
+           contact.date=protolog.date
+         else #assume yyyy-mm-dd as per SOTA
+           protolog.date=value.strip
+           contact.date=value.strip
+         end
       end
  
       #my location
@@ -330,7 +336,7 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
          invalid_log[log_count]=true
          logs[log_count]=Log.new(JSON.parse(lstr))
          loguser=User.find_by_callsign_date(logs[log_count].callsign1,logs[log_count].date)
-         if loguser and (loguser.id==user.id or user.is_admin) then
+         if loguser and (loguser.id==user.id or currentuser.is_admin) then
            if logs[log_count].valid? then
              puts "Valid log "+log_count.to_s    
              invalid_log[log_count]=false
@@ -389,6 +395,9 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
       end
     end #end of if valid line
   end #end of lines.each 
+
+
+  puts logs.to_json
  
   good_logs=0 
   #create logs
@@ -396,7 +405,6 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
   logs.each do |log|
     if contacts_per_log[lc]>0 and !invalid_log[lc] then 
       if errors.empty? or ignore_error then
-        logs[lc].asset_codes=nil
         if logs[lc].save then
            logs[lc].reload
            good_logs+=1
@@ -434,11 +442,14 @@ def self.import_csv(filestr,user,default_callsign,default_location,no_create=fal
   end
   puts "IMPORT: clean exit"
   puts errors
+  puts logs.to_json
+  puts good_contacts.to_json
+  puts contacts.to_json
   return {logs: logs, errors: errors, success: true, good_logs: good_logs, good_contacts: good_contacts}
 end
  
      
-def self.import(filestr,user,default_callsign,default_location,no_create=false, ignore_error=false,  do_not_lookup=false)
+def self.import(currentuser, filestr,user,default_callsign,default_location,no_create=false, ignore_error=false,  do_not_lookup=false)
 
   logs=[]
   contacts=[]
@@ -732,7 +743,7 @@ def self.import(filestr,user,default_callsign,default_location,no_create=false, 
          invalid_log[log_count]=true
          logs[log_count]=Log.new(JSON.parse(lstr))
          loguser=User.find_by_callsign_date(logs[log_count].callsign1,logs[log_count].date)
-         if loguser and (loguser.id==user.id or user.is_admin) then
+         if loguser and (loguser.id==user.id or currentuser.is_admin) then
            if logs[log_count].valid? then
              puts "Valid log "+log_count.to_s    
              invalid_log[log_count]=false

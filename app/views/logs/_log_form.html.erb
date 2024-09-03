@@ -185,6 +185,7 @@ function truncatedTextRenderer(instance, td, row, col, prop, value, cellProperti
   Handsontable.renderers.TextRenderer.apply(this, arguments);
   td.innerHTML = `<div class="truncated">${value||""}</div>`
 }
+
 function arrayRenderer(instance, td, row, col, prop, value, cellProperties) {
   Handsontable.renderers.TextRenderer.apply(this, arguments);
   if(value) { stringval=value.join(',');} else {stringval=[];}

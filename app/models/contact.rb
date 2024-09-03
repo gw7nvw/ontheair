@@ -40,14 +40,16 @@ class Contact < ActiveRecord::Base
   def before_save_actions
     self.add_user_ids
     self.check_codes_in_location
+
 #    self.get_most_accurate_location
     self.remove_suffix
     self.update_classes
     self.callsign1 = callsign1.strip.upcase.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
 
     self.callsign2 = callsign2.strip.upcase.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
-
+    self.band=self.get_band
   end
+
   def add_user_ids
     #look up callsign1 at contact.time
     user1=User.find_by_callsign_date(self.callsign1, self.time, true)
@@ -57,6 +59,19 @@ class Contact < ActiveRecord::Base
     if user2 then self.user2_id=user2.id end
   end
 
+  #do not allow activator & chaser to be in same place
+  #silently remove chasir location if this happens 
+  #better than failing a log upload or save where we have not ability to display error
+  def check_for_same_place_error
+    self.asset2_codes.each do |code|
+      if self.log.asset_codes.include? code then
+         puts "removing "+code
+         self.asset2_codes=self.asset2_codes-[code]
+         self.loc_desc2="INVALID"
+      end
+    end
+  end
+      
   def check_codes_in_location
     #if self.asset1_codes==nil or self.asset1_codes==[] or self.asset1_codes==[""] then
     #  assets=Asset.assets_from_code(self.loc_desc1)
@@ -84,6 +99,7 @@ class Contact < ActiveRecord::Base
         end
       end
     end
+    self.check_for_same_place_error
     self.get_most_accurate_location
     self.add_child_codes 
   end
@@ -306,7 +322,7 @@ end
  def self.band_from_freq(freq)
    c=Contact.new
    c.frequency=freq
-   band=c.band
+   band=c.get_band
  end
 
  def hema_band
@@ -343,7 +359,7 @@ end
    band
  end
 
- def band
+ def get_band
    band=""
    if self.frequency then 
      if self.frequency>=0.136 and self.frequency<=0.137 then band="2190m" end
@@ -460,10 +476,10 @@ end
        if Rails.env.production? then 
          user.outstanding=true;user.save;Resque.enqueue(Scorer) 
        else 
-         user.update_score 
-         user.check_awards
-         user.check_district_awards
-         user.check_region_awards
+     #    user.update_score 
+     #    user.check_awards
+     #    user.check_district_awards
+     #    user.check_region_awards
        end
      end
    end
@@ -473,12 +489,11 @@ end
        if Rails.env.production? then 
           user.outstanding=true;user.save;Resque.enqueue(Scorer) 
        else 
-         user.update_score 
-         user.check_awards
-         user.check_district_awards
-         user.check_region_awards
+     #    user.update_score 
+     #    user.check_awards
+     #    user.check_district_awards
+     #    user.check_region_awards
        end
-       user.check_awards
      end
    end
  end

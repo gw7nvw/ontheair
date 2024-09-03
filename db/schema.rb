@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240814073508) do
+ActiveRecord::Schema.define(version: 20240901205857) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -67,6 +67,7 @@ ActiveRecord::Schema.define(version: 20240814073508) do
     t.string   "pnp_class"
     t.boolean  "keep_score"
     t.integer  "min_qso"
+    t.boolean  "has_elevation"
   end
 
   add_index "asset_types", ["name"], :name => "index_asset_types_on_name"
@@ -231,10 +232,13 @@ ActiveRecord::Schema.define(version: 20240814073508) do
     t.string   "asset1_classes",                                          default: [],   array: true
     t.string   "asset2_classes",                                          default: [],   array: true
     t.boolean  "submitted_to_hema"
+    t.string   "band"
+    t.string   "loc_source2"
   end
 
   add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"
   add_index "contacts", ["callsign2"], :name => "index_contacts_on_callsign2"
+  add_index "contacts", ["date"], :name => "index_contacts_on_date"
 
   create_table "continents", force: true do |t|
     t.string "name"
@@ -512,7 +516,10 @@ ActiveRecord::Schema.define(version: 20240814073508) do
     t.string   "asset_codes",                                          default: [],   array: true
     t.integer  "user_id"
     t.boolean  "do_not_lookup"
+    t.string   "loc_source"
   end
+
+  add_index "logs", ["date"], :name => "index_logs_on_date"
 
   create_table "maplayers", force: true do |t|
     t.string   "name"
