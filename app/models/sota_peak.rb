@@ -57,7 +57,8 @@ def self.import
   sps.each do |sp|
      sp.destroy
   end
-
+  old_codes=Asset.where(asset_type: 'summit', is_active: true).map{|code| code.code}
+  new_codes=[]
   srs=SotaRegion.all
   srs.each do |sr|
     url = "https://api2.sota.org.uk/api/regions/"+sr.dxcc+"/"+sr.region+"?client=sotawatch&user=anon"
@@ -76,10 +77,22 @@ def self.import
         ss.points=s["points"]
 
         ss.save
+        puts "Add / keep: "+ss.summit_code
         a=Asset.add_sota_peak(ss)
-        a.add_links
+        new_codes.push(ss.summit_code)
       end end
    end
   end 
+  removed_codes=old_codes-new_codes
+  removed_codes.each do |code|
+    a=Asset.find_by(code: code)
+    if !a.valid_to or a.valid_to<Time.now then 
+      a.valid_to=Time.now 
+      a.is_active=false
+      puts "Retiring: "+a.code
+      a.save
+    end
+  end
+
 end
 end

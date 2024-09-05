@@ -27,6 +27,9 @@ def assign_calculated_fields
   if !self.valid_from then self.valid_from=Time.new('1900-01-01') end
   if self.minor!=true then self.minor=false end
 
+  self.district=self.add_district()
+  self.region=self.add_region()
+
   if self.code==nil or self.code=="" then
     self.code=Asset.get_next_code(self.asset_type,self.region)
   end
@@ -34,12 +37,7 @@ def assign_calculated_fields
     self.safecode=self.code.gsub('/','_')
   end
 
-  if self.district==nil or self.district=="" then
-    self.district=self.add_district()
-  end
   self.url='assets/'+self.safecode
-  #add links
-#  self.add_links
 end
 
 def name_and_location
@@ -638,28 +636,29 @@ def self.assets_from_code(codes)
 	    a
 	end
 
-	def self.add_sota_peaks
-	  ps=SotaPeak.all
-	  ps.each do |p|
-	    Asset.add_sota_peak(p)
-	  end
-	end
 	def self.add_sota_peak(p)
 	    a=Asset.find_by(asset_type: 'summit', code: p.summit_code)
-	    if !a then logger.debug "New peak: "+p.summit_code;a=Asset.new end
+	    if !a then logger.debug "New peak: "+p.summit_code; a=Asset.new end
 	    a.asset_type="summit"
 	    a.code=p.summit_code
 	    a.safecode=a.code.gsub('/','_')
-	    a.url='/summits/'+p.short_code
 	    a.is_active=true
 	    a.name=p.name
 	    a.location=p.location
 	    a.points=p.points
 	    a.altitude=p.alt
 	    if p.valid_to!="0001-01-01 00:00:00" then logger.debug "retured summit: "+a.code; a.valid_to=p.valid_to else a.valid_to=nil end
-	    if p.valid_from!="0001-01-01 00:00:00" then a.valid_from=p.valid_from else a.valid_from=nil end
-	    a.save
-	    logger.debug a.code
+	    if p.valid_from!="0001-01-01 00:00:00" then a.valid_from=p.valid_from end
+            if a.changed? and (a.changed-['valid_from']).count>0 then 
+              puts"Changed: "+a.changed.to_json
+  	      a.save
+              a.add_region
+              a.add_district
+              a.add_sota_activation_zone 
+              a.get_access
+              a.add_links
+              puts "Create/Updated: "+a.code
+            end
 	    a
 	end
 

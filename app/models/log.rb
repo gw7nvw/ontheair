@@ -430,7 +430,11 @@ class Log < ActiveRecord::Base
     if value and value.length>0 and value.strip.length>0 then
        parts=value.strip.split('/')
        if parts[0].length==2 then #assume dd-mm-yy as per iPnP
-         protolog.date='20'+parts[2]+'/'+parts[1]+'/'+parts[0]
+         if parts[2].length==2 then #assume dd-mm-yy as per iPnP
+           protolog.date='20'+parts[2]+'/'+parts[1]+'/'+parts[0]
+         else
+           protolog.date=parts[2]+'/'+parts[1]+'/'+parts[0]
+         end
          contact.date=protolog.date
        else #assume yyyy-mm-dd as per SOTA
          protolog.date=value.strip

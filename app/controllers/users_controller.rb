@@ -52,7 +52,7 @@ class UsersController < ApplicationController
 
      #filter by min qso requirements
      if @count_type=='activated' then
-       @valid_codes=@user.filter_by_min_qso(@asset_codes,@asset_type)
+       @valid_codes=@user.qualified(asset_type: @asset_type)
      else
        @valid_codes=@asset_codes
 
@@ -116,8 +116,8 @@ class UsersController < ApplicationController
       qualifySites=[]
       asset_types=AssetType.where("name != 'all'")
       asset_types.each do |at|
-        activationSite=@user.activated_all(at.name)
-        qualifySites+=@user.filter_by_min_qso(activationSite,at.name)
+        activationSite=@user.activations(asset_type: at.name)
+        qualifySites+=@user.qualified(asset_type: at.name)
         activationSites+=activationSite
       end
       chaseSites=@user.chased
