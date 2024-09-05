@@ -223,7 +223,7 @@ uri=URI("http://www.hema.org.uk/activationNew3.jsp")
 response = http.request(req)
 
 #get bands
-rows=response.body.split('bandKey')[2].split('/select>')[0].split(/\n/)
+rows=response.body.split('bandKey')[2].split('/select>')[0][2..-1].split(/\n/)
 bands=[]
  rows.each do |r|
     if r["Option value"]
@@ -235,7 +235,7 @@ end
 
 puts "got bands: "+bands.to_json
 #get modes
-rows=response.body.split('modeKey')[2].split('/select>')[0].split(/\n/)
+rows=response.body.split('modeKey')[2].split('/select>')[0][2..-1].split(/\n/)
 modes=[]
  rows.each do |r|
     if r["Option value"]
@@ -252,7 +252,7 @@ log.contacts.each do |contact|
 
    if contact.mode=="USB" or contact.mode=="LSB" then contact.mode="SSB" end
    mode=modes.select{|m| m[:name]==contact.mode}.first
-   if !mode then mode=mode.select{|m| m[:name]=='OTHER'} end
+   if !mode then mode=modes.select{|m| m[:name]=='OTHER'} end
    mode_id=mode[:id]
 
    uri=URI("http://www.hema.org.uk/activationNew3.jsp")

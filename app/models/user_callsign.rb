@@ -9,6 +9,10 @@ validates :callsign,  presence: true, length: { maximum: 50 },
 
 before_save { self.callsign = callsign.strip.upcase }
 
+def self.clean(callsign)
+  callsign.strip.upcase.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
+end
+
 # Check is callsign is unique for sepcified period
 # -> If unique: PASS
 # -> If not unique:

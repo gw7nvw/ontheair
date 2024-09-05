@@ -16,15 +16,14 @@ class Contact < ActiveRecord::Base
 
   def before_save_actions
     self.remove_call_suffix
+    self.callsign1 = UserCallsign.clean(callsign1)
+    self.callsign2 = UserCallsign.clean(callsign2)
     self.add_user_ids
     self.check_codes_in_location
     self.check_for_same_place_error
     location=self.get_most_accurate_location(true)
     self.add_child_codes(location[:asset]) 
     self.update_classes
-    self.callsign1 = callsign1.strip.upcase.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
-
-    self.callsign2 = callsign2.strip.upcase.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
     self.band=self.band_from_frequency
   end
 
@@ -35,6 +34,7 @@ class Contact < ActiveRecord::Base
     Log.find_by(id: self.log_id)
   end
 
+  # [asset1.code] asset1.name ... || loc_desc1+ {x,y}
   def location1_text
     text=""
     self.activator_assets.each do |al|
@@ -52,6 +52,7 @@ class Contact < ActiveRecord::Base
     text
   end
 
+  # [asset2.code] asset2.name ... || loc_desc2+ {x,y}
   def location2_text
     text=""
     self.chaser_assets.each do |al|
@@ -68,7 +69,8 @@ class Contact < ActiveRecord::Base
     end
     text
   end
-  
+ 
+  #array of activator assets 
   def activator_asset
     cals=[]
     self.asset1_codes.each do |code|
@@ -78,16 +80,7 @@ class Contact < ActiveRecord::Base
     cals
   end
 
-  def activator_links_code
-    cals=activator_assets
-    cals.map{|cal| cal.asset_code}
-  end
-  
-  def activator_links_name
-    cals=activator_assets
-    cals.map{|cal| cal.asset.name}
-  end
-  
+  #array of chaser assets 
   def chaser_assets
     cals=[]
     self.asset2_codes.each do |code|
@@ -97,16 +90,19 @@ class Contact < ActiveRecord::Base
     cals
   end
 
+  #user1
   def user1
     user=User.find_by_id(user1_id)
     user.first
   end
 
+  #user2
   def user2
     user=User.find_by_id(user2_id)
     user.first
   end
 
+  #name of timezone contact saved in
   def timezonename
     timezonename=""
     if self.timezone!="" then
@@ -116,6 +112,7 @@ class Contact < ActiveRecord::Base
     timezonename
   end
 
+  #convert contact.date to user's selected timezone
   def localdate(current_user)
     t=nil
     if current_user then tz=Timezone.find_by_id(current_user.timezone) else tz=Timezone.find_by(name: 'UTC') end
@@ -123,6 +120,7 @@ class Contact < ActiveRecord::Base
     t
   end
  
+  #convert contact.time to user's selected timezone
   def localtime(current_user)
     t=nil
     if current_user then tz=Timezone.find_by_id(current_user.timezone) else tz=Timezone.find_by(name: 'UTC') end
@@ -130,6 +128,7 @@ class Contact < ActiveRecord::Base
     t
   end
  
+  #text name for user's timezone, defaulting to UTC if no user
   def localtimezone(current_user)
     t=nil 
     if current_user then tz=Timezone.find_by_id(current_user.timezone) else tz=Timezone.find_by(name: 'UTC') end
@@ -137,8 +136,9 @@ class Contact < ActiveRecord::Base
     t
   end
 
+  #return ADIF-compatable mode closest to that specified in contact
   def adif_mode
-    mode=""
+    mode="OTHER"
     rawmode=self.mode.upcase
     if rawmode[0..2]=="LSB" then rawmode="SSB" end
     if rawmode[0..2]=="USB" then rawmode="SSB" end
@@ -160,10 +160,12 @@ class Contact < ActiveRecord::Base
     mode
   end
 
+  #return band name (wavelength band) for contact's frequency
   def band_from_frequency
     self.band=Contact.band_from_frequency(self.frequency)
   end
 
+  #return hema name (frequency band) for contact's frequency
   def hema_band
     band=Contact.hema_band_from_frequency(self.frequency)
   end
@@ -175,11 +177,13 @@ class Contact < ActiveRecord::Base
     self.timezone||=Timezone.find_by(name: "UTC").id
   end
 
-  def remove_call_suffix
+  def remove_call_suffix #and prefix
     if self.callsign1['/'] then self.callsign1=User.remove_call_suffix(self.callsign1) end
     if self.callsign2['/'] then self.callsign2=User.remove_call_suffix(self.callsign2) end
   end
 
+  #look up usersids for the callsign on the contact date, create dummy user if not found
+  #(all contacts must have a user)
   def add_user_ids
     #look up callsign1 at contact.time
     user1=User.find_by_callsign_date(self.callsign1, self.time, true)
@@ -189,25 +193,16 @@ class Contact < ActiveRecord::Base
     if user2 then self.user2_id=user2.id end
   end
 
+  #extract asset2_codes from loc_desc2 text field but only if asset2_codes is blank
   def check_codes_in_location
     if self.asset2_codes==nil or self.asset2_codes==[] or self.asset2_codes==[""] then
-      assets=Asset.assets_from_code(self.loc_desc2)
-      self.asset2_codes=[]
-      assets.each do |asset| 
-        if asset and asset[:code] then
-          if asset2_codes==[] then 
-            self.asset2_codes=["#{asset[:code].to_s}"]
-          else
-            self.asset2_codes.push("#{asset[:code]}")
-          end
-        end
-      end
+      self.asset2_codes=Asset.check_codes_in_text(self.loc_desc2)
     end
   end
 
-  #do not allow activator & chaser to be in same place
-  #silently remove chasir location if this happens 
-  #better than failing a log upload or save where we have not ability to display error
+  # do not allow activator & chaser to be in same place
+  # - silently remove chaser location if this happens 
+  # - better than failing a log upload or save where we have not ability to display error
   def check_for_same_place_error
     self.asset2_codes.each do |code|
       if self.log.asset_codes.include? code then
@@ -218,21 +213,7 @@ class Contact < ActiveRecord::Base
     end
   end
 
-  def replace_master_codes2
-    newcodes=[]
-    self.asset2_codes.each do |code|
-      a=Asset.find_by(code: code)
-
-      if a and a.is_active==false
-        if a.master_code then
-          code=a.master_code
-        end
-      end
-      newcodes+=[code]
-    end
-    self.asset2_codes=newcodes.uniq
-  end
-
+  # look up child codes for asset2 using either location (ZL) or lookup-table (VK)
   def get_all_asset2_codes(asset)
     codes=self.asset2_codes
     newcodes=codes
@@ -243,6 +224,7 @@ class Contact < ActiveRecord::Base
     newcodes.uniq
   end
 
+  #update asset#_classes arrays to show asset type for all asset#_codes - in order
   def update_classes
     asset1_classes=[]
     self.asset1_codes.each do |code|
@@ -263,16 +245,21 @@ class Contact < ActiveRecord::Base
     self.asset2_classes=asset2_classes
   end
 
+  #add child asset#_codes for both parties
   def add_child_codes(asset)
     #just inherit log codes for assets1
     self.asset1_codes=self.log.asset_codes
  
     #then lookup codes for assets2
-    self.replace_master_codes2
+    #replace supplied replaced codes with new master codes
+    self.asset2_codes=Asset.find_master_codes(self.asset2_codes)
+    #look up children
     self.asset2_codes=self.get_all_asset2_codes(asset)
-    self.replace_master_codes2
   end
  
+  # update location1 and location2 to use most accurate location we have.
+  # preference logic: 
+  # user supplied => point based asset => area based asset (smallest area)
   def get_most_accurate_location(force = false)
     #just inherit location1 from log
     self.location1=self.log.location1
@@ -295,11 +282,12 @@ class Contact < ActiveRecord::Base
     location
   end
 
-
+  #trigger score and award updates for both parties to this contact
   def update_scores
     if self.user1_id then
       user=User.find_by_id(self.user1_id)
       if user then
+        self.log.update_qualified
         if Rails.env.production? then 
           user.outstanding=true;user.save;Resque.enqueue(Scorer) 
         elsif Rails.env.development? then
@@ -317,11 +305,13 @@ class Contact < ActiveRecord::Base
       if user then
         if Rails.env.production? then 
            user.outstanding=true;user.save;Resque.enqueue(Scorer) 
-        else 
+        elsif Rails.env.development? then
           user.update_score 
           user.check_awards
           user.check_completion_awards('region')
           user.check_completion_awards('district')
+        else 
+          logger.debug "Not updating score for test env call manually if needed"
         end
         user.check_awards
       end
@@ -331,6 +321,7 @@ class Contact < ActiveRecord::Base
   ###########################################################
   # HELPER ROUTINES
   ###########################################################
+  #create a log for current (unsaved) contact and return the log
   def create_log
     log=Log.new
     log.callsign1=self.callsign1
@@ -338,6 +329,8 @@ class Contact < ActiveRecord::Base
     log
   end
 
+  # Return a dulicate (unsaved) contact with the parties reversed from the 
+  # current contact (returned contact is to be used in memory, not to be saved)
   def reverse
     c=self.dup
     c.callsign1=self.callsign2
@@ -372,37 +365,41 @@ class Contact < ActiveRecord::Base
     c
   end
 
+  #convert supplied date / time from user's timezone to UTC
   def convert_user_timezone_to_utc(user)
     if self.time and self.date then
-        if user then tz=Timezone.find_by_id(user.timezone) else tz=Timezone.find_by(name: 'UTC') end
-        t=(self.date.strftime('%Y-%m-%d')+" "+self.time.strftime('%H:%M')).in_time_zone(tz.name)
-        self.date=t.in_time_zone('UTC').strftime('%Y-%m-%d')
-        self.time=t.in_time_zone('UTC')
-        self.timezone=Timezone.find_by(:name => 'UTC').id
+      if user then tz=Timezone.find_by_id(user.timezone) else tz=Timezone.find_by(name: 'UTC') end
+      t=(self.date.strftime('%Y-%m-%d')+" "+self.time.strftime('%H:%M')).in_time_zone(tz.name)
+      self.date=t.in_time_zone('UTC').strftime('%Y-%m-%d')
+      self.time=t.in_time_zone('UTC')
+      self.timezone=Timezone.find_by(:name => 'UTC').id
     end
   end
 
-
+  # return details of asset for first asset2_code in current contact that matches supplied type
+  # { asset: Asset, code: <code>, ...}
   def find_asset2_by_type(asset_type)
     asset2=nil
     asset_codes=self.asset2_codes
     asset_codes.each do |asset_code|
       if asset_code then 
-         asset=Asset.assets_from_code(asset_code)
-         if asset and asset.count>0 and asset.first[:type]==asset_type then
-            asset2=asset.first
-         end
+        asset=Asset.assets_from_code(asset_code)
+        if asset and asset.count>0 and asset.first[:type]==asset_type then
+           asset2=asset.first
+        end
       end
     end
     asset2
   end
 
-  def self.get_from_p2p(user_id,asset1,asset2,date)
-    contact=Contact.find_by("user1_id=#{user_id} and '#{asset1}'=ANY(asset1_codes) and '#{asset2}'=ANY(asset2_codes) and date>='#{date}'::date and date<('#{date}'::date+'1 day'::interval)")
-    if !contact then contact=Contact.find_by("user2_id=#{user_id} and '#{asset1}'=ANY(asset2_codes) and '#{asset2}'=ANY(asset1_codes) and date>='#{date}'::date and date<('#{date}'::date+'1 day'::interval)") end
+  #get the contact underlying a p2p (portable-to-portable) entry
+  def self.find_contact_from_p2p(user_id,asset1_code,asset2_code,date)
+    contact=Contact.find_by("user1_id=#{user_id} and '#{asset1_code}'=ANY(asset1_codes) and '#{asset2_code}'=ANY(asset2_codes) and date>='#{date}'::date and date<('#{date}'::date+'1 day'::interval)")
+    if !contact then contact=Contact.find_by("user2_id=#{user_id} and '#{asset1_code}'=ANY(asset2_codes) and '#{asset2_code}'=ANY(asset1_codes) and date>='#{date}'::date and date<('#{date}'::date+'1 day'::interval)") end
     contact
   end 
 
+  #convert supplied frequency to meter-band
   def self.band_from_frequency(frequency)
     band=""
     if frequency then 
@@ -439,6 +436,7 @@ class Contact < ActiveRecord::Base
     band
   end
 
+  #convert the supplied meter-band to bottom-band-edge frequency
   def self.frequency_from_band(band)
     band=band.downcase
     frequency=nil
@@ -474,6 +472,7 @@ class Contact < ActiveRecord::Base
     frequency
   end
 
+  #convert the supplied frequency to a hema-style frequency-band
   def self.hema_band_from_frequency(frequency)
     band=""
     if frequency then 

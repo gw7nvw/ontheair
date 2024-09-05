@@ -14,9 +14,11 @@ class UserQualifiedTest < ActiveSupport::TestCase
     contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code])
     contact2=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code])
     contact3=create_test_contact(user1,user4,log_id: log.id, asset1_codes: [asset1.code])
+
     assert user1.qualified(asset_type: 'park', by_day: true)==[], "Location not qualified with 3 contacts: "+user1.qualified(asset_type: 'park', by_day: true).to_json
  
     contact4=create_test_contact(user1,user5,log_id: log.id, asset1_codes: [asset1.code])
+
     assert user1.qualified(asset_type: 'park')==[asset1.code], "Location qualified with 4 contacts: "+user1.qualified(asset_type: 'park').to_json
   end
 
@@ -33,6 +35,7 @@ class UserQualifiedTest < ActiveSupport::TestCase
     contact2=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code])
     contact3=create_test_contact(user1,user4,log_id: log.id, asset1_codes: [asset1.code])
     contact4=create_test_contact(user1,user5,log_id: log.id, asset1_codes: [asset1.code])
+    log.reload
     assert user1.qualified(asset_type: 'park')==[], "Minor assets not listed if not requested: "+user1.qualified(asset_type: 'park').to_json
     assert user1.qualified(asset_type: 'park', include_minor: false)==[], "Minor assets not listed if not requested: "+user1.qualified(asset_type: 'park', include_minor: false).to_json
     assert user1.qualified(asset_type: 'park', include_minor: true)==[asset1.code], "Minor assets listed if requested: "+user1.qualified(asset_type: 'park', include_minor: true).to_json
@@ -52,6 +55,7 @@ class UserQualifiedTest < ActiveSupport::TestCase
     contact2=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code, asset2.code])
     contact3=create_test_contact(user1,user4,log_id: log.id, asset1_codes: [asset1.code, asset2.code])
     contact4=create_test_contact(user1,user5,log_id: log.id, asset1_codes: [asset1.code, asset2.code])
+    log.reload
     assert user1.qualified(asset_type: 'park').sort==[asset1.code, asset2.code].sort, "Both locations qualified: "+user1.qualified(asset_type: 'park').to_json
   end
 

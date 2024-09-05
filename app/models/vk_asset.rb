@@ -1,10 +1,10 @@
 class VkAsset < ActiveRecord::Base
 
+#fake ZL asset fields
 def url
   url='/vkassets/'+self.get_safecode
 end
 
-#fake ZL asset fields
 def minor
    false
 end

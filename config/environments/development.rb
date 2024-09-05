@@ -29,6 +29,6 @@ config.action_mailer.smtp_settings = {
   # Debug mode disables concatenation and preprocessing of assets.
   # This option may cause significant delays in view rendering with a large
   # number of complex assets.
-  config.assets.debug = true
-config.log_level = :info
+  config.assets.info = true
+config.log_level = :debug
 end

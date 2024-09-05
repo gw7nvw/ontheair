@@ -3,6 +3,7 @@ require File.expand_path('../../config/environment', __FILE__)
 require 'rails/test_help'
 
 Rails.application.load_seed
+Rails.logger = Logger.new(STDOUT)
 Rails.logger.level = 3
 
 class ActiveSupport::TestCase
@@ -53,6 +54,22 @@ District.create(district_code: 'CO', name: "Central Otago", region_code: "OT")
     latlon = factory.point(x, y)
   end
 
+  def create_test_vkasset(params={})
+    if !params[:name] then
+      params[:name]=$last_asset
+      $last_asset=$last_asset.next
+    end
+
+    if params[:code_prefix] then
+      params[:code]=params[:code_prefix]+$last_asset_code.to_s.rjust(3, '0')
+      $last_asset_code=$last_asset_code+1
+      params.delete(:code_prefix)
+    end
+
+    asset=VkAsset.create(params)
+    asset.reload
+  end
+
   def create_test_asset(params={})
      if !params[:asset_type] then params[:asset_type]="hut" end
      if !params[:minor] then params[:minor]=false end
@@ -79,7 +96,7 @@ District.create(district_code: 'CO', name: "Central Otago", region_code: "OT")
   end
 
   def create_test_log(user, params={})
-     if !params[:date] then params[:date]==Time.now() end
+     if !params[:date] then params[:date]=Time.now() end
      if !params[:callsign1] then params[:callsign1]=user.callsign end
      if !params[:user1_id] then params[:user1_id]=user.id end 
      if !params[:asset_codes] then params[:asset_codes]=[] end 

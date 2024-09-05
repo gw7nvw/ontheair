@@ -364,66 +364,56 @@ end
 #       Note: QRP filter is not supported
 # Returns:
 #       codes: Array of ["(asset code)"]
-# TODO: this method is very slow.  Improve it
+# NOTE: updated method using qualifed data cached in each log. Will no longer count
+#       activations split over multiple logs
 ##########################################################################################
 def qualified(params={})
   if !params[:asset_type] then 
     raise "asset_type is required in User.qualified"
   end
-  codes=self.activations(asset_type: params[:asset_type], include_external: params[:include_external], include_minor: params[:include_minor])
 
-  codes=self.filter_by_min_qso(codes,params)
+  date_query="'forever'"
 
-  codes=codes
-end
-
-# Filter list of ["asset_code"] (or ["asset_code date"]) by min QSO requirements for 
-# activations of that asset by this user
-def filter_by_min_qso(codes,params={})
-  asset_type='all'
-  use_external=false
-  date_group="'forever'"
-
-  if params[:asset_type] then asset_type=params[:asset_type] end
-  if params[:by_year] then 
-     date_group="extract('year' from date)"
+  if params[:by_day] then
+    date_query="date::date"
   end
-  if params[:by_day] then 
-     date_group="date::date"
+  if params[:by_year] then
+    date_query="date_part('year', date)"
   end
 
-  at=AssetType.find_by(name: asset_type)
-  result_codes=[]
+  if params[:include_minor]==true then minor_query='true' else minor_query='a.minor is not true' end
+
+  qual_codes=Log.find_by_sql [" 
+    select distinct concat(als.asset_codes, ' ', #{date_query}) as asset_codes from 
+      (
+        select date,
+          unnest(asset_codes) as asset_codes, 
+          unnest(asset_classes) as asset_classes,
+          unnest(qualified) as qualified 
+        from logs
+        where user1_id=#{self.id} 
+          and '#{params[:asset_type]}'=ANY(asset_classes)
+      ) as als
+    inner join assets a on a.code=als.asset_codes
+    where als.asset_classes='#{params[:asset_type]}'
+      and als.qualified=true
+      and #{minor_query};  
+  "] 
+  
   qual_codes2=[]
   if params[:include_external] then
+    at=AssetType.find_by(name: params[:asset_type])
+ 
     qual_codes2=SotaActivation.find_by_sql [ " 
-        select concat(summit_code, ' ', "+date_group+") as summit_code 
+        select distinct concat(summit_code, ' ', "+date_query+") as summit_code 
         from sota_activations 
-        where user_id='#{self.id}' and qso_count>=#{at.min_qso} and summit_code in (?)
-       ;", codes ]
+        where user_id='#{self.id}' 
+          and qso_count>=#{at.min_qso} 
+          and asset_type='#{params[:asset_type]}';
+       "]
   end
-  if at and at.min_qso and at.min_qso>0 then
-      qual_codes=Asset.find_by_sql [ " 
-           select code, 
-             unnest(array(
-               select concat(a.code, ' ', period) as periodcode from (
-                 select "+date_group+" as period, count(qso_count) as act_count from (
-                   select * from (
-                     select date, count(*) as qso_count from (
-                       select distinct callsign1, callsign2, date::date as date from (
-                           select id, callsign1, callsign2, date from contacts c where (c.user1_id='#{self.id}' and a.code=ANY(c.asset1_codes)) 
-                         union 
-                           select id, callsign2 as callsign1, callsign1 as callsign2, date  from contacts c where  (c.user2_id='#{self.id}' and a.code=ANY(c.asset2_codes))
-                       ) as uniquecontacts 
-                     ) as uniqueactivatons group by date 
-                   ) as actcount where qso_count>=#{at.min_qso} 
-                 ) as periodcount group by period
-               ) as validcount where act_count>0 group by periodcode
-             )) as periodcode from assets a
-             where a.code in (?)
-          ;", codes ]
-  end
-  result_codes=qual_codes.map{|qc| qc.periodcode}
+
+  result_codes=qual_codes.map{|qc| qc.asset_codes}
   result_codes+=qual_codes2.map{|qc| qc.summit_code}
   result_codes=result_codes.uniq.map{|rc| rc.split(' ')[0]}
 end
@@ -447,10 +437,10 @@ def update_score
     self.score_total[asset_type.name]=0
     self.activated_count[asset_type.name]=self.activations(asset_type: asset_type.name, include_external: include_external).count
     self.activated_count_total[asset_type.name]=self.activations(by_year: true, asset_type: asset_type.name, include_external: include_external).count
-    self.qualified_count[asset_type.name]=self.qualified(asset_type: asset_type.name,include_external: include_external).count
-    self.qualified_count_total[asset_type.name]=self.qualified(by_year: true, asset_type: asset_type.name, include_external: include_external).count
     self.chased_count[asset_type.name]=self.chased(asset_type: asset_type.name).count
     self.chased_count_total[asset_type.name]=self.chased(asset_type: asset_type.name, by_day: true).count
+    self.qualified_count[asset_type.name]=self.qualified(asset_type: asset_type.name,include_external: include_external).count
+    self.qualified_count_total[asset_type.name]=self.qualified(by_year: true, asset_type: asset_type.name, include_external: include_external).count
   end
     
   qrp=AssetType.new
@@ -465,7 +455,7 @@ def update_score
   self.chased_count_total["qrp"]=self.chased(qrp: true, by_day: true).count
 
   self.score['elevation']=self.elevation_bagged(include_external: true)
-  self.qualified_count_total['elevation']=self.elevation_qualified(include_external: true, by_day: true)
+  #self.qualified_count_total['elevation']=self.elevation_qualified(include_external: true, by_day: true)
   self.activated_count_total['elevation']=self.elevation_activated(include_external: true, by_day: true)
   self.chased_count_total['elevation']=self.elevation_chased(include_external: true, by_day: true)
 

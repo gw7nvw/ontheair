@@ -1324,6 +1324,36 @@ def self.get_lake_access
   end
 end
 
+def self.find_master_codes(codes)
+  newcodes=[]
+  codes.each do |code|
+  a=Asset.find_by(code: code)
+
+    if a and a.is_active==false
+      if a.master_code then
+        code=a.master_code
+      end
+    end
+    newcodes+=[code]
+  end
+  newcodes.uniq
+end
+
+def self.check_codes_in_text(location_text)
+      assets=Asset.assets_from_code(location_text)
+      asset_codes=[]
+      assets.each do |asset|
+        if asset and asset[:code] then
+          if asset_codes==[] then
+            asset_codes=["#{asset[:code].to_s}"]
+          else
+            asset_codes.push("#{asset[:code]}")
+          end
+        end
+      end
+   asset_codes
+end
+
 def self.get_most_accurate_location(codes, loc_source="")
   loc_asset=nil
   location=nil
