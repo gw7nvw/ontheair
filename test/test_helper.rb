@@ -126,7 +126,7 @@ District.create(district_code: 'CO', name: "Central Otago", region_code: "OT")
     if !params[:qso_count] then params[:qso_count]=1 end
     params[:user_id]=user1.id
 
-    activation=SotaActivation.create(params)
+    activation=ExternalActivation.create(params)
     activation
   end
 
@@ -139,10 +139,10 @@ District.create(district_code: 'CO', name: "Central Otago", region_code: "OT")
     if !params[:asset_type] then params[:asset_type]=asset1.asset_type end
     if !params[:band] then params[:band]='7MHz' end
     if !params[:mode] then params[:mode]='SSB' end
-    if !params[:sota_activation_id] then params[:sota_activation_id]=activation.sota_activation_id end
+    if !params[:external_activation_id] then params[:external_activation_id]=activation.external_activation_id end
     params[:user_id]=user2.id
 
-    chase=SotaChase.create(params)
+    chase=ExternalChase.create(params)
     chase
   end
 end

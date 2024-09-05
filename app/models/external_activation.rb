@@ -1,4 +1,4 @@
-class SotaActivation < ActiveRecord::Base
+class ExternalActivation < ActiveRecord::Base
 
 before_save { self.before_save_actions }
 
@@ -20,7 +20,7 @@ end
 def self.import_sota
   summits=Asset.where(asset_type: "summit")
   summits.each do |summit|
-    self.update_sota_activation(summit)
+    self.update_external_activation(summit)
   end
 end
 
@@ -31,7 +31,7 @@ def self.import_pota
   end
 end
 
-def self.update_sota_activation(summit)
+def self.update_external_activation(summit)
     #log in
 
     jscreds=Keycloak::Client.get_token(SOTA_USER, SOTA_PASSWORD, "sotadata", SOTA_SECRET)
@@ -63,9 +63,9 @@ def self.update_sota_activation(summit)
         newcount=0
         #data["activations"].each do |activation|
         data.each do |activation|
-          sa=SotaActivation.new
+          sa=ExternalActivation.new
           sa.asset_type='summit'
-          sa.sota_activation_id=activation["id"].to_i
+          sa.external_activation_id=activation["id"].to_i
           #sa.callsign=activation["ownCallsign"].strip
           sa.callsign=User.remove_call_suffix(activation["ownCallsign"].strip)
           puts "Activator: "+sa.callsign
@@ -76,7 +76,7 @@ def self.update_sota_activation(summit)
           sa.qso_count=activation["qsos"]
           #sa.qso_count=activation["QSOs"]
           activation_ids+=[activation["id"]]
-          dups=SotaActivation.where(sota_activation_id: sa.sota_activation_id).count
+          dups=ExternalActivation.where(external_activation_id: sa.external_activation_id).count
           if dups==0 then
             puts sa.callsign+": New!"
             newcount+=1
@@ -119,9 +119,9 @@ def self.update_sota_activation(summit)
           newcount=0
           data["chases"].each do |chase|
             if chase["SummitCode"].strip==summit.code then #check not chaseof another summit same day
-              sc=SotaChase.new
+              sc=ExternalChase.new
               sc.asset_type='summit'
-              sc.sota_activation_id=aid
+              sc.external_activation_id=aid
               sc.callsign=User.remove_call_suffix(chase["OwnCallsign"].strip)
               sc.band=chase["Band"]
               sc.mode=chase["Mode"]
@@ -130,7 +130,7 @@ def self.update_sota_activation(summit)
               #sc.summit_sota_id=summitId
               sc.date=actdate
               sc.time=Time.parse(actdate+" "+acttime+" UTC")
-              dups=SotaChase.where(sc.attributes.except("summit_sota_id","id", "updated_at", "created_at","user_id")).count
+              dups=ExternalChase.where(sc.attributes.except("summit_sota_id","id", "updated_at", "created_at","user_id")).count
               if dups==0 then
                 puts sc.callsign+": New!"
                 newcount+=1
@@ -166,14 +166,14 @@ def self.update_pota_activation(asset)
       puts "Activations: "+data.count.to_s
       newcount=0
       data.each do |activation|
-        sa=SotaActivation.new
+        sa=ExternalActivation.new
         sa.asset_type='pota park'
         sa.callsign=User.remove_call_suffix(activation["activeCallsign"].strip)
         sa.summit_code=asset.code.strip
         sa.summit_sota_id=nil
         if activation["qso_date"] then sa.date=activation["qso_date"].to_date  end
         sa.qso_count=activation["totalQSOs"]
-        dups=SotaActivation.where(sa.attributes.except("id", "updated_at", "created_at","user_id")).count
+        dups=ExternalActivation.where(sa.attributes.except("id", "updated_at", "created_at","user_id")).count
         if dups==0 then
           newcount+=1
           sa.save

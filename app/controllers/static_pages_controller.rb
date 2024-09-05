@@ -13,7 +13,7 @@ class StaticPagesController < ApplicationController
       timeNow=Time.now()
       as=AdminSettings.last
       if !as.last_sota_activation_update_at or (as.last_sota_activation_update_at+30.days)<timeNow then
-        Resque.enqueue(UpdateSotaActivations)    
+        Resque.enqueue(UpdateExternalActivations)    
       end
 
 

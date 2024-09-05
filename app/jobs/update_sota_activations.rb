@@ -1,4 +1,4 @@
-class UpdateSotaActivations
+class UpdateExternalActivations
   @queue = :ota_scheduled
 
   def self.perform()   
@@ -7,8 +7,8 @@ class UpdateSotaActivations
     if !as.last_sota_activation_update_at or (as.last_sota_activation_update_at+30.days)<=Time.now() then
       as.last_sota_activation_update_at=Time.now()
       as.save
-      SotaActivation.import_sota
-      SotaActivation.import_pota
+      ExternalActivation.import_sota
+      ExternalActivation.import_pota
     end
   end
 end

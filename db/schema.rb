@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240905012110) do
+ActiveRecord::Schema.define(version: 20240905193547) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -289,6 +289,34 @@ ActiveRecord::Schema.define(version: 20240905012110) do
     t.string "itu_zone"
     t.string "cq_zone"
     t.string "continent_code"
+  end
+
+  create_table "external_activations", force: true do |t|
+    t.string   "callsign"
+    t.string   "summit_code"
+    t.integer  "summit_sota_id"
+    t.date     "date"
+    t.integer  "qso_count"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "user_id"
+    t.integer  "external_activation_id"
+    t.string   "asset_type"
+  end
+
+  create_table "external_chases", force: true do |t|
+    t.string   "callsign"
+    t.string   "summit_code"
+    t.integer  "summit_sota_id"
+    t.integer  "user_id"
+    t.integer  "external_activation_id"
+    t.string   "band"
+    t.string   "mode"
+    t.date     "date"
+    t.time     "time"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "asset_type"
   end
 
   create_table "external_spots", force: true do |t|
@@ -650,34 +678,6 @@ ActiveRecord::Schema.define(version: 20240905012110) do
 
   add_index "sessions", ["session_id"], :name => "index_sessions_on_session_id", :unique => true
   add_index "sessions", ["updated_at"], :name => "index_sessions_on_updated_at"
-
-  create_table "sota_activations", force: true do |t|
-    t.string   "callsign"
-    t.string   "summit_code"
-    t.integer  "summit_sota_id"
-    t.date     "date"
-    t.integer  "qso_count"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.integer  "user_id"
-    t.integer  "sota_activation_id"
-    t.string   "asset_type"
-  end
-
-  create_table "sota_chases", force: true do |t|
-    t.string   "callsign"
-    t.string   "summit_code"
-    t.integer  "summit_sota_id"
-    t.integer  "user_id"
-    t.integer  "sota_activation_id"
-    t.string   "band"
-    t.string   "mode"
-    t.date     "date"
-    t.time     "time"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.string   "asset_type"
-  end
 
   create_table "sota_peaks", force: true do |t|
     t.string   "summit_code"

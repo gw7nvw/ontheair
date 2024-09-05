@@ -135,7 +135,7 @@ class UsersController < ApplicationController
 #      @chaseSites=chaseSites1+chaseSites2
       @callsign=UserCallsign.new
       @callsign.user_id=@user.id
-#      as=SotaActivation.find_by_sql [ "select * from sota_activations where user_id="+@user.id.to_s+"" ]
+#      as=ExternalActivation.find_by_sql [ "select * from external_activations where user_id="+@user.id.to_s+"" ]
 
 #     as.each do |a|
 #        c=Contact.new

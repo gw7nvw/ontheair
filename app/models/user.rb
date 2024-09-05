@@ -282,7 +282,7 @@ def chased(params={})
   codes1=Contact.find_by_sql [" select distinct(asset1_codes"+date_query+") as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id="+self.id.to_s+" and "+qrp_query1+") as c inner join assets a on a.code = c.asset1_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
   codes2=Contact.find_by_sql [" select distinct(asset2_codes"+date_query+") as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id="+self.id.to_s+" and "+qrp_query2+") as c inner join assets a on a.code = c.asset2_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
   if include_external==true
-    codes3=SotaChase.find_by_sql [ " select concat(summit_code"+date_query_ext+") as summit_code from sota_chases where user_id='#{self.id}';"]
+    codes3=ExternalChase.find_by_sql [ " select concat(summit_code"+date_query_ext+") as summit_code from external_chases where user_id='#{self.id}';"]
   end
   codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(","), codes3.map{|c| c.summit_code}.join(",")].join(",").split(',').uniq
   codes=codes.select{ |c| c.length>0 }
@@ -345,7 +345,7 @@ def activations(params={})
   codes1=Contact.find_by_sql [" select distinct(asset1_codes"+date_query+") as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+" and "+qrp_query1+") as c inner join assets a on a.code = c.asset1_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
   codes2=Contact.find_by_sql [" select distinct(asset2_codes"+date_query+") as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and "+qrp_query2+") as c inner join assets a on a.code = c.asset2_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
   if include_external==true
-    codes3=SotaActivation.find_by_sql [ " select concat(summit_code"+date_query_ext+") as summit_code from sota_activations where user_id='#{self.id}';"]
+    codes3=ExternalActivation.find_by_sql [ " select concat(summit_code"+date_query_ext+") as summit_code from external_activations where user_id='#{self.id}';"]
   end
   codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(","), codes3.map{|c| c.summit_code}.join(",")].join(",").split(',').uniq
   codes=codes.select{ |c| c.length>0 }
@@ -404,9 +404,9 @@ def qualified(params={})
   if params[:include_external] then
     at=AssetType.find_by(name: params[:asset_type])
  
-    qual_codes2=SotaActivation.find_by_sql [ " 
+    qual_codes2=ExternalActivation.find_by_sql [ " 
         select distinct concat(summit_code, ' ', "+date_query+") as summit_code 
-        from sota_activations 
+        from external_activations 
         where user_id='#{self.id}' 
           and qso_count>=#{at.min_qso} 
           and asset_type='#{params[:asset_type]}';
@@ -905,7 +905,7 @@ def area_activations(scope, include_minor=false)
           where user2_id="+self.id.to_s+"
         ) union (
           select date, summit_code as asset1_code 
-          from sota_activations 
+          from external_activations 
           where user_id="+self.id.to_s+"
         )
       ) as foo 
@@ -950,7 +950,7 @@ def area_chases(scope, include_minor=false)
           where user2_id="+self.id.to_s+"
         ) union (
           select date, summit_code as asset1_code 
-          from sota_chases 
+          from external_chases 
           where user_id="+self.id.to_s+"
         )
       ) as foo 
@@ -1284,12 +1284,12 @@ def self.reassign_userids_used_by_callsign(callsign)
       c.save
   end
 
-  sas=SotaActivation.find_by_sql ["select * from sota_activations where callsign=?", callsign]
+  sas=ExternalActivation.find_by_sql ["select * from external_activations where callsign=?", callsign]
   sas.each do |sa|
      sa.save
   end
 
-  scs=SotaChase.find_by_sql ["select * from sota_chases where callsign=?", callsign]
+  scs=ExternalChase.find_by_sql ["select * from external_chases where callsign=?", callsign]
   scs.each do |sc|
      sc.save
   end

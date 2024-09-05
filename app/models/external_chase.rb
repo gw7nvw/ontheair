@@ -1,4 +1,4 @@
-class SotaChase < ActiveRecord::Base
+class ExternalChase < ActiveRecord::Base
 
 before_save { self.before_save_actions }
 

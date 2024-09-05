@@ -27,8 +27,8 @@ def assign_calculated_fields
   if !self.valid_from then self.valid_from=Time.new('1900-01-01') end
   if self.minor!=true then self.minor=false end
 
-  self.district=self.add_district()
-  self.region=self.add_region()
+  if !self.district then self.district=self.add_district() end
+  if !self.region then self.region=self.add_region() end
 
   if self.code==nil or self.code=="" then
     self.code=Asset.get_next_code(self.asset_type,self.region)
@@ -174,13 +174,13 @@ def activated_by?(callsign)
 
     cs=Contact.find_by_sql [ ' select id from contacts where (callsign1 = ? and ? = ANY(asset1_codes)) or (callsign2 = ? and ? = ANY(asset2_codes)) limit 1 ', callsign, self.code, callsign, self.code ]
 
-    as=SotaActivation.find_by_sql [ "select * from sota_activations where summit_code='"+self.code+"' and callsign = '"+callsign+"' limit 1" ]
+    as=ExternalActivation.find_by_sql [ "select * from external_activations where summit_code='"+self.code+"' and callsign = '"+callsign+"' limit 1" ]
 
     if (as and as.count>0) or (cs and cs.count>0) then true else false end
   else
     cs=Contact.find_by_sql [ ' select id from contacts where (? = ANY(asset1_codes)) or (? = ANY(asset2_codes)) limit 1 ', self.code, self.code ]
 
-    as=SotaActivation.find_by_sql [ "select * from sota_activations where summit_code='"+self.code+"' limit 1" ]
+    as=ExternalActivation.find_by_sql [ "select * from external_activations where summit_code='"+self.code+"' limit 1" ]
     if (as and as.count>0) or (cs and cs.count>0) then true else false end
   end
 
@@ -191,13 +191,13 @@ def chased_by?(callsign)
     callsign=callsign.upcase
     cs=Contact.find_by_sql [ ' select id from contacts where (callsign2 = ? and ? = ANY(asset1_codes)) or (callsign1 = ? and ? = ANY(asset2_codes)) limit 1 ', callsign, self.code, callsign, self.code ]
 
-    as=SotaChase.find_by_sql [ "select * from sota_chases where summit_code='"+self.code+"' and callsign = '"+callsign+"' limit 1" ]
+    as=ExternalChase.find_by_sql [ "select * from external_chases where summit_code='"+self.code+"' and callsign = '"+callsign+"' limit 1" ]
 
     if (as and as.count>0) or (cs and cs.count>0) then true else false end
   else
     cs=Contact.find_by_sql [ ' select id from contacts where (? = ANY(asset1_codes)) or (? = ANY(asset2_codes)) limit 1 ', self.code, self.code ]
 
-    as=SotaChase.find_by_sql [ "select * from sota_chases where summit_code='"+self.code+"' limit 1" ]
+    as=ExternalChase.find_by_sql [ "select * from external_chases where summit_code='"+self.code+"' limit 1" ]
 
     if (as and as.count>0) or (cs and cs.count>0) then true else false end
   end
@@ -215,7 +215,7 @@ def first_activated
  end
 
  if self.asset_type=="summit"  or self.asset_type=="pota park"then
-   as=SotaActivation.find_by_sql [ "select * from sota_activations where summit_code='"+self.code+"' order by date asc limit 1" ]
+   as=ExternalActivation.find_by_sql [ "select * from external_activations where summit_code='"+self.code+"' order by date asc limit 1" ]
    if as and as[0] and (c==nil or as[0].date<c.date) then
      c=Contact.new
      c.callsign1=as[0].callsign
@@ -224,7 +224,7 @@ def first_activated
      c.callsign2=""
      c.id=-99
      #find first chase
-     if as[0].sota_activation_id then acs=SotaChase.find_by_sql [ "select * from sota_chases where sota_activation_id=#{as[0].sota_activation_id} order by time asc limit 1" ] end
+     if as[0].external_activation_id then acs=ExternalChase.find_by_sql [ "select * from external_chases where external_activation_id=#{as[0].external_activation_id} order by time asc limit 1" ] end
      if acs and acs.count>0 then
        ac=acs.first
        c.callsign2=ac.callsign
@@ -650,14 +650,14 @@ def self.assets_from_code(codes)
 	    if p.valid_to!="0001-01-01 00:00:00" then logger.debug "retured summit: "+a.code; a.valid_to=p.valid_to else a.valid_to=nil end
 	    if p.valid_from!="0001-01-01 00:00:00" then a.valid_from=p.valid_from end
             if a.changed? and (a.changed-['valid_from']).count>0 then 
-              puts"Changed: "+a.changed.to_json
+              logger.debug"Changed: "+a.changed.to_json
   	      a.save
               a.add_region
               a.add_district
               a.add_sota_activation_zone 
               a.get_access
               a.add_links
-              puts "Create/Updated: "+a.code
+              logger.debug "Create/Updated: "+a.code
             end
 	    a
 	end
@@ -861,25 +861,25 @@ def self.assets_from_code(codes)
 	  count
 	end
 
-	def sota_activators
-	  cals=SotaActivation.where(summit_code: self.code);
+	def external_activators
+	  cals=ExternalActivation.where(summit_code: self.code);
 	  callsigns=cals.map{|cal| if cal then cal.callsign end};
 	  users=User.where(callsign: callsigns).order(:callsign)
 	end
 
-	def sota_chasers
-	  cals=SotaChase.where(summit_code: self.code);
+	def external_chasers
+	  cals=ExternalChase.where(summit_code: self.code);
 	  callsigns=cals.map{|cal| cal.callsign};
 	  users=User.where(callsign: callsigns).order(:callsign)
 	end
 
 	def activators_including_sota
-	  users=self.sota_activators+self.activators
+	  users=self.external_activators+self.activators
 	  users.uniq
 	end
 
 	def chasers_including_sota
-	  users=self.sota_chasers+self.chasers
+	  users=self.external_chasers+self.chasers
 	  users.uniq
 	end
 
@@ -897,7 +897,7 @@ def self.assets_from_code(codes)
 	end
 
 	def baggers_including_sota
-	  users=self.baggers+self.sota_activators
+	  users=self.baggers+self.external_activators
 	  users.uniq
 	end
         def traditional_owners
@@ -928,6 +928,7 @@ def self.assets_from_code(codes)
 	def add_region
 	    if self.location then region=Region.find_by_sql [ %q{select id, sota_code, name from regions where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), "boundary");} ] else logger.error "ERROR: place without location. Name: "+self.name+", id: "+self.id.to_s end
 	    if self.id and region and region.count>0 and self.region != region.first.sota_code then
+              logger.debug "updating region to "+region.first.to_json
 	      ActiveRecord::Base.connection.execute("update assets set region='"+region.first.sota_code+"' where id="+self.id.to_s)
 	    end
 
