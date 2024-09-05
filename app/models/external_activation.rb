@@ -20,7 +20,7 @@ end
 def self.import_sota
   summits=Asset.where(asset_type: "summit")
   summits.each do |summit|
-    self.update_external_activation(summit)
+    self.update_sota_activation(summit)
   end
 end
 
@@ -31,7 +31,7 @@ def self.import_pota
   end
 end
 
-def self.update_external_activation(summit)
+def self.update_sota_activation(summit)
     #log in
 
     jscreds=Keycloak::Client.get_token(SOTA_USER, SOTA_PASSWORD, "sotadata", SOTA_SECRET)

@@ -335,22 +335,22 @@
 
    <div class="sectiontitle_bold">Chased by:</div>
    <div class="erow">
-     <% if not @asset.chasers_including_sota or (@asset.chasers_including_sota and @asset.chasers_including_sota.count==0) then %>
+     <% if not @asset.chasers_including_external or (@asset.chasers_including_external and @asset.chasers_including_external.count==0) then %>
         <i>No-one has chased this place yet. Be the first!</i></br>
      <% end %>
 
-     <% @asset.chasers_including_sota.each do |user| %>
+     <% @asset.chasers_including_external.each do |user| %>
          <%=link_to user.callsign, '/users/'+user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp
      <% end %>
    </div> 
 
    <div class="sectiontitle_bold">Activated by:</div>
    <div class="erow">
-     <% if not @asset.activators_including_sota or (@asset.activators_including_sota and @asset.activators_including_sota.count==0) then %>
+     <% if not @asset.activators_including_external or (@asset.activators_including_external and @asset.activators_including_external.count==0) then %>
         <i>No-one has activated this place yet. Be the first!</i></br>
      <% end %>
 
-     <% @asset.activators_including_sota.each do |user| %>
+     <% @asset.activators_including_external.each do |user| %>
          <%=link_to user.callsign, '/users/'+user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp
      <% end %>
    </div> 

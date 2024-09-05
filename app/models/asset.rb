@@ -873,12 +873,12 @@ def self.assets_from_code(codes)
 	  users=User.where(callsign: callsigns).order(:callsign)
 	end
 
-	def activators_including_sota
+	def activators_including_external
 	  users=self.external_activators+self.activators
 	  users.uniq
 	end
 
-	def chasers_including_sota
+	def chasers_including_external
 	  users=self.external_chasers+self.chasers
 	  users.uniq
 	end

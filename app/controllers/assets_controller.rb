@@ -81,7 +81,7 @@ include PostsHelper
     if signed_in? then
       a=Asset.find_by(safecode: params[:id])
       if a and a.asset_type=='summit' then
-        ExternalActivation.update_external_activation(a)
+        ExternalActivation.update_sota_activation(a)
       end
     else
       flash[:error]="You must be signed in to do this"
