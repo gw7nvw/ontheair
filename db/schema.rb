@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240905193547) do
+ActiveRecord::Schema.define(version: 20240906004152) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -39,12 +39,12 @@ ActiveRecord::Schema.define(version: 20240905193547) do
   end
 
   create_table "asset_links", force: true do |t|
-    t.string "parent_code"
-    t.string "child_code"
+    t.string "contained_code"
+    t.string "containing_code"
   end
 
-  add_index "asset_links", ["child_code"], :name => "index_asset_links_on_child_code"
-  add_index "asset_links", ["parent_code"], :name => "index_asset_links_on_parent_code"
+  add_index "asset_links", ["contained_code"], :name => "index_asset_links_on_contained_code"
+  add_index "asset_links", ["containing_code"], :name => "index_asset_links_on_containing_code"
 
   create_table "asset_photo_links", force: true do |t|
     t.string   "asset_code"

@@ -22,7 +22,7 @@
    <%= render 'flash' %>
    <div class="erow" id="email">
       <div class="rowtitle"><%= "Id:" %></div>
-      <% url=@asset.get_external_url %>
+      <% url=@asset.external_url %>
       <% if url then %> 
         <div class="rowtext"><%= link_to @asset.code, url, target: "_blank" %><img src="/assets/external-link-symbol.png"></div>
       <% else %>
@@ -92,7 +92,7 @@
       <div class="rowtitle">Contains</div>
       <div class="rowtext">
        <table>
-         <% @asset.parents.each do |parent| %>
+         <% @asset.contains_assets.each do |parent| %>
            <tr>
              <td>
                 <%=parent.award%>

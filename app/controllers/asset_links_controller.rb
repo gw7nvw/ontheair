@@ -3,9 +3,9 @@ before_action :signed_in_user
 
 def create
   if signed_in?  then
-   if ca=Asset.find_by(code: params[:asset_link][:child_code].gsub('_','/')) and 
-      cp=Asset.find_by(code: params[:asset_link][:parent_code].gsub('_','/')) then
-     if awl=AssetLink.create(child_code: ca.code, parent_code: cp.code) then
+   if ca=Asset.find_by(code: params[:asset_link][:containing_code].gsub('_','/')) and 
+      cp=Asset.find_by(code: params[:asset_link][:contained_code].gsub('_','/')) then
+     if awl=AssetLink.create(containing_code: ca.code, contained_code: cp.code) then
        awl.save
        flash[:success]="Link created"
      else
@@ -42,7 +42,7 @@ def delete
 end
   private
   def asset_web_link_params
-    params.require(:asset_web_link).permit(:child_code, :parent_code)
+    params.require(:asset_web_link).permit(:containing_code, :contained_code)
   end
 
 end

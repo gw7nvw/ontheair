@@ -53,7 +53,7 @@ class LogChildrenTest < ActiveSupport::TestCase
     asset1=create_test_asset(asset_type: 'hut') #parent with no location
     asset2=create_test_asset(asset_type: 'park', location: create_point(173,-45), test_radius: 0.1)
     log=create_test_log(user1, asset_codes: [asset1.code])
-    assert log.asset_codes.sort==[asset1.code].sort, "No children added as we have no location"
+    assert log.asset_codes.sort==[asset1.code].sort, "No contained_by_assets added as we have no location"
   end
 
   test "can handle polygon asset with no location or boundary" do
@@ -61,10 +61,10 @@ class LogChildrenTest < ActiveSupport::TestCase
     asset1=create_test_asset(asset_type: 'park') #parent with no polygon or location
     asset2=create_test_asset(asset_type: 'park', location: create_point(173,-45), test_radius: 0.1)
     log=create_test_log(user1, asset_codes: [asset1.code])
-    assert log.asset_codes.sort==[asset1.code].sort, "No children added as we have no location"
+    assert log.asset_codes.sort==[asset1.code].sort, "No contained_by_assets added as we have no location"
   end
 
-  test "vk_assets use lookup table to find children" do
+  test "vk_assets use lookup table to find contained_by_assets" do
     user1=create_test_user
     asset1=create_test_vkasset(award: 'WWFF', code_prefix: 'VKFF-0')
     asset2=create_test_vkasset(award: 'POTA', code_prefix: 'AU-0')
@@ -73,11 +73,11 @@ class LogChildrenTest < ActiveSupport::TestCase
     assert log.asset_codes.sort==[asset1.code, asset2.code, asset3.code].sort, "VK Asset returns containing parks"
   end
 
-  test "vk asset with no children handled ok" do
+  test "vk asset with no contained_by_assets handled ok" do
     user1=create_test_user
     asset1=create_test_vkasset(award: 'WWFF', code_prefix: 'VKFF-0')
     log=create_test_log(user1, asset_codes: [asset1.code])
-    assert log.asset_codes.sort==[asset1.code], "Handles asset with no children"
+    assert log.asset_codes.sort==[asset1.code], "Handles asset with no contained_by_assets"
   end
 
   test "master codes applied for inactive asset" do
@@ -96,7 +96,7 @@ class LogChildrenTest < ActiveSupport::TestCase
     assert log.asset_codes.sort==[asset2.code].sort, "Active park not replaced with master replacement"
   end
 
-  test "inactive children not applied" do
+  test "inactive contained_by_assets not applied" do
     user1=create_test_user
     asset2=create_test_asset(asset_type: 'park', location: create_point(173,-45), test_radius: 0.1)
     asset3=create_test_asset(asset_type: 'park', location: create_point(173,-45), test_radius: 0.1, is_active: false)

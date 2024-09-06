@@ -132,7 +132,7 @@ $(function () {
         </td>
         <td>
           <ul style="list-style-type:none;padding:0;margin:0;">
-          <%if asset.childnames then %><% asset.childnames.each do |link|%>
+          <%if asset.contained_by_names then %><% asset.contained_by_names.each do |link|%>
             <li><%= link_to link.codename, '/assets/'+link.safecode, remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></li>
           <% end %><% end %>
           </ul>

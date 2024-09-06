@@ -11,7 +11,7 @@ class Log < ActiveRecord::Base
     self.add_user_ids
     self.check_codes_in_location
     location=self.get_most_accurate_location
-    self.add_child_codes(location[:asset])
+    self.add_containing_codes(location[:asset])
     self.update_classes
   end
 
@@ -117,7 +117,7 @@ class Log < ActiveRecord::Base
     location
   end
 
-  def add_child_codes(asset)
+  def add_containing_codes(asset)
     self.asset_codes=Asset.find_master_codes(self.asset_codes)
     if !self.do_not_lookup==true then
       self.asset_codes=self.get_all_asset_codes(asset)
@@ -128,10 +128,10 @@ class Log < ActiveRecord::Base
     codes=self.asset_codes
     newcodes=codes
     # Add ZL child codes by lcoation
-    if self.location1 then newcodes=newcodes+Asset.child_codes_from_location(self.location1, asset) end
+    if self.location1 then newcodes=newcodes+Asset.containing_codes_from_location(self.location1, asset) end
     # Add VK child codes using lookup table
     codes.each do |code|
-      newcodes=newcodes+VkAsset.child_codes_from_parent(code)
+      newcodes=newcodes+VkAsset.containing_codes_from_parent(code)
     end
     newcodes.uniq
   end

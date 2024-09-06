@@ -1,24 +1,24 @@
 class AssetLink < ActiveRecord::Base
 
 def self.find_by_parent(code)
-  als1=AssetLink.where(parent_code: code)
-  als2=AssetLink.where(child_code: code)
+  als1=AssetLink.where(contained_code: code)
+  als2=AssetLink.where(containing_code: code)
   als2.each do |al| al.reverse end
   als1+als2
 end
 
 def reverse
-  temp=self.child_code
-  self.child_code=self.parent_code
-  self.parent_code=temp
+  temp=self.containing_code
+  self.containing_code=self.contained_code
+  self.contained_code=temp
 end 
 
 def parent
-  Asset.find_by(code: self.parent_code)
+  Asset.find_by(code: self.contained_code)
 end
 
 def child
-  Asset.find_by(code: self.child_code)
+  Asset.find_by(code: self.containing_code)
 end
 
 def self.prune
@@ -37,9 +37,9 @@ def self.add_pota_links
     ap=Asset.find_by(code: pp.reference)
     if a  and ap then 
       al=AssetLink.new
-      al.parent_code=a.code
-      al.child_code=pp.reference
-      dup=AssetLink.where(parent_code: a.code, child_code: pp.reference)
+      al.contained_code=a.code
+      al.containing_code=pp.reference
+      dup=AssetLink.where(contained_code: a.code, containing_code: pp.reference)
       if !dup or dup.count==0 then
         al.save
         puts "Link #{p.name} with #{a.name}"
@@ -47,9 +47,9 @@ def self.add_pota_links
         puts "Already Linked #{p.name} with #{a.name}"
       end
       al=AssetLink.new
-      al.child_code=a.code
-      al.parent_code=pp.reference
-      dup=AssetLink.where(child_code: a.code, parent_code: pp.reference)
+      al.containing_code=a.code
+      al.contained_code=pp.reference
+      dup=AssetLink.where(containing_code: a.code, contained_code: pp.reference)
       if !dup or dup.count==0 then
         al.save
       end
@@ -67,9 +67,9 @@ def self.add_wwff_links
     ap=Asset.find_by(code: pp.code)
     if a  and ap then 
       al=AssetLink.new
-      al.parent_code=a.code
-      al.child_code=pp.code
-      dup=AssetLink.where(parent_code: a.code, child_code: pp.code)
+      al.contained_code=a.code
+      al.containing_code=pp.code
+      dup=AssetLink.where(contained_code: a.code, containing_code: pp.code)
       if !dup or dup.count==0 then
         al.save
         puts "Link #{p.name} with #{a.name}"
@@ -77,9 +77,9 @@ def self.add_wwff_links
         puts "Already Linked #{p.name} with #{a.name}"
       end
       al=AssetLink.new
-      al.child_code=a.code
-      al.parent_code=pp.code
-      dup=AssetLink.where(child_code: a.code, parent_code: pp.code)
+      al.containing_code=a.code
+      al.contained_code=pp.code
+      dup=AssetLink.where(containing_code: a.code, contained_code: pp.code)
       if !dup or dup.count==0 then
         al.save
       end

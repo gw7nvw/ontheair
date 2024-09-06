@@ -75,7 +75,7 @@
         </td>
         <td>
           <ul style="list-style-type:none;padding:0;margin:0;">
-          <%if asset.children then %><% asset.children.each do |link|%>
+          <%if asset.contained_by_assets then %><% asset.contained_by_assets.each do |link|%>
             <li><%= link_to link.codename, '/vkassets/'+link.get_safecode, remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></li>
           <% end %><% end %>
           </ul>

@@ -126,7 +126,7 @@
     <th>description</th>
   </tr>
   <tr>
-    <td><i>children</i></td>
+    <td><i>contained_by_assets</i></td>
     <td>True: Show child assets associated with this parent (assets contained by the listed asset).<br/>False (or undefined): Show parent assets (asset containing the listed asset)</td>
   </tr>
   <tr>
@@ -135,7 +135,7 @@
   </tr>
   <tr>
     <td><i>asset_type</i></td>
-    <td>string: return only results for the asset type specified. Can be combined with <i>children</i> if required</td>
+    <td>string: return only results for the asset type specified. Can be combined with <i>contained_by_assets</i> if required</td>
   </tr>
 </table>
 
@@ -154,11 +154,11 @@
     <td>Internal ID</td>
   </tr>
   <tr>
-    <td>parent_code</td>
+    <td>contained_code</td>
     <td>Asset code of parent asset</td>
   </tr>
   <tr>
-    <td>child_code</td>
+    <td>containing_code</td>
     <td>Asset code of child asset</td>
   </tr>
 </table>

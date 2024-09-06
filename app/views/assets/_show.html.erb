@@ -32,7 +32,7 @@
    <%= render 'flash' %>
    <div class="erow" id="email">
       <div class="rowtitle"><%= "Id:" %></div>
-      <% url=@asset.get_external_url %>
+      <% url=@asset.external_url %>
       <% if url then %> 
         <div class="rowtext"><%= link_to @asset.code, url, target: "_blank" %><img src="/assets/external-link-symbol.png"></div>
       <% else %>
@@ -184,7 +184,7 @@
    <div class="erow" id="name">
       <div class="rowtitle"><%= "Lies within" %></div>
       <div class="rowtext"> 
-          <%if @asset.children then %><ul style="list-style-type:none;padding:0;margin:0;"><% @asset.children.each do |link|%>
+          <%if @asset.contained_by_assets then %><ul style="list-style-type:none;padding:0;margin:0;"><% @asset.contained_by_assets.each do |link|%>
             <li><%= link_to link.codename, '/assets/'+link.safecode, remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></li>
           <% end %></ul><% end %>
       </div>
@@ -381,7 +381,7 @@
    </div>
 
    <div class="erow">
-     <% if @asset.photo_count==0 %>
+     <% if @asset.photos.count==0 %>
        <p><i>No photos have been uploaded. </i><p>
      <% end %>
      <div class="photo-bar">
@@ -404,7 +404,7 @@
      </div>
    </div>
 
-<% @asset.parent_classes.each do |parent_class| %>
+<% @asset.contains_classes.each do |parent_class| %>
    <div class="erow">
       <div class="hrline">
          <hr noshade size="4">
@@ -413,7 +413,7 @@
    <div class="sectiontitle_bold"><%=parent_class.pluralize.capitalize%></div>
 
    <table>
-   <% @asset.parents.select{|ac| ac.asset_type==parent_class}.each do |parent| %>
+   <% @asset.contains_assets.select{|ac| ac.asset_type==parent_class}.each do |parent| %>
      <tr>
        <td>
           <%=link_to parent.codename, '/assets/'+parent.safecode, remote: true,  :id => 'parent'+parent.safecode, :onclick => "linkHandler('parent')"   %>

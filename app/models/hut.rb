@@ -121,41 +121,6 @@ require 'open-uri'
      end
   end
 
-  def self.find_all_hutbagger_photos
-     hs=Hut.all
-     hs.each do |h|
-       h.find_hutbagger_photos
-     end
-  end 
-  def find_hutbagger_photos
-   if self.hutbagger_link and self.hutbagger_link["http"] then 
-    url=self.hutbagger_link.gsub(/http\:/,"https:")
-    page_string = ""
-    open(url) do |f|
-      page_string = f.read
-    end
-  
-    got_start=false   
-    page_string.each_line do |l|
-       if l["<h3>Photos</h3>"] then got_start=true; puts "got start"; puts l end
-       if got_start and l["<img src"] then
-          puts l
-          fs=l.split('"')
-          if fs and fs[1] and fs[1]["img"] then
-            link_url="https://hutbagger.co.nz"+fs[1]
-            dups=HutPhotoLink.where(:url => link_url)
-            if !dups or dups.count==0 then
-              hpl=HutPhotoLink.new
-              hpl.hut_id=self.id
-              hpl.url=link_url
-              hpl.save
-            end
-          end
-       end 
-    end
-     true
-   end
-  end
   def self.add_codes
      ps=Hut.all
      ps.each do |p|

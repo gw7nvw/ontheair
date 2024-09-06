@@ -150,13 +150,13 @@ def self.migrate_to_assets
   pps.each do |pp|
     p=Asset.find_by(code: 'ZLP/'+pp.park_id.to_s)
     if p then  
-      dup=AssetLink.where(parent_code: pp.reference, child_code: p.code)
+      dup=AssetLink.where(contained_code: pp.reference, containing_code: p.code)
       if !dup or dup.count==0 then
-        al=AssetLink.create(parent_code: pp.reference, child_code: p.code)
+        al=AssetLink.create(contained_code: pp.reference, containing_code: p.code)
       end
-      dup=AssetLink.where(parent_code: p.code, child_code: pp.reference)
+      dup=AssetLink.where(contained_code: p.code, containing_code: pp.reference)
       if !dup or dup.count==0 then
-        al=AssetLink.create(parent_code: p.code, child_code: pp.reference)
+        al=AssetLink.create(contained_code: p.code, containing_code: pp.reference)
       end
       puts pp.reference
     else
@@ -169,7 +169,7 @@ def self.add_boundaries_from_assets
   pps=Asset.find_by_sql [ " select id,name,code from assets where asset_type='pota park'  and boundary is null order by name; " ]
   pps.each do |pp|
        puts "Updating "+pp.name
-       als=AssetLink.where(parent_code: pp.code)
+       als=AssetLink.where(contained_code: pp.code)
        al=nil
        if als.count>0 then
          if als.count>1 then

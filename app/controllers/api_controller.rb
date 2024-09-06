@@ -20,22 +20,22 @@ end
 def assetlink
   if params[:id] then
     id=params[:id].upcase.gsub('_','/')
-    if params[:children] then
+    if params[:contained_by_assets] then
       respond_to do |format|
-        format.js { render json: AssetLink.where(child_code: id).to_json }
-        format.html { render json: AssetLink.where(child_code: id).to_json }
-        format.csv { send_data asset_to_csv(AssetLink.where(child_code: id)), filename: "assetlinks-#{Date.today}.csv" }
+        format.js { render json: AssetLink.where(containing_code: id).to_json }
+        format.html { render json: AssetLink.where(containing_code: id).to_json }
+        format.csv { send_data asset_to_csv(AssetLink.where(containing_code: id)), filename: "assetlinks-#{Date.today}.csv" }
       end
     else
       respond_to do |format|
-        format.js { render json: AssetLink.where(parent_code: id).to_json }
-        format.html { render json: AssetLink.where(parent_code: id).to_json }
-        format.csv { send_data asset_to_csv(AssetLink.where(parent_code: id)), filename: "assetlinks-#{Date.today}.csv" }
+        format.js { render json: AssetLink.where(contained_code: id).to_json }
+        format.html { render json: AssetLink.where(contained_code: id).to_json }
+        format.csv { send_data asset_to_csv(AssetLink.where(contained_code: id)), filename: "assetlinks-#{Date.today}.csv" }
       end
     end
 
-  elsif params[:asset_type] and params[:children] then
-    assetLinks=AssetLink.find_by_sql [ " select al.* from asset_links al inner join assets a on a.code = al.child_code where a.asset_type='#{params[:asset_type]}'; " ] 
+  elsif params[:asset_type] and params[:contained_by_assets] then
+    assetLinks=AssetLink.find_by_sql [ " select al.* from asset_links al inner join assets a on a.code = al.containing_code where a.asset_type='#{params[:asset_type]}'; " ] 
     respond_to do |format|
       format.js { render json: assetLinks.to_json }
       format.html { render json: assetLinks.to_json }
@@ -43,7 +43,7 @@ def assetlink
     end
 
   elsif params[:asset_type]
-    assetLinks=AssetLink.find_by_sql [ " select al.* from asset_links al inner join assets a on a.code = al.parent_code where a.asset_type='#{params[:asset_type]}'; " ] 
+    assetLinks=AssetLink.find_by_sql [ " select al.* from asset_links al inner join assets a on a.code = al.contained_code where a.asset_type='#{params[:asset_type]}'; " ] 
     respond_to do |format|
       format.js { render json: assetLinks.to_json }
       format.html { render json: assetLinks.to_json }

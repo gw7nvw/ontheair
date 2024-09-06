@@ -132,7 +132,6 @@ include PostsHelper
     if @asset.code==nil or @asset.code=="" then   @asset.code=Asset.get_next_code(@asset.asset_type, @asset.region) end
       if @asset.save
           @asset.reload
-          @asset.find_hutbagger_photos
           if params[:referring]=='index' then
             index_prep()
             render 'index'
@@ -152,9 +151,9 @@ include PostsHelper
   if signed_in? and current_user.is_modifier then
     if params[:delete] then
       asset = Asset.find_by_id(params[:id])
-      als=AssetLink.where(parent_code: asset.code)
+      als=AssetLink.where(contained_code: asset.code)
       als.destroy_all
-      als=AssetLink.where(child_code: asset.code)
+      als=AssetLink.where(containing_code: asset.code)
       als.destroy_all
 
       if asset and asset.destroy
@@ -180,7 +179,6 @@ include PostsHelper
 
       if @asset.save
         flash[:success] = "Asset details updated"
-        @asset.find_hutbagger_photos
         # Handle a successful update.
         if params[:referring]=='index' then
           index_prep()
@@ -200,9 +198,9 @@ end
 def associations
   @asset=Asset.find_by(code: params[:id].gsub('_','/'))
   @newchild=AssetLink.new
-  @newchild.parent_code=@asset.code
+  @newchild.contained_code=@asset.code
   @newparent=AssetLink.new
-  @newparent.child_code=@asset.code
+  @newparent.containing_code=@asset.code
 
 end
 

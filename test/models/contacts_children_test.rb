@@ -65,7 +65,7 @@ class ContactChildrenTest < ActiveSupport::TestCase
     asset2=create_test_asset(asset_type: 'park', location: create_point(173,-45), test_radius: 0.1)
     log=create_test_log(user1)
     contact=create_test_contact(user1, user2, log_id: log.id, asset2_codes: [asset1.code])
-    assert contact.asset2_codes.sort==[asset1.code].sort, "No children added as we have no location"
+    assert contact.asset2_codes.sort==[asset1.code].sort, "No contained_by_assets added as we have no location"
   end
 
   test "can handle polygon asset with no location or boundary" do
@@ -75,10 +75,10 @@ class ContactChildrenTest < ActiveSupport::TestCase
     asset2=create_test_asset(asset_type: 'park', location: create_point(173,-45), test_radius: 0.1)
     log=create_test_log(user1)
     contact=create_test_contact(user1, user2, log_id: log.id, asset2_codes: [asset1.code])
-    assert contact.asset2_codes.sort==[asset1.code].sort, "No children added as we have no location"
+    assert contact.asset2_codes.sort==[asset1.code].sort, "No contained_by_assets added as we have no location"
   end
 
-  test "vk_assets use lookup table to find children" do
+  test "vk_assets use lookup table to find contained_by_assets" do
     user1=create_test_user
     user2=create_test_user
     asset1=create_test_vkasset(award: 'WWFF', code_prefix: 'VKFF-0')
@@ -89,13 +89,13 @@ class ContactChildrenTest < ActiveSupport::TestCase
     assert contact.asset2_codes.sort==[asset1.code, asset2.code, asset3.code].sort, "VK Asset returns containing parks"
   end
 
-  test "vk asset with no children handled ok" do
+  test "vk asset with no contained_by_assets handled ok" do
     user1=create_test_user
     user2=create_test_user
     asset1=create_test_vkasset(award: 'WWFF', code_prefix: 'VKFF-0')
     log=create_test_log(user1)
     contact=create_test_contact(user1, user2, log_id: log.id, asset2_codes: [asset1.code])
-    assert contact.asset2_codes.sort==[asset1.code], "Handles asset with no children"
+    assert contact.asset2_codes.sort==[asset1.code], "Handles asset with no contained_by_assets"
   end
 
   test "master codes applied for inactive asset" do
@@ -118,7 +118,7 @@ class ContactChildrenTest < ActiveSupport::TestCase
     assert contact.asset2_codes.sort==[asset2.code].sort, "Active park not replaced with master replacement"
   end
 
-  test "inactive children not applied" do
+  test "inactive contained_by_assets not applied" do
     user1=create_test_user
     user2=create_test_user
     asset2=create_test_asset(asset_type: 'park', location: create_point(173,-45), test_radius: 0.1)

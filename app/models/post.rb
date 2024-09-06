@@ -14,7 +14,7 @@ before_save { self.before_save_actions }
 
 def before_save_actions
   self.replace_master_codes
-  self.add_child_codes
+  self.add_containing_codes
   #again to vet child codes added
   self.replace_master_codes
   if self.callsign then self.callsign=self.callsign.upcase end
@@ -149,7 +149,7 @@ end
     self.asset_codes=newcodes.uniq
   end
 
-  def add_child_codes
+  def add_containing_codes
     if !self.do_not_lookup==true then
       if self.asset_codes then
        self.asset_codes=self.get_all_asset_codes
@@ -161,8 +161,8 @@ end
     codes=self.asset_codes
     newcodes=codes
     codes.each do |code|
-      newcodes=newcodes+Asset.child_codes_from_parent(code)
-      newcodes=newcodes+VkAsset.child_codes_from_parent(code)
+      newcodes=newcodes+Asset.containing_codes_from_parent(code)
+      newcodes=newcodes+VkAsset.containing_codes_from_parent(code)
     end
     newcodes=newcodes.uniq
     #filter out POTA / WWFF if user does not use those schemes

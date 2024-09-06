@@ -44,8 +44,8 @@
   <div id="editlinks">
     <%= form_for @newchild, remote: true, :html => {:name => 'childform'}, :namespace => 'c' do |f| %>
       <table>
-        <% @asset.children.each do |aa| %>
-          <% asset_link=AssetLink.find_by(parent_code: @asset.code, child_code: aa.code) %>
+        <% @asset.contained_by_assets.each do |aa| %>
+          <% asset_link=AssetLink.find_by(contained_code: @asset.code, containing_code: aa.code) %>
           <tr> 
             <td><%= aa.type.display_name %></td>
             <td><%= aa.code %></td>
@@ -55,7 +55,7 @@
         <% end %>
         <tr>
           <input id="asset_code" name="asset_code" type="hidden" value="<%=@asset.code%>">
-          <%= f.hidden_field :parent_code %>
+          <%= f.hidden_field :contained_code %>
           <td>
             <ul style="float: left;margin: 0" class="nav pull-left" id="menus">
               <li id="fat-menu" class="dropdown">
@@ -64,15 +64,15 @@
                 </a>
                 <ul class="dropdown-menu">
                   <li><%= link_to "... from list", '/query?assetfield=child', :remote => true,  :onclick => "search_assets('child')" %></li>
-                  <li><%= link_to "... from map", '#',  :onclick => "site_selectPlace(null,'c_asset_link_child_code', 'c_asset_link_child_name', null, null, null, null, null, site_green_star,false);return false;" %></li>
-                  <li><%= link_to "Clear", '#',  :onclick => "site_clear_element(['c_asset_link_child_name', 'c_asset_link_child_code']);map_clear_scratch_layer(null,site_green_star);return false;" %></li>
+                  <li><%= link_to "... from map", '#',  :onclick => "site_selectPlace(null,'c_asset_link_containing_code', 'c_asset_link_containing_name', null, null, null, null, null, site_green_star,false);return false;" %></li>
+                  <li><%= link_to "Clear", '#',  :onclick => "site_clear_element(['c_asset_link_containing_name', 'c_asset_link_containing_code']);map_clear_scratch_layer(null,site_green_star);return false;" %></li>
                 </ul>
               </li>
             </ul>
           </td>
 
-          <td> <%=f.text_field :child_code %></td>
-          <td> <%=text_field :c_asset_link, :child_name %></td>
+          <td> <%=f.text_field :containing_code %></td>
+          <td> <%=text_field :c_asset_link, :containing_name %></td>
           <td> <%= f.submit 'Add', class: "btn btn-small btn-primary btn-hightlight" %> </td>
         </tr>
       </table>
@@ -82,8 +82,8 @@
   <div id="editlinks">
     <%= form_for @newparent, remote: true, :html => {:name => 'parentform'}, :namespace => 'p' do |f| %>
     <table>
-    <% @asset.parents.each do |aa| %>
-        <% asset_link=AssetLink.find_by(parent_code: aa.code, child_code: @asset.code) %>
+    <% @asset.contains_assets.each do |aa| %>
+        <% asset_link=AssetLink.find_by(contained_code: aa.code, containing_code: @asset.code) %>
         <tr> 
           <td><%= aa.type.display_name %></td>
           <td><%= aa.code %></td>
@@ -92,7 +92,7 @@
         </tr>
     <% end %>
       <tr>
-        <%= f.hidden_field :child_code %>
+        <%= f.hidden_field :containing_code %>
         <input id="asset_code" name="asset_code" type="hidden" value="<%=@asset.code%>">
         <td>
             <ul style="float: left;margin: 0" class="nav pull-left" id="menus">
@@ -102,15 +102,15 @@
                 </a>
                 <ul class="dropdown-menu">
                   <li><%= link_to "... from list", '/query?assetfield=parent', :remote => true,  :onclick => "search_assets('parent')" %></li>
-                  <li><%= link_to "... from map", '#',  :onclick => "site_selectPlace(null,'p_asset_link_parent_code', 'p_asset_link_parent_name', null, null, null, null, null, site_green_star,false);return false;" %></li>
-                  <li><%= link_to "Clear", '#',  :onclick => "site_clear_element(['p_asset_link_parent_code', 'p_asset_link_parent_name']);map_clear_scratch_layer(null,site_green_star);return false;" %></li>
+                  <li><%= link_to "... from map", '#',  :onclick => "site_selectPlace(null,'p_asset_link_contained_code', 'p_asset_link_contained_name', null, null, null, null, null, site_green_star,false);return false;" %></li>
+                  <li><%= link_to "Clear", '#',  :onclick => "site_clear_element(['p_asset_link_contained_code', 'p_asset_link_contained_name']);map_clear_scratch_layer(null,site_green_star);return false;" %></li>
                 </ul>
               </li>
             </ul>
          </td>
 
-        <td> <%=f.text_field :parent_code %></td>
-        <td> <%=text_field :p_asset_link, :parent_name %></td>
+        <td> <%=f.text_field :contained_code %></td>
+        <td> <%=text_field :p_asset_link, :contained_name %></td>
         <td> <%= f.submit 'Add', class: "btn btn-small btn-primary btn-hightlight" %> </td>
       </tr>
     </table>

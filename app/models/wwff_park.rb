@@ -213,13 +213,13 @@ def self.migrate_to_assets
   pps.each do |pp|
     p=Asset.find_by(code: 'ZLP/'+pp.napalis_id.to_s)
     if p then
-      dup=AssetLink.where(parent_code: pp.code, child_code: p.code)
+      dup=AssetLink.where(contained_code: pp.code, containing_code: p.code)
       if !dup or dup.count==0 then
-        al=AssetLink.create(parent_code: pp.code, child_code: p.code)
+        al=AssetLink.create(contained_code: pp.code, containing_code: p.code)
       end
-      dup=AssetLink.where(parent_code: p.code, child_code: pp.code)
+      dup=AssetLink.where(contained_code: p.code, containing_code: pp.code)
       if !dup or dup.count==0 then
-        al=AssetLink.create(parent_code: p.code, child_code: pp.code)
+        al=AssetLink.create(contained_code: p.code, containing_code: pp.code)
       end
       puts pp.code
     else

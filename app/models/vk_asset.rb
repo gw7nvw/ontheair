@@ -72,7 +72,7 @@ def self.import
  def get_safecode
     self.code.gsub('/','_')
  end
- def get_external_url
+ def external_url
    if self.award=="HEMA" then
      url='https://parksnpeaks.org/showAward.php?award=HEMA'
    elsif self.award=="SiOTA" then
@@ -115,14 +115,14 @@ def self.import
    asset
  end
 
- def children
+ def contained_by_assets
    assets=[]
    if self.pota_asset then assets.push(self.pota_asset) end
    if self.wwff_asset then assets.push(self.wwff_asset) end
    assets
  end
 
- def parents
+ def contains_assets
    assets=[]
 
    if self.award=='WWFF' then
@@ -132,12 +132,12 @@ def self.import
    end
    assets
  end
- def self.child_codes_from_parent(code)
+ def self.containing_codes_from_parent(code)
    codes=[]
    code=code.upcase
    a=VkAsset.find_by(code: code.split(' ')[0])
  
-   if a then codes=a.children.map{|a| a.code} end
+   if a then codes=a.contained_by_assets.map{|a| a.code} end
    codes
  end
 

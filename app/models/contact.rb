@@ -22,7 +22,7 @@ class Contact < ActiveRecord::Base
     self.check_codes_in_location
     self.check_for_same_place_error
     location=self.get_most_accurate_location(true)
-    self.add_child_codes(location[:asset]) 
+    self.add_containing_codes(location[:asset]) 
     self.update_classes
     self.band=self.band_from_frequency
   end
@@ -217,9 +217,9 @@ class Contact < ActiveRecord::Base
   def get_all_asset2_codes(asset)
     codes=self.asset2_codes
     newcodes=codes
-    if self.location2 then newcodes=newcodes+Asset.child_codes_from_location(location2, asset) end
+    if self.location2 then newcodes=newcodes+Asset.containing_codes_from_location(location2, asset) end
     codes.each do |code|
-      newcodes=newcodes+VkAsset.child_codes_from_parent(code)
+      newcodes=newcodes+VkAsset.containing_codes_from_parent(code)
     end
     newcodes.uniq
   end
@@ -246,14 +246,14 @@ class Contact < ActiveRecord::Base
   end
 
   #add child asset#_codes for both parties
-  def add_child_codes(asset)
+  def add_containing_codes(asset)
     #just inherit log codes for assets1
     self.asset1_codes=self.log.asset_codes
  
     #then lookup codes for assets2
     #replace supplied replaced codes with new master codes
     self.asset2_codes=Asset.find_master_codes(self.asset2_codes)
-    #look up children
+    #look up contained_by_assets
     self.asset2_codes=self.get_all_asset2_codes(asset)
   end
  

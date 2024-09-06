@@ -801,7 +801,7 @@ function submit_search() {
    return false;
 }
 
-function select_asset(field, code, name, x, y, loc, child_codes, child_names) {
+function select_asset(field, code, name, x, y, loc, containing_codes, containing_names) {
   if (typeof(document.contactform)=="object")  { 
      formname="contactform";
      varprefix="contact_";
@@ -835,20 +835,20 @@ function select_asset(field, code, name, x, y, loc, child_codes, child_names) {
     document[formname][varprefix+"x1"].value=x;
     document[formname][varprefix+"y1"].value=y;
     document[formname][varprefix+"location1"].value=loc;
-    //document[formname][varprefix+"child_codes"].value=child_codes;
-    //document.getElementsById["child_names"].innerHTML=child_names;
+    //document[formname][varprefix+"containing_codes"].value=containing_codes;
+    //document.getElementsById["containing_names"].innerHTML=containing_names;
     map_clear_scratch_layer('Point', site_green_star);
     map_add_feature_from_wkt(loc,'EPSG:4326',site_green_star) ;
   }
   if (field=="child") {
-    document[formname][varprefix+"child_code"].value=code;
-    document[formname][varprefix+"child_name"].value=name;
+    document[formname][varprefix+"containing_code"].value=code;
+    document[formname][varprefix+"containing_name"].value=name;
     map_clear_scratch_layer('Point', site_red_star);
     map_add_feature_from_wkt(loc,'EPSG:4326',site_red_star) ;
   }
   if (field=="parent") {
-    document[formname][varprefix+"parent_code"].value=code;
-    document[formname][varprefix+"parent_name"].value=name;
+    document[formname][varprefix+"contained_code"].value=code;
+    document[formname][varprefix+"contained_name"].value=name;
     map_clear_scratch_layer('Point', site_red_star);
     map_add_feature_from_wkt(loc,'EPSG:4326',site_red_star) ;
   }
@@ -864,8 +864,8 @@ function select_asset(field, code, name, x, y, loc, child_codes, child_names) {
     data2[row]['location2']=loc;
     data2[row]['x2']=x;
     data2[row]['y2']=y;
-    //data2[row]['park2_id']=child_codes;
-    //data2[row]['park2_tn']=child_names;
+    //data2[row]['park2_id']=containing_codes;
+    //data2[row]['park2_tn']=containing_names;
     //data2[row]['loc_desc2']=name+" ("+park_name+")"
     map_clear_scratch_layer('Point', site_red_star);
     map_add_feature_from_wkt(loc,'EPSG:4326',site_red_star) ;
