@@ -1,59 +1,34 @@
 class PotaPark < ActiveRecord::Base
-  belongs_to :park, class_name: "Park"
-  belongs_to :island, class_name: "Island"
 
-  def find_doc_park
-   #ps=Docparks.find_by_sql [ %q{select * from docparks dp where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), dp."WKT");} ]
-   ps=Asset.find_by_sql [ %q{select * from assets dp where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), dp.boundary) and asset_type='park';} ]
-   if !ps or ps.count==0 then
-      puts "Trying for nearest"
-     ps=Asset.find_by_sql [ %q{ SELECT * 
-       FROM assets dp
-       WHERE ST_DWithin(boundary, ST_GeomFromText('}+self.location.as_text+%q{', 4326), 10000, false) and asset_type='park' 
-       ORDER BY ST_Distance(boundary, ST_GeomFromText('}+self.location.as_text+%q{', 4326)) LIMIT 50; } ]
-   end
+##################################################
+#
+# Update parks from POTA
+#
+# From rails console production
+#
+# Call: PotaPark.import(false||true)
+#   - Call with false for a test run, or true to apply changes
+#
+# - Reads POTA parks from POTA by geographical search box
+# - POTA location is poor and boundary not known to POTA so we must match
+#   the pota park against LINZ park data (in assets) to find the correct boundary
+# - Checks all parks against existing PotaPark list
+# - Updates name if required for existing parks
+# - For new parks:
+#   - Searches for a ZLP park with matching or close name
+#   - If a good match, extracts location data from ZLP park and applies to POTA park
+#   - If several matches, asks user to choose matching park
+#   - If no match, asks user to supply a ZLP reference 
+# - If create='true' was requested:
+#   - saves the resulting pota park
+#   - updates / creates the relevent entry in Assets
+#
+# Note: because creating parks and matching them to LINZ data is a real pain, we do not 
+# clear the PotaPark table before each refresh.  This means that no 'delete' or 'retire' 
+# of old parks will occur automatically.  It is also unclear whether retired parks will be
+# sent in the data from POTA, as no retired or retired_at field is provided by POTA.
 
-   if ps and ps.count>1 then
-       puts "==========================================================="
-       count=0
-       ps.each do |p|
-         puts count.to_s+" - "+p.name+" == "+self.name
-         count+=1
-       end
-       puts "Select match (or 'a' to add):"
-       id=gets
-       if id and id.length>1 and id[0]!="a" then ps=[ps[id.to_i]] else 
-        if id[0]=="a" then
-          nid=("999"+self.reference[3..6]).to_i
-          p=Asset.find_by(code: "ZLP/"+nid.to_s)
-          if !p then 
-            p=Asset.new
-            p.code="ZLP/"+nid.to_s
-            p.is_mr=false
-            p.description="Imported from POTA"
-          end
-          p.name=self.name
-          p.location=self.location
-          p.save
-          ps=[p.reload]
-        else
-          ps=nil 
-        end
-       end
-   end
-       
-   if !ps or ps.count==0 then
-      puts "Error: FAILED"
-      nil
-   elsif id and id[0]=="a" then
-      ps[0]
-   else
-      puts "Found doc park "+ps.first.code+" : "+ps.first.name+" == "+self.name
-      Asset.find_by(code: ps.first.code)
-   end
-  end
-
-def self.import
+def self.import(create=true)
 
   urls=["https://api.pota.app/park/grids/-47.5/165/-40/180/0", "https://api.pota.app/park/grids/-40/165/-34/180/0", "https://api.pota.app/park/grids/-55.0/165/-47.5/180/0", "https://api.pota.app/park/grids/-45/-178/-42/-175/0"]
   urls.each do |url|
@@ -131,96 +106,14 @@ def self.import
            puts "Existing POTA park"
          end
 
-         if is_invalid==false then
+         if is_invalid==false and create==true then
            p.save
            a=Asset.add_pota_park(p, park)
-           if new then
-             a.add_region
-             a.add_area
-             a.add_links
-           end
          end
       end
     end
   end
 end
  
-def self.migrate_to_assets
-  pps=PotaPark.all
-  pps.each do |pp|
-    p=Asset.find_by(code: 'ZLP/'+pp.park_id.to_s)
-    if p then  
-      dup=AssetLink.where(contained_code: pp.reference, containing_code: p.code)
-      if !dup or dup.count==0 then
-        al=AssetLink.create(contained_code: pp.reference, containing_code: p.code)
-      end
-      dup=AssetLink.where(contained_code: p.code, containing_code: pp.reference)
-      if !dup or dup.count==0 then
-        al=AssetLink.create(contained_code: p.code, containing_code: pp.reference)
-      end
-      puts pp.reference
-    else
-      puts "ERROR: no park found for POTA park "+pp.name
-    end 
-  end
-end
-
-def self.add_boundaries_from_assets
-  pps=Asset.find_by_sql [ " select id,name,code from assets where asset_type='pota park'  and boundary is null order by name; " ]
-  pps.each do |pp|
-       puts "Updating "+pp.name
-       als=AssetLink.where(contained_code: pp.code)
-       al=nil
-       if als.count>0 then
-         if als.count>1 then
-           count=0
-           validcount=0
-           lastvalid=nil
-           als.each do 
-              if als[count].child.asset_type=="park" and als[count].child.is_active=true then
-                puts count.to_s+": "+als[count].child.name
-                validcount+=1
-                lastvalid=count 
-              end
-              count+=1
-           end
-           if validcount>1 then
-             puts "Please select park or 'C'ancel:"
-             select=gets.chomp
-             if select!='C' then al=als[select.to_i] else al=nil end
-           elsif validcount==1 then
-             al=als[lastvalid]
-           else
-             al=nil
-           end
-             
-         else
-           al=als.first
-         end
-         if al then
-           puts "... from "+al.child.name
-           ActiveRecord::Base.connection.execute("update assets set boundary=(select boundary from assets where id="+al.child.id.to_s+") where id="+pp.id.to_s+";")
-           #puts "update assets set boundary=select(boundary from assets where id="+al.child.id.to_s+") where id="+pp.id.to_s+";"
-         end
-       end
-
-  end
-end
-
-def self.add_regions
-  pps=Asset.find_by_sql [ " select id,region,location,name,code from assets where asset_type='pota park'  order by name; " ]
-  pps.each do |pp|
-    puts pp.name
-    pp.add_region
-  end   
-end
-
-def self.add_pota_links
-  pps=Asset.find_by_sql [ " select id,name,code from assets where asset_type='pota park'  order by name; " ]
-  pps.each do |pp|
-    puts pp.name
-    pp.add_links
-  end   
-end
 end
 

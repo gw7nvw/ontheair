@@ -11,18 +11,25 @@ class ActiveSupport::TestCase
 $last_suffix="AAAA"
 $last_asset="place-AAAA"
 $last_asset_code=1
+$last_ext_act_id=1
 
-Region.create(sota_code: 'CB', name: "Canterbury") 
-Region.create(sota_code: 'OT', name: "Otago")
-District.create(district_code: 'CC', name: "Christchurch", region_code: "CB")
-District.create(district_code: 'WA', name: "Waimate", region_code: "CB")
-District.create(district_code: 'DU', name: "Dunedin", region_code: "OT") 
-District.create(district_code: 'CO', name: "Central Otago", region_code: "OT")
+Region.create(sota_code: 'CB', name: "Canterbury", boundary: 'MULTIPOLYGON(((171 -40, 174 -40, 174 -41, 171 -41)))') 
+Region.create(sota_code: 'OT', name: "Otago", boundary: 'MULTIPOLYGON(((171 -41, 174 -41, 174 -42, 171 -42)))')
+District.create(district_code: 'CC', name: "Christchurch", region_code: "CB", boundary: 'MULTIPOLYGON(((171 -40, 173 -40, 173 -41, 171 -41)))')
+District.create(district_code: 'WA', name: "Waimate", region_code: "CB", boundary: 'MULTIPOLYGON(((173 -40, 174 -40, 174 -41, 173 -41)))')
+District.create(district_code: 'DU', name: "Dunedin", region_code: "OT",boundary: 'MULTIPOLYGON(((171 -41, 173 -41, 173 -42, 171 -42)))') 
+District.create(district_code: 'CO', name: "Central Otago", region_code: "OT",boundary: 'MULTIPOLYGON(((173 -41, 174 -41, 174 -42, 173 -42)))')
+NzTribalLand.create({ "ogc_fid"=>21, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 175 -40, 175 -35, 170 -35)))", "name"=>"Ngāti Apa"})
+NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 175 -40, 175 -45, 170 -45)))", "name"=>"Ngāi Tahu"})
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   #
   # Note: You'll currently still have to declare fixtures explicitly in integration tests
   # -- they do not yet inherit this setting
   fixtures :all
+
+  def create_test_web_link(asset, link, link_class)
+     AssetWebLink.create(asset_code: asset.code, url: link, link_class: link_class)
+  end
 
   # Add more helper methods to be used by all tests here...
   def create_test_user(params={})
@@ -124,6 +131,7 @@ District.create(district_code: 'CO', name: "Central Otago", region_code: "OT")
     if !params[:summit_code] then params[:summit_code]=asset1.code end
     if !params[:asset_type] then params[:asset_type]=asset1.asset_type end
     if !params[:qso_count] then params[:qso_count]=1 end
+    if !params[:external_activation_id] then params[:external_activation_id]=$last_ext_act_id; $last_ext_act_id+=1 end
     params[:user_id]=user1.id
 
     activation=ExternalActivation.create(params)

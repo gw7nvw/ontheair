@@ -1,55 +1,18 @@
 class SotaPeak < ActiveRecord::Base
-  belongs_to :park, class_name: "Park"
-  belongs_to :island, class_name: "Island"
-
-def codename
-  codename=self.summit_code+" - "+self.name
-end
-
-def x
-       # convert to 2193 
-       fromproj4s= Projection.find_by_id(4326).proj4
-       toproj4s=  Projection.find_by_id(2193).proj4
-
-       fromproj=RGeo::CoordSys::Proj4.new(fromproj4s)
-       toproj=RGeo::CoordSys::Proj4.new(toproj4s)
-
-       xyarr=RGeo::CoordSys::Proj4::transform_coords(fromproj,toproj,self.location.x,self.location.y)
-       xyarr[0]
-end
 
 
-def y
-       # convert to 2193 
-       fromproj4s= Projection.find_by_id(4326).proj4
-       toproj4s=  Projection.find_by_id(2193).proj4
-
-       fromproj=RGeo::CoordSys::Proj4.new(fromproj4s)
-       toproj=RGeo::CoordSys::Proj4.new(toproj4s)
-
-       xyarr=RGeo::CoordSys::Proj4::transform_coords(fromproj,toproj,self.location.x,self.location.y)
-       xyarr[1]
-end
-
-
-def find_doc_park
-   #ps=Docparks.find_by_sql [ %q{select * from docparks dp where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), dp."WKT");} ]
-   ps=Crownparks.find_by_sql [ %q{select * from crownparks dp where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), dp."WKT");} ]
-   if ps and ps.first then
-      Park.find_by_id(ps.first.id)
-    else nil end
-end
-
-def find_park
-   ps=Park.find_by_sql [ %q{select * from parks p where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), p.boundary);} ]
-   if ps then ps.first else nil end
-end
-
-def find_island
-   ps=IslandPolygon.find_by_sql [ %q{select * from island_polygons p where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), p."WKT");} ]
-   if ps then ps.first else nil end
-end
-
+############################################################################
+# To pull updates from SOTA
+#
+# One step process and now well tested
+#
+# call SotaPeak.import from 'rails console production'
+# - Clears the existing SotaPeak table
+# - will download assets by region (so your region table needs to contain
+#   all the SOTA regions)
+# - Creates list of current summits in SotaPeak table
+# - Adds each summit to Assets table (or updates if existing)
+# - Checks Assets for 'summit' type assets not in SotaPeak table and retires them
 
 def self.import
 

@@ -189,16 +189,16 @@ end
 # If we are near the boundary, hedge our bets and say 'in or near'
 def traditional_owners
   buffer=5000 #say in or near if we are withing this distance of boundary (meters)
-  if self.type.has_boundary then
-     tos1=NzTribalLand.find_by_sql [ "select tl.id, tl.name from nz_tribal_lands tl join assets a on a.id=#{self.id} where ST_Within(a.boundary, tl.wkb_geometry) "]
-     tos2=NzTribalLand.find_by_sql [ "select tl.id, tl.name from nz_tribal_lands tl join assets a on a.id=#{self.id} where ST_DWithin(ST_Transform(a.boundary,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});" ]
+  if self.type.has_boundary and self.area and self.area>0 then
+     tos1=NzTribalLand.find_by_sql [ "select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{self.id} where ST_Within(a.boundary, tl.wkb_geometry) "]
+     tos2=NzTribalLand.find_by_sql [ "select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{self.id} where ST_DWithin(ST_Transform(a.boundary,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});" ]
   else
-     tos1=NzTribalLand.find_by_sql [ "select tl.id, tl.name from nz_tribal_lands tl join assets a on a.id=#{self.id} where ST_Within(a.location, tl.wkb_geometry) "]
-     tos2=NzTribalLand.find_by_sql [ "select tl.id, tl.name from nz_tribal_lands tl join assets a on a.id=#{self.id} where ST_DWithin(ST_Transform(a.location,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});" ]
+     tos1=NzTribalLand.find_by_sql [ "select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{self.id} where ST_Within(a.location, tl.wkb_geometry) "]
+     tos2=NzTribalLand.find_by_sql [ "select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{self.id} where ST_DWithin(ST_Transform(a.location,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});" ]
 
   end
-  ids1=[]; tos1.each do |t| ids1.push(t["id"]) end 
-  ids2=[]; tos2.each do |t| ids2.push(t["id"]) end 
+  ids1=tos1.map{|t| t.id}
+  ids2=tos2.map{|t| t.id}
   if ids2 and ids2.count>0 then
     if ids1.sort!=ids2.sort then
       names=[]; tos2.each do |t| names.push(t["name"]) end 
@@ -695,52 +695,6 @@ def self.get_pnp_class_from_code(code)
 end
 
 
-
-#################################################################
-# Imprting assets from externally sourced tables
-# Generally doen in 2 steps:
-# - read from external provider into a custom table which
-#   we can safely trash if things go wrong
-# - read from that table into the master assets table
-################################################################
-
-#See lib/asset_import_tools.rb
-# def self.add_parks
-# def self.add_huts
-# def self.add_islands
-# def self.add_lakes
-# def self.add_lake(l)
-# def self.add_sota_peak(p)
-# def self.add_pota_parks
-# def self.add_pota_park(p, existing_asset)
-# def self.add_humps
-# def self.add_hump(p, existing_asset)
-# def self.add_lighthouses
-# def self.add_lighthouse(p, existing_asset)
-# def self.add_wwff_parks
-# def self.add_wwff_park(p, existing_asset)
-
-
-
-###################################################################
-# GIS DATA HANDLING
-###################################################################
-# see lib/asset_gis_tools for:
-# per-asset methods:
-#   def calc_location
-#   def add_sota_activation_zone
-#   def add_simple_boundary
-#   def add_area
-#   def add_buffered_activation_zone
-#   def get_access
-#   def get_access_with_buffer(buffer)
-# Asset. methods:
-#   def self.add_areas
-#   def self.fix_invalid_polygons
-#   def self.add_simple_boundaries
-
-
-
 ##################################################################
 # HELPERS
 #
@@ -960,6 +914,52 @@ def self.get_next_code(asset_type, region)
   logger.debug "Code: "+newcode
   newcode
 end
+
+
+#################################################################
+# Imprting assets from externally sourced tables
+# Generally doen in 2 steps:
+# - read from external provider into a custom table which
+#   we can safely trash if things go wrong
+# - read from that table into the master assets table
+################################################################
+
+#See lib/asset_import_tools.rb
+# def self.add_parks
+# def self.add_huts
+# def self.add_islands
+# def self.add_lakes
+# def self.add_lake(l)
+# def self.add_sota_peak(p)
+# def self.add_pota_parks
+# def self.add_pota_park(p, existing_asset)
+# def self.add_humps
+# def self.add_hump(p, existing_asset)
+# def self.add_lighthouses
+# def self.add_lighthouse(p, existing_asset)
+# def self.add_wwff_parks
+# def self.add_wwff_park(p, existing_asset)
+
+
+
+###################################################################
+# GIS DATA HANDLING
+###################################################################
+# see lib/asset_gis_tools for:
+# per-asset methods:
+#   def calc_location
+#   def add_sota_activation_zone
+#   def add_simple_boundary
+#   def add_area
+#   def add_buffered_activation_zone
+#   def get_access
+#   def get_access_with_buffer(buffer)
+# Asset. methods:
+#   def self.add_areas
+#   def self.fix_invalid_polygons
+#   def self.add_simple_boundaries
+
+
 
 ############################################################
 # UTILS TO CALL FROM CONSOLE
