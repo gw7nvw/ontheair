@@ -5,7 +5,6 @@ class WwffPark < ActiveRecord::Base
   end
 
   def find_doc_park
-   #ps=Docparks.find_by_sql [ %q{select * from docparks dp where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), dp."WKT");} ]
    ps=Crownparks.find_by_sql [ %q{select * from crownparks dp where ST_Within(ST_GeomFromText('}+self.location.as_text+%q{', 4326), dp."WKT");} ]
    if !ps or ps.count==0 then
       puts "Trying for nearest"

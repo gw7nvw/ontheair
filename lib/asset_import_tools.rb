@@ -1,6 +1,6 @@
 module AssetImportTools
-i
-def self.add_parks
+
+def Asset.add_parks
   ps=Park.find_by_sql [ 'select id from parks;' ]
   ps.each do |pid|
     p=Park.find_by_id(pid)
@@ -31,7 +31,7 @@ def self.add_parks
   true
 end
 
-def self.add_huts
+def Asset.add_huts
   ps=Hut.all
   ps.each do |p|
     a=Asset.find_by(asset_type: 'hut', code: p.code)
@@ -50,7 +50,7 @@ def self.add_huts
   true
 end
 
-def self.add_islands
+def Asset.add_islands
   ps=Island.all
   ps.each do |p|
     a=Asset.find_by(asset_type: 'island', code: p.code)
@@ -70,14 +70,14 @@ def self.add_islands
   true
 end
 
-def self.add_lakes
+def Asset.add_lakes
   ls=Lake.where(is_active: true)
   ls.each do |l|
      Asset.add_lake(l)
   end
 end
 
-def self.add_lake(l)
+def Asset.add_lake(l)
   a=Asset.find_by(asset_type: 'lake', code: l.code)
   if !a then a=Asset.new; logger.debug "New" end
   a.asset_type="lake"
@@ -94,7 +94,7 @@ def self.add_lake(l)
   a
 end
 
-def self.add_sota_peak(p)
+def Asset.add_sota_peak(p)
   a=Asset.find_by(asset_type: 'summit', code: p.summit_code)
   if !a then logger.debug "New peak: "+p.summit_code; a=Asset.new end
   a.asset_type="summit"
@@ -115,14 +115,14 @@ def self.add_sota_peak(p)
   a
 end
 
-def self.add_pota_parks
+def Asset.add_pota_parks
   ps=PotaPark.all
   ps.each do |p|
     Asset.add_pota_park(p)
   end
 end
 
-def self.add_pota_park(p, existing_asset)
+def Asset.add_pota_park(p, existing_asset)
   a=Asset.find_by(asset_type: 'pota park', code: p.reference)
   if !a then a=Asset.new end
   a.asset_type="pota park"
@@ -152,14 +152,14 @@ def self.add_pota_park(p, existing_asset)
   a
 end
 
-def self.add_humps
+def Asset.add_humps
   ps=Hump.where('code is not null')
   ps.each do |p|
     Asset.add_hump(p, nil)
   end
 end
 
-def self.add_hump(p, existing_asset)
+def Asset.add_hump(p, existing_asset)
   a=Asset.find_by(asset_type: 'hump', code: p.code)
   if !a then
      a=Asset.new
@@ -182,14 +182,14 @@ def self.add_hump(p, existing_asset)
   a
 end
 
-def self.add_lighthouses
+def Asset.add_lighthouses
   ps=Lighthouse.where('code is not null')
   ps.each do |p|
     Asset.add_lighthouse(p, nil)
   end
 end
 
-def self.add_lighthouse(p, existing_asset)
+def Asset.add_lighthouse(p, existing_asset)
   a=Asset.find_by(asset_type: 'lighthouse', code: p.code)
   if !a then
      a=Asset.new
@@ -210,14 +210,14 @@ def self.add_lighthouse(p, existing_asset)
   a
 end
 
-def self.add_wwff_parks
+def Asset.add_wwff_parks
   ps=WwffPark.all
   ps.each do |p|
     Asset.add_wwff_park(p, nil)
   end
 end
 
-def self.add_wwff_park(p, existing_asset)
+def Asset.add_wwff_park(p, existing_asset)
   a=Asset.find_by(asset_type: 'wwff park', code: p.code)
   if !a then a=Asset.new end
   a.asset_type="wwff park"

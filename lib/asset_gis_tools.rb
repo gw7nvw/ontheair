@@ -43,13 +43,12 @@ end
 def add_sota_activation_zone(buffer=25)
   if self.altitude and self.location then
     logger.debug self.code
-    dem=Asset.get_custom_connection("cps",'dem15',DEMUSER,DEMPASSWORD)
     location=self.location
     alt_min=self.altitude-buffer
     alt_max=5000
     dist_max=0.04 #degrees
     logger.debug " select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(rast),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem16 where st_intersects(rast,st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))) as bar where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326)); "
-    az_poly=dem.exec_query(" select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(rast),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem16 where st_intersects(rast,st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))) as bar where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326)); ")
+    az_poly=Dem15.find_by_sql [" select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(rast),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem16 where st_intersects(rast,st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))) as bar where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326)); "]
     if az_poly and az_poly.count>0 and az_poly.first["geom"] then
       logger.debug az_poly.first["geom"]
       boundary=make_multipolygon(az_poly.first["geom"])
@@ -120,14 +119,14 @@ end
 
 
 #fix invalid polygons for all assets
-def self.fix_invalid_polygons
+def Asset.fix_invalid_polygons
     ActiveRecord::Base.connection.execute( "update assets set boundary=st_multi(ST_CollectionExtract(ST_MakeValid(boundary),3)) where id in (select id from assets where ST_IsValid(boundary)=false);")
     ActiveRecord::Base.connection.execute( "update assets set boundary_simplified=st_multi(ST_CollectionExtract(ST_MakeValid(boundary_simplified),3)) where id in (select id from assets where ST_IsValid(boundary_simplified)=false);")
     ActiveRecord::Base.connection.execute( "update assets set boundary_very_simplified=st_multi(ST_CollectionExtract(ST_MakeValid(boundary_very_simplified),3)) where id in (select id from assets where ST_IsValid(boundary_very_simplified)=false);")
 end
 
 #add simple boundaries for all assets
-def self.add_simple_boundaries
+def Asset.add_simple_boundaries
     ActiveRecord::Base.connection.execute( 'update assets set boundary_simplified=ST_Simplify("boundary",0.002) where boundary_simplified is null;')
     ActiveRecord::Base.connection.execute( 'update assets set boundary_very_simplified=ST_Simplify("boundary",0.02) where boundary_very_simplified is null;')
     ActiveRecord::Base.connection.execute( 'update assets set boundary_quite_simplified=ST_Simplify("boundary",0.002) where boundary_quite_simplified is null;')
@@ -153,21 +152,28 @@ def add_area
   end
 end
 
-def add_altitude(force=false)
+def add_altitude(force=false, read_only=false)
   #if altitude is not entered, calculate it from map 
   if self.location and (!self.altitude or self.altitude.to_i == 0 or force==true) then
     #get alt from map if it is blank or 0
-    altArr=Dem30.find_by_sql ["
+
+    altArr=Dem15.find_by_sql ["
       select ST_Value(rast, ST_GeomFromText(?,4326)) rid
-        from dem30s
+        from dem16
         where ST_Intersects(rast,ST_GeomFromText(?,4326));",
       self.location.to_s,
       self.location.to_s
     ]
 
     self.altitude=altArr.first.try(:rid).to_i
-    self.update_column(:altitude, self.altitude) #callback-safe write
+    if !read_only then self.update_column(:altitude, self.altitude) end #callback-safe write
   end
+end
+
+def Asset.get_altitude_for_location(location)
+  a=Asset.new(location: location)
+  a.add_altitude(false,true)
+  a.altitude
 end
 
 def add_buffered_activation_zone

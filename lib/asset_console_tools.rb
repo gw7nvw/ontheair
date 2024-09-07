@@ -1,7 +1,7 @@
 module AssetConsoleTools
 
 #Add / reapply region to all assets
-def self.add_regions
+def Asset.add_regions
   count=0
   a=Asset.first_by_id
   while a do
@@ -13,7 +13,7 @@ def self.add_regions
 end
 
 #Add / reapply district to all assets
-def self.add_districts
+def Asset.add_districts
   count=0
   a=Asset.first_by_id
   while a do
@@ -25,7 +25,7 @@ def self.add_districts
 end
 
 #Rebuild asset links for all assets
-def self.add_links
+def Asset.add_links
   as=Asset.find_by_sql [ " select id,code from assets " ]
   as.each do |aa|
     logger.debug aa.code
@@ -35,7 +35,7 @@ def self.add_links
 end
 
 #Remove any links that point to non-existant assets
-def self.prune_links
+def Asset.prune_links
   als=AssetLink.all
   als.each do |al|
     if !al.parent or !al.child then al.destroy end
@@ -43,7 +43,7 @@ def self.prune_links
 end
 
 #resave all assets
-def self.update_all
+def Asset.update_all
   a=Asset.first_by_id
   while a do
      a.save
@@ -53,7 +53,7 @@ def self.update_all
 end
 
 # add loction based on polygon for any assets missing a location
-def self.add_centroids
+def Asset.add_centroids
   a=Asset.first_by_id
   while a do
     if !a.location then
@@ -65,7 +65,7 @@ def self.add_centroids
   end
 end
 
-def self.add_sota_activation_zones(force=false)
+def Asset.add_sota_activation_zones(force=false)
   count=0
   if force==false then
     as=Asset.where(asset_type: 'summit', boundary: nil)
@@ -78,7 +78,7 @@ def self.add_sota_activation_zones(force=false)
     a.get_access
   end
 end
-def self.add_hema_activation_zones(force=false)
+def Asset.add_hema_activation_zones(force=false)
   count=0
   if force==false then
     as=Asset.where(asset_type: 'hump', boundary: nil)
@@ -92,7 +92,7 @@ def self.add_hema_activation_zones(force=false)
   end
 end
 
-def self.get_hema_access
+def Asset.get_hema_access
   as=Asset.where(asset_type: 'hump')
   as.each do |a|
     logger.debug a.code
@@ -100,7 +100,7 @@ def self.get_hema_access
   end
 end
 
-def self.get_sota_access
+def Asset.get_sota_access
   as=Asset.where(asset_type: 'summit')
   as.each do |a|
     logger.debug a.code
@@ -108,7 +108,7 @@ def self.get_sota_access
   end
 end
 
-def self.get_lake_access
+def Asset.get_lake_access
   as=Asset.where(asset_type: 'lake')
   as.each do |a|
     logger.debug a.code
@@ -118,12 +118,12 @@ end
 ##################################################
 # Step through assets without loading entire list
 ##################################################
-def self.first_by_id
+def Asset.first_by_id
   a=Asset.where("id > ?",0).order(:id).first
 end
 
 
-def self.next(id)
+def Asset.next(id)
   a=Asset.where("id > ?",id).order(:id).first
 end
 

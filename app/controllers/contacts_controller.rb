@@ -241,18 +241,6 @@ end
        params[:location1]=xyarr[0].to_s+" "+xyarr[1].to_s
        @contact.location1='POINT('+params[:location1]+')'
 
-      #if altitude is not entered, calculate it from map 
-      if !@contact.altitude1 or @contact.altitude1.to_i == 0 then
-         #get alt from map if it is blank or 0
-         altArr=Dem30.find_by_sql ["
-            select ST_Value(rast, ST_GeomFromText(?,4326))  rid
-               from dem30s
-               where ST_Intersects(rast,ST_GeomFromText(?,4326));",
-               'POINT('+params[:location1]+')',
-               'POINT('+params[:location1]+')']
-
-         @contact.altitude1=altArr.first.try(:rid).to_i
-       end
     else
        @contact.location1=nil
     end
@@ -273,18 +261,6 @@ end
        params[:location2]=xyarr[0].to_s+" "+xyarr[1].to_s
        @contact.location2='POINT('+params[:location2]+')'
 
-      #if altitude is not entered, calculate it from map 
-      if !@contact.altitude2 or @contact.altitude2.to_i == 0 then
-         #get alt from map if it is blank or 0
-         altArr=Dem30.find_by_sql ["
-            select ST_Value(rast, ST_GeomFromText(?,4326))  rid
-               from dem30s
-               where ST_Intersects(rast,ST_GeomFromText(?,4326));",
-               'POINT('+params[:location2]+')',
-               'POINT('+params[:location2]+')']
-
-         @contact.altitude2=altArr.first.try(:rid).to_i
-       end
     else
        @contact.location2=nil
     end

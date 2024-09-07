@@ -347,13 +347,6 @@ ActiveRecord::Schema.define(version: 20240907082003) do
     t.spatial  "location",   limit: {:srid=>4326, :type=>"point"}
   end
 
-  create_table "hut_photo_links", force: true do |t|
-    t.integer  "hut_id"
-    t.string   "url"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
   create_table "huts", force: true do |t|
     t.string   "name"
     t.string   "hutbagger_link"

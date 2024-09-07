@@ -34,7 +34,6 @@ class Park < ActiveRecord::Base
   end
 
   def doc_park
-    #dp=Docparks.find_by_id(self.id) 
     dp=Crownpark.find_by(napalis_id: self.id) 
   end
 
@@ -83,7 +82,6 @@ end
   def self.merge_crownparks
     count=0
     hundreds=0
-    #parks=Docparks.all
     parks=Crownpark.find_by_sql [ " select id from crownparks; " ]
     cc=0
     uc=0
@@ -144,7 +142,6 @@ end
 
   def all_boundary
    if self.boundary==nil then
-       #boundarys=Docparks.find_by_sql [ 'select id, ST_AsText("WKT") as "WKT" from docparks where id='+self.id.to_s ] 
        boundarys=Crownpark.find_by_sql [ 'select id, ST_AsText("WKT") as "WKT" from crownparks where napalis_id='+self.id.to_s ] 
        if boundarys and boundarys.count>0 then boundary=boundarys.first.WKT else boundary=nil end
    else
@@ -158,7 +155,6 @@ end
    if self.id then 
      if self.boundary==nil then
        rnd=0.0002
-       #boundarys=Docparks.find_by_sql [ 'select id, ST_AsText(ST_Simplify("WKT", '+rnd.to_s+')) as "WKT" from docparks where id='+self.id.to_s ] 
        boundarys=Crownpark.find_by_sql [ 'select id, ST_AsText(ST_Simplify("WKT", '+rnd.to_s+')) as "WKT" from crownparks where napalis_id='+self.id.to_s ] 
        if boundarys and boundarys.count>0 then boundary=boundarys.first.WKT else boundary=nil end
      else
@@ -172,7 +168,6 @@ end
    location=nil
    if self.id then
      if self.boundary==nil then
-#        locations=Docparks.find_by_sql [ 'select id, ST_Centroid("WKT") as "WKT" from docparks where id='+self.id.to_s ] 
         locations=Crownpark.find_by_sql [ 'select id, CASE
                   WHEN (ST_ContainsProperly("WKT", ST_Centroid("WKT")))
                   THEN ST_Centroid("WKT")

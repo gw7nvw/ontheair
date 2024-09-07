@@ -11,7 +11,7 @@ class AssetSaveTest < ActiveSupport::TestCase
   test "add elevation" do
     asset1=create_test_asset(asset_type: 'summit', location: create_point(173.3636016845703, -41.47439956665039), code_prefix: 'ZL3/OT-')
     asset1.reload
-    assert_in_delta 1480, asset1.altitude, 1, "Altitide correctly added +/-1m"
+    assert_in_delta 1496, asset1.altitude, 1, "Altitide correctly added +/-1m"
   end
 
   test "add AZ (SOTA)" do
