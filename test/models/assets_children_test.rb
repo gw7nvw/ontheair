@@ -15,16 +15,20 @@ class AssetChildrenTest < ActiveSupport::TestCase
     assert asset3.contains_assets==[].sort, "No asset contained by polygon elsewhere"
   end
 
-  test "For a polygon, polygons containing parent listed" do 
+ test "For a polygon, polygons containing parent listed" do 
+    #small
     asset1=create_test_asset(asset_type: 'park', location: create_point(174,-45), test_radius: 0.01)
+    #large
     asset2=create_test_asset(asset_type: 'park', location: create_point(174,-45), test_radius: 0.1)
+    #elsewhere
     asset3=create_test_asset(asset_type: 'park', location: create_point(174,-44), test_radius: 0.1)
-    assert asset1.contained_by_assets==[asset2].sort, "Asset Containing our smaller polygon added"
-    assert asset1.contains_assets==[].sort, "no contained assets for our smaller polygon"
-    assert asset2.contained_by_assets==[].sort, "No contaning assets for larger polygon"
-    assert asset2.contains_assets==[asset1].sort, "Smaller polygon contained by larger polygon"
-    assert asset3.contained_by_assets==[].sort, "No contaning assets for polygon elsewhere"
-    assert asset3.contains_assets==[].sort, "No asset contained by polygon elsewhere"
+
+    assert_equal asset1.contained_by_assets, [asset2].sort, "Asset Containing our smaller polygon added"
+    assert_equal asset1.contains_assets, [].sort, "no contained assets for our smaller polygon"
+    assert_equal asset2.contained_by_assets, [].sort, "No contaning assets for larger polygon"
+    assert_equal asset2.contains_assets, [asset1].sort, "Smaller polygon contained by larger polygon"
+    assert_equal asset3.contained_by_assets, [].sort, "No contaning assets for polygon elsewhere"
+    assert_equal asset3.contains_assets, [].sort, "No asset contained by polygon elsewhere"
   end
 
   test "For a polygon, polygons overlapping by 90%+ listed" do 

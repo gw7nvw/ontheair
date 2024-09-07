@@ -1,5 +1,6 @@
 module AssetGisTools
 
+
 #Get a 'location' for a park from a boundary.  By default return the
 #centroid, but if the centroid does not lie witin the boundary
 #then an arbitrary point within the polygon
@@ -16,12 +17,35 @@ def calc_location
   location
 end
 
-def add_sota_activation_zone
-  if self.asset_type=="summit" or self.asset_type=="hump" then
+# Only used on point assets where we can check if AZ is blank. 
+# Polygons will need to call get_access(_with_buffer) manually when needed
+# as we don't want to recalculate it on every save
+def add_activation_zone(force=false)
+  asset_test=Asset.find_by_sql [" select (boundary is not null) as has_boundary from assets where id=#{self.id}"]
+  if asset_test.first[:has_boundary]==false or force==true then
+    if self.type.ele_buffer  then
+      self.add_sota_activation_zone(self.type.ele_buffer)
+    elsif self.az_radius then
+      self.add_buffered_activation_zone
+    end
+  end
+
+  if self.type.dist_buffer then
+    self.get_access_with_buffer(self.type.dist_buffer)
+  else
+    self.get_access
+  end
+  
+end
+
+#add activation zone as area contained by contour 24m below summit, 
+#surrounding summit.
+def add_sota_activation_zone(buffer=25)
+  if self.altitude and self.location then
     logger.debug self.code
-    dem=Asset.get_custom_connection("cps",'dem15','mbriggs',DEMPASSWORD)
+    dem=Asset.get_custom_connection("cps",'dem15',DEMUSER,DEMPASSWORD)
     location=self.location
-    alt_min=self.altitude-25
+    alt_min=self.altitude-buffer
     alt_max=5000
     dist_max=0.04 #degrees
     logger.debug " select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(rast),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem16 where st_intersects(rast,st_buffer(ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326),#{dist_max}))) as bar where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{self.location.x} #{self.location.y})',4326)); "
@@ -35,11 +59,9 @@ def add_sota_activation_zone
 end
 
 
-#TODO: should rewrite this to only do assets with has_boundary
-def self.add_areas
-  ActiveRecord::Base.connection.execute( " update assets set area=ST_Area(ST_Transform(boundary,2193)) where boundary is not null and asset_type!='summit'")
-end
-
+#Find any public access areas overlapping the point or the boundary (if present)
+# Add them to the access_###_ids list for the asset
+# direct to db so callback-safe
 def get_access
   #roads
   ActiveRecord::Base.connection.execute("update assets set access_road_ids=(select array_agg(r.id) as road_ids from assets a, roads r where (ST_intersects (a.boundary, r.linestring) or ST_intersects (a.location, r.linestring)) and a.code='#{self.code}') where code='#{self.code}'")
@@ -62,6 +84,11 @@ def get_access
   self.reload
 end
 
+# Find any public access areas overlapping the point or the boundary (if present) 
+# applying
+# a ###m buffer aroud the asset (e.g. 500m for a lake)
+# Add them to the access_###_ids list for the asset
+# direct to db so callback-safe
 def get_access_with_buffer(buffer)
   if self.boundary then
      logger.debug "boundary"
@@ -108,16 +135,39 @@ end
 
 #add simplified boundary for this asset
 def add_simple_boundary
+  if self.type.has_boundary then
     ActiveRecord::Base.connection.execute( 'update assets set boundary_simplified=ST_Simplify("boundary",0.002) where id='+self.id.to_s+';')
     ActiveRecord::Base.connection.execute( 'update assets set boundary_very_simplified=ST_Simplify("boundary",0.02) where id='+self.id.to_s+';')
     ActiveRecord::Base.connection.execute( 'update assets set boundary_quite_simplified=ST_Simplify("boundary",0.002) where id='+self.id.to_s+';')
+  end
 end
 
 #add areas for all assets
 # Calculate area of the asset
-#TODO: should rewrite this to only do assets with has_boundary
 def add_area
-  ActiveRecord::Base.connection.execute( " update assets set area=ST_Area(ST_Transform(boundary,2193)) where boundary is not null and asset_type!='summit' and id="+self.id.to_s)
+  if self.type.has_boundary then
+    asset_test=Asset.find_by_sql [" select (boundary is not null) as has_boundary from assets where id=#{self.id}"]
+    if asset_test.first.has_boundary==true then
+      ActiveRecord::Base.connection.execute( " update assets set area=ST_Area(ST_Transform(boundary,2193)) where id="+self.id.to_s)
+    end
+  end
+end
+
+def add_altitude(force=false)
+  #if altitude is not entered, calculate it from map 
+  if self.location and (!self.altitude or self.altitude.to_i == 0 or force==true) then
+    #get alt from map if it is blank or 0
+    altArr=Dem30.find_by_sql ["
+      select ST_Value(rast, ST_GeomFromText(?,4326)) rid
+        from dem30s
+        where ST_Intersects(rast,ST_GeomFromText(?,4326));",
+      self.location.to_s,
+      self.location.to_s
+    ]
+
+    self.altitude=altArr.first.try(:rid).to_i
+    self.update_column(:altitude, self.altitude) #callback-safe write
+  end
 end
 
 def add_buffered_activation_zone
@@ -130,13 +180,6 @@ def make_multipolygon(boundary)
    boundary
 end
 
-
-def self.get_custom_connection(identifier, dbname, dbuser, password)
-  eval("Custom_#{identifier} = Class::new(ActiveRecord::Base)")
-  eval("Custom_#{identifier}.establish_connection(:adapter=>'postgis', :database=>'#{dbname}', " +
-      ":username=>'#{dbuser}', :password=>'#{password}')")
-  return eval("Custom_#{identifier}.connection")
-end
 
 end
 

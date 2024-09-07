@@ -13,7 +13,16 @@ class StaticPagesController < ApplicationController
       timeNow=Time.now()
       as=AdminSettings.last
       if !as.last_sota_activation_update_at or (as.last_sota_activation_update_at+30.days)<timeNow then
-        Resque.enqueue(UpdateExternalActivations)    
+        if ENV["RAILS_ENV"] == "production" then
+            Resque.enqueue(UpdateExternalActivations)    
+        elsif ENV["RAILS_ENV"] == "development"  then
+            as.last_sota_activation_update_at=Time.now()
+            as.save
+            ExternalActivation.import_sota
+            ExternalActivation.import_pota
+        else
+            #do nothing in test
+        end
       end
 
 

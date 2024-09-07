@@ -25,9 +25,8 @@ def self.add_parks
     a.location=p.location
     if new then a.save end
     ActiveRecord::Base.connection.execute("update assets set code='"+a.code+"', old_code='"+(a.old_code||"")+"',master_code='"+(a.master_code||"")+"', safecode='"+a.safecode+"', url='"+a.url+"', name='"+a.name+"', description='"+(a.description||"")+"', is_active="+a.is_active.to_s+", category='"+(a.category||"")+"', location=(select location from parks where id="+p.id.to_s+"),  boundary=(select boundary from parks where id="+p.id.to_s+") where id="+a.id.to_s+";")
-
+    a.post_save_acions
     logger.debug a.code
-
   end
   true
 end
@@ -111,11 +110,6 @@ def self.add_sota_peak(p)
   if a.changed? and (a.changed-['valid_from']).count>0 then
     logger.debug"Changed: "+a.changed.to_json
     a.save
-    a.add_region
-    a.add_district
-    a.add_sota_activation_zone
-    a.get_access
-    a.add_links
     logger.debug "Create/Updated: "+a.code
   end
   a
@@ -150,7 +144,7 @@ def self.add_pota_park(p, existing_asset)
     a.save
     if existing_asset  then
       ActiveRecord::Base.connection.execute("update assets set boundary=(select boundary from assets where id="+existing_asset.id.to_s+") where id="+a.id.to_s+";")
-      a.add_simple_boundary
+      a.post_save_actions
     end
   end
 
@@ -245,7 +239,7 @@ def self.add_wwff_park(p, existing_asset)
     a.save
     if existing_asset  then
       ActiveRecord::Base.connection.execute("update assets set boundary=(select boundary from assets where id="+existing_asset.id.to_s+") where id="+a.id.to_s+";")
-      a.add_simple_boundary
+      a.post_save_actions
     end
   end
   logger.debug a.code

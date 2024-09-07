@@ -33,7 +33,7 @@ class ContactChildrenTest < ActiveSupport::TestCase
     asset3=create_test_asset(asset_type: 'park', location: create_point(173,-45), test_radius: 0.095) # Specify length. Area=0.95x0.95=90.2%
     log=create_test_log(user1)
     contact=create_test_contact(user1, user2, log_id: log.id, asset2_codes: [asset1.code])
-    assert contact.asset2_codes.sort==[asset1.code, asset3.code].sort, "Containing polygon added"
+    assert_equal(contact.asset2_codes.sort,[asset1.code, asset3.code].sort, "Containing polygon added")
   end
 
   test "can be called with user-supplied location (point) and no parent asset" do

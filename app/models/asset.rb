@@ -7,11 +7,17 @@ class Asset < ActiveRecord::Base
  before_validation { self.assign_calculated_fields }
  after_save {self.post_save_actions}
 
-HEMA_REGEX=/^[a-zA-Z]{1,2}\d\/H[a-zA-Z]{2}-\d{3}/
 SIOTA_REGEX=/^VK-[a-zA-Z]{3}\d{1}/
 POTA_REGEX=/^[a-zA-Z0-9]{1,2}-\d{4,5}/
 WWFF_REGEX=/^\d{0,1}[a-zA-Z]{1,2}[fF]{2}-\d{4}/
 SOTA_REGEX=/^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/[a-zA-Z]{2}-\d{3}/
+HEMA_REGEX=/^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/H[a-zA-Z]{2}-\d{3}/
+
+SOTA_ASSET_URL="https://www.sotadata.org.uk/en/summit/"
+WWFF_ASSET_URL="https://wwff.co/directory/?showRef="
+POTA_ASSET_URL="https://pota.app/#/park/"
+HEMA_ASSET_URL="http://www.hema.org.uk/fullSummit.jsp?summitKey="
+SIOTA_ASSET_URL='https://www.silosontheair.com/silos/#'
 
 ################################################################
 # Pre- and Post save callbacks
@@ -20,9 +26,11 @@ SOTA_REGEX=/^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/[a-zA-Z]{2}-\d{3}/
 #After save (things that need an asset id, generally)
 def post_save_actions
   #do this here rather then before save to keep it pure PostGIS - no slow RGeo
-  if self.boundary then self.add_area end
-  #then check links, which requirs area
+  self.add_area
+  self.add_altitude
+  self.add_activation_zone
   self.add_links
+  self.add_simple_boundary
 end
 
 #After validation but before save
@@ -86,10 +94,9 @@ def add_links(flush=true)
         else
           containing_asset_code=linked_asset['code']; contained_asset_code=self.code
         end
-
         #for polygon assets, ensure >=90% overlap
-        if self.type.has_boundary and self.area and self.area>0 and linked_asset['has_boundary'] and linked_asset['boundary'] then
-          overlap=ActiveRecord::Base.connection.execute( " select ST_Area(ST_intersection(a.boundary, b.boundary)) as overlap, ST_Area(a.boundary) as area from assets a join assets b on b.code=#{contained_asset_code} where a.code=#{containing_asset_code}; ")
+        if self.type.has_boundary and self.area and self.area>0 and linked_asset['has_boundary'] and linked_asset['area'] then
+          overlap=ActiveRecord::Base.connection.execute( " select ST_Area(ST_intersection(a.boundary, b.boundary)) as overlap, ST_Area(b.boundary) as area from assets a join assets b on b.code='#{contained_asset_code}' where a.code='#{containing_asset_code}'; ")
           prop_overlap=overlap.first["overlap"].to_f/overlap.first["area"].to_f
           logger.debug "DEBUG: overlap #{prop_overlap.to_s} "+linked_asset['code']
           if prop_overlap>0.9 then 
@@ -333,8 +340,7 @@ end
 ############################################################
 # DETAILS OF ACTIVATIONS, CHASES ETC FOR THIS ASSET
 ############################################################
-#TODO suspect this one is not used
-def activations
+def activation_count
   logs=self.logs
   count=0
   logs.each do |log|
@@ -344,8 +350,11 @@ def activations
 end
 
 def activators
-  cals=Contact.where("? = ANY(asset1_codes)", self.code);
-  callsigns=cals.map{|cal| u=User.find_by_callsign_date(cal.callsign1, cal.date); if u then u.callsign end};
+  cals1=Contact.where("? = ANY(asset1_codes)", self.code);
+  callsigns1=cals1.map{|cal| u=User.find_by_callsign_date(cal.callsign1, cal.date); if u then u.callsign end};
+  cals2=Contact.where("? = ANY(asset2_codes)", self.code);
+  callsigns2=cals2.map{|cal| u=User.find_by_callsign_date(cal.callsign2, cal.date); if u then u.callsign end};
+  callsigns=callsigns1+callsigns2
   users=User.where(callsign: callsigns).order(:callsign)
 end
 
@@ -357,12 +366,15 @@ end
 
 def activators_including_external
   users=self.external_activators+self.activators
-  users.uniq
+  users.uniq.sort_by {|u| u.callsign}
 end
 
 def chasers
   cals=Contact.where("? = ANY(asset1_codes)", self.code);
-  callsigns=cals.map{|cal| u=User.find_by_callsign_date(cal.callsign2, cal.date); if u then u.callsign else nil end};
+  callsigns1=cals.map{|cal| u=User.find_by_callsign_date(cal.callsign2, cal.date); if u then u.callsign else nil end};
+  cals2=Contact.where("? = ANY(asset2_codes)", self.code);
+  callsigns2=cals2.map{|cal| u=User.find_by_callsign_date(cal.callsign1, cal.date); if u then u.callsign else nil end};
+  callsigns=callsigns1+callsigns2
   users=User.where(callsign: callsigns).order(:callsign)
 end
 
@@ -374,7 +386,7 @@ end
 
 def chasers_including_external
   users=self.external_chasers+self.chasers
-  users.uniq
+  users.uniq.sort_by {|u| u.callsign}
 end
 
 
@@ -572,7 +584,7 @@ def self.assets_from_code(codes)
           #HEMA
           logger.debug "HEMA"
           asset[:name]=code
-          asset[:url]='https://parksnpeaks.org/showAward.php?award=HEMA'
+          asset[:url]='http://hema.org.uk'
           asset[:external]=true
           asset[:code]=thecode.to_s
           asset[:type]='hump'
@@ -582,7 +594,7 @@ def self.assets_from_code(codes)
           #SiOTA
           logger.debug "SiOTA"
           asset[:name]=code
-          asset[:url]='https://www.silosontheair.com/silos/#'+thecode.to_s
+          asset[:url]=SIOTA_ASSET_URL+thecode.to_s
           asset[:external]=true
           asset[:code]=thecode.to_s
           asset[:type]='silo'
@@ -591,11 +603,7 @@ def self.assets_from_code(codes)
         elsif thecode=code.match(POTA_REGEX)  then
           #POTA
           logger.debug "POTA"
-          if code[0..1].upcase=='VK' or code[0..1].upcase=='AU'then
-            asset[:url]='https://parksnpeaks.org/getPark.php?actPark='+thecode.to_s+'&submit=Process'
-          else
-            asset[:url]='https://pota.app/#/park/'+thecode.to_s
-          end
+          asset[:url]=POTA_ASSET_URL+thecode.to_s
           asset[:title]="POTA"
           asset[:name]=code
           asset[:external]=true
@@ -606,11 +614,7 @@ def self.assets_from_code(codes)
           #WWFF
           logger.debug "WWFF"
           logger.debug thecode
-          if code[0..1].upcase=='VK' then
-            asset[:url]='https://parksnpeaks.org/getPark.php?actPark='+thecode.to_s+'&submit=Process'
-          else
-            asset[:url]='https://wwff.co/directory/?showRef='+thecode.to_s
-          end
+          asset[:url]=WWFF_ASSET_URL+thecode.to_s
           asset[:name]=code
           asset[:external]=true
           asset[:code]=thecode.to_s
@@ -621,7 +625,7 @@ def self.assets_from_code(codes)
           #SOTA
           logger.debug "SOTA"
           asset[:name]=code
-          asset[:url]="https://summits.sota.org.uk/summit/"+thecode.to_s
+          asset[:url]=SOTA_ASSET_URL+thecode.to_s
           asset[:external]=true
           asset[:code]=thecode.to_s
           asset[:type]='summit'
@@ -653,21 +657,16 @@ def external_url
   asset_type=self.asset_type
   if asset_type=="pota park" then
     #POTA
-    if code[0..1].upcase=='VK' or code[0..1].upcase=='AU' then
-      url='https://parksnpeaks.org/getPark.php?actPark='+code+'&submit=Process'
-    else
-      url='http://pota.app/#/park/'+code
-    end  
+    url=POTA_ASSET_URL+code
   elsif asset_type=='wwff park' then
     #WWFF
-    if code[0..1].upcase=='VK' then
-      url='https://parksnpeaks.org/getPark.php?actPark='+code+'&submit=Process'
-    else
-      url='http://wwff.co/directory/?showRef='+code
-    end
+    url=WWFF_ASSET_URL+code
   elsif asset_type=='summit' then
     #SOTA
-    url="https://summits.sota.org.uk/summit/"+code
+    url=SOTA_ASSET_URL+code
+  elsif asset_type=='hump' and self.old_code and self.old_code.to_i>0 then
+    #HEMA
+    url=HEMA_ASSET_URL+self.old_code 
   end
   url
 end
@@ -744,9 +743,8 @@ end
 #that type (area||point||user) and only find things more accurate
 #Input: [codes], 'area' or 'point' or nil
 #Returns: {location: Point, loc_source: 'point'||'area'||'user', asset: Asset
-def self.get_most_accurate_location(codes, loc_source="")
+def self.get_most_accurate_location(codes, loc_source="", location=nil)
   loc_asset=nil
-  location=nil
   accuracy=999999999999
 
   if codes.count>1 then
@@ -766,17 +764,19 @@ def self.get_most_accurate_location(codes, loc_source="")
             logger.debug "DEBUG: Assigning polygon locn"
           end
         else
-          #if there are two point locations (e.g. summit and hut)
-          #just use the last found (no way to know which is more accurate)
-          if loc_source=='point' then
-              logger.debug "Multiple POINT locations found"
-          end
+          if loc_source!="user" then
+            #if there are two point locations (e.g. summit and hut)
+            #just use the last found (no way to know which is more accurate)
+            if loc_source=='point' then
+                logger.debug "Multiple POINT locations found"
+            end
 
-          #assign point location
-          location=asset.location
-          loc_asset=asset
-          loc_source='point'
-          logger.debug "DEBUG: Assigning point locn"
+            #assign point location
+            location=asset.location
+            loc_asset=asset
+            loc_source='point'
+            logger.debug "DEBUG: Assigning point locn"
+          end
         end
       end
     end
@@ -802,7 +802,7 @@ def self.correct_separators(code)
   if code.match(/^[zZ][lL][a-zA-Z][-_\/][a-zA-Z]{2}[-_\/]\d{3,4}/) then
      code[3]='/'
      code[6]='-'
-  elsif code.match(/^[Zz][Ll][a-zA-Z][-_\/]\d{4}/) then
+  elsif code.match(/^[Zz][Ll][a-zA-Z][-_\/]\d{3,4}/) then
      code[3]='/'
   end
   code 
@@ -821,6 +821,8 @@ end
 #Optionally provide an asset from which the location was derived
 #Input: location: Point, asset: Asset or nil
 #Returns: codes: [code]
+#
+#TODO: Logic here is same as that in def add_links, can the two be combined?
 def self.containing_codes_from_location(location, asset=nil)
   loc_type="point" 
   codes=[]
@@ -838,7 +840,7 @@ def self.containing_codes_from_location(location, asset=nil)
       logger.debug "Filtering codes by area overlap"
       validcodes=[]
       codes.each do |code|
-        overlap=ActiveRecord::Base.connection.execute( " select ST_Area(ST_intersection(a.boundary, b.boundary)) as overlap, ST_Area(a.boundary) as area from assets a join assets b on b.code='#{code.code}' where a.id=#{asset.id.to_s}; ")
+        overlap=ActiveRecord::Base.connection.execute( " select ST_Area(ST_intersection(a.boundary, b.boundary)) as overlap, ST_Area(a.boundary) as area from assets a join assets b on b.code='#{code.code}' where a.id=#{asset.id}; ")
         prop_overlap=overlap.first["overlap"].to_f/overlap.first["area"].to_f
         logger.debug "DEBUG: overlap #{prop_overlap.to_s} "+code.code
         if prop_overlap>0.9 then
@@ -864,16 +866,17 @@ end
 # (in a region, if asset tyoes uses regions)
 # Input: asset_type: AssetType.name, region: region.name
 # Returns: code: string
-def self.get_next_code(asset_type, region)
+def self.get_next_code(asset_type, region='ZZ')
   if !region then region="ZZ" end
   logger.debug  "Region :"+region
   newcode=nil
   use_region=true
-  if asset_type=='hut' then prefix='ZLH/' end
-  if asset_type=='park' then prefix='ZLP/' end
-  if asset_type=='island' then prefix='ZLI/' end
-  if asset_type=='lake' then prefix='ZLL/'; use_region=false end
-  if asset_type=='lighthouse' then prefix='ZLB/'; use_region=false end
+  length=4
+  if asset_type=='hut' then prefix='ZLH/'; length=3 end
+  if asset_type=='park' then prefix='ZLP/'; length=4 end
+  if asset_type=='island' then prefix='ZLI/'; length=3 end
+  if asset_type=='lake' then prefix='ZLL/'; length=4; use_region=false end
+  if asset_type=='lighthouse' then prefix='ZLB/';length=3; use_region=false end
 
   if prefix then 
     #ZLx/XX-### or ZLx/XX-#### format codes
@@ -886,7 +889,7 @@ def self.get_next_code(asset_type, region)
         codestring=last_asset.code[7..-1]
       #or default to 0000
       else 
-        codestring="0000"
+        codestring="0"*length
       end
 
       # add one to last asset code
@@ -900,10 +903,10 @@ def self.get_next_code(asset_type, region)
       last_asset=Asset.where(:asset_type => asset_type).order(:code).last
       #try and determine number length from last asset code
       if last_asset then
-       codestring=last_asset.code[3..-1]
+       codestring=last_asset.code[4..-1]
       #or default to 000
       else 
-        codestring="000" 
+        codestring="0"*length 
       end
       # add one to last asset code
       codenumber=codestring.to_i
@@ -951,6 +954,7 @@ end
 #   def add_sota_activation_zone
 #   def add_simple_boundary
 #   def add_area
+#   def add_altitude
 #   def add_buffered_activation_zone
 #   def get_access
 #   def get_access_with_buffer(buffer)
@@ -977,5 +981,12 @@ end
 # def self.get_sota_access
 # def self.get_lake_access
 
+
+def self.get_custom_connection(identifier, dbname, dbuser, password)
+  eval("Custom_#{identifier} = Class::new(ActiveRecord::Base)")
+  eval("Custom_#{identifier}.establish_connection(:adapter=>'postgis', :database=>'#{dbname}', " +
+      ":username=>'#{dbuser}', :password=>'#{password}')")
+  return eval("Custom_#{identifier}.connection")
+end
 
 end

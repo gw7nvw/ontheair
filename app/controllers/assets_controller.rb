@@ -204,19 +204,6 @@ def associations
 
 end
 
-#  def asset_to_csv(items)
-#      require 'csv'
-#      csvtext=""
-#      if items and items.first then
-#        columns=["code"]; items.first.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") and !name.include?("_link") then columns << name end end
-#        csvtext << columns.to_csv
-#        items.each do |item|
-#           fields=[item.code]; item.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") and !name.include?("_link") then fields << value end end
-#           csvtext << fields.to_csv
-#        end
-#     end
-#     csvtext
-#  end
 
   private
   def asset_params
@@ -224,34 +211,19 @@ end
   end
 
   def convert_location_params(x,y)
+    # convert to WGS84 (EPSG4326) for database 
+    fromproj4s= Projection.find_by_id(2193).proj4
+    toproj4s=  Projection.find_by_id(4326).proj4
 
+    fromproj=RGeo::CoordSys::Proj4.new(fromproj4s)
+    toproj=RGeo::CoordSys::Proj4.new(toproj4s)
 
-       # convert to WGS84 (EPSG4326) for database 
-       fromproj4s= Projection.find_by_id(2193).proj4
-       toproj4s=  Projection.find_by_id(4326).proj4
+    xyarr=RGeo::CoordSys::Proj4::transform_coords(fromproj,toproj,x.to_f,y.to_f)
 
-       fromproj=RGeo::CoordSys::Proj4.new(fromproj4s)
-       toproj=RGeo::CoordSys::Proj4.new(toproj4s)
+    params[:location]=xyarr[0].to_s+" "+xyarr[1].to_s
+    @asset.location='POINT('+params[:location]+')'
 
-       xyarr=RGeo::CoordSys::Proj4::transform_coords(fromproj,toproj,x.to_f,y.to_f)
-
-       params[:location]=xyarr[0].to_s+" "+xyarr[1].to_s
-       @asset.location='POINT('+params[:location]+')'
-
-      #if altitude is not entered, calculate it from map 
-      if !@asset.altitude or @asset.altitude.to_i == 0 then
-         #get alt from map if it is blank or 0
-         altArr=Dem30.find_by_sql ["
-            select ST_Value(rast, ST_GeomFromText(?,4326))  rid
-               from dem30s
-               where ST_Intersects(rast,ST_GeomFromText(?,4326));",
-               'POINT('+params[:location]+')',
-               'POINT('+params[:location]+')']
-
-         @asset.altitude=altArr.first.try(:rid).to_i
-       end
   end
-
 
 end
 

@@ -108,4 +108,24 @@ class AssetCalculatedTest < ActiveSupport::TestCase
     assert asset1.first_activated.callsign1==user3.callsign, "Earliest contact returned for first activated when in external chase (callsign1): "+asset1.first_activated.to_json
     assert asset1.first_activated.callsign2==user2.callsign, "Earliest contact returned for first activated when in external chase (callsign2): "+asset1.first_activated.to_json
   end
+
+  test "Correct external URL for internal assets: POTA" do
+    asset1=create_test_asset(asset_type: 'pota park', code_prefix: 'NZ-0')
+    assert_equal 'https://pota.app/#/park/'+asset1.code, asset1.external_url, "POTA URL correct"
+  end
+
+  test "Correct external URL for internal assets: WWFF" do
+    asset1=create_test_asset(asset_type: 'wwff park', code_prefix: 'ZLFF-0')
+    assert_equal 'https://wwff.co/directory/?showRef='+asset1.code, asset1.external_url, "WWFF URL correct"
+  end
+
+  test "Correct external URL for internal assets: SOTA" do
+    asset1=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/OT-')
+    assert_equal 'https://www.sotadata.org.uk/en/summit/'+asset1.code, asset1.external_url, "SOTA URL correct"
+  end
+
+  test "Correct external URL for internal assets: HEMA" do
+    asset1=create_test_asset(asset_type: 'hump', code_prefix: 'ZL3/HOT-',old_code: 612345)
+    assert_equal 'http://www.hema.org.uk/fullSummit.jsp?summitKey='+asset1.old_code, asset1.external_url, "HEMA URL correct"
+  end
 end

@@ -3,7 +3,7 @@ require "test_helper"
 class LogImportAdifTest < ActiveSupport::TestCase
 
   test "Log contact imported successfully" do
-    TODO
+    raise("TODO")
     user1=create_test_user
     user2=create_test_user
     asset1=create_test_asset

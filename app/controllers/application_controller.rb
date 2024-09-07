@@ -39,7 +39,7 @@ class ApplicationController < ActionController::Base
   end
 
   def log_visit
-   if request.env["HTTP_USER_AGENT"].match(/\(.*https?:\/\/.*\)/) then
+   if request.env["HTTP_USER_AGENT"] and request.env["HTTP_USER_AGENT"].match(/\(.*https?:\/\/.*\)/) then
       Rails.logger.info "BOT: "+request.remote_ip
    else
       Rails.logger.info request.env["HTTP_USER_AGENT"]
