@@ -1,4 +1,5 @@
 class StaticPagesController < ApplicationController
+include ApplicationHelper
  
   def ack_news
     if current_user then
@@ -25,8 +26,6 @@ class StaticPagesController < ApplicationController
         end
       end
 
-
-
       spots()
       tzid=3
       if current_user then 
@@ -48,13 +47,14 @@ class StaticPagesController < ApplicationController
       @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
    
       @items=Item.find_by_sql [ "select * from items where (topic_id = 4 or topic_id=42 )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;" ]
-
   end
 
   def recent
+      @parameters=params_to_query
       @fulllogs=Log.find_by_sql [ " select * from logs order by date desc " ]
       @logs=@fulllogs.paginate(:per_page => 20, :page => params[:page])
   end
+
   def results
       if !@max_rows then @max_rows=2000 end
 
@@ -90,14 +90,12 @@ class StaticPagesController < ApplicationController
       @tz=Timezone.find(tzid)
      @items=Item.where(topic_id: HELP_TOPIC).order(:created_at).reverse
   end
+
   def faq
       tzid=3
       if current_user then tzid=current_user.timezone end
       @tz=Timezone.find(tzid)
      @items=Item.where(topic_id: FAQ_TOPIC).order(:created_at).reverse
-  end
-
-  def about
   end
 
   def spots
@@ -165,24 +163,8 @@ class StaticPagesController < ApplicationController
       if current_user then tzid=current_user.timezone end
       @tz=Timezone.find(tzid)
 
-      #url="https://api2.sota.org.uk/api/alerts/12?client=sotawatch&user=anon"
-      #alerts=JSON.parse(open(url).read)
-      #if alerts then
-      #  zl_alerts=alerts.find_all { |l| l["associationCode"][0..1]=="ZL" }
-      #  vk_alerts=alerts.find_all { |l| l["associationCode"][0..1]=="VK" }
-      #  zlvk_sota_alerts=zl_alerts+vk_alerts
-      #else
-        zlvk_sota_alerts=[]
-      #end
-
-     # pota_alerts=get_pota_alerts
-     # if pota_alerts then
-     #   zl_alerts=pota_alerts.find_all { |l| l["Reference"][0..1]=="ZL" }
-     #   vk_alerts=pota_alerts.find_all { |l| l["Reference"][0..1]=="VK" }
-     #   zlvk_pota_alerts=zl_alerts+vk_alerts
-     # else
-        zlvk_pota_alerts=[]
-     # end
+      zlvk_sota_alerts=[]
+      zlvk_pota_alerts=[]
 
       items=Item.where(:topic_id => 1, :item_type => "post").order(:created_at).reverse
       @hota_alerts=[]
@@ -242,72 +224,5 @@ class StaticPagesController < ApplicationController
 
 
 
-def get_pota_alerts
-  keys=[]
-  th=nil
-  url="https://stats.parksontheair.com/spotting/scheduling.php"
-  page=open(url).read
-  start=page.index("table id='example'")
-  if start then 
-    table=page[start..-1]
-    start=table.index("<th>")
-    fin=table.index("tbody")
-    if start and fin then 
-     th=table[start..fin-2]
-    end
-  end
-  
-  while th and th.length>0 
-  
-    key=th[4..th.index("</th>")-1]
-    start=th.index("</th>")
-    if start then th=th[start..-1] 
-      start=th.index("<th>")
-      if start then th=th[start..-1] else th=nil end
-    else th=nil end
-    
-    if key and key.length>0 then 
-      keys.push(key)
-    end
-  end
-
-  pota_alerts=[]
-  if table then 
-  start=table.index("tbody")
-  tbody=table[start..-1]
-  while tbody and tbody.length>0 
-    values=[]
-    start=tbody.index("<tr>")
-    fin=tbody.index("</tr>")
-    if start and fin then  
-      tr=tbody[start..fin]
-      tbody=tbody[fin+5..-1]
-  
-      while tr and tr.length>0
-        start=tr.index("<td>")
-        fin=tr.index("</td>")
-        if start and fin then 
-          td=tr[start+4..fin-1]
-          tr=tr[fin+5..-1]
-        else
-          td=nil
-          tr=nil
-        end
-        if td and td.length>0 then
-          values.push(td)
-        end  
-      end
-    else
-      tbody=nil
-      values=nil
-    end
-    if values then 
-      pota_alert=Hash[keys.zip(values.map {|i| i})]
-      pota_alerts.push(pota_alert)
-    end
-  end
-  end
-  pota_alerts
-end
  
 end

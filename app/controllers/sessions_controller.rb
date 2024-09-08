@@ -9,6 +9,7 @@ include SessionsHelper
 
   end
 
+
   def create
 
   password=params[:session][:password]

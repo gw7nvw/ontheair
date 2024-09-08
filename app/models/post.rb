@@ -1,6 +1,5 @@
 class Post < ActiveRecord::Base
 
-#include ActionView::Helpers::PostsHelper
 include PostsHelper
 include MapHelper
 has_attached_file :image,

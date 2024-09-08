@@ -1,12 +1,13 @@
 module ApplicationHelper
   def sign_in(user)
+    puts "Self: "+self.to_s
     remember_token = User.new_token
     cookies[:remember_token] = {value: remember_token, expires: 1.month.from_now.utc}
     user.update_attribute(:remember_token, User.digest(remember_token))
     self.current_user = user
     session[:user_id]=user.id
   end
-
+   
   def convert_to_text(html, line_length = 65, from_charset = 'UTF-8')
     require 'htmlentities'
 
