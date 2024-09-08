@@ -18,9 +18,6 @@ get "proxy" => "proxy#get", :as => "proxy"
 
 match '/sitemap.xml', to: 'sitemaps#index', via: 'get', as: "sitemap", defaults: { format: "xml" }
 
-match '/about',   to: 'static_pages#about',   via: 'get'
-match '/help',   to: 'static_pages#help',   via: 'get'
-match '/faq',   to: 'static_pages#faq',   via: 'get'
 match '/results',   to: 'static_pages#results',   via: 'get'
 match '/recent',   to: 'static_pages#recent',   via: 'get'
 match '/spots',   to: 'static_pages#spots',   via: 'get'

@@ -140,8 +140,8 @@ class UserBaggedTest < ActiveSupport::TestCase
     log=create_test_log(user1,asset_codes: [asset1.code, asset2.code, asset1.code])
     contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code, asset2.code, asset1.code])
     
-    assert_equal user1.bagged, [asset1.code,asset2.code], "Activating user has bagged both locations but repeated locn shown only once"
-    assert_equal user2.bagged, [asset1.code,asset2.code], "Chasing user has bagged both locations but repeated locn shown only once"
+    assert_equal user1.bagged.sort, [asset1.code,asset2.code].sort, "Activating user has bagged both locations but repeated locn shown only once"
+    assert_equal user2.bagged.sort, [asset1.code,asset2.code].sort, "Chasing user has bagged both locations but repeated locn shown only once"
   end
 
   test "Chaser-log creates bagged" do

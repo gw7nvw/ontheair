@@ -1,0 +1,19 @@
+zl4nvw:
+  firstname: Matt
+  lastname: Briggs
+  callsign: ZL4NVW
+  email: mattbriggs@yahoo.com 
+  password_digest:  <%= BCrypt::Password.create('dummy', cost: 4) %>
+  activated: true
+zl3cc:
+  firstname: Bob
+  callsign: ZL3CC
+  email: bob@bob.net
+  password_digest:  <%= BCrypt::Password.create('dummy', cost: 4) %>
+  activated: true
+zl4dis:
+  firstname: Dis
+  callsign: ZL4DIS
+  email: zl4dis@yahoo.com 
+  password_digest:  <%= BCrypt::Password.create('dummy', cost: 4) %>
+  activated: false

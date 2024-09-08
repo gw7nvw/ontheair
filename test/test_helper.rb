@@ -1,3 +1,4 @@
+
 ENV["RAILS_ENV"] ||= "test"
 require File.expand_path('../../config/environment', __FILE__)
 require 'rails/test_help'
@@ -12,6 +13,7 @@ $last_suffix="AAAA"
 $last_asset="place-AAAA"
 $last_asset_code=1
 $last_ext_act_id=1
+NEWS_TOPIC=42
 
 Region.create(sota_code: 'CB', name: "Canterbury", boundary: 'MULTIPOLYGON(((171 -40, 174 -40, 174 -41, 171 -41)))') 
 Region.create(sota_code: 'OT', name: "Otago", boundary: 'MULTIPOLYGON(((171 -41, 174 -41, 174 -42, 171 -42)))')
@@ -21,11 +23,19 @@ District.create(district_code: 'DU', name: "Dunedin", region_code: "OT",boundary
 District.create(district_code: 'CO', name: "Central Otago", region_code: "OT",boundary: 'MULTIPOLYGON(((173 -41, 174 -41, 174 -42, 173 -42)))')
 NzTribalLand.create({ "ogc_fid"=>21, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 175 -40, 175 -35, 170 -35)))", "name"=>"Ngāti Apa"})
 NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 175 -40, 175 -45, 170 -45)))", "name"=>"Ngāi Tahu"})
+Topic.create({id: NEWS_TOPIC, name: "News", is_public: true})
+
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   #
   # Note: You'll currently still have to declare fixtures explicitly in integration tests
   # -- they do not yet inherit this setting
   fixtures :all
+
+  def create_test_post(topic_id, title, contents, createdAt=Time.now())
+     post=Post.create(title: title, description: contents)
+     item=Item.create(topic_id: topic_id, item_type: 'post', item_id: post.id, created_at: createdAt)
+     item.reload
+  end
 
   def create_test_web_link(asset, link, link_class)
      AssetWebLink.create(asset_code: asset.code, url: link, link_class: link_class)
