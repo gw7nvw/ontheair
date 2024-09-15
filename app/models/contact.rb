@@ -20,9 +20,10 @@ class Contact < ActiveRecord::Base
     self.callsign2 = UserCallsign.clean(callsign2)
     self.add_user_ids
     self.check_codes_in_location
-    self.check_for_same_place_error
     location=self.get_most_accurate_location(true)
     self.add_containing_codes(location[:asset]) 
+    
+    self.check_for_same_place_error #again incase they match after adding child codes
     self.update_classes
     self.band=self.band_from_frequency
   end
@@ -204,12 +205,10 @@ class Contact < ActiveRecord::Base
   # - silently remove chaser location if this happens 
   # - better than failing a log upload or save where we have not ability to display error
   def check_for_same_place_error
-    self.asset2_codes.each do |code|
-      if self.log.asset_codes.include? code then
-         logger.debug "Removing invalid asset2 code: "+code
-         self.asset2_codes=self.asset2_codes-[code]
-         self.loc_desc2="INVALID"
-      end
+    if self.asset1_codes.sort==self.asset2_codes.sort then
+      logger.debug "Removing invalid asset2 codes"
+      self.asset2_codes=[]
+      self.loc_desc2="INVALID"
     end
   end
 
@@ -248,7 +247,7 @@ class Contact < ActiveRecord::Base
   #add child asset#_codes for both parties
   def add_containing_codes(asset)
     #just inherit log codes for assets1
-    self.asset1_codes=self.log.asset_codes
+    if self.log then self.asset1_codes=self.log.asset_codes end
  
     #then lookup codes for assets2
     #replace supplied replaced codes with new master codes
@@ -262,7 +261,7 @@ class Contact < ActiveRecord::Base
   # user supplied => point based asset => area based asset (smallest area)
   def get_most_accurate_location(force = false)
     #just inherit location1 from log
-    self.location1=self.log.location1
+    if self.log then self.location1=self.log.location1 end
 
     #location2
     location={location: self.location2, source: self.loc_source2, asset: nil}
@@ -287,7 +286,7 @@ class Contact < ActiveRecord::Base
     if self.user1_id then
       user=User.find_by_id(self.user1_id)
       if user then
-        self.log.update_qualified
+        if self.log then self.log.update_qualified end
         if Rails.env.production? then 
           user.outstanding=true;user.save;Resque.enqueue(Scorer) 
         elsif Rails.env.development? then
@@ -329,10 +328,82 @@ class Contact < ActiveRecord::Base
     log
   end
 
+  # Check if a log exists matching a contact with no log
+  # - if it does, add contact to log
+  # - if it doesn't, create lg for contact and add it
+  #
+  # If called with reverse=true:
+  # - creates a new activator contact from provided chaser contact, then
+  #   associates with log as above
+  def find_create_log_matching_contact(do_reverse=false)
+    if do_reverse then 
+      contact=self.reverse
+      contact.id=nil
+      contact.log_id=nil
+      contact.save
+    else
+      contact=self
+    end
+
+    if contact.log_id then
+      logger.error 'Should not call find_create_log_matching_contact for a contact already in a log'
+    else
+      #use only the most accrate location when searching for log
+      #as chaser may not have included the parks, islands etc to go with
+      #a summit
+      asset_search=Asset.get_most_accurate_location(contact.asset1_codes)
+      if asset_search and asset_search[:asset] then asset=Asset.find_by(id: asset_search[:asset].id) end
+      if asset then
+        dup=Log.find_by("callsign1='#{self.callsign1}' and date::date='#{contact.date.to_date}' and '#{asset.code}'=ANY(asset_codes)")
+        if dup then
+          #now check the log does not list other more accturate locations
+          dup_loc=Asset.get_most_accurate_location(dup.asset_codes)
+          #if so, do not match
+          if dup_loc[:asset].id!=asset.id then
+            dup=nil
+          end
+        end
+      else
+        #must be an overseas or mistyped asset code so just 
+        #match on the full set of codes given rather than finding the most
+        #accurate
+        dup=Log.find_by_sql [" select l.* from logs l inner join contacts c on c.id=#{contact.id} where l.callsign1=c.callsign1 and l.date::date=c.date::date and (l.asset_codes <@ c.asset1_codes and l.asset_codes @> c.asset1_codes); "]
+        dup=dup.first
+      end
+      if dup then 
+        log=dup
+        logger.debug "Reuse log"
+      else
+        logger.debug "New log"
+        log=Log.create(callsign1: contact.callsign1, date: contact.date, asset_codes: contact.asset1_codes, is_qrp1: contact.is_qrp1, is_portable1: contact.is_portable1, location1: contact.location1)
+      end
+      contact.log_id=log.id
+      contact.save
+    end
+    contact 
+  end
+
+  #wrapper for the above to confirm a chaser contact into an activator log
+  def confirm_chaser_contact
+    find_create_log_matching_contact(true)
+  end
+
+  #Remove asset2_codes from a contact at other party's request  
+  def refute_chaser_contact
+    if self.asset2_codes and self.asset2_codes.count>0 then
+      self.loc_desc2="Removed: "+self.asset2_codes.to_s+" at "+self.callsign2+"'s request"
+      self.asset2_codes=[]
+      self.location2=nil
+      self.save
+    end
+  end
+
   # Return a dulicate (unsaved) contact with the parties reversed from the 
   # current contact (returned contact is to be used in memory, not to be saved)
   def reverse
     c=self.dup
+    c.name1=self.name2
+    c.name2=self.name1
     c.callsign1=self.callsign2
     c.callsign2=self.callsign1
     c.power1=self.power2

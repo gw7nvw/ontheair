@@ -76,6 +76,8 @@ resources :logs
  get 'logs/:id/delete', to: 'logs#delete'
 
 match "/contacts/:id/editlog", :to => "logs#editcontact", :via => "get"
+match "/contacts/:id/confirm", :to => "contacts#confirm", :via => "get"
+match "/contacts/:id/refute", :to => "contacts#refute", :via => "get"
 resources :contacts
 
 resources :assets

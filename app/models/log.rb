@@ -272,7 +272,6 @@ class Log < ActiveRecord::Base
          timestring=(timestring||"").rjust(4,'0')
 
          if timestring and protolog.date then contact.time=protolog.date.strftime("%Y-%m-%d")+" "+timestring[0..1]+":"+timestring[2..3] end
-
          #validate contact
          if !contact.date then
            errors.push("Record #{record_count.to_s}: Save contact #{contact_count.to_s} failed: no date/time")
@@ -368,7 +367,7 @@ class Log < ActiveRecord::Base
     self.asset_classes.each do |ac|
       at=AssetType.find_by(name: ac)
       unique_contacts=Contact.find_by_sql [" select distinct callsign2, mode, band from contacts where log_id=#{self.id};"]
-      if unique_contacts.count>=at.min_qso then 
+      if at and unique_contacts.count>=at.min_qso then 
         asset_qualified=true
       else
         asset_qualified=false
@@ -382,7 +381,7 @@ class Log < ActiveRecord::Base
 
   def self.valid_logfile_entry(line,filetype)
     if filetype=='adif' then
-      valid=if line.upcase['QSO_DATE'] or line.upcase['TIME_ON'] then true else false end
+      valid=if line.upcase['CALL'] then true else false end
     else
       valid=line[0..1]=='V2'
     end
@@ -504,6 +503,14 @@ class Log < ActiveRecord::Base
 
   def self.parse_adif_record(line, protolog, contact)
     timestr=nil
+    freq_basis=""
+    my_city=""
+    my_state=""
+    my_country=""
+    city=""
+    state=""
+    country=""
+    callsign_source=nil
 
     line.split("<").each do |parm|
       if parm and parm.length>0 then
@@ -529,6 +536,7 @@ class Log < ActiveRecord::Base
         when "station_callsign"
            if value and value.length>0 and value.strip.length>0 then
              callsign=value.strip.upcase
+             callsign_source=1
              #remove suffix
              if callsign['/'] then callsign=User.remove_call_suffix(callsign) end
              protolog.callsign1=callsign
@@ -536,16 +544,61 @@ class Log < ActiveRecord::Base
            end
         when "operator"
            if value and value.length>0 and value.strip.length>0 then
-             callsign=value.strip.upcase
-             #remove suffix
-             if callsign['/'] then callsign=User.remove_call_suffix(callsign) end
-             protolog.callsign1=callsign
-             contact.callsign1=callsign
+             if !callsign_source or callsign_source>2 then
+               callsign=value.strip.upcase
+               #remove suffix
+               if callsign['/'] then callsign=User.remove_call_suffix(callsign) end
+               protolog.callsign1=callsign
+               contact.callsign1=callsign
+               callsign_source=2
+             end
+           end
+        when "owner_callsign"
+           if value and value.length>0 and value.strip.length>0 then
+             if !callsign_source or callsign_source>3 then
+               callsign=value.strip.upcase
+               #remove suffix
+               if callsign['/'] then callsign=User.remove_call_suffix(callsign) end
+               protolog.callsign1=callsign
+               contact.callsign1=callsign
+               callsign_source=3
+             end
+           end
+        when "eq_call"
+           if value and value.length>0 and value.strip.length>0 then
+             if !callsign_source or callsign_source>4 then
+               callsign=value.strip.upcase
+               #remove suffix
+               if callsign['/'] then callsign=User.remove_call_suffix(callsign) end
+               protolog.callsign1=callsign
+               contact.callsign1=callsign
+               callsign_source=4
+             end
            end
         when "qso_date"
            if value and value.length>0 and value.strip.length>0 then
              protolog.date=value.strip
              contact.date=value.strip
+           end
+        when "qso_date_off"
+           if value and value.length>0 and value.strip.length>0  and !contact.date then
+             protolog.date=value.strip
+             contact.date=value.strip
+           end
+        when "my_altitude"
+           if value and value.length>0 and value.strip.length>0 then
+             contact.altitude1=value.strip.to_i
+           end
+        when "my_pota_ref"
+           if value and value.length>0 and value.strip.length>0 then
+             values=value.split(',')
+             values.each do |val|
+               val=Asset.correct_separators(val.strip)
+               protolog.asset_codes.push(val)
+               contact.asset1_codes.push(val)
+               protolog.is_portable1=true
+               contact.is_portable1=true
+             end
            end
         when "my_wwff_ref"
            if value and value.length>0 and value.strip.length>0 then
@@ -582,7 +635,11 @@ class Log < ActiveRecord::Base
            end
         when "comment"
            if value and value.length>0 then
-             contact.comments1=value.gsub(/\r/,'').gsub(/\n/,'')
+             contact.comments1=value.gsub(/\r/,'').gsub(/\n/,'').strip
+           end
+        when "notes"
+           if value and value.length>0 then
+             contact.comments2=value.gsub(/\r/,'').gsub(/\n/,'').strip
            end
         when "my_antenna"
            if value and value.length>0 then
@@ -591,8 +648,8 @@ class Log < ActiveRecord::Base
            end
         when "my_rig"
            if value and value.length>0 then
-             protolog.transceiver1=value.gsub(/\r/,'').gsub(/\n/,'')
-             contact.transceiver1=value.gsub(/\r/,'').gsub(/\n/,'')
+             protolog.transceiver1=value.gsub(/\r/,'').gsub(/\n/,'').strip
+             contact.transceiver1=value.gsub(/\r/,'').gsub(/\n/,'').strip
            end
         when "my_lat"
            if value and value.length>0 then
@@ -600,16 +657,30 @@ class Log < ActiveRecord::Base
              contact.y1=pos
              protolog.y1=pos
            end
-        when "my_long"
+        when "my_lon"
            if value and value.length>0 then
              pos=Log.degs_from_deg_min_sec(value)
              contact.x1=pos
              protolog.x1=pos
            end
+        when "my_gridsquare"
+           if value and value.length>0 and value.strip.length>0 then
+             pos=Asset.maidenhead_to_lat_lon(value.strip)
+             contact.location1="POINT(#{pos[:x]} #{pos[:y]})" 
+             protolog.location1="POINT(#{pos[:x]} #{pos[:y]})" 
+             protolog.loc_source="user"
+           end
         when "my_city"
            if value and value.length>0 and value.strip.length>0 then
-             contact.loc_desc1=value.strip
-             protolog.loc_desc1=value.strip
+             my_city=value.strip
+           end
+        when "my_state"
+           if value and value.length>0 and value.strip.length>0 then
+             my_state=value.strip
+           end
+        when "my_country"
+           if value and value.length>0 and value.strip.length>0 then
+             my_country=value.strip
            end
         when "tx_pwr"
            if value and value.length>0 and value.strip.length>0 then
@@ -622,13 +693,15 @@ class Log < ActiveRecord::Base
            end
         when "band"
            if value and value.length>0 and value.strip.length>0 then
-             if !contact.frequency then
+             if freq_basis!="freq" then #freq priority over band
                contact.frequency=Contact.frequency_from_band(value.strip)
+               freq_basis="band"
              end
            end
         when "freq"
            if value and value.length>0 and value.strip.length>0 then
              contact.frequency=value.strip
+             freq_basis="freq"
            end
         when "rst_sent"
            if value and value.length>0 and value.strip.length>0 then
@@ -644,17 +717,27 @@ class Log < ActiveRecord::Base
            end
         when "time_off"
            if value and value.length>0 and value.strip.length>0 then
-             timestr=value.strip.gsub(':','')
+             if !timestr or timestr=="" then timestr=value.strip.gsub(':','') end
+           end
+        when "altitude"
+           if value and value.length>0 and value.strip.length>0 then
+             contact.altitude2=value.strip.to_i
            end
         when "lat"
            if value and value.length>0 then
              pos=Log.degs_from_deg_min_sec(value)
              contact.y2=pos
            end
-        when "long"
+        when "lon"
            if value and value.length>0 then
              pos=Log.degs_from_deg_min_sec(value)
              contact.x2=pos
+           end
+        when "gridsquare"
+           if value and value.length>0 and value.strip.length>0 then
+             pos=Asset.maidenhead_to_lat_lon(value.strip)
+             contact.location2="POINT(#{pos[:x]} #{pos[:y]})" 
+             contact.loc_source2="user"
            end
         when "mode"
            if value and value.length>0 and value.strip.length>0 then
@@ -663,6 +746,10 @@ class Log < ActiveRecord::Base
         when "submode"
            if value and value.length>0 and value.strip.length>0 then
              contact.mode=value.strip
+           end
+        when "rig"
+           if value and value.length>0 then
+             contact.transceiver2=value.gsub(/\r/,'').gsub(/\n/,'').strip
            end
         when "name"
            if value and value.length>0 and value.strip.length>0 then
@@ -675,15 +762,36 @@ class Log < ActiveRecord::Base
              if callsign['/'] then callsign=User.remove_call_suffix(callsign) end
              contact.callsign2=callsign
            end
+        when "city"
+           if value and value.length>0 and value.strip.length>0 then
+             city=value.strip
+           end
+        when "state"
+           if value and value.length>0 and value.strip.length>0 then
+             state=value.strip
+           end
+        when "country"
+           if value and value.length>0 and value.strip.length>0 then
+             country=value.strip
+           end
         when "qth"
            if value and value.length>0 and value.strip.length>0 then
-             contact.loc_desc2=value.strip
+             city=value.strip
            end
         when "rx_pwr"
            if value and value.length>0 and value.strip.length>0 then
              contact.power2=value.strip
              if value.strip.to_f<=10 then 
                contact.is_qrp2=true
+             end
+           end
+        when "pota_ref"
+           if value and value.length>0 then
+             values=value.split(',')
+             values.each do |val|
+               val=Asset.correct_separators(val.strip)
+               contact.asset2_codes.push(val)
+               contact.is_portable2=true
              end
            end
         when "wwff_ref"
@@ -716,6 +824,22 @@ class Log < ActiveRecord::Base
         end
        end #end of if
     end
+
+    #combined fields
+    contact.loc_desc2=[city, state, country].compact.split("").flatten.join(", ")
+    contact.loc_desc1=[my_city, my_state, my_country].compact.split("").flatten.join(", ")
+    protolog.loc_desc1=[my_city, my_state, my_country].compact.split("").flatten.join(", ")
+
+    if contact.x1 and contact.y1 then
+      contact.location1="POINT(#{contact.x1} #{contact.y1})"
+      protolog.location1="POINT(#{contact.x1} #{contact.y1})"
+      protolog.loc_source="user"
+    end
+    if contact.x2 and contact.y2 then
+      contact.location2="POINT(#{contact.x2} #{contact.y2})"
+      contact.loc_source2="user"
+    end
+
     return protolog, contact, timestr
   end
 
@@ -726,6 +850,9 @@ class Log < ActiveRecord::Base
       value=value.gsub(/\r/,'').gsub(/\n/,'')
       if value[0].upcase=="S" or value[0].upcase=="W" then
          negative=true
+         value=value[1..-1]
+      end
+      if value[0].upcase=="N" or value[0].upcase=="E" then
          value=value[1..-1]
       end
       if value.match(/^\d{1,3} \d{1,3} \d{1}./) then

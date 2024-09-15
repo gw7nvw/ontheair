@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240907082003) do
+ActiveRecord::Schema.define(version: 20240915012256) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -193,8 +193,8 @@ ActiveRecord::Schema.define(version: 20240907082003) do
     t.string   "comments1"
     t.boolean  "first_contact1",                                          default: true
     t.string   "loc_desc1"
-    t.integer  "x1"
-    t.integer  "y1"
+    t.float    "x1"
+    t.float    "y1"
     t.integer  "altitude1"
     t.string   "callsign2"
     t.integer  "user2_id"
@@ -205,8 +205,8 @@ ActiveRecord::Schema.define(version: 20240907082003) do
     t.string   "comments2"
     t.boolean  "first_contact2",                                          default: true
     t.string   "loc_desc2"
-    t.integer  "x2"
-    t.integer  "y2"
+    t.float    "x2"
+    t.float    "y2"
     t.integer  "altitude2"
     t.datetime "date"
     t.datetime "time"
@@ -586,11 +586,6 @@ ActiveRecord::Schema.define(version: 20240907082003) do
     t.string   "region"
   end
 
-  create_table "places", force: true do |t|
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
   create_table "posts", force: true do |t|
     t.string   "title"
     t.text     "description"
@@ -760,11 +755,11 @@ ActiveRecord::Schema.define(version: 20240907082003) do
     t.string   "password_digest"
     t.string   "remember_token"
     t.string   "activation_digest"
-    t.boolean  "activated",             default: false
+    t.boolean  "activated",                       default: false
     t.datetime "activated_at"
-    t.boolean  "is_admin",              default: false
-    t.boolean  "is_active",             default: true
-    t.boolean  "is_modifier",           default: false
+    t.boolean  "is_admin",                        default: false
+    t.boolean  "is_active",                       default: true
+    t.boolean  "is_modifier",                     default: false
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "reset_digest"
@@ -792,6 +787,8 @@ ActiveRecord::Schema.define(version: 20240907082003) do
     t.boolean  "logs_wwff"
     t.string   "qualified_count"
     t.string   "qualified_count_total"
+    t.string   "confirmed_activated_count"
+    t.string   "confirmed_activated_count_total"
   end
 
   add_index "users", ["callsign"], :name => "index_users_on_callsign"

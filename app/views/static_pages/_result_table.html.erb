@@ -54,7 +54,8 @@ end%>
             <%= link_to user.callsign.upcase, '/users/'+user.callsign, remote: true, :id => 'user_link_'+user.id.to_s, :style => (if not user.activated then 'color:grey' else '' end), :onclick => "linkHandler('user_link_"+user.id.to_s+"')" %>
           </td>
           <% AssetType.where("keep_score = true").each do |asset_type| %>
-            <td><%=(user[scorefield][asset_type.name]||0).to_s%></td>
+            <% if @scoreby=='activated' and user[scorefield][asset_type.name]!=user["confirmed_"+scorefield][asset_type.name] then orphans=true else orphans=false end %>
+            <td><%=(user[scorefield][asset_type.name]||0).to_s%><%if orphans then %><span title="Includes activations referenced in chaser logs for which no activator log has been submitted"><sup><%=link_to "+", '/contacts?orphans=true&user='+user.callsign, remote: true, :id => 'orphan_link_'+user.id.to_s%></sup></span><%end%></td>
           <% end %>
           <td><%=(user[scorefield]['p2p']||0).to_s%></td>
           <td><%=(user[scorefield]['qrp']||0).to_s%></td>

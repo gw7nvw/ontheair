@@ -72,6 +72,7 @@
                   <li><%= link_to "My Awards (beta)", '/users/'+current_user.callsign+"/awards",  remote: true,  :id => 'awards_link', :onclick => "linkHandler('awards_link')"  %></li>
                   <% if write_access? then %>
                     <li><%= link_to "My Contacts", '/contacts',  remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')"  %></li>
+                    <li><%= link_to "Unmatched contacts with Me", '/contacts?orphans=true',  remote: true,  :id => 'orphans_link', :onclick => "linkHandler('orphans_link')"  %></li>
                     <li class="divider"></li>
                     <li><%= link_to "Lake Activator Log", '/contacts.csv?type=lake&simple=true&activator=true', :id => 'zlla_link' %></li>
                     <li><%= link_to "Lake Chaser Log", '/contacts.csv?type=lake&simple=true&chaser=true', :id => 'zllc_link' %></li>

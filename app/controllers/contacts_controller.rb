@@ -1,8 +1,12 @@
 class ContactsController < ApplicationController
   before_action :signed_in_user, only: [:edit, :update, :create, :new]
-
+ 
   def index_prep
     whereclause="true"
+    #orphan contacts
+    if params[:orphans] then @orphans=true else @orphans=false end
+
+    #everything else!
     if params[:filter] then
       @filter=params[:filter]
       whereclause="is_"+@filter+" is true"
@@ -40,11 +44,16 @@ class ContactsController < ApplicationController
          whereclause=whereclause+" and ('"+params[:asset].gsub('_','/')+"'=ANY(asset1_codes) or '"+params[:asset].gsub('_','/')+"'=ANY(asset2_codes))"
          @asset=Asset.find_by(code: params[:asset].upcase)
          if @asset then @assetcode=@asset.code end
-    end 
-    @fullcontacts=Contact.find_by_sql [ "select * from contacts where "+whereclause+" order by date desc, time desc" ]
+    end
+    if !@orphans then  
+      @fullcontacts=Contact.find_by_sql [ "select * from contacts where "+whereclause+" order by date desc, time desc" ]
+    else
+      @fullcontacts=@user.orphan_activations
+    end
  
     #back compatibility
     if params[:type] then params[:class]=params[:type] end
+
     if params[:class] and params[:class]!="all" then  
       @class=params[:class]
       as=[]
@@ -125,6 +134,7 @@ class ContactsController < ApplicationController
      @contact.callsign1=current_user.callsign
  
   end
+
  
 def create
   if signed_in?  then
@@ -171,6 +181,39 @@ end
     end
   end
 
+ def refute
+    @parameters=params_to_query
+    if(!(contact = Contact.find_by_id(params[:id].to_i.abs)))
+      redirect_to '/'
+    end
+    if current_user  and (current_user.id==contact.user2_id or current_user.is_admin) then
+      contact.refute_chaser_contact
+      flash[:success]="Your location details for this contact have been updated"
+    else
+      flash[:error]="You do not have permissions to refute this contact"
+    end
+    params[:orphans]=true
+    params[:user]=contact.callsign2
+    index_prep()
+    render 'index'
+ end
+
+ def confirm
+    @parameters=params_to_query
+    if(!(contact = Contact.find_by_id(params[:id].to_i.abs)))
+      redirect_to '/'
+    end
+    if current_user  and (current_user.id==contact.user2_id or current_user.is_admin) then
+      contact.confirm_chaser_contact
+      flash[:success]="New activator log entry added for this contact"
+    else
+      flash[:error]="You do not have permissions to confirm this contact"
+    end
+    params[:orphans]=true
+    params[:user]=contact.callsign2
+    index_prep()
+    render 'index'
+ end
 
  def contacts_to_csv(items)
     if signed_in? then

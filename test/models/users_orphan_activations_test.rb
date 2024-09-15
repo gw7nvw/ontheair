@@ -1,8 +1,9 @@
 require "test_helper"
 
-class UserActivatedTest < ActiveSupport::TestCase
+class UserOrphanActivationTest < ActiveSupport::TestCase
 
-  test "user activates asset with one activation but not chase" do 
+  test "user activates asset with one activation but not chase" do    
+    raise("TODO - orphan activations")
     user1=create_test_user
     user2=create_test_user
     asset1=create_test_asset

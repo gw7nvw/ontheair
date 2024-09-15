@@ -54,6 +54,21 @@ $(function () {
 </div>
 <div id="right_scroll">
   <%= render 'flash' %>
+  <% if @orphans==true then%>
+    <div class="sectiontitle">
+       Unmatched chaser contacts
+     </div>
+    <div class="erow">
+       This page lists contacts logged by others that record you in locations for which
+       you have never submitted an activator log. If everyone's logs are correct and 
+       up to date then there should be no contacts listed here</br>
+       <ul>
+         <li><b>Confirm contact</b> will confirm the contact and create the appropriate activator log </li>
+         <li><b>Refute contact</b> will remove an incorrect location for you from the chaser's log</li>
+       </ul>
+    </div>
+  <% else %>
+
   <%= form_tag '/contacts', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
     <br/>
     <div class="erow">
@@ -96,6 +111,7 @@ $(function () {
       </div>
     </div>
   </form>
+  <% end %>
   <div class="erow">
     <%= render 'list' %>
   </div>

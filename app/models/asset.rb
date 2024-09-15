@@ -223,6 +223,27 @@ end
 ####################################################################
 # Virtual calculated fields
 
+def self.maidenhead_to_lat_lon(maidenhead)
+  lat=180.0
+  long=180.0
+  maidenhead=maidenhead[0..5]
+  #pad 4 digit maidenhead to 6
+  if maidenhead.length==4 then maidenhead=maidenhead+"aa" end
+  abc="abcdefghijklmnopqrstuvwxyz"
+  long20=abc.upcase.index(maidenhead[0]).to_f
+  lat10=abc.upcase.index(maidenhead[1]).to_f  
+  long2=maidenhead[2].to_f
+  lat1=maidenhead[3].to_f
+  longm=abc.index(maidenhead[4]).to_f
+  latm=abc.index(maidenhead[5]).to_f
+
+  long=long20*20+long2*2+longm/12
+  lat=lat10*10+lat1+latm/24
+  long=long-180
+  lat=lat-90
+  location={x: long, y: lat}
+end
+
 # Return 6-digit maidenhead locator from location
 def maidenhead
   if self.location then

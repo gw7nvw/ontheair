@@ -3,6 +3,8 @@
   serialize :score_total, Hash
   serialize :activated_count, Hash
   serialize :activated_count_total, Hash
+  serialize :confirmed_activated_count, Hash
+  serialize :confirmed_activated_count_total, Hash
   serialize :qualified_count, Hash
   serialize :qualified_count_total, Hash
   serialize :chased_count, Hash
@@ -160,6 +162,25 @@ def contacts
   contacts=Contact.find_by_sql [ "select * from contacts where user1_id="+self.id.to_s+" or user2_id="+self.id.to_s+" order by date, time"]
 end
 
+
+#############################################################################################
+# Return all chaser contacts which trigger this user to have an activation that they have 
+# not logged themselves
+# Returns:
+#    [Contact]
+#############################################################################################
+def orphan_activations
+  codes=self.activations(orphan_activations: true, by_year: true) 
+  contacts=[]
+  codes.each do |code_year|
+    code=code_year.split(' ')[0] 
+    year=code_year.split(' ')[1] 
+    contacts+=Contact.find_by_sql [" select * from contacts where user2_id=#{self.id} and '#{code}'=ANY(asset2_codes) and date_part('year', time)='#{year}';"]
+  end
+  contacts
+end
+
+
 #############################################################################################
 # Return all logs created by this user
 # Returns:
@@ -295,6 +316,8 @@ end
 #       [:asset_type] - Asset.type to report or 'all' (default)
 #       [:include_minor] - Also include 'minor' assets not valid for ZLOTA
 #       [:include_external] - Also include contacts from external databases (e.g. SOTA, POTA)
+#       [:only_activator] - Only check activator logs
+#       [:orphan_activations] - Check for activations in chaser logs but not activator
 #       [:qrp] - Only QRP conatcts
 #       [:by_day] - Show unique (asset, date) combinations 
 #       [:by_year] - Show unique (asset, year) combinations
@@ -304,6 +327,7 @@ end
 #       codes: Array of ["(asset code)"] or ["(asset_code) (year)"] or ["(asset_code) (date)"]
 ##########################################################################################
 def activations(params={})
+  result_type='all'
   asset_type='all'
   include_minor=false
   include_external=false
@@ -315,6 +339,8 @@ def activations(params={})
   codes3=[]
 
   if params[:asset_type] then asset_type=params[:asset_type] end
+  if params[:only_activator] then result_type='only_activator' end
+  if params[:orphan_activations] then result_type='orphan_activations' end
   if params[:include_minor] then include_minor=params[:include_minor] end
   if params[:include_external] then include_external=params[:include_external] end
   if params[:qrp] then qrp=params[:qrp] end
@@ -347,7 +373,16 @@ def activations(params={})
   if include_external==true
     codes3=ExternalActivation.find_by_sql [ " select concat(summit_code"+date_query_ext+") as summit_code from external_activations where user_id='#{self.id}';"]
   end
-  codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(","), codes3.map{|c| c.summit_code}.join(",")].join(",").split(',').uniq
+  case result_type
+  when 'all' 
+    codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(","), codes3.map{|c| c.summit_code}.join(",")].join(",").split(',').uniq
+  when 'only_activator' 
+    codes=[codes1.map{|c| c.asset1_codes}.join(","), codes3.map{|c| c.summit_code}.join(",")].join(",").split(',').uniq
+  when 'orphan_activations'
+    codes1_arr=codes1.map{|c| c.asset1_codes}
+    codes2_arr=codes2.map{|c| c.asset1_codes}
+    codes=codes2_arr-codes1_arr
+  end
   codes=codes.select{ |c| c.length>0 }
 end
 
@@ -437,6 +472,8 @@ def update_score
     self.score_total[asset_type.name]=0
     self.activated_count[asset_type.name]=self.activations(asset_type: asset_type.name, include_external: include_external).count
     self.activated_count_total[asset_type.name]=self.activations(by_year: true, asset_type: asset_type.name, include_external: include_external).count
+    self.confirmed_activated_count[asset_type.name]=self.activations(asset_type: asset_type.name, include_external: include_external, only_activator: true).count
+    self.confirmed_activated_count_total[asset_type.name]=self.activations(by_year: true, asset_type: asset_type.name, include_external: include_external, only_activator: true).count
     self.chased_count[asset_type.name]=self.chased(asset_type: asset_type.name).count
     self.chased_count_total[asset_type.name]=self.chased(asset_type: asset_type.name, by_day: true).count
     self.qualified_count[asset_type.name]=self.qualified(asset_type: asset_type.name,include_external: include_external).count
