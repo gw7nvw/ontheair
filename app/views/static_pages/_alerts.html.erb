@@ -23,7 +23,7 @@
 <div id="right_scroll">
   <%= render 'flash' %>
   <h2>Going portable alerts</h2>
-  <table class="users">
+  <table class="users" id="zlota_alert_table">
     <tr>
       <th>Date</th>
       <th>Time (<%=@tz.name%>)</th>
@@ -64,7 +64,7 @@
   </table>
 
   <h2>Other alerts</h2>
-  <table class="users">
+  <table class="users" id="external_alert_table">
     <tr>
       <th>Type</th>
       <th>Time (<%=@tz.name%>)</th>

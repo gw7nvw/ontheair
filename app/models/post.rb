@@ -12,10 +12,10 @@ after_save :update_item
 before_save { self.before_save_actions }
 
 def before_save_actions
-  self.replace_master_codes
+  self.check_codes
   self.add_containing_codes
   #again to vet child codes added
-  self.replace_master_codes
+  self.check_codes
   if self.callsign then self.callsign=self.callsign.upcase end
 end
 
@@ -30,31 +30,30 @@ end
 attr_accessor :x1
 attr_accessor :y1
 attr_accessor :location1
+require 'htmlentities'
 
-#    establish_connection "qrp"
-    require 'htmlentities'
 
 def updated_by_name
   user=User.find_by_id(self.updated_by_id)
   if user then user.callsign else "" end
 end
 
-  def assets
-    if self.asset_codes then Asset.where(code: self.asset_codes) else [] end
-  end
+def assets
+  if self.asset_codes then Asset.where(code: self.asset_codes) else [] end
+end
 
 
-  def asset_names
-    asset_names=self.assets.map{|asset| asset.name}
-    if !asset_names then asset_names="" end
-    asset_names
-  end
+def asset_names
+  asset_names=self.assets.map{|asset| asset.name}
+  if !asset_names then asset_names="" end
+  asset_names
+end
 
-  def asset_code_names
-    if self.asset_codes then asset_names=self.asset_codes.map{|ac| asset=Asset.assets_from_code(ac).first; if asset then "["+asset[:code]+"] "+asset[:name] else "" end} else asset_names=[] end
-    if !asset_names then asset_names=[] end
-    asset_names
-  end
+def asset_code_names
+  if self.asset_codes then asset_names=self.asset_codes.map{|ac| asset=Asset.assets_from_code(ac).first; if asset then "["+asset[:code]+"] "+asset[:name] else "" end} else asset_names=[] end
+  if !asset_names then asset_names=[] end
+  asset_names
+end
 
 def add_map_image
   location=nil
@@ -132,20 +131,18 @@ def item
   item
 end
 
-  def replace_master_codes
+  def check_codes
     newcodes=[]
+    asset=nil
     self.asset_codes.each do |code|
-      a=Asset.find_by(code: code)
-      if !a then  a=VkAsset.find_by(code: code) end
-      if !a and (!(self.description||"").include?("Unknown location: "+code)) then self.description=(self.description||"")+"; Unknown location: "+code end
-      if a and a.is_active==false
-        if a.master_code then 
-          code=a.master_code
-        end
-      end
-      newcodes+=[code]
+      a=Asset.assets_from_code(code)
+      a=a.first
+      if a and a[:asset] then asset=a[:asset] end
+      if !a and (!(self.description||"").include?("Unknown location: "+code)) then self.description=(self.description||"")+"; Unknown location: "+code; code=nil end
+      if code then newcodes+=[code] end
     end 
-    self.asset_codes=newcodes.uniq
+
+    self.asset_codes=Asset.find_master_codes(newcodes.uniq)
   end
 
   def add_containing_codes
@@ -418,11 +415,6 @@ def send_to_pnp(debug,ac,topic,idate,itime,tzname)
         code=ac.split(']')[0]
         code=code.gsub('[','')
         pnp_class=Asset.get_pnp_class_from_code(code)
-            #hack to remove once PnP updated to new codes
-#            if code[0..2]=="ZLP" or code[0..2]=="ZLH" or code[0..2]=="ZLI" then 
-#               aa=Asset.find_by(code: code)
-#               code=aa.old_code
-#            end
         if pnp_class and pnp_class!="" then
           puts "sending alert to PnP"
           params = {"actClass" => pnp_class,"actCallsign" => self.updated_by_name,"actSite" => code,"actMode" => self.mode.strip,"actFreq" => self.freq.strip,"actComments" => convert_to_text(self.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2","alDate" => if tt then tt.strftime('%Y-%m-%d') else "" end,"alTime" => if tt then tt.strftime('%H:%M') else "" end,"optDay" => if dayflag then "1" else "0" end}
@@ -444,10 +436,6 @@ def send_to_pnp(debug,ac,topic,idate,itime,tzname)
         code=ac.split(']')[0]
         code=code.gsub('[','')
         pnp_class=Asset.get_pnp_class_from_code(code)
-#            if code[0..2]=="ZLP" or code[0..2]=="ZLH" or code[0..2]=="ZLI" then 
-#               aa=Asset.find_by(code: code)
-#               if aa then code=aa.old_code end
-#            end
         if pnp_class and pnp_class!="" then
           params = {"actClass" => pnp_class,"actCallsign" => (self.callsign||self.updated_by_name),"actSite" => code,"mode" => self.mode.strip,"freq" => self.freq.strip,"comments" => convert_to_text(self.description),"userID" => "ZLOTA","APIKey" => "4DDA205E08D2"}
           puts "sending spot to PnP"
@@ -487,31 +475,9 @@ end
 
 def get_most_accurate_location
    location=nil
-   loc_point=false
-   accuracy=999999999999
-   self.asset_codes.each do |code|
-     puts "DEBUG: assessing code1 #{code}"
-     assets=Asset.find_by_sql [ " select id, asset_type, location, area from assets where code='#{code}' limit 1" ]
-     if assets then asset=assets.first else asset=nil end
-     if asset then
-       if asset.type.has_boundary then
-         if loc_point==false and asset.area and asset.area<accuracy then
-           location=asset.location
-           accuracy=asset.area
-           loc_point=false
-           puts "DEBUG: Assigning polygon locn"
-         end
-       else
-         if loc_point==true then
-           puts "Multiple POINT locations found for post #{self.id.to_s}"
-         end
-         location=asset.location
-         loc_point=true
-         puts "DEBUG: Assigning point locn"
-       end
-     end
-   end
-   location
+   loc=Asset.get_most_accurate_location(self.asset_codes)
+   if loc then location=loc[:location] end
+   location  
 end
 
 end

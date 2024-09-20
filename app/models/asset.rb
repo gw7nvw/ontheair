@@ -546,6 +546,7 @@ end
 # Input: codes: [code]
 # Returns:
 #   assets: [{
+#           asset: Asset
 #           name: Name of asset (or code if we do not know name)
 #           url: URL of this asset as locally as possible (here=>PnP=>award programme)
 #           external: true if not hosted on ontheair
@@ -576,6 +577,7 @@ def self.assets_from_code(codes)
           asset[:url]=a.url
           if a[:url][0]=='/' then a[:url]=a[:url][1..-1] end
           asset[:name]=a.name
+          asset[:codename]=a.codename
           asset[:external]=false
           asset[:code]=a.code
           asset[:type]=a.asset_type
@@ -590,6 +592,7 @@ def self.assets_from_code(codes)
           asset[:asset]=va
           asset[:url]='/vkassets/'+va.get_safecode
           asset[:name]=va.name
+          asset[:codename]=va.codename
           asset[:external]=false
           asset[:code]=va.code
           asset[:type]=va.award

@@ -41,8 +41,8 @@ class UsersController < ApplicationController
   def assets
      @parameters=params_to_query
      @user=User.find_by(callsign: params[:id].upcase)
-     @count_type=params[:count_type]
-     @asset_type=params[:asset_type]
+     @count_type=safe_param(params[:count_type])
+     @asset_type=safe_param(params[:asset_type])
 
      if @asset_type=='summit' then 
        @asset_codes=@user.assets_by_type('summit', @count_type, true)+@user.assets_by_type('hump', @count_type, true) 
@@ -70,11 +70,11 @@ class UsersController < ApplicationController
   def index_prep
     whereclause="true"
     if params[:filter] then
-      @filter=params[:filter]
+      @filter=safe_param(params[:filter])
       whereclause="is_"+@filter+" is true"
     end
 
-    @searchtext=params[:searchtext] || ""
+    @searchtext=safe_param(params[:searchtext] || "")
     if params[:searchtext] and params[:searchtext]!="" then
        whereclause=whereclause+" and (lower(callsign) like '%%"+@searchtext.downcase+"%%' )"
     end

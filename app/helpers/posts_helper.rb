@@ -53,6 +53,8 @@ end
 
 # Convert html to formatted ascii text
 def convert_to_text(html)
+  if !html then html="" end
+
   line_length = 80
   from_charset = 'UTF-8'
   txt = html

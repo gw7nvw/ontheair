@@ -43,7 +43,7 @@
      <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
      &nbsp;--&gt;&nbsp;
      <b>Spots</b>
-</div>
+   </div>
    <div id="controls">
      <% if write_access?  %>
        <%=  link_to "Add Spot", "/posts/new?topic_id="+SPOT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
@@ -99,10 +99,10 @@
 
 </div>
 <script>
-document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
   
- if ($(window).width() < 960) {
-   site_smaller_map();
- }
+  if ($(window).width() < 960) {
+    site_smaller_map();
+  }
 </script>
 

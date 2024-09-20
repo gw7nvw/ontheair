@@ -5,6 +5,8 @@ zl4nvw:
   email: mattbriggs@yahoo.com 
   password_digest:  <%= BCrypt::Password.create('dummy', cost: 4) %>
   activated: true
+  is_admin: true
+  is_modifier: true
 zl3cc:
   firstname: Bob
   callsign: ZL3CC

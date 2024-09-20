@@ -1,5 +1,5 @@
   <div class="name_pagination"> <%= will_paginate(@logs) %></div>
-  <table class="places">
+  <table class="places" id="log_table">
       <tr>
         <th></th>
         <th>Callsign</th>
@@ -44,8 +44,8 @@
                 <%= log.loc_desc1 %> 
               <% end %>
             </ul></td>
-            <td> <%=if log.is_qrp1 then "Yes" else "no" end %></td>
-            <td> <%=if log.is_portable1 then "Yes" else "no" end %></td>
+            <td> <%=if log.is_qrp1 then "Yes" else "No" end %></td>
+            <td> <%=if log.is_portable1 then "Yes" else "No" end %></td>
             <td> <%=count %></td>
           </tr>
       <% end #end %>

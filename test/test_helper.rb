@@ -14,6 +14,8 @@ $last_asset="place-AAAA"
 $last_asset_code=1
 $last_ext_act_id=1
 NEWS_TOPIC=42
+SPOT_TOPIC=35
+ALERT_TOPIC=1
 
 Region.create(sota_code: 'CB', name: "Canterbury", boundary: 'MULTIPOLYGON(((171 -40, 174 -40, 174 -41, 171 -41)))') 
 Region.create(sota_code: 'OT', name: "Otago", boundary: 'MULTIPOLYGON(((171 -41, 174 -41, 174 -42, 171 -42)))')
@@ -23,13 +25,49 @@ District.create(district_code: 'DU', name: "Dunedin", region_code: "OT",boundary
 District.create(district_code: 'CO', name: "Central Otago", region_code: "OT",boundary: 'MULTIPOLYGON(((173 -41, 174 -41, 174 -42, 173 -42)))')
 NzTribalLand.create({ "ogc_fid"=>21, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 175 -40, 175 -35, 170 -35)))", "name"=>"Ngāti Apa"})
 NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 175 -40, 175 -45, 170 -45)))", "name"=>"Ngāi Tahu"})
-Topic.create({id: NEWS_TOPIC, name: "News", is_public: true})
 
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   #
   # Note: You'll currently still have to declare fixtures explicitly in integration tests
   # -- they do not yet inherit this setting
   fixtures :all
+
+  def create_test_spot(user, params={})
+     if !params[:callsign] then params[:callsign]=user.callsign end
+     if !params[:user1_id] then params[:created_by_id]=user.id end
+     if !params[:referenced_date] then params[:referenced_date]=Time.now().to_date end
+     if !params[:referenced_time] then params[:referenced_time]=Time.now() end
+     topic_id=SPOT_TOPIC
+
+     post=Post.create(params)
+     item=Item.create(topic_id: topic_id, item_type: 'post', item_id: post.id, created_at: post.created_at, created_by_id: params[:created_by_id])
+     item.reload
+  end
+
+  def create_test_external_spot(user, params={})
+     if !params[:callsign] then params[:callsign]=user.callsign end
+     if !params[:activatorCallsign] then params[:activatorCallsign]=user.callsign end
+     if !params[:time] then params[:time]=Time.now() end
+
+     spot=ExternalSpot.create(params)
+  end
+  def create_test_alert(user, params={})
+     if !params[:callsign] then params[:callsign]=user.callsign end
+     if !params[:user1_id] then params[:created_by_id]=user.id end
+     if !params[:referenced_date] then params[:referenced_date]=Time.now().to_date end
+     if !params[:referenced_time] then params[:referenced_time]=Time.now() end
+     topic_id=ALERT_TOPIC
+
+     post=Post.create(params)
+     item=Item.create(topic_id: topic_id, item_type: 'post', item_id: post.id, created_at: post.created_at, created_by_id: params[:created_by_id])
+     item.reload
+  end
+
+  def create_test_photo(user, asset, title, description)
+     image=File.open("#{Rails.root}/test/fixtures/files/image/test.jpeg")
+     photo=Image.create(title: title, description: description, image: image)
+     pal=AssetPhotoLink.create(asset_code: asset.code, photo_id: photo.id, link_url: photo.image.url(:original))
+  end
 
   def create_test_post(topic_id, title, contents, createdAt=Time.now())
      post=Post.create(title: title, description: contents)
@@ -39,6 +77,10 @@ Topic.create({id: NEWS_TOPIC, name: "News", is_public: true})
 
   def create_test_web_link(asset, link, link_class)
      AssetWebLink.create(asset_code: asset.code, url: link, link_class: link_class)
+  end
+
+  def create_test_comment(user, asset, comment)
+     Comment.create(code: asset.code, comment: comment, updated_by_id: user.id)
   end
 
   # Add more helper methods to be used by all tests here...
@@ -162,5 +204,33 @@ Topic.create({id: NEWS_TOPIC, name: "News", is_public: true})
 
     chase=ExternalChase.create(params)
     chase
+  end
+
+  def get_table_test(body,id)
+    body=body.split(/id="#{id}">/)[1]
+    if body then body=body.split('</table>')[0]  end
+    #handle case where id was on div and we still have opening table
+    if body and body["<table"] then body=body.split(/<table(.+?)>/)[1] end
+    body
+  end
+  def get_row_test(body,number)
+    rows=body.split('<tr>')
+    row=rows[number]
+    row=row.split('</tr>')[0]
+  end
+  def get_row_count_test(body)
+    rows=body.split('<tr>')
+    rows.count-1
+  end
+
+  def get_col_test(body,number)
+    rows=body.split('<td>')
+    row=rows[number]
+    row=row.split('</td>')[0]
+  end
+ 
+  def make_regex_safe(text)
+   text=text.gsub("[","\\[").gsub("]","\\]").gsub("{","\\{").gsub("}","\\}") 
+   text
   end
 end

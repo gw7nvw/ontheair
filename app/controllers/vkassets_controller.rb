@@ -6,7 +6,7 @@ class VkassetsController < ApplicationController
     asset_type=params[:type]
 
     if params[:asset_type] and params[:asset_type][:to_s] and params[:asset_type][:to_s]!='' and params[:asset_type][:to_s]!='All' then
-      asset_type=params[:asset_type][:to_s]
+      asset_type=safe_param(params[:asset_type][:to_s])
     end
 
     if asset_type then
@@ -16,7 +16,7 @@ class VkassetsController < ApplicationController
     if !asset_type or asset_type=="" then asset_type='All' end
     @asset_type=asset_type
 
-    @searchtext=params[:searchtext] || ""
+    @searchtext=safe_param(params[:searchtext] || "")
     if params[:searchtext] and params[:searchtext]!="" then
        whereclause=whereclause+" and (unaccent(lower(name)) like '%%"+@searchtext.downcase+"%%' or lower(code) like '%%"+@searchtext.downcase+"%%')"
     end

@@ -20,7 +20,7 @@
     <div id="actionbar" class="span7">
       <div id="crumbs">
         <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
-        &nbsp;--&gt;&nbsp;
+        &nbsp;--&gt;&nbsp;Photos&nbsp;--&gt;&nbsp;
         <%if @image.id%>
           <b><%=link_to @image.title, '/images/'+@image.id.to_s%></b>
           &nbsp;--&gt;&nbsp;
@@ -81,9 +81,9 @@
         <% end %>
       </div>
 
-      <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight" %>
+      <%= f.submit @submit_button, id: "submit", class: "btn btn-small btn-primary btn-highlight" %>
       <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@image.created_by_id)) %>
-        <%= f.submit "Delete Photo", confirm: "Delete image: Are you sure?", class: "btn btn-small btn-primary", id:  "deletebutton",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+        <%= f.submit "Delete Photo", data: {confirm: "Delete image: Are you sure?"}, class: "btn btn-small btn-primary", id:  "deletebutton",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
       <% end %>
    </div>
   <% end %>

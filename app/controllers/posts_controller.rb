@@ -266,6 +266,7 @@ def create
         render 'new'
       end
     else
+      puts "Topoic: "+@topic.to_s
       redirect_to '/'
     end
 

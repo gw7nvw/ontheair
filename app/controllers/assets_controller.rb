@@ -5,7 +5,6 @@ include PostsHelper
 
 
   def index_prep
-
     whereclause="true"
 
     if not params[:active] then
@@ -26,9 +25,9 @@ include PostsHelper
     end
 
     if !asset_type or asset_type=="" then asset_type="all" end
-    @asset_type=AssetType.find_by(name: asset_type)
+    @asset_type=AssetType.find_by(name: safe_param(asset_type))
 
-    @searchtext=params[:searchtext] || ""
+    @searchtext=safe_param(params[:searchtext] || "")
     if !@limit then  
     if params[:searchtext] and params[:searchtext]!="" then
        @limit=500 #100
@@ -48,7 +47,6 @@ include PostsHelper
 
 
   def index
-
     if params[:id] then redirect_to '/assets/'+params[:id].gsub('/','_')
     else
 
@@ -193,15 +191,6 @@ include PostsHelper
   else
     redirect_to '/'
   end
-end
-
-def associations
-  @asset=Asset.find_by(code: params[:id].gsub('_','/'))
-  @newchild=AssetLink.new
-  @newchild.contained_code=@asset.code
-  @newparent=AssetLink.new
-  @newparent.containing_code=@asset.code
-
 end
 
 

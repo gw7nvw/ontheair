@@ -15,7 +15,7 @@ end%>
 
 <% if !@sortby then @sortby="park" end%>
 <div class="photo-bar">
-<table>
+<table id="result_headings">
   <tr>
     <th <%=if @scoreby == 'bagged' then 'style=background-color:#33ff22 !important' end%>><%=link_to 'Bagged v','?scoreby=bagged&sortby='+@sortby, remote: true,:onclick => "linkHandler('bagged')"%></th>
     <th <%=if @scoreby == 'activated' then 'style=background-color:#33ff22 !important' end%>><%=link_to 'Activated v','?scoreby=activated&sortby='+@sortby, remote: true,:onclick => "linkHandler('activated')"%></th>
@@ -23,11 +23,11 @@ end%>
     <th <%=if @scoreby == 'chased' then 'style=background-color:#33ff22 !important' end%>><%=link_to 'Chased v','?scoreby=chased&sortby='+@sortby, remote: true,:onclick => "linkHandler('chased')"%></th>
   </tr>
 </table>
-  <table>
+  <table id="result_table">
     <tr>
       <th>Position</th>
       <th>Callsign</th>
-      <% AssetType.where("keep_score = true").each do |asset_type| %>
+      <% AssetType.where("keep_score = true").order(:name).each do |asset_type| %>
         <th <%=if asset_type.name == @sortby then 'style=background-color:#33ff22 !important' end%>><%=link_to asset_type.name.capitalize+" v", "?scoreby="+@scoreby+"&sortby="+asset_type.name, remote: true, onclick: "linkHandler('default_order')" %></th>
       <% end %>
       <th <%=if 'p2p' == @sortby then 'style=background-color:#33ff22 !important' end%>>
@@ -53,7 +53,7 @@ end%>
           <td>
             <%= link_to user.callsign.upcase, '/users/'+user.callsign, remote: true, :id => 'user_link_'+user.id.to_s, :style => (if not user.activated then 'color:grey' else '' end), :onclick => "linkHandler('user_link_"+user.id.to_s+"')" %>
           </td>
-          <% AssetType.where("keep_score = true").each do |asset_type| %>
+          <% AssetType.where("keep_score = true").order(:name).each do |asset_type| %>
             <% if @scoreby=='activated' and user[scorefield][asset_type.name]!=user["confirmed_"+scorefield][asset_type.name] then orphans=true else orphans=false end %>
             <td><%=(user[scorefield][asset_type.name]||0).to_s%><%if orphans then %><span title="Includes activations referenced in chaser logs for which no activator log has been submitted"><sup><%=link_to "+", '/contacts?orphans=true&user='+user.callsign, remote: true, :id => 'orphan_link_'+user.id.to_s%></sup></span><%end%></td>
           <% end %>

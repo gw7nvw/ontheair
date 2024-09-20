@@ -1,4 +1,4 @@
-<table class="cleanskin">
+<table class="cleanskin" id="spot_table">
   <% @all_spots.each do |spot| %>
     <tr>
       <td><%if spot[:spot_type]=="ZLOTA" then %><b><%=spot[:spot_type]%></b><% else %><%=spot[:spot_type]%> <% end %></td>

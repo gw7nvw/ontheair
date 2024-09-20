@@ -123,7 +123,6 @@ include ApplicationHelper
               and (p.referenced_time>'#{Time.now-1.hours}' or p.referenced_time is null)
             order by p.created_at desc;
       "]
-     
       @hota_spots.each do |post|
          createdBy=User.find_by(id: post.created_by_id)
          if createdBy then createdByCallsign=createdBy.callsign else createdByCallsign="" end

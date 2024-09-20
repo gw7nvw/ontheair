@@ -12,7 +12,7 @@
       <% if write_access? and (current_user.id==@post.created_by_id or current_user.is_admin) then %>
         <%=  link_to "Edit", '/posts/'+@post.id.to_s+'/edit', class: 'link_to', remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
         <%=  link_to "Reply", '/posts/new?topic_id='+@post.topic.id.to_s, class: 'link_to',remote: true,  :id => 'reply', :onclick => "linkHandler('reply')"%>
-        <%= link_to "Delete", '/posts/'+@post.id.to_s+'/delete', confirm: "Delete post: Are you sure?", class: 'link_to', remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+        <%= link_to "Delete", '/posts/'+@post.id.to_s+'/delete', data: {confirm: "Delete post: Are you sure?"}, class: 'link_to', remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
       <% end %>
 
       <% if @post.referenced_date then %>
@@ -42,7 +42,7 @@
       <%if (@post.freq and @post.freq.length>0) or (@post.mode and @post.mode.length>0) then%><p><%=@post.freq%> - <%=@post.mode%></p><% end %> 
    </div>
    <div class="box_contents">
-      <div class="sectiontext"><%=raw (@post.description).gsub(/(?<=<style type=\"text\/css\">).+(?=<\/style>)/m,'')%></div>
+      <div class="sectiontext"><%=raw (@post.description||"").gsub(/(?<=<style type=\"text\/css\">).+(?=<\/style>)/m,'')%></div>
       <% if @post.image_content_type %>
           <div class="erow">
             <div class="hrline">

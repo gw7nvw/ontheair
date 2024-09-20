@@ -137,11 +137,6 @@ def create
     if signed_in? and @topic and (@topic.is_public or current_user.is_admin or (@topic.owner_id==current_user.id and @topic.is_owners)) then
       @image=Image.new(image_params)
 
-      #@image.site=""
-      #@image.asset_codes.each do |ac|
-      #  assets=Asset.assets_from_code(ac)
-      #  @image.site+=(if assets and assets.count>0 then assets.first[:name]||"" else "" end)+" ["+ac+"] " 
-      #end
       @image.created_by_id = current_user.id #current_user.id
       @image.updated_by_id = current_user.id #current_user.id
       @topic.last_updated = Time.now

@@ -30,7 +30,7 @@
 </div>
 <div id="right_scroll">
    <%= render 'flash' %>
-   <div class="erow" id="email">
+   <div class="erow" id="id">
       <div class="rowtitle"><%= "Id:" %></div>
       <% url=@asset.external_url %>
       <% if url then %> 
@@ -45,28 +45,28 @@
         <%=link_to @asset.name, '/assets/'+@asset.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
       </div>
    </div>
-   <div class="erow" id="name">
+   <div class="erow" id="class">
       <div class="rowtitle"><%= "Class" %></div>
       <div class="rowtext"> 
         <%= @asset.type.display_name %>
       </div>
    </div>
 <% if @asset.master_code and @asset.master_code!='' then %>
-     <div class="erow" id="name">
+     <div class="erow" id="master_code">
        <div class="rowtitle" style='color:#bb0000'>REPLACED BY</div>
        <div class="rowtext"> 
          <%= link_to @asset.master_code, '/assets/'+@asset.master_code.gsub('/','_'), remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
        </div>
      </div>
 <% end %>
-   <div class="erow" id="name">
+   <div class="erow" id="description">
       <div class="rowtitle"><%= "Description" %></div>
       <div class="rowtext"> 
         <%= @asset.description %>
       </div>
    </div>
    <% if @asset.points and @asset.points>0 %>
-     <div class="erow" id="name">
+     <div class="erow" id="points">
         <div class="rowtitle"><%= "Points" %></div>
         <div class="rowtext"> 
           <%= @asset.points %>
@@ -74,7 +74,7 @@
      </div>
    <% end %>
    <% if @asset.az_radius and @asset.az_radius>0 %>
-     <div class="erow" id="name">
+     <div class="erow" id="radius">
         <div class="rowtitle"><%= "Radius of Activation Zone" %></div>
         <div class="rowtext"> 
           Within <%= @asset.az_radius %>km, or within sight
@@ -181,7 +181,7 @@
         <div class="rowtext"><%= @asset.r_field(f)%></div>
      </div>
    <% end end %>
-   <div class="erow" id="name">
+   <div class="erow" id="lies_within">
       <div class="rowtitle"><%= "Lies within" %></div>
       <div class="rowtext"> 
           <%if @asset.contained_by_assets then %><ul style="list-style-type:none;padding:0;margin:0;"><% @asset.contained_by_assets.each do |link|%>
@@ -190,7 +190,7 @@
       </div>
    </div>
    <% if @asset.region %>
-     <div class="erow" id="district">
+     <div class="erow" id="region">
         <div class="rowtitle">Region</div>
         <div class="rowtext"> 
           <%=link_to @asset.region_name, '/regions/'+@asset.region, remote: true,  :id => 'region', :onclick => "linkHandler('region')"  %>
@@ -198,7 +198,7 @@
      </div>
    <% end %>
    <% if @asset.district %>
-     <div class="erow" id="district2">
+     <div class="erow" id="district">
         <div class="rowtitle">District</div>
         <div class="rowtext"> 
           <%=link_to @asset.district_name, '/districts/'+@asset.district, remote: true,  :id => 'district', :onclick => "linkHandler('district')"  %>
@@ -206,7 +206,7 @@
      </div>
    <% end %>
    <% if @asset.traditional_owners %>
-     <div class="erow" id="district2">
+     <div class="erow" id="trad_owner">
         <div class="rowtitle">Iwi</div>
         <div class="rowtext"> 
           <%=@asset.traditional_owners %>
@@ -277,9 +277,9 @@
      <div class="erow" id="doc">
        <div class="rowtitle"><%= "First activation" %></div>
        <% if c.callsign2!=nil then%>
-         <div class="textext"><%=link_to c.callsign1+' -> '+c.callsign2+c.time.strftime(' (%Y-%m-%d)'), '/contacts/'+c.id.to_s, remote: true, :onclick => "linkHandler('first')" %></div>
+         <div class="textext" id="first_activation"><%=link_to c.callsign1+' -> '+c.callsign2+c.time.strftime(' (%Y-%m-%d)'), '/contacts/'+c.id.to_s, remote: true, :onclick => "linkHandler('first')" %></div>
        <% else %>
-         <div class="textext"><%= c.callsign1+' -> '+c.callsign2+c.time.strftime(' (%Y-%m-%d)')%></div>
+         <div class="textext" id="first_activation"><%= c.callsign1+' -> '+c.callsign2+c.time.strftime(' (%Y-%m-%d)')%></div>
        <% end %>
      </div>
    <% end %>
@@ -334,7 +334,7 @@
   </div>
 
    <div class="sectiontitle_bold">Chased by:</div>
-   <div class="erow">
+   <div class="erow" id="chased_by">
      <% if not @asset.chasers_including_external or (@asset.chasers_including_external and @asset.chasers_including_external.count==0) then %>
         <i>No-one has chased this place yet. Be the first!</i></br>
      <% end %>
@@ -345,7 +345,7 @@
    </div> 
 
    <div class="sectiontitle_bold">Activated by:</div>
-   <div class="erow">
+   <div class="erow" id="activated_by">
      <% if not @asset.activators_including_external or (@asset.activators_including_external and @asset.activators_including_external.count==0) then %>
         <i>No-one has activated this place yet. Be the first!</i></br>
      <% end %>
@@ -354,7 +354,9 @@
          <%=link_to user.callsign, '/users/'+user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp
      <% end %>
    </div> 
-   <div class="sectiontitle_bold">Logged here:</div>
+   <div class="erow">
+     <div class="sectiontitle_bold">Logged here:</div>
+   </div>
    <div class="erow">
      <% if @asset.logs and @asset.logs.count>0 then %>
          <b><%=@asset.activation_count.to_s+" Activations "%><%=link_to "(View)", '/logs/?asset='+@asset.safecode+"&user=ALL", remote: true,  :id => 'user', :onclick => "linkHandler('logs')" %></b>
@@ -384,7 +386,7 @@
      <% if @asset.photos.count==0 %>
        <p><i>No photos have been uploaded. </i><p>
      <% end %>
-     <div class="photo-bar">
+     <div class="photo-bar" id="photo_box">
        <div style="width:1000%">
          <% @asset.photos.each do |photo| %>
            <span>
@@ -434,13 +436,13 @@
    </div>
 
    <% if @comments.count==0 %>
-     <div class="erow">
+     <div class="erow" id="comment_box">
        <p><i>No-one has commented yet, be the first! </i><p>
      </div>
    <% end %>
 
    <% @comments.each do |comment|%>
-     <div class="bordered_box">
+     <div class="bordered_box" id="comment_box">
         <div class="box_header">
            <%= link_to comment.updated_by_name, '/users/'+comment.updated_by_name,remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
            <%=if comment.updated_at > comment.created_at then " updated comment " else " commented " end %>
