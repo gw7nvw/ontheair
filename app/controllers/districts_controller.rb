@@ -1,4 +1,5 @@
 class DistrictsController < ApplicationController
+include ApplicationHelper
 
 def index
   @parameters=params_to_query
@@ -21,7 +22,7 @@ def show
     if as and as.count>0 then @assets_by_class.push(as) end
   end
 
-  @callsign=params[:callsign]
+  @callsign=safe_param(params[:callsign])
   if !@callsign and signed_in? then
      @callsign=current_user.callsign
   end

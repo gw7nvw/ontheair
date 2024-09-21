@@ -19,8 +19,8 @@
             <%= link_to 'Edit', '/contacts/'+contact.id.to_s+'/editlog?referring=index', remote: true, :id => 'editbutton'+contact.id.to_s, :onclick => "linkHandler('editbutton"+contact.id.to_s+"')" %><br/>
           <% end %>
           <% if @orphans and current_user  and (current_user.id==contact.user2_id or current_user.is_admin) %>
-            <%= link_to 'Confirm', '/contacts/'+contact.id.to_s+'/confirm?referring=index', remote: true, confirm: "Create a new activator log entry for your station from this chaser contact: Are you sure?", :id => 'confirmbutton'+contact.id.to_s, :onclick => "linkHandler('confirmbutton"+contact.id.to_s+"')" %><br/>
-            <%= link_to 'Refute', '/contacts/'+contact.id.to_s+'/refute?referring=index', remote: true, confirm: "Mark the location shown in this contact for yourself as incorrect: Are you sure?",  :id => 'refutebutton'+contact.id.to_s, :onclick => "linkHandler('refutebutton"+contact.id.to_s+"')" %><br/>
+            <%= link_to 'Confirm', '/contacts/'+contact.id.to_s+'/confirm?referring=index', remote: true, data: {confirm: "Create a new activator log entry for your station from this chaser contact: Are you sure?"}, :id => 'confirmbutton'+contact.id.to_s, :onclick => "linkHandler('confirmbutton"+contact.id.to_s+"')" %><br/>
+            <%= link_to 'Refute', '/contacts/'+contact.id.to_s+'/refute?referring=index', remote: true, data: {confirm: "Mark the location shown in this contact for yourself as incorrect: Are you sure?"},  :id => 'refutebutton'+contact.id.to_s, :onclick => "linkHandler('refutebutton"+contact.id.to_s+"')" %><br/>
           <% else %>
             <%= link_to 'View', '/contacts/'+contact.id.to_s, remote: true, :id => 'contact_link_'+contact.id.to_s, :onclick => "linkHandler('contact_link_"+contact.id.to_s+"')" %>
           <% end %>

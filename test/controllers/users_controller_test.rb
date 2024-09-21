@@ -924,7 +924,151 @@ class UsersControllerTest < ActionController::TestCase
     assert_match /#{make_regex_safe(asset2.codename)}/, get_col_test(row,3), "Correct to"
   end
 
-  #TODO: Create user
+  #############################################################################
+  # CREATE USER
+  #############################################################################
+  test "Can create new user" do
+    get :new
+    assert_response :success
+
+    #Breadcrumbs
+    assert_select '#crumbs', /Home/
+    assert_select '#crumbs', /Users/
+    assert_select '#crumbs', /New/
+
+    #Action control bar
+    #show logged in version
+    assert_select '#controls', /Smaller Map/
+    assert_select '#controls', /Larger Map/
+    assert_select '#controls', /Back/
+
+    #form
+    assert_select '#user_callsign'
+    assert_select '#user_firstname'
+    assert_select '#user_lastname'
+    assert_select '#user_email'
+    assert_select '#user_home_qth'
+    assert_select '#user_timezone'
+    assert_select '#user_password'
+    assert_select '#user_password_confirmation'
+    assert_select '#user_pin'
+    assert_select '#user_acctnumber'
+    assert_select '#user_logs_pota'
+    assert_select '#user_logs_wwff'
+    assert_select '#submit'
+
+    post :create, user: {callsign: "ZL1TEST", firstname: "Bob", lastname: "Menzies", email: "bob@bobm.net", home_qth: "Auckland", timezone: 1, password: "dummy", password_confirmation: "dummy", pin: "1234", acctnumber: "+64271234567", logs_pota: true, logs_wwff: true}
+    assert_response :redirect
+  
+    user=User.last
+    assert_equal "ZL1TEST", user.callsign, "Callsign"
+    assert_equal "Bob", user.firstname, "firstname"
+    assert_equal "Menzies", user.lastname, "lastname"
+    assert_equal "bob@bobm.net", user.email, "email"
+    assert_equal "Auckland", user.home_qth, "home_qth"
+    assert_equal 1, user.timezone, "timezone"
+    assert_equal "Auckland", user.home_qth, "home_qth"
+    assert_equal "1234", user.pin, "pin"
+    assert_equal "+64271234567", user.acctnumber, "acctnumber"
+    assert_equal true, user.logs_pota, "logs_pota"
+  end
+
+  test "invalid user params rejected correctly" do
+    #non matching passwords
+    post :create, user: {callsign: "ZL1TEST", firstname: "Bob", lastname: "Menzies", email: "bob@bobm.net", home_qth: "Auckland", timezone: 1, password: "dummy", password_confirmation: "dummy2", pin: "1234", acctnumber: "+64271234567", logs_pota: true, logs_wwff: true}
+    assert_response :success
+    assert_select "#error_explanation", /Password confirmation/
+
+    #invalid phone format
+    post :create, user: {callsign: "ZL1TEST", firstname: "Bob", lastname: "Menzies", email: "bob@bobm.net", home_qth: "Auckland", timezone: 1, password: "dummy", password_confirmation: "dummy", pin: "1234", acctnumber: "0278263132", logs_pota: true, logs_wwff: true}
+    assert_response :success
+    assert_select "#error_explanation", /Acctnumber is invalid/
+  end
 
   #TODO: Edit user
+  test "can edit user" do
+    user=create_test_user(firstname: "Bob", lastname: "Menzies", email: "bob@bobm.net", home_qth: "Auckland", timezone: 1, password: "dummy", password_confirmation: "dummy", pin: "1234", acctnumber: "+64271234567", logs_pota: true, logs_wwff: true)
+    sign_in user
+    get :edit, {id: user.callsign}
+    assert_response :success
+
+    #Breadcrumbs
+    assert_select '#crumbs', /Home/
+    assert_select '#crumbs', /Users/
+    assert_select '#crumbs', /#{user.callsign}/
+    assert_select '#crumbs', /Edit/
+
+    #Action control bar
+    #show logged in version
+    assert_select '#controls', /Cancel/
+    assert_select '#controls', {count: 0, text: /Delete/}
+    assert_select '#controls', /Smaller Map/
+    assert_select '#controls', /Larger Map/
+    assert_select '#controls', /Back/
+
+    #form
+    assert_select '#user_callsign' do assert_select "[value=?]", user.callsign end
+    assert_select '#user_firstname' do assert_select "[value=?]", user.firstname end
+    assert_select '#user_lastname' do assert_select "[value=?]", user.lastname end
+    assert_select '#user_email' do assert_select "[value=?]", user.email end
+    assert_select '#user_home_qth' do assert_select "[value=?]", user.home_qth end
+    assert_select '#user_timezone' do assert_select "[value=?]", user.timezone end
+    assert_select '#user_pin' do assert_select "[value=?]", user.pin end
+    assert_select '#user_acctnumber' do assert_select "[value=?]", user.acctnumber end
+    assert_select '#user_logs_pota' do assert_select 'input[type=checkbox][checked]', 1 end
+    assert_select '#user_logs_wwff' do assert_select 'input[type=checkbox][checked]', 1 end
+    assert_select '#submit'
+
+    #now post changes
+    patch :update, {id: user.id, user: {firstname: "Bob2", lastname: "Menzies2", email: "bob2@bobm.net", home_qth: "Auckland2", timezone: 3, pin: "4321", acctnumber: "+64277654321", logs_pota: false, logs_wwff: false}}
+    assert_response :success
+
+    user.reload
+    assert_equal user.callsign, user.callsign, "Callsign"
+    assert_equal "Bob2", user.firstname, "firstname"
+    assert_equal "Menzies2", user.lastname, "lastname"
+    assert_equal "bob2@bobm.net", user.email, "email"
+    assert_equal "Auckland2", user.home_qth, "home_qth"
+    assert_equal 3, user.timezone, "timezone"
+    assert_equal "4321", user.pin, "pin"
+    assert_equal "+64277654321", user.acctnumber, "acctnumber"
+    assert_equal false, user.logs_pota, "logs_pota"
+    assert_equal false, user.logs_wwff, "logs_wwff"
+
+    #now on users/show
+    assert_select '#page_title', /#{user.callsign}/
+  end 
+
+  test "can add a topic" do
+    user=create_test_user(firstname: "Bob", lastname: "Menzies", email: "bob@bobm.net", home_qth: "Auckland", timezone: 1, password: "dummy", password_confirmation: "dummy", pin: "1234", acctnumber: "+64271234567", logs_pota: true, logs_wwff: true)
+    sign_in user
+
+    get :show, {id: user.callsign}
+    assert_response :success
+
+    #mail
+    table=get_table_test(@response.body, 'mail_table')
+    row=get_row_test(table,3)
+    assert_match /ALERTS/, get_col_test(row,1), "ALERTS"
+    assert_match /No/, get_col_test(row,2), "No mail"
+
+    get :add, id: user.callsign, topic_id: ALERT_TOPIC
+    assert_response :success
+
+    #mail
+    table=get_table_test(@response.body, 'mail_table')
+    row=get_row_test(table,3)
+    assert_match /ALERTS/, get_col_test(row,1), "ALERTS"
+    assert_match /Yes/, get_col_test(row,2), "mail enabled"
+
+    get :delete, id: user.callsign, topic_id: ALERT_TOPIC
+    assert_response :success
+
+    #mail
+    table=get_table_test(@response.body, 'mail_table')
+    row=get_row_test(table,3)
+    assert_match /ALERTS/, get_col_test(row,1), "ALERTS"
+    assert_match /No/, get_col_test(row,2), "no mail enabled"
+  end 
+  #TODO: Delete user
 end

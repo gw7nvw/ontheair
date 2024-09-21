@@ -492,9 +492,11 @@ def update_score
   self.chased_count_total["qrp"]=self.chased(qrp: true, by_day: true).count
 
   self.score['elevation']=self.elevation_bagged(include_external: true)
-  #self.qualified_count_total['elevation']=self.elevation_qualified(include_external: true, by_day: true)
+  self.qualified_count_total['elevation']=0
   self.activated_count_total['elevation']=self.elevation_activated(include_external: true, by_day: true)
+  self.activated_count['elevation']=self.elevation_activated(include_external: true)
   self.chased_count_total['elevation']=self.elevation_chased(include_external: true, by_day: true)
+  self.chased_count['elevation']=self.elevation_chased(include_external: true)
 
   self.score["p2p"]=self.get_p2p_all.count
 

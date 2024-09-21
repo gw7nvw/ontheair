@@ -206,7 +206,7 @@
 <% ats=AssetType.where(keep_score: true)
    qrp=AssetType.new
    qrp.name='qrp'
-   ats << qrp %>
+   ats << qrp  %>
 <% ats.each do |at| %>
 
 
@@ -222,6 +222,17 @@
     </div>
   <% end %>
 
+  <div class="erow" id="NZ Summit elevations">
+    <div class="sectiontitle" style="margin-top: 12px;">NZ Summit elevations:</div>
+    <ul>
+      <li><%=link_to "Bagged: "+number_with_precision((@user.score["elevation"]||0).to_f/1000,:precision => 1, :delimiter => ',').to_s+" km unique", '/users/'+@user.callsign+"/assets?asset_type=summit&count_type=bagged", remote: true,  :id => "summits_bagged", :onclick => "linkHandler('bagged')"%></li>
+      <li><%=link_to "Activated: "+number_with_precision((@user.activated_count["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km ("+number_with_precision((@user.activated_count_total["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km total)", '/users/'+@user.callsign+"/assets?asset_type=summit&count_type=activated", remote: true,  :id => "summits_activated", :onclick => "linkHandler('activated')"%></li>
+      <li><%=link_to "Chased: "+number_with_precision((@user.chased_count["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km ("+number_with_precision((@user.chased_count_total["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km total)", '/users/'+@user.callsign+"/assets?asset_type=summit&count_type=chased", remote: true,  :id => "summits_chased", :onclick => "linkHandler('chased')"%></li>
+    </ul>
+  </div>
+
+
+<% assets=@user.get_p2p_all %>
 
 <% assets=@user.get_p2p_all %>
 <div class="erow">

@@ -15,7 +15,7 @@
      </div>
    <div id="controls">
        <% if @log.id and (@log.user1_id==current_user.id or current_user.is_admin) then %>
-          <%=  link_to "Delete", '/logs/'+@log.id.to_s+'/delete', class: "btn btn-small btn-primary", confirm: "Delete log: Are you sure?", :remote => true,  :onclick => "linkHandler('delete')"%>
+          <%=  link_to "Delete", '/logs/'+@log.id.to_s+'/delete', class: "btn btn-small btn-primary", data: {confirm: "Delete log: Are you sure?"}, :remote => true,  :onclick => "linkHandler('delete')"%>
        <% end %>
        <% if @log.id then %>
           <%=  link_to "Cancel", '/logs/'+@log.id.to_s, class: 'btn btn-small btn-primary', :remote => true,  :onclick => "linkHandler('cancel')"%>

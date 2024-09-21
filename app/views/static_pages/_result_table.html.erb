@@ -30,6 +30,7 @@ end%>
       <% AssetType.where("keep_score = true").order(:name).each do |asset_type| %>
         <th <%=if asset_type.name == @sortby then 'style=background-color:#33ff22 !important' end%>><%=link_to asset_type.name.capitalize+" v", "?scoreby="+@scoreby+"&sortby="+asset_type.name, remote: true, onclick: "linkHandler('default_order')" %></th>
       <% end %>
+      <th <%=if 'elevation' == @sortby then 'style=background-color:#33ff22 !important' end%>><%=link_to "Elevation v", "?scoreby="+@scoreby+"&sortby=elevation", remote: true, onclick: "linkHandler('default_order')" %></th>
       <th <%=if 'p2p' == @sortby then 'style=background-color:#33ff22 !important' end%>>
         <span title="Places worked Portable to Portable"><%=link_to 'P2P'+" v", "?scoreby=bagged&sortby=p2p", remote: true, onclick: "linkHandler('default_order')" %></span></th>
       <th <%=if 'qrp' == @sortby then 'style=background-color:#33ff22 !important' end%>>
@@ -57,6 +58,7 @@ end%>
             <% if @scoreby=='activated' and user[scorefield][asset_type.name]!=user["confirmed_"+scorefield][asset_type.name] then orphans=true else orphans=false end %>
             <td><%=(user[scorefield][asset_type.name]||0).to_s%><%if orphans then %><span title="Includes activations referenced in chaser logs for which no activator log has been submitted"><sup><%=link_to "+", '/contacts?orphans=true&user='+user.callsign, remote: true, :id => 'orphan_link_'+user.id.to_s%></sup></span><%end%></td>
           <% end %>
+          <td><%= number_with_precision((user[scorefield]['elevation']||0).to_f/1000, :precision => 1, :delimiter => ',') %> km</td>
           <td><%=(user[scorefield]['p2p']||0).to_s%></td>
           <td><%=(user[scorefield]['qrp']||0).to_s%></td>
         </tr>

@@ -1,5 +1,6 @@
 class AssetsController < ApplicationController
 include PostsHelper
+include ApplicationHelper
 
   before_action :signed_in_user, only: [:edit, :update, :create, :new]
 

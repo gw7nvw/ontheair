@@ -1,4 +1,6 @@
 class RegionsController < ApplicationController
+include ApplicationHelper
+
 
 def index
   @parameters=params_to_query

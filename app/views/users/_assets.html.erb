@@ -49,6 +49,11 @@
                 <% valid_count+=1 %>
               <%end%>
             </td>
+            <% if @asset_type=='summit' then %>
+              <td>
+                <%=number_with_precision(a.altitude.to_f, precision: 0, delimiter: ',').to_s%> m
+              </td>
+            <% end %>
           </tr>
         <% end %>
       </table>

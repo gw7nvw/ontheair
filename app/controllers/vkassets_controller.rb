@@ -1,4 +1,6 @@
 class VkassetsController < ApplicationController
+include ApplicationHelper
+
   def index_prep
 
     whereclause="true"
