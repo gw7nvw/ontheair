@@ -25,31 +25,31 @@
     <div class="erow">
       <div class="sectiontitle" style="margin-top: 12px;"><%=if @asset_type == 'qrp' then "QRP" else @asset_type.capitalize.pluralize end%> <%=@count_type%></div>
       <% if @count_type=='activated' then %>
-        Unique sites qualified: <span id="valid_count"></span> (including repeat qualified activations: <%=@user.qualified_count_total[@asset_type]%>) <br/>
-        Unique sites activated: <%=@user.activated_count[@asset_type]%> (including non-qualifying sites: <%=@assets.uniq.count.to_s%>, including repeat activations: <%=@user.activated_count_total[@asset_type]%>)<br/> 
+        Unique sites qualified: <span id="valid_count"></span> (including repeat qualified activations: <span id="total_count"><%=@user.qualified_count_total[@asset_type]%></span>) <br/>
+        Unique sites activated: <span id="act_count"><%=@user.activated_count[@asset_type]%></span> (including non-qualifying sites: <span id="act_nq_count"><%=@assets.uniq.count.to_s%></span>, including repeat activations: <span id="act_total_count"><%=@user.activated_count_total[@asset_type]%></span>)<br/> 
       <% end %>
       <% if @count_type=='chased' then %>
-        Qualifying sites chased: <span id="valid_count"></span> (total qualifying chases: <%=@user.chased_count_total[@asset_type]%>)<br/>
-        Total sites chased: <%=@assets.uniq.count.to_s%> (including non-qualifying sites)</li>
+        Qualifying sites chased: <span id="valid_count"></span> (total qualifying chases: <span id="total_count"><%=@user.chased_count_total[@asset_type]%></span>)<br/>
+        Total sites chased: <span id="nq_count"><%=@assets.uniq.count.to_s%></span> (including non-qualifying sites)</li>
       <% end %>
       <% if @count_type=='bagged' then %>
-        Qualifying sites bagged: <span id="valid_count"></span> (total sites bagged: <%=@assets.uniq.count.to_s%>) </li>
+        Qualifying sites bagged: <span id="valid_count"></span> (total sites bagged: <span id="total_count"><%=@assets.uniq.count.to_s%></span>) </li>
       <% end %>
-      <table>
+      <table id="place_table">
         <% count=0; valid_count=0; invalid_count=0; @assets.uniq.sort_by { |asset| asset[:name] }.each do |a|; count+=1 %>
           <tr>
             <td>
               <%if a.minor==true or a.is_active==false or a.type.keep_score==false or not @valid_codes.include?(a.code) %>
-                <%=link_to a.name+" ["+a.code+"]", '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :class => "link_to", :onclick => "linkHandler('asset')" %>
+                <%=link_to a.codename, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :class => "link_to", :onclick => "linkHandler('asset')" %>
                 <% invalid_count+=1 %>
                 <%if a.minor==true or a.is_active==false or a.type.keep_score==false%> - site does not qualify<%end%>
                 <%if not @valid_codes.include?(a.code)%> - insufficient contacts<%end%>
               <%else%>
-                <%=link_to a.name+" ["+a.code+"]", '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+                <%=link_to a.codename, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
                 <% valid_count+=1 %>
               <%end%>
-            <td>
-          <tr>
+            </td>
+          </tr>
         <% end %>
       </table>
     </div>

@@ -130,7 +130,7 @@ class PostsControllerTest < ActionController::TestCase
 
     thedate=Time.now
     #create post
-    post :create, topic_id: ALERT_TOPIC, pnp: 'off', post: {referenced_date: thedate.strftime('%Y-%m-%d'), referenced_time: thedate.strftime('%H:%M'),freq: '7.090', mode: 'AM', asset_codes: asset1.code+", "+asset2.code, duration: 1}
+    post :create, topic_id: ALERT_TOPIC, pnp: 'off', post: {referenced_date: thedate, referenced_time: thedate,freq: '7.090', mode: 'AM', asset_codes: asset1.code+", "+asset2.code, duration: 1}
     assert_response :success
     post=Post.last
     assert_select ".alert-success", /Posted/, "Success message"

@@ -210,7 +210,7 @@ NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 
     body=body.split(/id="#{id}">/)[1]
     if body then body=body.split('</table>')[0]  end
     #handle case where id was on div and we still have opening table
-    if body and body["<table"] then body=body.split(/<table(.+?)>/)[1] end
+    if body and body["<table"] then body=body.split(/<table(?:.*?)>/)[1] end
     body
   end
   def get_row_test(body,number)
@@ -224,7 +224,7 @@ NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 
   end
 
   def get_col_test(body,number)
-    rows=body.split('<td>')
+    rows=body.split(/<td(?:.*?)>/)
     row=rows[number]
     row=row.split('</td>')[0]
   end

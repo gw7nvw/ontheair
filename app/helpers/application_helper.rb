@@ -9,10 +9,14 @@ module ApplicationHelper
   end
 
   def safe_param(param)
-   nonalpha=param.index(/[^a-zA-Z\d\s:]/)
-   if !nonalpha then nonalpha=0 end
-   param[0..(nonalpha-1)]
-  end   
+    if param then
+      nonalpha=param.index(/[^a-zA-Z\d\s:]/)
+      if !nonalpha then nonalpha=0 end
+      param[0..(nonalpha-1)]
+    else
+      nil
+    end
+  end
 
   def convert_to_text(html, line_length = 65, from_charset = 'UTF-8')
     require 'htmlentities'

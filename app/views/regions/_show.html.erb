@@ -20,7 +20,7 @@
 </div>
 <div id="right_scroll">
    <%= render 'flash' %>
-   <div class="erow" id="name">
+   <div class="erow" id="code">
       <div class="rowtitle"><%= "Code" %></div>
       <div class="rowtext"> 
         <%= @region.sota_code %>
@@ -32,19 +32,19 @@
         <%=link_to @region.name, '/regions/'+@region.sota_code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
       </div>
    </div>
-   <div class="erow" id="callsign">
+   <div class="erow" id="callsign_div">
       <div class="rowtitle"><%= "Stats for callsign" %></div>
       <div class="rowtext"> 
         <form action="/regions/<%=@region.sota_code%>" method="get" accept-charset="UTF-8"  data-remote="true">
           <input id="callsign" name="callsign" type="text" value=<%=@callsign%> />
-          <input name="commit" value="Show" type="submit" onclick="linkHandler(&#39;clear&#39;)">
+          <input name="commit" id="submit" value="Show" type="submit" onclick="linkHandler(&#39;clear&#39;)">
         </form>
       </div>
    </div>
 
   <div class="erow">
     <div class="sectiontitle"><%= "Districts" %></div>
-    <table class="places">
+    <table class="places" id="district_table">
       <tr>
         <th>ID</th>
         <th>Name</th>

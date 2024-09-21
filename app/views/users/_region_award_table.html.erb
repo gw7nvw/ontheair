@@ -1,6 +1,6 @@
    <div class="erow">
       <div class="sectiontitle" style="margin-top: 12px;">Worked-all-Region Awards: (<%=link_to "show progress", "/users/"+@user.callsign+"/region_progress", remote: true,  :id => 'region_progress', :onclick => "linkHandler('region_progress')" %>)</div>
-      <table>
+      <table id="region_award_table">
         <tr>
           <th>Region</th>
           <th>Class</th>

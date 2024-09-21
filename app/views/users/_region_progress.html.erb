@@ -29,7 +29,7 @@
       <div class="sectiontitle" style="margin-top: 12px;">Progress towards Worked-all-Region Awards:</div>
       <div class="sectiontitle" style="margin-top: 12px;">Activations:</div>
       <% columnsize=100/(3+@award_classes.count) %>
-      <table>
+      <table id="region_activated_table">
         <tr>
           <th style="width: <%=3*columnsize%>%">Region</th>
           <%@award_classes.each do |award_class|%>
@@ -43,14 +43,15 @@
               <% assets=@region_assets.select {|d| d.name==region.sota_code and d.type==award_class.name} %>
               <% activation=@activations.select {|d| d.name==region.sota_code and d.type==award_class.name} %>
 
-              <td class="percentage" style='color: #777; text-align: center; background-size:<%=if activation and activation.count>0 and assets.first.code_count>0 then (1.0*activation.first.site_list.uniq.count/assets.first.code_count)*100 else 0 end%>% 100%'><%=if activation and activation.count>0 then activation.first.site_list.uniq.count.to_s+"/"+assets.first.code_count.to_s end%></td>
+              <td class="percentage" style='color: #777; text-align: center; background-size:<%=if activation and activation.count>0 and assets.first.code_count>0 then (1.0*activation.first.site_list.uniq.count/assets.first.code_count)*100 else 0 end%>% 100%'><%=if activation and activation.count>0 then activation.first.site_list.uniq.count.to_s+"/" end%><%=if assets and assets.first then assets.first.code_count.to_s end%></td>
 
             <% end %>
           </tr>
         <%end%>
       </table>
+
       <div class="sectiontitle" style="margin-top: 12px;">Chases:</div>
-      <table>
+      <table id="region_chased_table">
         <tr>
           <th style="width: <%=3*columnsize%>%">Region</th>
           <%@award_classes.each do |award_class|%>

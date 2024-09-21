@@ -11,7 +11,7 @@ class UsersController < ApplicationController
      @user=User.find_by(callsign: params[:id].upcase)
      @activations=@user.area_activations('district')
      @chases=@user.area_chases('district')
-     @award_classes=AssetType.where("name != 'all' and name !='pota park' and name!='wwff park' and name!='lighthouse'")
+     @award_classes=AssetType.where("name != 'all' and name !='pota park' and name!='wwff park' and name!='lighthouse'").order(:name)
      @district_assets=District.get_assets_with_type
      @districts=District.all.order(:region_code, :name)
   end
@@ -21,7 +21,7 @@ class UsersController < ApplicationController
      @user=User.find_by(callsign: params[:id].upcase)
      @activations=@user.area_activations('region')
      @chases=@user.area_chases('region')
-     @award_classes=AssetType.where("name != 'all'")
+     @award_classes=AssetType.where("name != 'all'").order(:name)
      @region_assets=Region.get_assets_with_type
      @regions=Region.all.order(:name)
   end

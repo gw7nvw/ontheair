@@ -20,7 +20,7 @@
 </div>
 <div id="right_scroll">
    <%= render 'flash' %>
-   <div class="erow" id="name">
+   <div class="erow" id="code">
       <div class="rowtitle"><%= "Code" %></div>
       <div class="rowtext"> 
         <%= @district.district_code %>
@@ -45,7 +45,7 @@
       <div class="rowtext"> 
         <form action="/districts/<%=@district.district_code%>" method="get" accept-charset="UTF-8"  data-remote="true">
           <input id="callsign" name="callsign" type="text" value=<%=@callsign%> />
-          <input name="commit" value="Show" type="submit" onclick="linkHandler(&#39;clear&#39;)">
+          <input name="commit" value="Show" id="submit" type="submit" onclick="linkHandler(&#39;clear&#39;)">
         </form>
       </div>
    </div>

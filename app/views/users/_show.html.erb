@@ -30,7 +30,7 @@
      <br/>
    </div>
 
-   <div class="erow" id="realname">
+   <div class="erow" id="user_status">
       <% if @user.activated then %>
         <% if @user.read_only then %>
           <i>Restricted user. Contact admin@ontheair if you require full access  </i>
@@ -47,11 +47,7 @@
       <% end %>
    </div>
    <div class="erow" id="realname">
-      <% if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
-         <%= if @user.firstname then @user.firstname.capitalize else "" end+" "+if @user.lastname then @user.lastname.capitalize else "" end %><br/>
-      <% else %>
-         <%= if @user.firstname then @user.firstname.capitalize else "" end+" "+if @user.lastname then @user.lastname.capitalize else "" end %><br/>
-      <% end %>
+      <%= if @user.firstname then @user.firstname.capitalize else "" end+" "+if @user.lastname then @user.lastname.capitalize else "" end %><br/>
    </div>
 
    <%     if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
@@ -67,22 +63,23 @@
          Email: <%= @user.email %>
      </div>
 
-     <div class="erow" id="home_qth">
-         Home QTH: <%= @user.home_qth %>
-     </div>
-
    <%end%>
-     <div class="erow" id="email">
-         Timezone: <%= @user.timezonename %>
-     </div>
 
-     <div class="erow" id="logs_pota">
-         Logs to POTA: <%= if @user.logs_pota==false then "No" else "Yes" end %>
-     </div>
+   <div class="erow" id="home_qth">
+       Home QTH: <%= @user.home_qth %>
+   </div>
 
-     <div class="erow" id="logs_wwff">
-         Logs to WWFF: <%= if @user.logs_wwff==false then "No" else "Yes" end %>
-     </div>
+   <div class="erow" id="timezonename">
+       Timezone: <%= @user.timezonename %>
+   </div>
+
+   <div class="erow" id="logs_pota">
+       Logs to POTA: <%= if @user.logs_pota==false then "No" else "Yes" end %>
+   </div>
+
+   <div class="erow" id="logs_wwff">
+       Logs to WWFF: <%= if @user.logs_wwff==false then "No" else "Yes" end %>
+   </div>
 
 </div>
 
@@ -100,7 +97,7 @@
 <div class="erow">
   <h2>Callsigns</h2>
   <%= form_for(@callsign, remote: true, url: callsigns_path) do |f| %> 
-  <table>
+  <table id="callsign_table">
     <tr> 
        <th>Callsign</th>
        <th>From</th>
@@ -113,14 +110,15 @@
          <td><%=if c.from_date then c.from_date.to_date end%></td>
          <td><%=if c.to_date then c.to_date.to_date else "present" end%></td>
          <td>
-          <% if signed_in? and (current_user.id=@user.id or current_user.is_admin) then %>
+          <% if signed_in? and (current_user.id==@user.id or current_user.is_admin) then %>
             <%=  link_to "Edit", '/callsigns/'+c.id.to_s+"/edit", class: "btn btn-small btn-primary", remote: true,  :id => 'edit_call', :onclick => "linkHandler('edit_call')"  %>
-            <%=  link_to "Delete", '/callsigns/'+c.id.to_s+"/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_call', :onclick => "linkHandler('delete_call')", confirm: "Delete callsign?  This will remove this callsign from the system and you will lose any associated points/contacts.  Use 'Edit' and enter an 'End date' if you wish to retire this callsign and retain past contacts. Really delete?"  %>
+            <%=  link_to "Delete", '/callsigns/'+c.id.to_s+"/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_call', :onclick => "linkHandler('delete_call')", data: {confirm: "Delete callsign?  This will remove this callsign from the system and you will lose any associated points/contacts.  Use 'Edit' and enter an 'End date' if you wish to retire this callsign and retain past contacts. Really delete?"}  %>
           <% end %>
          </td>
       </tr>
     <% end %>
-    <tr>
+    <% if signed_in? and (current_user.id==@user.id or current_user.is_admin) then %>
+      <tr>
         <%= f.hidden_field :user_id %>
         <td>
           <%= f.text_field :callsign %>
@@ -132,9 +130,10 @@
           <%= f.date_field :to_date %>
         </td>
         <td>
-          <%= f.submit 'Add', class: "btn btn-small btn-primary btn-hightlight" %>
+          <%= f.submit 'Add', id:"user_callsign_submit", class: "btn btn-small btn-primary btn-hightlight" %>
         </td>
-     </tr>
+      </tr>
+    <% end %>
   </table>
   <% end %>
 </div>
@@ -148,7 +147,7 @@
 <% if current_user and (@user==current_user or current_user.is_admin or current_user.group_admin) then %>
 <h2>Mail</h2>
    <p>Select the topics for which you would like to receive emails of any new posts</p>
-   <table>
+   <table id="mail_table">
      <tr>
         <th>Topic</th>
         <th>Email</th>
@@ -163,7 +162,7 @@
 <% else %>
          <td> <%=  link_to "Add", '/users/'+@user.callsign+'/add?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'add_spot', :onclick => "linkHandler('add_spot')"  %> </td>
 <% end %>
-       <tr>
+       </tr>
        <tr>
          <% topic=Topic.find_by_id(ALERT_TOPIC) %>
          <td> ALERTS </td>
@@ -193,8 +192,10 @@
 </div>
 <% end %>
 
-<h2>Awards</h2>
-<%=link_to "Show awards", '/users/'+@user.callsign+'/awards', remote: true,  :id => 'awards', :onclick => "linkHandler('awards')"  %> 
+<div class="erow" id="awards_box">
+  <h2>Awards</h2>
+  <%=link_to "Show awards", '/users/'+@user.callsign+'/awards', remote: true,  :id => 'awards_link', :onclick => "linkHandler('awards_link')"  %> 
+</div>
 
 <div class="erow">
    <div class="hrline">
@@ -209,14 +210,14 @@
 <% ats.each do |at| %>
 
 
-    <div class="erow">
+    <div class="erow" id="<%=at.name.pluralize%>">
       <div class="sectiontitle" style="margin-top: 12px;"><%=if at.name == 'qrp' then "QRP" else at.name.capitalize.pluralize end%>:</div>
       <ul>
-        <li><%=link_to "Bagged: "+@user.score[at.name].to_s+" unique", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=bagged", remote: true,  :id => 'users', :onclick => "linkHandler('users')"%></li>
+        <li><%=link_to "Bagged: "+(@user.score[at.name]||0).to_s+" unique", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=bagged", remote: true,  :id => "#{at.name.pluralize}_bagged", :onclick => "linkHandler('bagged')"%></li>
 
-        <li><%=link_to "Activated: "+@user.activated_count[at.name].to_s+" unique ("+@user.activated_count_total[at.name].to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=activated", remote: true,  :id => 'users', :onclick => "linkHandler('users')"%></li>
-        <li><%=link_to "Qualified: "+@user.qualified_count[at.name].to_s+" unique ("+@user.qualified_count_total[at.name].to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=activated", remote: true,  :id => 'users', :onclick => "linkHandler('users')"%></li>
-        <li><%=link_to "Chased: "+@user.chased_count[at.name].to_s+" unique ("+@user.chased_count_total[at.name].to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=chased", remote: true,  :id => 'users', :onclick => "linkHandler('users')"%></li>
+        <li><%=link_to "Activated: "+(@user.activated_count[at.name]||0).to_s+" unique ("+(@user.activated_count_total[at.name]||0).to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=activated", remote: true,  :id => "#{at.name.pluralize}_activated", :onclick => "linkHandler('activated')"%></li>
+        <li><%=link_to "Qualified: "+(@user.qualified_count[at.name]||0).to_s+" unique ("+(@user.qualified_count_total[at.name]||0).to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=activated", remote: true,  :id => "#{at.name.pluralize}_qualified", :onclick => "linkHandler('qualified')"%></li>
+        <li><%=link_to "Chased: "+(@user.chased_count[at.name]||0).to_s+" unique ("+(@user.chased_count_total[at.name]||0).to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=chased", remote: true,  :id => "#{at.name.pluralize}_chased", :onclick => "linkHandler('chased')"%></li>
       </ul>
     </div>
   <% end %>
@@ -226,7 +227,7 @@
 <div class="erow">
   <div class="sectiontitle" style="margin-top: 12px;">P2P:</div>
   <ul>
-    <li><%=link_to "Contacts: "+assets.count.to_s, '/users/'+@user.callsign+"/p2p", remote: true,  :id => 'users', :onclick => "linkHandler('users')"%></li>
+    <li><%=link_to "Contacts: "+assets.count.to_s, '/users/'+@user.callsign+"/p2p", remote: true,  :id => 'p2p_count', :onclick => "linkHandler('users')"%></li>
   </ul>
 </div>
 <div class="erow">
