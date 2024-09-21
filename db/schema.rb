@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240901205857) do
+ActiveRecord::Schema.define(version: 20240907082003) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -68,6 +68,8 @@ ActiveRecord::Schema.define(version: 20240901205857) do
     t.boolean  "keep_score"
     t.integer  "min_qso"
     t.boolean  "has_elevation"
+    t.integer  "ele_buffer"
+    t.integer  "dist_buffer"
   end
 
   add_index "asset_types", ["name"], :name => "index_asset_types_on_name"
@@ -517,6 +519,8 @@ ActiveRecord::Schema.define(version: 20240901205857) do
     t.integer  "user_id"
     t.boolean  "do_not_lookup"
     t.string   "loc_source"
+    t.string   "asset_classes",                                        default: [],   array: true
+    t.boolean  "qualified",                                            default: [],   array: true
   end
 
   add_index "logs", ["date"], :name => "index_logs_on_date"

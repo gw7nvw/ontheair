@@ -26,7 +26,7 @@ include PostsHelper
     end
 
     if !asset_type or asset_type=="" then asset_type="all" end
-    @asset_type=AssetType.find_by(name: asset_type)
+    @asset_type=AssetType.find_by(name: asset_type[0..20])
 
     @searchtext=params[:searchtext] || ""
     if !@limit then  

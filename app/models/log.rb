@@ -12,6 +12,7 @@ class Log < ActiveRecord::Base
     #self.get_most_accurate_location
     self.remove_suffix
     self.callsign1=self.callsign1.strip.upcase.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
+    self.update_classes
   end
 
   def add_user_ids
@@ -255,8 +256,12 @@ def self.import_csv(currentuser, filestr,user,default_callsign,default_location,
       value=fields[3]
       if value and value.length>0 and value.strip.length>0 then
          parts=value.strip.split('/')
-         if parts[0].length==2 then #assume dd-mm-yy as per iPnP
-           protolog.date='20'+parts[2]+'/'+parts[1]+'/'+parts[0]
+         if parts[0].length==2 then #assume dd-mm-yyyy as per iPnP
+           if parts[2].length==2 then #assume dd-mm-yy as per iPnP
+             protolog.date='20'+parts[2]+'/'+parts[1]+'/'+parts[0]
+           else
+             protolog.date=parts[2]+'/'+parts[1]+'/'+parts[0]
+           end
            contact.date=protolog.date
          else #assume yyyy-mm-dd as per SOTA
            protolog.date=value.strip
@@ -876,6 +881,24 @@ def self.degs_from_deg_min_sec(value)
   pos
 end
 
+  def update_qualified
+    qualified=[]
+    self.asset_classes.each do |ac|
+      at=AssetType.find_by(name: ac)
+      unique_contacts=Contact.find_by_sql [" select distinct callsign2, mode, band from contacts where log_id=#{self.id};"]
+      if unique_contacts.count>=at.min_qso then
+        asset_qualified=true
+      else
+        asset_qualified=false
+      end
+      qualified.push(asset_qualified)
+    end
+
+    self.qualified=qualified
+    self.update_column(:qualified, qualified)
+  end
+
+
 def remove_suffix
   if self.callsign1['/'] then self.callsign1=Log.remove_suffix(self.callsign1) end
 end
@@ -890,5 +913,36 @@ def self.remove_suffix(callsign)
   end
   theseg
 end
+
+  #update asset_classes array to show asset type for all asset_codes - in order
+  def update_classes
+    asset_classes=[]
+    self.asset_codes.each do |code|
+      asset=Asset.assets_from_code(code)
+      if asset and asset.count>0 then
+        asset_classes.push(asset.first[:type])
+      end
+    end
+    self.asset_classes=asset_classes
+  end
+
+  #one-off to apply clsses to all logs 
+  def self.update_all_classes
+    logs=Log.all
+    logs.each do |log|
+      puts log.id
+      log.update_classes
+      log.update_column(:asset_classes, log.asset_classes)
+    end
+  end
+  #one-off to add qualifed to all logs
+  def self.update_qualified
+    logs=Log.all
+    logs.each do |log|
+      puts log.id
+      log.update_qualified
+      #log.update_column(:qualifed, log.qualifed)
+    end
+  end
 
 end

@@ -473,6 +473,7 @@ end
    if self.user1_id then
      user=User.find_by_id(self.user1_id)
      if user then
+       self.log.update_qualified
        if Rails.env.production? then 
          user.outstanding=true;user.save;Resque.enqueue(Scorer) 
        else 
