@@ -49,6 +49,7 @@ class UsersController < ApplicationController
        ats.each do |at|
          if at.name=="summit" then include_external=true else include_external=false end
          @asset_codes+=@user.assets_by_type(at.name, @count_type, true)
+
          #filter by min qso requirements
          if @count_type=='activated' then
            @valid_codes+=@user.qualified(asset_type: at.name, include_external: include_external)
