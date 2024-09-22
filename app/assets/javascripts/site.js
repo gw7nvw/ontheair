@@ -51,6 +51,7 @@ var site_huts_style;
 var site_humps_style;
 var site_public_humps_style;
 var site_summits_style;
+var site_volcano_style;
 var site_public_summits_style;
 var site_contacts_style;
 var site_highlight_polygon;
@@ -286,6 +287,7 @@ function site_points_style_function(feature, resoluton) {
   if(feature.get('asset_type')=="hump")  return site_humps_style;
   if((feature.get('asset_type')=="summit") && (feature.get('public_access')=='t')) return site_public_summits_style;
   if(feature.get('asset_type')=="summit")  return site_summits_style;
+  if(feature.get('asset_type')=="volcano")  return site_volcano_style;
   if(feature.get('asset_type')=="lighthouse")  return site_beacon_style;
   if(feature.get('asset_type')=="park")  return site_park_point_style;
   if(feature.get('asset_type')=="pota park")  return site_pota_point_style;
@@ -379,6 +381,7 @@ function site_init_styles() {
   site_humps_style=map_create_style("triangle", 4, "#e60000", "#e60000", 1);
   site_public_humps_style=map_create_style("triangle", 4, "#800000", "#800000", 1);
   site_summits_style=map_create_style("triangle", 4, "#cc66ff", "#cc66ff", 1);
+  site_volcano_style=map_create_style("triangle", 4, "#ff1493", "#ff1493", 1);
   site_public_summits_style=map_create_style("triangle", 4, "#6600cc", "#6600cc", 1);
   site_contacts_style=map_create_style("circle", 4, "#2222ff", "#22ffff", 1);
   site_highlight_polygon=map_create_style("", null, 'rgba(128,0,0,0.3)', "#660000", 2);

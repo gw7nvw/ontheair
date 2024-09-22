@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240915012256) do
+ActiveRecord::Schema.define(version: 20240922073956) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -119,7 +119,7 @@ ActiveRecord::Schema.define(version: 20240915012256) do
     t.string   "access_park_ids",                                                         default: [], array: true
     t.string   "access_track_ids",                                                        default: [], array: true
     t.boolean  "public_access"
-    t.integer  "az_radius"
+    t.float    "az_radius"
   end
 
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
@@ -814,6 +814,23 @@ ActiveRecord::Schema.define(version: 20240915012256) do
 
   add_index "vk_assets", ["award"], :name => "vk_award_indx"
   add_index "vk_assets", ["code"], :name => "vk_code_indx"
+
+  create_table "volcanos", force: true do |t|
+    t.string  "code"
+    t.string  "name"
+    t.string  "status"
+    t.string  "field_name"
+    t.integer "age"
+    t.string  "period"
+    t.string  "epoch"
+    t.integer "height"
+    t.float   "lat"
+    t.float   "long"
+    t.float   "az_radius"
+    t.string  "url"
+    t.string  "description"
+    t.spatial "location",    limit: {:srid=>4326, :type=>"point"}
+  end
 
   create_table "web_link_classes", force: true do |t|
     t.string   "name"

@@ -189,6 +189,48 @@ def Asset.add_lighthouses
   end
 end
 
+def Asset.add_volcanoes
+  ps=Volcano.where('code is not null')
+  ps.each do |p|
+    Asset.add_volcano(p, nil)
+  end
+end
+
+def Asset.add_volcano(p, existing_asset)
+  a=Asset.find_by(asset_type: 'volcano', code: p.code)
+  if !a then
+     a=Asset.new
+     puts "Adding new volcano"
+  end
+  a.asset_type="volcano"
+#  if a.description=nil or a.description=="" then a.description=(p.status||"").capitalize+" based "+(if p.str_type=="lighthouse" then "lighthouse" else "light/beacon" end)+(if p.status then " ("+p.status+")" else "" end) end
+  a.code=p.code
+  a.is_active=true
+  a.name=p.name
+  a.location=p.location
+  a.az_radius=p.az_radius
+  a.save
+
+  awl=AssetWebLink.find_by(asset_code: a.code)
+  if !awl then awl=AssetWebLink.new; puts "New link" end
+  awl.asset_code=a.code
+  awl.url=p.url
+  awl.link_class="other"
+  awl.save
+
+  logger.debug a.code
+  logger.debug a.name
+  a
+
+  a.add_activation_zone(true)
+end
+
+def Asset.add_wwff_parks
+  ps=WwffPark.all
+  ps.each do |p|
+    Asset.add_wwff_park(p, nil)
+  end
+end
 def Asset.add_lighthouse(p, existing_asset)
   a=Asset.find_by(asset_type: 'lighthouse', code: p.code)
   if !a then
