@@ -220,9 +220,14 @@ def bagged(params={})
   asset_type='all'
   qrp=false
   include_minor=false
+  include_external=false
+  codes3=[]
+  codes4=[]
+
   if params[:asset_type] then asset_type=params[:asset_type] end
   if params[:include_minor] then include_minor=params[:include_minor] end
   if params[:qrp] then qrp=params[:qrp] end
+  if params[:include_external] then include_external=params[:include_external] end
 
   if include_minor==false then minor_query='a.minor is not true' else minor_query='true' end
   if qrp==true then
@@ -241,7 +246,11 @@ def bagged(params={})
 
   codes1=Contact.find_by_sql [" select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where ((user1_id="+self.id.to_s+" and "+qrp_query1+") or (user2_id="+self.id.to_s+" and "+qrp_query2+"))) as c inner join assets a on a.code = c.asset1_codes where a.is_active=true and #{minor_query} and a.asset_type in ("+at_list+"); " ]
   codes2=Contact.find_by_sql [" select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where ((user1_id="+self.id.to_s+" and "+qrp_query1+") or (user2_id="+self.id.to_s+" and "+qrp_query2+"))) as c inner join assets a on a.code = c.asset2_codes where a.is_active=true and #{minor_query} and a.asset_type in ("+at_list+"); " ]
-  codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(",") ].join(",").split(',').uniq
+  if include_external==true
+    codes3=ExternalChase.find_by_sql [ " select concat(summit_code) as summit_code from external_chases where user_id='#{self.id}' and asset_type in ("+at_list+");"]
+    codes4=ExternalActivation.find_by_sql [ " select concat(summit_code) as summit_code from external_activations where user_id='#{self.id}' and asset_type in ("+at_list+");"]
+  end
+  codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(","), codes3.map{|c| c.summit_code}.join(","), codes4.map{|c| c.summit_code}.join(",")].join(",").split(',').uniq
   codes=codes.select{ |c| c.length>0 }
 end
 
@@ -303,7 +312,7 @@ def chased(params={})
   codes1=Contact.find_by_sql [" select distinct(asset1_codes"+date_query+") as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id="+self.id.to_s+" and "+qrp_query1+") as c inner join assets a on a.code = c.asset1_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
   codes2=Contact.find_by_sql [" select distinct(asset2_codes"+date_query+") as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id="+self.id.to_s+" and "+qrp_query2+") as c inner join assets a on a.code = c.asset2_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
   if include_external==true
-    codes3=ExternalChase.find_by_sql [ " select concat(summit_code"+date_query_ext+") as summit_code from external_chases where user_id='#{self.id}';"]
+    codes3=ExternalChase.find_by_sql [ " select concat(summit_code"+date_query_ext+") as summit_code from external_chases where user_id='#{self.id}' and asset_type in ("+at_list+");"]
   end
   codes=[codes1.map{|c| c.asset1_codes}.join(","), codes2.map{|c| c.asset1_codes}.join(","), codes3.map{|c| c.summit_code}.join(",")].join(",").split(',').uniq
   codes=codes.select{ |c| c.length>0 }
@@ -371,7 +380,7 @@ def activations(params={})
   codes1=Contact.find_by_sql [" select distinct(asset1_codes"+date_query+") as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id="+self.id.to_s+" and "+qrp_query1+") as c inner join assets a on a.code = c.asset1_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
   codes2=Contact.find_by_sql [" select distinct(asset2_codes"+date_query+") as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id="+self.id.to_s+" and "+qrp_query2+") as c inner join assets a on a.code = c.asset2_codes where a.asset_type in ("+at_list+") and a.is_active=true and #{minor_query}; " ]
   if include_external==true
-    codes3=ExternalActivation.find_by_sql [ " select concat(summit_code"+date_query_ext+") as summit_code from external_activations where user_id='#{self.id}';"]
+    codes3=ExternalActivation.find_by_sql [ " select concat(summit_code"+date_query_ext+") as summit_code from external_activations where user_id='#{self.id}' and asset_type in ("+at_list+");"]
   end
   case result_type
   when 'all' 
@@ -474,8 +483,8 @@ def update_score
     self.activated_count_total[asset_type.name]=self.activations(by_year: true, asset_type: asset_type.name, include_external: include_external).count
     self.confirmed_activated_count[asset_type.name]=self.activations(asset_type: asset_type.name, include_external: include_external, only_activator: true).count
     self.confirmed_activated_count_total[asset_type.name]=self.activations(by_year: true, asset_type: asset_type.name, include_external: include_external, only_activator: true).count
-    self.chased_count[asset_type.name]=self.chased(asset_type: asset_type.name).count
-    self.chased_count_total[asset_type.name]=self.chased(asset_type: asset_type.name, by_day: true).count
+    self.chased_count[asset_type.name]=self.chased(asset_type: asset_type.name, include_external: include_external).count
+    self.chased_count_total[asset_type.name]=self.chased(asset_type: asset_type.name, by_day: true, include_external: include_external).count
     self.qualified_count[asset_type.name]=self.qualified(asset_type: asset_type.name,include_external: include_external).count
     self.qualified_count_total[asset_type.name]=self.qualified(by_year: true, asset_type: asset_type.name, include_external: include_external).count
   end
@@ -652,6 +661,7 @@ end
 #   codes: array of [Asset.code] 
 ##################################################################################
 def assets_by_type(asset_type, count_type, include_minor=false)
+  if asset_type=="summit" or asset_type=="pota park" then include_external=true else include_external=false end
   if asset_type=="qrp" then
     case count_type
     when 'activated'
@@ -664,11 +674,11 @@ def assets_by_type(asset_type, count_type, include_minor=false)
   else
     case count_type
     when 'activated'
-      codes=self.activations(asset_type: asset_type, include_minor: include_minor)
+      codes=self.activations(asset_type: asset_type, include_minor: include_minor, include_external: include_external)
     when 'chased'
-      codes=self.chased(asset_type: asset_type, include_minor: include_minor)
+      codes=self.chased(asset_type: asset_type, include_minor: include_minor, include_external: include_external)
     else
-      codes=self.bagged(asset_type: asset_type, include_minor: include_minor)
+      codes=self.bagged(asset_type: asset_type, include_minor: include_minor, include_external: include_external)
     end
   end   
   codes
@@ -1344,6 +1354,7 @@ end
 def self.update_scores
   users=User.all
   users.each do |user|
+     puts user.callsign
      user.update_score
   end
 end

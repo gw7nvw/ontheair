@@ -597,6 +597,136 @@ class UsersControllerTest < ActionController::TestCase
     assert_match /insufficient contacts/, get_col_test(row,1), "Not qualified"
   end
 
+  test "can view user's bagged summits" do
+    user1=User.find_by(callsign: 'ZL4NVW')
+    user1.add_callsigns
+    user2=User.find_by(callsign: 'ZL3CC')
+    user2.add_callsigns
+    asset1=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/CB-')
+    asset2=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/CB-', minor: true)
+    asset3=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/CB-')
+    #2 activations and 2 chases on successive days
+    log=create_test_log(user1, asset_codes: [asset1.code], date: Time.now)
+    contact=create_test_contact(user1, user2, log_id: log.id, asset1_codes: [asset1.code], time: Time.now)
+
+    log2=create_test_log(user1, asset_codes: [asset1.code], date: 1.day.ago)
+    contact2=create_test_contact(user1, user2, log_id: log2.id, asset1_codes: [asset1.code], time: 1.day.ago)
+
+    #inactive site
+    log3=create_test_log(user1, asset_codes: [asset2.code], date: Time.now)
+    contact=create_test_contact(user1, user2, log_id: log3.id, asset1_codes: [asset2.code],  time: Time.now)
+
+    #external activations
+    activation=create_test_external_activation(user1,asset3, date: '2022-01-01'.to_date)
+    chase=create_test_external_chase(activation,user2,asset3,time: '2022-01-01 02:00'.to_time)
+
+
+
+    user1.update_score
+    user2.update_score
+
+
+
+    #bagged
+    get 'assets', {id: 'ZL4NVW', asset_type: 'summit', count_type: 'bagged'}
+    #assert_select  "#valid_count", /2/  #cannot check as filled in by js
+    assert_select  "#total_count", /3/
+
+    #list of assets - 2 unique assets bagged
+    table=get_table_test(@response.body, 'place_table')
+    assert_equal 3, get_row_count_test(table), "3 rows"
+    row=get_row_test(table,1)
+    assert_match /#{make_regex_safe(asset1.codename)}/, get_col_test(row,1), "Correct place"
+    row=get_row_test(table,2)
+    assert_match /#{make_regex_safe(asset2.codename)}/, get_col_test(row,1), "Correct place"
+    assert_match /site does not qualify/, get_col_test(row,1), "Marked as invalid"
+    row=get_row_test(table,3)
+    assert_match /#{make_regex_safe(asset3.codename)}/, get_col_test(row,1), "Correct place"
+
+
+
+    #chased
+    get 'assets', {id: 'ZL3CC', asset_type: 'summit', count_type: 'chased'}
+    #assert_select  "#valid_count", /2/  #cannot check as filled in by js
+    assert_select  "#total_count", /3/
+    assert_select  "#nq_count", /3/
+
+    #list of assets - 3 unique asset chased
+    table=get_table_test(@response.body, 'place_table')
+    assert_equal 3, get_row_count_test(table), "3 rows"
+    row=get_row_test(table,1)
+    assert_match /#{make_regex_safe(asset1.codename)}/, get_col_test(row,1), "Correct place"
+    row=get_row_test(table,2)
+    assert_match /#{make_regex_safe(asset2.codename)}/, get_col_test(row,1), "Correct place"
+    assert_match /site does not qualify/, get_col_test(row,1), "Marked as invalid"
+    row=get_row_test(table,3)
+    assert_match /#{make_regex_safe(asset3.codename)}/, get_col_test(row,1), "Correct place"
+
+
+
+
+    #activated and qualified
+    get 'assets', {id: 'ZL4NVW', asset_type: 'summit', count_type: 'activated'}
+    #activated
+    #assert_select  "#act_valid_count", /2/  #cannot check as filled in by js
+    assert_select  "#act_total_count", /2/
+    assert_select  "#act_nq_count", /3/
+    #qualified - none as not enough contacts
+    #assert_select  "#valid_count", /0/  #cannot check as filled in by js
+    assert_select  "#total_count", /0/
+
+    #list of assets - 3 unique asset activated
+    table=get_table_test(@response.body, 'place_table')
+    assert_equal 3, get_row_count_test(table), "3 rows"
+    row=get_row_test(table,1)
+    assert_match /#{make_regex_safe(asset1.codename)}/, get_col_test(row,1), "Correct place"
+    assert_match /insufficient contacts/, get_col_test(row,1), "Not qualified"
+    row=get_row_test(table,2)
+    assert_match /#{make_regex_safe(asset2.codename)}/, get_col_test(row,1), "Correct place"
+    assert_match /insufficient contacts/, get_col_test(row,1), "Not qualified"
+    assert_match /site does not qualify/, get_col_test(row,1), "Marked as invalid"
+    row=get_row_test(table,3)
+    assert_match /insufficient contacts/, get_col_test(row,1), "Not qualified"
+    assert_match /#{make_regex_safe(asset3.codename)}/, get_col_test(row,1), "Correct place"
+  end
+  test "can view user's qualified summits" do
+    user1=User.find_by(callsign: 'ZL4NVW')
+    user1.add_callsigns
+    asset1=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/CB-')
+    asset2=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/CB-')
+    asset3=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/CB-')
+
+    #external activations
+    activation=create_test_external_activation(user1,asset1, date: '2022-01-01'.to_date, qso_count: 4)
+    activation=create_test_external_activation(user1,asset2, date: '2022-01-01'.to_date, qso_count: 3)
+    activation=create_test_external_activation(user1,asset3, date: '2022-01-01'.to_date, qso_count: 5)
+
+    user1.update_score
+
+
+    #activated and qualified
+    get 'assets', {id: 'ZL4NVW', asset_type: 'summit', count_type: 'activated'}
+    #activated
+    #assert_select  "#act_valid_count", /2/  #cannot check as filled in by js
+    assert_select  "#act_total_count", /3/
+    assert_select  "#act_nq_count", /3/
+    #qualified - none as not enough contacts
+    #assert_select  "#valid_count", /0/  #cannot check as filled in by js
+    assert_select  "#total_count", /2/
+
+    #list of assets - 3 unique asset activated
+    table=get_table_test(@response.body, 'place_table')
+    assert_equal 3, get_row_count_test(table), "3 rows"
+    row=get_row_test(table,1)
+    assert_match /#{make_regex_safe(asset1.codename)}/, get_col_test(row,1), "Correct place"
+    assert_no_match /insufficient contacts/, get_col_test(row,1), "qualified"
+    row=get_row_test(table,2)
+    assert_match /#{make_regex_safe(asset2.codename)}/, get_col_test(row,1), "Correct place"
+    assert_match /insufficient contacts/, get_col_test(row,1), "Not qualified"
+    row=get_row_test(table,3)
+    assert_no_match /insufficient contacts/, get_col_test(row,1), "qualified"
+    assert_match /#{make_regex_safe(asset3.codename)}/, get_col_test(row,1), "Correct place"
+  end
   #########################################################################
   # USER AWARDS
   #########################################################################

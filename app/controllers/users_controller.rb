@@ -44,20 +44,29 @@ class UsersController < ApplicationController
      #include all summit types
      if @asset_type=='summit' then 
        @asset_codes=[]
+       @valid_codes=[]
        ats=AssetType.where(has_elevation: true)
        ats.each do |at|
+         if at.name=="summit" then include_external=true else include_external=false end
          @asset_codes+=@user.assets_by_type(at.name, @count_type, true)
+         #filter by min qso requirements
+         if @count_type=='activated' then
+           @valid_codes+=@user.qualified(asset_type: at.name, include_external: include_external)
+         else
+           @valid_codes=@asset_codes
+         end
        end
      else
        @asset_codes=@user.assets_by_type(@asset_type, @count_type, true) 
+
+       #filter by min qso requirements
+       if @count_type=='activated' then
+         @valid_codes=@user.qualified(asset_type: @asset_type)
+       else
+         @valid_codes=@asset_codes
+       end
      end
 
-     #filter by min qso requirements
-     if @count_type=='activated' then
-       @valid_codes=@user.qualified(asset_type: @asset_type)
-     else
-       @valid_codes=@asset_codes
-     end
 
      @assets = Asset.find_by_sql [ " select asset_type, minor, is_active, id, name, code, altitude from assets where code in (?) ",@asset_codes ] 
   end
