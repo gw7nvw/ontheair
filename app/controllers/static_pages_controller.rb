@@ -116,7 +116,7 @@ include ApplicationHelper
       @all_spots=ExternalSpot.where("time>'"+onehourago+"'")
     
       @hota_spots=Post.find_by_sql [" 
-            select * from posts p
+            select p.* from posts p
             inner join items i on i.item_id=p.id and i.item_type='post' 
             where
               i.topic_id=#{SPOT_TOPIC} and p.referenced_date>'#{Time.now.to_date-1.days}' 

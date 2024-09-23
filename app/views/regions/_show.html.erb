@@ -85,8 +85,10 @@
             chased=0 %>
        
          <% assets.each do |asset| %>
-           <% act_true=asset.activated_by?(@callsign)
-              cha_true=asset.chased_by?(@callsign)
+           <% #act_true=asset.activated_by?(@callsign)
+              #cha_true=asset.chased_by?(@callsign)
+              act_true=@activations.include?(asset.code)
+              cha_true=@chased.include?(asset.code)
               if cha_true then chased+=1  end
               if act_true then activated+=1 end
                 count+=1 %>

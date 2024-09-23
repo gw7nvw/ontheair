@@ -448,13 +448,17 @@ def activated_by?(callsign)
 
     cs=Contact.find_by_sql [ ' select id from contacts where (callsign1 = ? and ? = ANY(asset1_codes)) or (callsign2 = ? and ? = ANY(asset2_codes)) limit 1 ', callsign, self.code, callsign, self.code ]
 
-    as=ExternalActivation.find_by_sql [ "select * from external_activations where summit_code='"+self.code+"' and callsign = '"+callsign+"' limit 1" ]
+    if self.asset_type=="summit" or self.asset_type=="pota park" then
+      as=ExternalActivation.find_by_sql [ "select * from external_activations where summit_code='"+self.code+"' and callsign = '"+callsign+"' limit 1" ]
+    end
 
     if (as and as.count>0) or (cs and cs.count>0) then true else false end
   else
     cs=Contact.find_by_sql [ ' select id from contacts where (? = ANY(asset1_codes)) or (? = ANY(asset2_codes)) limit 1 ', self.code, self.code ]
 
-    as=ExternalActivation.find_by_sql [ "select * from external_activations where summit_code='"+self.code+"' limit 1" ]
+    if self.asset_type=="summit" or self.asset_type=="pota park" then
+      as=ExternalActivation.find_by_sql [ "select * from external_activations where summit_code='"+self.code+"' limit 1" ]
+    end
     if (as and as.count>0) or (cs and cs.count>0) then true else false end
   end
 
@@ -466,13 +470,17 @@ def chased_by?(callsign)
     callsign=callsign.upcase
     cs=Contact.find_by_sql [ ' select id from contacts where (callsign2 = ? and ? = ANY(asset1_codes)) or (callsign1 = ? and ? = ANY(asset2_codes)) limit 1 ', callsign, self.code, callsign, self.code ]
 
-    as=ExternalChase.find_by_sql [ "select * from external_chases where summit_code='"+self.code+"' and callsign = '"+callsign+"' limit 1" ]
+    if self.asset_type=="summit" or self.asset_type=="pota park" then
+      as=ExternalChase.find_by_sql [ "select * from external_chases where summit_code='"+self.code+"' and callsign = '"+callsign+"' limit 1" ]
+    end
 
     if (as and as.count>0) or (cs and cs.count>0) then true else false end
   else
     cs=Contact.find_by_sql [ ' select id from contacts where (? = ANY(asset1_codes)) or (? = ANY(asset2_codes)) limit 1 ', self.code, self.code ]
 
-    as=ExternalChase.find_by_sql [ "select * from external_chases where summit_code='"+self.code+"' limit 1" ]
+    if self.asset_type=="summit" or self.asset_type=="pota park" then
+      as=ExternalChase.find_by_sql [ "select * from external_chases where summit_code='"+self.code+"' limit 1" ]
+    end
 
     if (as and as.count>0) or (cs and cs.count>0) then true else false end
   end

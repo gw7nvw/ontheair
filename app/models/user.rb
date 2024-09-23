@@ -240,6 +240,9 @@ def bagged(params={})
   if asset_type=='all' then
     ats=AssetType.where(keep_score: true)
     at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+  elsif asset_type=='everything' then
+    ats=AssetType.where("name != 'all'")
+    at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
   else
     at_list=asset_type.split(',').map{|at| "'"+at.strip+"'"}.join(",")
   end
@@ -303,6 +306,9 @@ def chased(params={})
 
   if asset_type=='all' then
     ats=AssetType.where(keep_score: true)
+    at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+  elsif asset_type=='everything' then
+    ats=AssetType.where("name != 'all'")
     at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
   else
     at_list=asset_type.split(',').map{|at| "'"+at.strip+"'"}.join(",")
@@ -372,6 +378,9 @@ def activations(params={})
 
   if asset_type=='all' then
     ats=AssetType.where(keep_score: true)
+    at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
+  elsif asset_type=='everything' then
+    ats=AssetType.where("name != 'all'")
     at_list=ats.map{|at| "'"+at.name+"'"}.join(",")
   else
     at_list=asset_type.split(',').map{|at| "'"+at.strip+"'"}.join(",")
@@ -650,6 +659,28 @@ end
 ##################################################################################
 # WRAPPERS
 ##################################################################################
+
+def self.all_activations
+  codes=Contact.find_by_sql [" select distinct code from ( 
+         (select unnest(asset1_codes) as code from contacts c1) 
+        union 
+         (select unnest(asset2_codes) as code from contacts c2) 
+        union 
+         (select summit_code as code from external_activations c3)
+        ) as c; "]
+  codes.map{|c| c[:code]}
+end
+
+def self.all_chases
+ codes=Contact.find_by_sql [" select distinct code from ( 
+         (select unnest(asset1_codes) as code from contacts c1) 
+        union 
+         (select unnest(asset2_codes) as code from contacts c2) 
+        union 
+         (select summit_code as code from external_chases c3)
+        ) as c; "]
+  codes.map{|c| c[:code]}
+end
 
 ##################################################################################
 # Single function to call activated / bagged / chased based on parameters passed

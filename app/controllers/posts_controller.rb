@@ -54,7 +54,7 @@ def new
       @post.referenced_time=Time.now().in_time_zone('UTC').at_beginning_of_minute
       @post.referenced_date=Time.now().in_time_zone('UTC').at_beginning_of_minute
       if params[:spot].to_i>0 then
-        spot=ExternalSpot.find(params[:spot].to_i)
+        spot=ExternalSpot.find_by(id: params[:spot].to_i)
         if spot then 
           @post.callsign=spot.activatorCallsign
           @post.freq=spot.frequency
@@ -62,7 +62,7 @@ def new
           if spot.code then @post.asset_codes=[spot.code.gsub('_','/')] end
         end  
       else
-        spot=Post.find(-params[:spot].to_i)
+        spot=Post.find_by(id: -params[:spot].to_i)
         if spot then
           @post.callsign=spot.callsign
           @post.freq=spot.freq
@@ -243,7 +243,7 @@ def create
           item.save
           if !@post.do_not_publish then item.send_emails end
         end
-        flash[:success] = "Posted!"
+        flash[:success] = "Posted! "
         @edit=true
 
 
@@ -251,7 +251,7 @@ def create
             success=@post.send_to_all(debug,current_user,@post.callsign,@post.asset_codes,@post.freq,@post.mode,@post.description,@topic,@post.referenced_date.strftime('%Y-%m-%d'),@post.referenced_time.strftime('%H:%M'),'UTC') 
             puts "DEBUG: controller success: "+success.to_s
             if success[:result]==false then flash[:error]=success[:messages] end
-            if success[:result]==true and success[:messages]!="" then flash[:success]=success[:messages] end
+            if success[:result]==true and success[:messages]!="" then flash[:success]+=success[:messages] end
         end
        
         if debug then 

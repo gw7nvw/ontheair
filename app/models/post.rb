@@ -268,6 +268,8 @@ def send_to_pota(debug, from, callsign, a_code, freq, mode, description)
              result=false
              puts "DUBUG: spot not accepted by POTA"
              messages="Spot not accepted by POTA for: "+a_code+"; "
+          else
+            messages="Sent spot to POTA; "
           end
         end
       else
@@ -310,6 +312,7 @@ def self.send_to_hema(debug, from, callsign, a_code, freq, mode, description)
     rescue
       messages="Failed to contact HEMA server"
     else
+      messages="Sent spot to HEMA; "
       puts response
       puts response.body
     end
@@ -334,8 +337,10 @@ def send_to_sota(debug, from, callsign, a_code, freq, mode, description)
       id_token=creds["id_token"]
 
       if debug then
+        puts "DEBUG"
         url = URI.parse('https://cluster.sota.org.uk:8150/testme')
       else
+        puts "LIVE"
         url = URI.parse('https://cluster.sota.org.uk:8150/spotme')
       end
 
@@ -371,6 +376,7 @@ def send_to_sota(debug, from, callsign, a_code, freq, mode, description)
           result=false
           messages="Failed to contact SOTA server"
         else
+          messages="Sent spot to SOTA; "
           puts "DEBUG: SOTA response"
           puts res.body
         end
@@ -427,6 +433,7 @@ def send_to_pnp(debug,ac,topic,idate,itime,tzname)
           rescue
             messages="Failed to contact PnP server"
           else
+            messages="Send to PnP; ";
             puts response
             puts response.body
           end
@@ -449,6 +456,7 @@ puts "DEBUG: http://parksnpeaks.org/api/SPOT"+dbtext
           rescue
             messages="Failed to contact PnP server"
           else
+            messages="Send to PnP; ";
             puts response
             puts response.body
           end

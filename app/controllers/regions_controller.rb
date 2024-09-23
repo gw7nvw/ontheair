@@ -27,7 +27,18 @@ def show
   if !@callsign and signed_in? then
      @callsign=current_user.callsign
   end
-  if !@callsign or @callsign=="/" then @callsign="*" end
+
+  if !@callsign or @callsign=="/" or @callsign=="*" then 
+    @callsign="*" 
+    @activations=User.all_activations
+    @chased=User.all_chases
+  else
+    user=User.find_by(callsign: @callsign)
+    @activations=user.activations(asset_type: 'everything', include_external: true)
+    @chased=user.chased(asset_type: 'everything', include_external: true)
+  end
+
+
 end
 
 end
