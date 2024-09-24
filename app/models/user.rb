@@ -781,7 +781,7 @@ end
 #       submitted: integer - count of contacts in this log alrady submitted 
 #    ]
 ###############################################################################
-def sota_logs(summitCode=nil)
+def sota_logs(summitCode=nil, merge=false)
   if summitCode==nil then
     summitQuery1="'summit'=ANY(asset1_classes)"
     summitQuery2="c1.asset1_classes='summit'"
@@ -792,21 +792,34 @@ def sota_logs(summitCode=nil)
 
   sota_logs=Contact.find_by_sql [ "
       select a.name, a.safecode, c3.* from
-        (select asset1_codes as code, date, 
+        (select asset1_codes as code, date, min(time) as time,
           count(case submitted_to_sota when true then 1 else null end) as submitted, 
           count(date) as count 
           from
-            (select callsign1, callsign2, date::date as date, asset1_codes, submitted_to_sota from
-               (select callsign1, callsign2, date, 
+            (select callsign1, callsign2, date::date as date, time, asset1_codes, submitted_to_sota from
+               (select callsign1, callsign2, date,  time,
                   unnest(asset1_classes) as asset1_classes, 
                   unnest(asset1_codes) as asset1_codes,
                   submitted_to_sota
                   from contacts 
                   where user1_id=#{self.id} and #{summitQuery1}) as c1
                where #{summitQuery2}) as c2
-          group by asset1_codes, date) as c3
+          group by asset1_codes, date
+          order by min(time)) as c3
         inner join assets a on a.code=c3.code;
     "]
+  #now find activtions continuing into new day and combine unless they are in a new year
+  if merge==true then
+    count=1
+    while count<sota_logs.count
+      if sota_logs[count] and sota_logs[count].safecode==sota_logs[count-1].safecode and sota_logs[count].time<=sota_logs[count-1].time+1.days and sota_logs[count].time.strftime('%Y')==sota_logs[count-1].time.strftime('%Y') then
+        #drop this log, add contacts to last
+        sota_logs[count-1].count+=sota_logs[count].count
+        sota_logs.delete_at(count)
+      end
+      count+=1
+    end          
+  end
   sota_logs
 end
 
@@ -867,16 +880,31 @@ end
 #       contacts: Array of [Contact]
 #    ]
 ###############################################################################
-def sota_contacts(summitCode = nil)
+def sota_contacts(summitCode = nil, merge=true)
   sota_contacts=[]
   sota_logs=self.sota_logs(summitCode)
  
   sota_logs.each do |sota_log|
      contacts=Contact.where("user1_id = ? and ? = ANY(asset1_codes) and date::date= ?", self.id,  sota_log[:code], sota_log[:date].strftime("%Y-%m-%d")).order(:time)
      contact_count=contacts.count
-     sota_contacts.push({code: sota_log[:code], date: sota_log[:date], count: contact_count, contacts: contacts})  
+     sota_contacts.push({code: sota_log[:code], date: sota_log[:date], time: sota_log[:time], count: contact_count, contacts: contacts})  
   end 
-  sota_contacts
+ #now find activtions continuing into new day and combine
+  if merge==true then
+    count=1
+    while count<sota_contacts.count
+      if sota_contacts[count][:code]==sota_contacts[count-1][:code] and sota_contacts[count][:time]<=sota_contacts[count-1][:time]+1.days and sota_contacts[count][:time].strftime('%Y')==sota_contacts[count-1][:time].strftime('%Y') then
+        #drop this log, add contacts to last
+        sota_contacts[count-1][:count]+=sota_contacts[count][:count]
+        sota_contacts[count-1][:contacts]+=sota_contacts[count][:contacts]
+        sota_contacts.delete_at(count)
+
+      end
+      count+=1
+    end
+  end
+
+  sota_contacts.compact
 end
 
 #################################################################################

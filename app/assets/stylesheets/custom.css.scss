@@ -905,9 +905,10 @@ input {
        margin-top: -54px !important;
   }
   .photo-bar {
-    padding-left:25px;
+   # padding-left:25px;
     height:auto;
-    width: calc(100% - 25px);
+   # width: calc(100% - 25px);
+    width: 100%;
     overflow-x:auto;
     overflow-y:hidden;
     white-space: nowrap;

@@ -37,6 +37,7 @@ def show
       summit=Asset.find_by(code: params[:id].gsub('_','/'))
 
       sls=@user.sota_contacts(summit.code)
+      summit_code=summit.code
       sota_log=nil
       sls.each do |sl|
         if sl[:code]==params[:id].gsub('_','/') and sl[:date].strftime("%Y%m%d")==params[:date] then sota_log=sl end
@@ -62,11 +63,11 @@ def show
         @sota_log+="<station_callsign:"+@user.callsign.length.to_s+">"+@user.callsign
         @sota_log+="<band:"+contact.band.length.to_s+">"+contact.band
         @sota_log+="<mode:"+contact.adif_mode.length.to_s+">"+contact.adif_mode
-        if params[:date] then
-          @sota_log+="<qso_date:8>"+params[:date]
-        else
+#        if params[:date] then
+#          @sota_log+="<qso_date:8>"+params[:date]
+#        else
           @sota_log+="<qso_date:8>"+contact.date.strftime("%Y%m%d")
-        end
+#        end
         @sota_log+="<time_on:4>"+contact.time.strftime("%H%M")
         if summit_code then
           @sota_log+="<my_sota_ref:"+summit_code.length.to_s+">"+summit_code

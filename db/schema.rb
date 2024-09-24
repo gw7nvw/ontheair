@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240922073956) do
+ActiveRecord::Schema.define(version: 20240923094850) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -331,6 +331,38 @@ ActiveRecord::Schema.define(version: 20240922073956) do
     t.string   "mode"
     t.string   "comments"
     t.string   "spot_type"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "geological_eons", force: true do |t|
+    t.string   "name"
+    t.float    "start_mya"
+    t.float    "end_mya"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "geological_epoches", force: true do |t|
+    t.string   "name"
+    t.float    "start_mya"
+    t.float    "end_mya"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "geological_eras", force: true do |t|
+    t.string   "name"
+    t.float    "start_mya"
+    t.float    "end_mya"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "geological_periods", force: true do |t|
+    t.string   "name"
+    t.float    "start_mya"
+    t.float    "end_mya"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -820,7 +852,7 @@ ActiveRecord::Schema.define(version: 20240922073956) do
     t.string  "name"
     t.string  "status"
     t.string  "field_name"
-    t.integer "age"
+    t.float   "age"
     t.string  "period"
     t.string  "epoch"
     t.integer "height"
@@ -830,6 +862,11 @@ ActiveRecord::Schema.define(version: 20240922073956) do
     t.string  "url"
     t.string  "description"
     t.spatial "location",    limit: {:srid=>4326, :type=>"point"}
+    t.string  "eon"
+    t.string  "era"
+    t.float   "min_age"
+    t.float   "max_age"
+    t.string  "date_range"
   end
 
   create_table "web_link_classes", force: true do |t|

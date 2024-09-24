@@ -82,26 +82,26 @@ class UserSotaLogsTest < ActiveSupport::TestCase
     assert sota_logs[1][:submitted]==0, "Expect submitted to contain 0 contacts: "+sota_logs[0][:submitted].to_s
   end
 
-  test "Contacts on new day in new log" do
+  test "Contacts after +24hrs in new log" do
     user1=create_test_user
     user2=create_test_user
     user3=create_test_user
     asset1=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/OT-')
 
     log=create_test_log(user1,asset_codes: [asset1.code])
-    contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 23:59:59'.to_time)
-    contact2=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-02 00:00:00'.to_time)
-    contact3=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 14.01, time: '2022-01-01 23:57:59'.to_time)
+    contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 00:00:00'.to_time)
+    contact2=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-02 00:01:00'.to_time)
+    contact3=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 14.01, time: '2022-01-02 23:57:59'.to_time)
 
-    sota_logs=user1.sota_logs
+    sota_logs=user1.sota_logs(nil, true)
 
     assert sota_logs.count==2, "Expect 2 summit activations to be logged :"+sota_logs.count.to_s
     #don't know which order they'll be listed, so accept either
-    if (sota_logs[0][:count]==1) then 
-      firstcount=1; secondcount=2;
+    if (sota_logs[0][:count]==2) then 
+      firstcount=2; secondcount=1;
       firstdate="2022-01-02"; seconddate="2022-01-01"
     else 
-      firstcount=2; secondcount=1;
+      firstcount=1; secondcount=2;
       firstdate="2022-01-01"; seconddate="2022-01-02"
     end
     assert sota_logs[0][:code]==asset1.code, "Expect summit to be correct: "+sota_logs[0][:code].to_json
@@ -117,6 +117,57 @@ class UserSotaLogsTest < ActiveSupport::TestCase
     assert sota_logs[1][:submitted]==0, "Expect submitted to contain 0 contacts: "+sota_logs[0][:submitted].to_s
   end
 
+  test "Contacts less than 24hrs in same log even after daily rollover" do
+    user1=create_test_user
+    user2=create_test_user
+    user3=create_test_user
+    asset1=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/OT-')
+
+    log=create_test_log(user1,asset_codes: [asset1.code])
+    contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 23:59:59'.to_time)
+    contact2=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-02 00:00:00'.to_time)
+    contact3=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 14.01, time: '2022-01-01 23:57:59'.to_time)
+
+    sota_logs=user1.sota_logs(nil, true)
+
+    assert sota_logs.count==1, "Expect 1 summit activations to be logged :"+sota_logs.count.to_s
+    assert sota_logs[0][:code]==asset1.code, "Expect summit to be correct: "+sota_logs[0][:code].to_json
+    assert sota_logs[0][:name]==asset1.name, "Expect summit to be correct: "+sota_logs[0][:name].to_json
+    assert sota_logs[0][:date].strftime('%Y-%m-%d')=='2022-01-01', "Expect date to match log: "+sota_logs[0][:date].to_json
+    assert sota_logs[0][:count]==3, "Expect 3 contacts for this park: "+sota_logs[0][:count].to_s
+    assert sota_logs[0][:submitted]==0, "Expect submitted to contain 0 contacts: "+sota_logs[0][:submitted].to_s
+  end
+
+  test "Contacts less than 24hrs not in same log after annual rollover" do
+    user1=create_test_user
+    user2=create_test_user
+    user3=create_test_user
+    asset1=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/OT-')
+
+    log=create_test_log(user1,asset_codes: [asset1.code])
+    contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2021-12-31 23:59:59'.to_time)
+    contact2=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 00:00:00'.to_time)
+    contact3=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 14.01, time: '2021-12-31 23:57:59'.to_time)
+
+    sota_logs=user1.sota_logs(nil, true)
+
+    assert sota_logs.count==2, "Expect 2 summit activations to be logged :"+sota_logs.count.to_s
+    firstcount=2; secondcount=1;
+    firstdate="2021-12-31"; seconddate="2022-01-01"
+
+    assert sota_logs[0][:code]==asset1.code, "Expect summit to be correct: "+sota_logs[0][:code].to_json
+    assert sota_logs[0][:name]==asset1.name, "Expect summit to be correct: "+sota_logs[0][:name].to_json
+    assert sota_logs[0][:date].strftime('%Y-%m-%d')==firstdate, "Expect date to match log: "+sota_logs[0][:date].to_json
+    assert sota_logs[0][:count]==firstcount, "Expect #{firstcount} contacts for this park: "+sota_logs[0][:count].to_s
+    assert sota_logs[0][:submitted]==0, "Expect submitted to contain 0 contacts: "+sota_logs[0][:submitted].to_s
+
+    assert sota_logs[1][:code]==asset1.code, "Expect summit to be correct: "+sota_logs[0][:code].to_json
+    assert sota_logs[1][:name]==asset1.name, "Expect summit to be correct: "+sota_logs[0][:name].to_json
+    assert sota_logs[1][:date].strftime('%Y-%m-%d')==seconddate, "Expect date to match log: "+sota_logs[1][:date].to_json
+    assert sota_logs[1][:count]==secondcount, "Expect #{secondcount} contacts for this park: "+sota_logs[0][:count].to_s
+    assert sota_logs[1][:submitted]==0, "Expect submitted to contain 0 contacts: "+sota_logs[0][:submitted].to_s
+
+  end
   test "Submitted coontacts marked as submitted" do
     user1=create_test_user
     user2=create_test_user
