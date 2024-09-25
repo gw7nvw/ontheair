@@ -162,7 +162,7 @@ class Log < ActiveRecord::Base
   # LOG FILE IMPORTS
   ####################################################################
 
-  def self.import(filetype, currentuser, filestr,user,default_callsign=nil,default_location=nil,no_create=false, ignore_error=false,  do_not_lookup=false)
+  def self.import(filetype, currentuser, filestr,user,default_callsign=nil,default_location=nil,no_create=false, ignore_error=false,  do_not_lookup=false, force_callsign=false)
     logs=[]
     contacts=[]
     errors=[]
@@ -218,6 +218,12 @@ class Log < ActiveRecord::Base
            protolog, contact, timestring = Log.parse_adif_record(line, protolog, contact) 
          else
            protolog, contact, timestring = Log.parse_csv_record(line, protolog, contact)
+         end
+
+         #Override callsign if asked
+         if force_callsign then
+           contact.callsign1=default_callsign 
+           protolog.callsign1=default_callsign
          end
 
          record_count+=1

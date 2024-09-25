@@ -10,7 +10,7 @@ module ApplicationHelper
 
   def safe_param(param)
     if param then
-      nonalpha=param.index(/[^a-zA-Z\d\-_\s:]/)
+      nonalpha=param.index(/[^a-zA-Z\d\-_\/\s:]/)
       if !nonalpha then nonalpha=0 end
       param[0..(nonalpha-1)]
     else

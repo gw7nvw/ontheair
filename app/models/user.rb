@@ -170,7 +170,7 @@ end
 #    [Contact]
 #############################################################################################
 def orphan_activations
-  codes=self.activations(orphan_activations: true, by_year: true) 
+  codes=self.activations(orphan_activations: true, by_year: true, asset_type: 'everything') 
   contacts=[]
   codes.each do |code_year|
     code=code_year.split(' ')[0] 

@@ -12,6 +12,7 @@
           <%=  link_to ":as Markdown", '/logs/'+@log.id.to_s+'.txt', class: "btn btn-small btn-primary", :blank => true%>
           <%=  link_to "Edit", '/logs/'+@log.id.to_s+'/edit', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('edit')"%>
        <% end %>
+       <%=  link_to "Download", '/logs/'+@log.id.to_s+'.adi', class: "btn btn-small btn-primary"%>
        <%=  link_to "Index", '/logs/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
        <%=render 'map_controls'%>   
    </div>

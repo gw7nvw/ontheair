@@ -14,6 +14,7 @@ def show
     format.html
     format.js
     format.text
+    format.adi { send_data log_to_adi(@log), filename: @filename }
   end
 end
 
@@ -37,6 +38,7 @@ def savefile
     if params[:upload][:doc_callsign] then
       puts "Got callsign: "+params[:upload][:doc_callsign]
       callsign=params[:upload][:doc_callsign]
+      force_callsign=true
     end
     if current_user.is_admin and params[:callsign] then 
       user=User.find_by(callsign: params[:callsign].upcase)
@@ -54,9 +56,9 @@ def savefile
     if success then
       logfile=File.read(@upload.doc.path)
       if @upload.doc.path.match(".csv") then
-         results=Log.import('csv',current_user, logfile, user, callsign, location, params[:upload][:doc_no_create]=="1", params[:upload][:doc_ignore_error]=="1", do_not_lookup)
+         results=Log.import('csv',current_user, logfile, user, callsign, location, params[:upload][:doc_no_create]=="1", params[:upload][:doc_ignore_error]=="1", do_not_lookup, force_callsign)
       else
-         results=Log.import('adif', current_user, logfile, user, callsign, location, params[:upload][:doc_no_create]=="1", params[:upload][:doc_ignore_error]=="1", do_not_lookup)
+         results=Log.import('adif', current_user, logfile, user, callsign, location, params[:upload][:doc_no_create]=="1", params[:upload][:doc_ignore_error]=="1", do_not_lookup, force_callsign)
       end 
 
       logs=results[:logs]
@@ -401,5 +403,28 @@ end
   def upload_params
     params.require(:upload).permit(:doc)
   end
+
+  def log_to_adi(log)
+  @sota_log=""
+  contacts=log.contacts
+  contacts.each do |contact|
+    @sota_log+="<call:"+contact.callsign2.length.to_s+">"+contact.callsign2
+    @sota_log+="<station_callsign:"+contact.callsign1.length.to_s+">"+contact.callsign1
+    if contact.band then @sota_log+="<band:"+contact.band.length.to_s+">"+contact.band end
+    if contact.frequency then @sota_log+="<freq:"+contact.frequency.to_s.length.to_s+">"+contact.frequency.to_s end
+    if contact.mode then @sota_log+="<mode:"+contact.adif_mode.length.to_s+">"+contact.adif_mode end
+    if contact.date then @sota_log+="<qso_date:8>"+contact.date.strftime("%Y%m%d") end
+    if contact.time then @sota_log+="<time_on:4>"+contact.time.strftime("%H%M") end
+    if contact.asset1_codes then @sota_log+="<my_sig_info:"+contact.asset1_codes.join(',').length.to_s+">"+contact.asset1_codes.join(',') end
+    if contact.asset2_codes then @sota_log+="<sig_info:"+contact.asset2_codes.join(',').length.to_s+">"+contact.asset2_codes.join(',') end
+    if contact.signal2!=nil then @sota_log+="<rst_sent:"+contact.signal2.length.to_s+">"+contact.signal2 end
+    if contact.signal1!=nil then @sota_log+="<rst_rcvd:"+contact.signal1.length.to_s+">"+contact.signal1 end
+    if contact.name2 then @sota_log+="<name:"+contact.name2.length.to_s+">"+contact.name2 end
+    if contact.loc_desc2 then @sota_log+="<qth:"+contact.loc_desc2.length.to_s+">"+contact.loc_desc2 end
+    if contact.loc_desc1 then @sota_log+="<my_city:"+contact.loc_desc1.length.to_s+">"+contact.loc_desc1 end
+    @sota_log+="<eor>\n"
+  end
+  @sota_log
+end
 
 end
