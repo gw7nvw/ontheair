@@ -433,7 +433,7 @@ def send_to_pnp(debug,ac,topic,idate,itime,tzname)
           rescue
             messages="Failed to contact PnP server"
           else
-            messages="Send to PnP; ";
+            messages="Sent to PnP; ";
             puts response
             puts response.body
           end
@@ -456,7 +456,7 @@ puts "DEBUG: http://parksnpeaks.org/api/SPOT"+dbtext
           rescue
             messages="Failed to contact PnP server"
           else
-            messages="Send to PnP; ";
+            messages="Sent to PnP; ";
             puts response
             puts response.body
           end

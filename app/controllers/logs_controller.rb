@@ -24,7 +24,7 @@ end
 
 def upload
     @upload = Upload.new
-    @upload.doc_callsign=current_user.callsign
+    #@upload.doc_callsign=current_user.callsign
 end
 
 def savefile

@@ -48,7 +48,7 @@
             <% if current_user.is_admin then %>
               <%= f.text_field :doc_callsign %>
             <% else %>
-              <%= collection_select( :upload, :doc_callsign, current_user.callsigns, :callsign, :callsign, {}) %>
+              <%= collection_select( :upload, :doc_callsign, current_user.callsigns, :callsign, :callsign, { include_blank: true}) %>
             <% end %>
           </div>
           <div class="erow">

@@ -191,6 +191,26 @@ def type
   type
 end
 
+def linked_assets
+  assets=nil
+  als=AssetLink.find_by_parent(self.code)
+  if als then 
+    codes=als.map{|al| al.containing_code}
+    assets=Asset.where(:code => codes)
+  end
+  assets
+end
+
+def linked_assets_by_type(asset_type)
+  assets=nil
+  als=AssetLink.find_by_parent(self.code)
+  if als then 
+    codes=als.map{|al| al.containing_code}
+    assets=Asset.where(:code => codes, :asset_type => asset_type)
+  end
+  assets
+end
+
 # Traditional owners of land containing this asset.  
 # if many, proide as comma-separated list
 # If we are near the boundary, hedge our bets and say 'in or near'
