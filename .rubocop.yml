@@ -23,3 +23,5 @@ Style/EvalWithLocation:
 Style/SafeNavigation:
     Enabled: false
 
+Naming/AccessorMethodName:
+    Enabled: false

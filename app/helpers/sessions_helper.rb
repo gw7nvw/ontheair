@@ -1,32 +1,32 @@
+# frozen_string_literal: true
+
 # typed: false
 module SessionsHelper
-
   def sign_in(user)
     remember_token = User.new_token
-    Rails.logger.info "Assign RT: "+remember_token
-if ENV["RAILS_ENV"] == "production" then
-    cookies[:remember_token2] = {value: remember_token, expires: 1.month.from_now.utc, domain: 'ontheair.nz'}
- else
-    cookies[:remember_token3] = {value: remember_token, expires: 1.month.from_now.utc, domain: 'ontheair.nz'}
+    Rails.logger.info 'Assign RT: ' + remember_token
+    if ENV['RAILS_ENV'] == 'production'
+      cookies[:remember_token2] = { value: remember_token, expires: 1.month.from_now.utc, domain: 'ontheair.nz' }
+    else
+      cookies[:remember_token3] = { value: remember_token, expires: 1.month.from_now.utc, domain: 'ontheair.nz' }
 
-end
+    end
     user.update_attribute(:remember_token2, User.digest(remember_token))
     self.current_user = user
-    session[:user_id]=user.id
+    session[:user_id] = user.id
   end
 
   def sign_out
     current_user.update_attribute(:remember_token2,
                                   User.digest(User.new_token))
-if ENV["RAILS_ENV"] == "production" then
-    cookies.delete(:remember_token2, domain: 'ontheair.nz')
-else
-    cookies.delete(:remember_token3, domain: 'ontheair.nz')
+    if ENV['RAILS_ENV'] == 'production'
+      cookies.delete(:remember_token2, domain: 'ontheair.nz')
+    else
+      cookies.delete(:remember_token3, domain: 'ontheair.nz')
 
-end
+    end
     self.current_user = nil
-    session[:user_id]=nil
-
+    session[:user_id] = nil
   end
 
   def signed_in?
@@ -34,7 +34,7 @@ end
   end
 
   def write_access?
-    (!current_user.nil? and !current_user.read_only)
+    (!current_user.nil? && !current_user.read_only)
   end
 
   def current_user=(user)
@@ -42,12 +42,11 @@ end
   end
 
   def current_user
-if ENV["RAILS_ENV"] == "production" then
-    remember_token = User.digest(cookies[:remember_token2])
-else
-    remember_token = User.digest(cookies[:remember_token3])
-end
+    remember_token = if ENV['RAILS_ENV'] == 'production'
+                       User.digest(cookies[:remember_token2])
+                     else
+                       User.digest(cookies[:remember_token3])
+                     end
     @current_user ||= User.find_by(remember_token2: remember_token)
   end
 end
-

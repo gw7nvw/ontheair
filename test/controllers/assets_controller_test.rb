@@ -304,4 +304,284 @@ class AssetsControllerTest < ActionController::TestCase
     assert_select '#comment_box', /commented/, "comment"
     assert_select '#comment_box', /#{comment.updated_at.strftime('%Y-%m-%d')}/, "comment date"
   end
+
+
+  ##################################################################
+  # CREATE 
+  ##################################################################
+  test "Can view New Asset form" do
+    sign_in users(:zl4nvw)
+
+    get :new
+    assert_response :success
+
+    #Breadcrumbs
+    assert_select '#crumbs', /Home/
+    assert_select '#crumbs', /Places/
+    assert_select '#crumbs', /New/
+
+    #Action control bar
+    assert_select '#controls', {count: 1, text: /Cancel/}
+
+    assert_select '#controls', /Smaller Map/
+    assert_select '#controls', /Larger Map/
+    assert_select '#controls', /Back/
+
+    #form 
+    assert_select '#asset_id'
+    assert_select '#asset_code'
+    assert_select '#asset_asset_type'
+    assert_select '#asset_region'
+    assert_select '#asset_district'
+    assert_select '#asset_name'
+    assert_select '#asset_az_radius'
+    assert_select '#asset_points'
+    assert_select '#asset_location'
+    assert_select '#asset_x'
+    assert_select '#asset_y'
+    assert_select '#asset_altitude'
+    assert_select '#asset_valid_from'
+    assert_select '#asset_valid_to'
+    assert_select '#asset_is_active'
+    assert_select '#asset_is_nzart'
+    assert_select '#asset_minor'
+    assert_select '#submit'
+  end
+
+  test "Non editor cannot view New Asset form" do
+    sign_in users(:zl3cc)
+    get :new
+    assert_response :redirect
+    assert_redirected_to /assets/
+
+    assert_equal "You do not have permissions to create a new asset",  flash[:error]
+  end
+
+  test "Not logged in cannot view New Asset form" do
+    get :new
+    assert_response :redirect
+    assert_redirected_to /signin/
+
+    assert_equal "Please sign in.",  flash[:notice]
+  end
+
+  test "Can create an asset" do
+    sign_in users(:zl4nvw)
+
+    post :create, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}
+    assert_response :redirect
+    assert_redirected_to /\/assets\/[0-9]*/
+    assert_equal "Success!", flash[:success]
+    asset=Asset.last
+    assert_equal "ZLP/XX-9999", asset.code
+    assert_equal "Hut", asset.asset_type
+    assert_equal "CB", asset.region
+    assert_equal "CC", asset.district
+    assert_equal "Test Hut", asset.name
+    assert_equal 172, asset.location.x.to_i
+    assert_equal -43, asset.location.y.to_i
+    assert_equal 100, asset.altitude
+    assert_equal "2020-01-01", asset.valid_from.strftime("%Y-%m-%d")
+    assert_equal "2024-12-31", asset.valid_to.strftime("%Y-%m-%d")
+    assert_equal true, asset.is_active
+    assert_equal true, asset.is_nzart
+    assert_equal false, asset.minor
+    assert_equal 0.1, asset.az_radius
+    assert_equal 5, asset.points
+  end
+
+  test "Non editor cannot post New Asset form" do
+    sign_in users(:zl3cc)
+    post :create, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}
+    assert_response :redirect
+    assert_redirected_to /assets/
+
+    assert_equal "You do not have permissions to create a new asset",  flash[:error]
+  end
+
+  test "Non logged in cannot post New Asset form" do
+    post :create, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}
+    assert_response :redirect
+    assert_redirected_to /signin/
+
+    assert_equal "Please sign in.",  flash[:notice]
+  end
+
+  test "invalid asset params rejected correctly" do
+    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
+    sign_in users(:zl4nvw)
+    #no name
+    post :create, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}
+    assert_response :success
+    assert_select "#error_explanation", /Name/
+
+    #duplicate code
+    post :create, asset: {code: asset1.code, asset_type: "Hut", region: "CB", district: "CC", name: "name", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}
+    assert_response :success
+    assert_select "#error_explanation", /Code/
+  end
+
+
+  ##################################################################
+  # EDIT 
+  ##################################################################
+  test "Can view Edit Asset form" do
+    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
+    sign_in users(:zl4nvw)
+
+    get :edit, {id: asset1.safecode}
+    assert_response :success
+
+    #Breadcrumbs
+    assert_select '#crumbs', /Home/
+    assert_select '#crumbs', /Places/
+    assert_select '#crumbs', /test hut/
+
+    #Action control bar
+    assert_select '#controls', {count: 1, text: /Cancel/}
+
+    assert_select '#controls', /Smaller Map/
+    assert_select '#controls', /Larger Map/
+    assert_select '#controls', /Back/
+
+    #form 
+    assert_select '#asset_id' do assert_select "[value=?]", asset1.id end
+    assert_select '#asset_code' do assert_select "[value=?]", asset1.code end
+    assert_select '#asset_asset_type' do assert_select "[value=?]", 'hut' end
+    assert_select '#asset_region' do assert_select "[value=?]", 'CB'  end
+    assert_select '#asset_district' do assert_select "[value=?]", 'CC' end
+    assert_select '#asset_name' do assert_select "[value=?]", 'test hut' end
+    assert_select '#asset_az_radius' do assert_select "[value=?]", 0.1 end
+    assert_select '#asset_points' do assert_select "[value=?]", 5 end
+    assert_select '#asset_location' 
+    assert_select '#asset_x' do assert_select "[value=?]", asset1.x end
+    assert_select '#asset_y' do assert_select "[value=?]", asset1.y end
+    assert_select '#asset_altitude' do assert_select "[value=?]", 100 end
+    assert_select '#asset_valid_from' do assert_select "[value=?]", "1900-01-01" end
+    assert_select '#asset_valid_to' 
+    assert_select '#asset_is_active' do assert_select "[checked=?]", "checked" end
+    assert_select '#asset_is_nzart' do assert_select "[checked=?]", "checked" end
+    assert_select '#asset_minor' do assert_select "[checked=?]", "checked", {count: 0} end
+    assert_select '#submit'
+  end
+
+  test "Non editor cannot view Edit Asset form" do
+    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
+    sign_in users(:zl3cc)
+    get :edit, {id: asset1.safecode}
+    assert_response :redirect
+    assert_redirected_to /assets/
+
+    assert_equal "You do not have permissions to create a new asset",  flash[:error]
+  end
+
+  test "Not logged in cannot view edit Asset form" do
+    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
+    get :edit, {id: asset1.safecode}
+    assert_response :redirect
+    assert_redirected_to /signin/
+
+    assert_equal "Please sign in.",  flash[:notice]
+  end
+
+  test "Edit non existant asset handled correctly" do
+    sign_in users(:zl4nvw)
+    get :edit, {id: 'ZLP/XX-9999'}
+    assert_response :redirect
+    assert_redirected_to /assets/
+
+    assert_equal "Asset not found",  flash[:error]
+  end
+
+  test "Can update an asset" do
+    asset=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
+    sign_in users(:zl4nvw)
+
+    patch :update, id: asset.id, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}
+    assert_response :redirect
+    assert_redirected_to /\/assets\/[0-9]*/
+    assert_equal "Asset details updated", flash[:success]
+    asset.reload
+    assert_equal "ZLP/XX-9999", asset.code
+    assert_equal "Hut", asset.asset_type
+    assert_equal "CB", asset.region
+    assert_equal "CC", asset.district
+    assert_equal "Test Hut", asset.name
+    assert_equal 172, asset.location.x.to_i
+    assert_equal -43, asset.location.y.to_i
+    assert_equal 100, asset.altitude
+    assert_equal "2020-01-01", asset.valid_from.strftime("%Y-%m-%d")
+    assert_equal "2024-12-31", asset.valid_to.strftime("%Y-%m-%d")
+    assert_equal true, asset.is_active
+    assert_equal true, asset.is_nzart
+    assert_equal false, asset.minor
+    assert_equal 0.1, asset.az_radius
+    assert_equal 5, asset.points
+  end
+
+  test "Non editor cannot update Edit Asset form" do
+    sign_in users(:zl3cc)
+    asset=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
+
+    patch :update, id: asset.id, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}
+    assert_response :redirect
+    assert_redirected_to /assets/
+
+    assert_equal "You do not have permissions to update an asset",  flash[:error]
+
+    #not updated
+    asset.reload
+    assert_not_equal "ZLP/XX-9999", asset.code
+  end
+
+  test "Not logged in cannot update edit Asset form" do
+    asset=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
+
+    patch :update, id: asset.id, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}
+    assert_response :redirect
+    assert_redirected_to /signin/
+
+    assert_equal "Please sign in.",  flash[:notice]
+  end
+
+  test "Update non existant asset handled correctly" do
+    sign_in users(:zl4nvw)
+    patch :update, id: 99999, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}
+    assert_response :redirect
+    assert_redirected_to /assets/
+    
+    assert_match /Asset not found/,  flash[:error]
+  end
+
+  test "invalid asset params rejected correctly in edit" do
+    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
+    asset2=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
+    sign_in users(:zl4nvw)
+    #no name
+    patch :update, id: asset1.id, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}
+    assert_response :success
+    assert_select "#error_explanation", /Name/
+
+    #duplicate code
+    patch :update, id: asset1.id, asset: {code: asset2.code, asset_type: "Hut", region: "CB", district: "CC", name: "", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}
+    assert_response :success
+    assert_select "#error_explanation", /Code/
+  end
+
+  ##################################################################
+  # DELETE 
+  ##################################################################
+  test "Can delete an asset" do
+    asset=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
+    assets=Asset.count
+    sign_in users(:zl4nvw)
+
+    patch :update, {delete: true, id: asset.id}
+    assert_response :redirect
+    assert_no_match /Failed/, flash[:error]
+    assert_match /Asset deleted/, flash[:success]
+  
+    assert_equal assets-1, Asset.count  
+  end
+
 end

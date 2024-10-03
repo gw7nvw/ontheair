@@ -12,8 +12,13 @@ def create
      else
        flash[:error]="Could not create link"
      end
+
      asset_code=params[:asset_code]
-     redirect_to '/assets/'+asset_code.gsub('/','_')+"/associations"
+     if asset_code then 
+       redirect_to '/assets/'+asset_code.gsub('/','_')+"/associations"
+     else
+       redirect_to '/'
+     end
    else
      flash[:error]="Asset not found"
      redirect_to '/'
@@ -29,12 +34,15 @@ def delete
  if signed_in?  then
    awl=AssetLink.find_by(id: params[:id])
    asset_code=params[:asset_code]
-   if  awl.destroy then
+   if awl and awl.destroy then
      flash[:success]="Link deleted"
-     redirect_to '/assets/'+asset_code.gsub('/','_')+"/associations"
    else
      flash[:error]="Failed to delete link"
+   end
+   if asset_code then
      redirect_to '/assets/'+asset_code.gsub('/','_')+"/associations"
+   else
+     redirect_to '/'
    end
  else 
    flash[:error]="You must be logged in to delete this link"

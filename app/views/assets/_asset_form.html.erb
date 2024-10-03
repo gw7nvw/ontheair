@@ -4,7 +4,7 @@
       <div id="crumbs">
         <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
         &nbsp;--&gt;&nbsp;
-        <%=  link_to  "Assets:", '/assets', remote: true,  :id => 'assets', :onclick => "linkHandler('assets')" %>
+        <%=  link_to  "Places", '/assets', remote: true,  :id => 'assets', :onclick => "linkHandler('assets')" %>
         &nbsp;--&gt;&nbsp;
         <%if @asset.id%> 
           <%=link_to @asset.name, '/assets/'+@asset.safecode, remote: true, :id => 'asset', :onclick => "linkHandler('asset')" %>
@@ -79,7 +79,7 @@
       <%= f.label :y %>
       <%= f.text_field :y, :size => 8 %>
 
-      <%=f.label :altitude, "Altitude (leave blank to calculate from map upon save)"
+      <%=f.label :altitude, "Altitude (leave blank to calculate from map upon save)" %>
       <%= f.text_field :altitude %>
 
       <%= f.label :public_access, "Public access? " %>
@@ -112,7 +112,7 @@
         <%= f.check_box :minor, :readonly => true%><br/><br/>
       <% end %>
 
-      <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-hightlight" %>
+      <%= f.submit @submit_button, id: 'submit', class: "btn btn-small btn-primary btn-hightlight" %>
       <%  if(@submit_button == "Save Changes" and current_user and current_user.is_admin) %>
         <%= f.submit "Delete", confirm: "Delete asset: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>
       <% end %>

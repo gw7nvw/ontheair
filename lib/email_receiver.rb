@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 # typed: true
 require 'rubygems'
 require 'resque'
@@ -10,7 +12,6 @@ class EmailReceive
 
   def initialize(content)
     mail    = Mail.read_from_string(content)
-    body    = mail.body.decoded
     from    = mail.from.first
     to      = mail.to.first
     subject = mail.subject
@@ -18,12 +19,18 @@ class EmailReceive
     file = nil
 
     if mail.multipart?
-      part = mail.parts.select { |p| p.content_type =~ /text\/plain/ }.first rescue nil
-      attachment = mail.parts.select { |p| p.content_type =~ /application\/octet-stream/ }.first rescue nil
-      if attachment then file=attachment.decoded end
-      unless part.nil?
-        message = part.body.decoded
-      end
+      part = begin
+               mail.parts.select { |p| p.content_type =~ /text\/plain/ }.first
+             rescue StandardError
+               nil
+             end
+      attachment = begin
+                     mail.parts.select { |p| p.content_type =~ /application\/octet-stream/ }.first
+                   rescue StandardError
+                     nil
+                   end
+      file = attachment.decoded if attachment
+      message = part.body.decoded unless part.nil?
     else
       message = mail.decoded
     end
@@ -35,4 +42,3 @@ class EmailReceive
 end
 
 EmailReceive.new($stdin.read)
-

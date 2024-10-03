@@ -29,6 +29,7 @@ class ExternalSpot < ActiveRecord::Base
           # read new spots
           url = 'https://api2.sota.org.uk/api/spots/50/all?client=sotawatch&user=anon'
           spots = JSON.parse(open(url).read)
+          puts "GOT SOTA: "+spots.to_json
         end
       rescue Timeout::Error
         puts 'ERROR: SOTA Timeout'
@@ -41,6 +42,7 @@ class ExternalSpot < ActiveRecord::Base
         Timeout.timeout(30) do
           url = 'https://api.pota.app/spot/activator'
           spots = JSON.parse(open(url).read)
+          puts "GOT POTA: "+spots.to_json
         end
       rescue Timeout::Error
         puts 'ERROR: POTA Timeout'
@@ -53,6 +55,7 @@ class ExternalSpot < ActiveRecord::Base
         Timeout.timeout(30) do
           url = 'http://www.parksnpeaks.org/api/ALL'
           spots = JSON.parse(open(url).read)
+          puts "GOT PnP: "+spots.to_json
         end
       rescue Timeout::Error
         puts 'ERROR: PnP Timeout'

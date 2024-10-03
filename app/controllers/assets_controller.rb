@@ -109,77 +109,41 @@ include ApplicationHelper
   end
 
   def edit
-    if params[:referring] then @referring=params[:referring] end
+    if signed_in? and current_user.is_modifier then
+      if params[:referring] then @referring=params[:referring] end
 
-    if(!(@asset = Asset.where(code: params[:id].gsub("_","/")).first))
-      redirect_to '/'
+      if(!(@asset = Asset.where(code: params[:id].gsub("_","/")).first))
+        flash[:error]="Asset not found"
+        redirect_to '/assets'
+      end
+    else
+      flash[:error]="You do not have permissions to create a new asset"
+      redirect_to '/assets'
     end
   end
+
   def new
-    @parameters=params_to_query
-    @asset = Asset.new
+    if signed_in? and current_user.is_modifier then
+      @parameters=params_to_query
+      @asset = Asset.new
+    else
+      flash[:error]="You do not have permissions to create a new asset"
+      redirect_to '/assets'
+    end
   end
 
- def create
-	    if signed_in? and current_user.is_modifier then
+  def create
+    if signed_in? and current_user.is_modifier then
+      @asset = Asset.new(asset_params)
 
-    @asset = Asset.new(asset_params)
-
-    convert_location_params(params[:asset][:x], params[:asset][:y])
-
-    @asset.createdBy_id=current_user.id
-    if !@asset.region then @asset.region=@asset.add_region end
-    if @asset.code==nil or @asset.code=="" then   @asset.code=Asset.get_next_code(@asset.asset_type, @asset.region) end
-      if @asset.save
-          @asset.reload
-          if params[:referring]=='index' then
-            index_prep()
-            render 'index'
-          else
-            redirect_to '/assets/'+@asset.safecode
-          end
-
-      else
-          render 'new'
-      end
-    else
-      redirect_to '/'
-    end
- end
-
- def update
-  if signed_in? and current_user.is_modifier then
-    if params[:delete] then
-      asset = Asset.find_by_id(params[:id])
-      als=AssetLink.where(contained_code: asset.code)
-      als.destroy_all
-      als=AssetLink.where(containing_code: asset.code)
-      als.destroy_all
-
-      if asset and asset.destroy
-        flash[:success] = "Asset deleted, id:"+params[:id]
-        index_prep()
-        render 'index'
-      else
-        edit()
-        render 'edit'
-      end
-    else
-      if(!@asset = Asset.find_by_id(params[:id]))
-          flash[:error] = "Asset does not exist: "+@asset.id.to_s
-
-          #tried to update a nonexistant asset
-          render 'edit'
-      end
-
-      @asset.assign_attributes(asset_params)
       convert_location_params(params[:asset][:x], params[:asset][:y])
-      #assign a asset
-      @asset.createdBy_id=current_user.id
 
+      @asset.createdBy_id=current_user.id
+      if !@asset.region then @asset.region=@asset.add_region end
+      if @asset.code==nil or @asset.code=="" then   @asset.code=Asset.get_next_code(@asset.asset_type, @asset.region) end
       if @asset.save
-        flash[:success] = "Asset details updated"
-        # Handle a successful update.
+        @asset.reload
+        flash[:success]="Success!"
         if params[:referring]=='index' then
           index_prep()
           render 'index'
@@ -187,13 +151,68 @@ include ApplicationHelper
           redirect_to '/assets/'+@asset.safecode
         end
       else
-        render 'edit'
+        render 'new'
       end
+    else
+      flash[:error]="You do not have permissions to create a new asset"
+      redirect_to '/assets'
     end
-  else
-    redirect_to '/'
   end
-end
+
+  def update
+    if signed_in? and current_user.is_modifier then
+      if params[:delete] then
+        asset = Asset.find_by_id(params[:id])
+        if asset
+          als=AssetLink.where(contained_code: asset.code)
+          als.destroy_all
+          als=AssetLink.where(containing_code: asset.code)
+          als.destroy_all
+          als=AssetWebLink.where(asset_code: asset.code)
+          als.destroy_all
+        end
+
+        if asset and asset.destroy
+          index_prep()
+          flash[:success] = "Asset deleted, id:"+params[:id]
+          redirect_to '/assets'
+        else
+          edit()
+          flash[:error] = "Failed to delete asset, id:"+params[:id]
+          render 'edit'
+        end
+      else
+        if(!@asset = Asset.find_by_id(params[:id]))
+          flash[:error] = "Asset not found: "+params[:id]
+
+          #tried to update a nonexistant asset
+          redirect_to '/assets'
+        else
+
+          @asset.assign_attributes(asset_params)
+          convert_location_params(params[:asset][:x], params[:asset][:y])
+          #assign a asset
+          @asset.createdBy_id=current_user.id
+    
+          if @asset.save
+            flash[:success] = "Asset details updated"
+            # Handle a successful update.
+            if params[:referring]=='index' then
+              index_prep()
+              render 'index'
+            else
+              redirect_to '/assets/'+@asset.safecode
+            end
+          else
+            render 'edit'
+          end
+        end
+      end
+    else
+      flash[:error]="You do not have permissions to update an asset"
+      redirect_to '/assets'
+    end
+  end
 
 
   private
