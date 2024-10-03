@@ -1,3 +1,4 @@
+# typed: false
 class PotaLogsController < ApplicationController
   before_action :signed_in_user, only: [:index, :show, :send_email]
 

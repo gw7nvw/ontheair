@@ -1,0 +1,25 @@
+Style/Encoding:
+    Layout/LineLength:
+        Max: 99
+
+Metrics:
+    Enabled: false
+
+Style/CommentedKeyword:
+    Enabled: false
+
+Style/GuardClause:
+    Enabled: false
+
+Style/RegexpLiteral:
+    Enabled: false
+
+Style/Documentation:
+    Enabled: false
+
+Style/EvalWithLocation:
+    Enabled: false
+
+Style/SafeNavigation:
+    Enabled: false
+

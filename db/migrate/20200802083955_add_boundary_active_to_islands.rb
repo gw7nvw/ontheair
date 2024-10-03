@@ -1,3 +1,4 @@
+# typed: false
 class AddBoundaryActiveToIslands < ActiveRecord::Migration
   def change
     add_column :islands, :is_active, :boolean, default: true

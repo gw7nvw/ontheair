@@ -1,3 +1,4 @@
+# typed: false
 class CreateGeologicalEpoches < ActiveRecord::Migration
   def change
     create_table :geological_epoches do |t|

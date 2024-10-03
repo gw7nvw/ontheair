@@ -1,3 +1,4 @@
+# typed: false
 class ChnageXYToFloat < ActiveRecord::Migration
   def change
     change_column :contacts, :x1, :float

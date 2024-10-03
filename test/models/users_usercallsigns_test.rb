@@ -1,3 +1,4 @@
+# typed: strict
 require "test_helper"
 
 class UserUsercallsignTest < ActiveSupport::TestCase
@@ -29,7 +30,7 @@ class UserUsercallsignTest < ActiveSupport::TestCase
     assert User.find_by_callsign_date(user1.callsign, Time.now())==user1,
        "User returned as soon as created"
 
-    assert User.find_by_callsign_date('badcallsign', Time.now())==nil,
+    assert_nil User.find_by_callsign_date('badcallsign', Time.now()),
        "Non existant user not found nor created"
 
     newuser=User.find_by_callsign_date('uc1user', Time.now(), true)
@@ -42,7 +43,7 @@ class UserUsercallsignTest < ActiveSupport::TestCase
        "Can find by secondary call within timeframe"
 
 
-    assert User.find_by_callsign_date('UC2USER', Time.now())==nil
+    assert_nil User.find_by_callsign_date('UC2USER', Time.now()),
        "Does not return by secondary call outside timeframe"
   end
 

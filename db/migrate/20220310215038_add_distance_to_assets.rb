@@ -1,3 +1,4 @@
+# typed: false
 class AddDistanceToAssets < ActiveRecord::Migration
   def change
     add_column :assets, :nearest_road_id, :integer

@@ -1,3 +1,4 @@
+# typed: false
 class CreateSotaPeaks < ActiveRecord::Migration
   def change
     create_table :sota_peaks do |t|

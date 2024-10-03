@@ -1,3 +1,4 @@
+# typed: false
 class HemaLogsController < ApplicationController
 
 def index

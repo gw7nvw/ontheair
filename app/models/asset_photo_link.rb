@@ -1,6 +1,8 @@
-class AssetPhotoLink < ActiveRecord::Base
+# frozen_string_literal: true
 
-def photo
-  p=Image.find(self.photo_id)
-end
+# typed: false
+class AssetPhotoLink < ActiveRecord::Base
+  def photo
+    Image.find(photo_id)
+  end
 end

@@ -1,3 +1,4 @@
+# typed: false
 class CreateUserTopicLinks < ActiveRecord::Migration
   def change
     create_table :user_topic_links do |t|

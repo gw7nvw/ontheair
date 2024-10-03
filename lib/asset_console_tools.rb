@@ -1,3 +1,4 @@
+# typed: false
 module AssetConsoleTools
 
 #Add / reapply region to all assets

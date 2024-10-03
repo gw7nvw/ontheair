@@ -1,3 +1,4 @@
+# typed: false
 class CorrectAssetLinks < ActiveRecord::Migration
   def change
     change_column :asset_links, :parent_id, :string

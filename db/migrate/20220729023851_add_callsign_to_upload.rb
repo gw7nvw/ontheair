@@ -1,3 +1,4 @@
+# typed: false
 class AddCallsignToUpload < ActiveRecord::Migration
   def change
      add_column :uploads, :doc_callsign, :string

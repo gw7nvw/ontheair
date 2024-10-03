@@ -1,3 +1,4 @@
+# typed: strict
 require "test_helper"
 
 class UserTest < ActiveSupport::TestCase
@@ -12,7 +13,7 @@ class UserTest < ActiveSupport::TestCase
      assert uc, "UserCallsign record created"
      assert uc.callsign==user.callsign, "UserCallsign with default callsign=username"
      assert uc.from_date.strftime("%Y-%m-%d")=="1900-01-01", "should have default start date"
-     assert uc.to_date==nil, "should have no end date"
+     assert_nil uc.to_date, "should have no end date"
    end
 
    test "create_user with no callsign" do
@@ -26,7 +27,7 @@ class UserTest < ActiveSupport::TestCase
    end
 
    test "create_user with no password_confirmation" do
-     user=User.new(callsign: "zl3test", password: "testpassword")
+     user=User.new(callsign: "zl3test", password: "testpassword", password_confirmation: "")
      assert_not user.save, "User should not save without password confirmation"
    end
 

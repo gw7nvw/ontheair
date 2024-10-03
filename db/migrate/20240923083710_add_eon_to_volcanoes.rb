@@ -1,3 +1,4 @@
+# typed: false
 class AddEonToVolcanoes < ActiveRecord::Migration
   def change
     add_column :volcanos, :eon, :string

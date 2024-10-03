@@ -1,3 +1,4 @@
+# typed: false
 class CreateVkAssets < ActiveRecord::Migration
   def change
     create_table :vk_assets do |t|

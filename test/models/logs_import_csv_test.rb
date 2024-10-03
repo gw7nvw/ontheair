@@ -1,3 +1,4 @@
+# typed: strict
 require "test_helper"
 
 class LogImportCsvTest < ActiveSupport::TestCase
@@ -128,7 +129,7 @@ class LogImportCsvTest < ActiveSupport::TestCase
     assert_equal contact.user2_id, user2.id
     assert_equal contact.callsign2, user2.callsign
     assert_equal contact.asset2_codes, []
-    assert_equal contact.comments1, nil
+    assert_nil contact.comments1
   end
  
   test "can handle header row" do 
@@ -365,7 +366,7 @@ class LogImportCsvTest < ActiveSupport::TestCase
     assert_equal logs[:good_logs], 1, "One good logs"
     assert_equal logs[:good_contacts], 1, "One good contacts"
     log=logs[:logs][0]
-    assert_not_equal log.id, nil, "First log is saved"
+    assert_not_nil log.id, "First log is saved"
     assert_equal log.user1_id, user1.id
     assert_equal log.callsign1, user1.callsign
     assert_equal log.asset_codes, [asset1.code]

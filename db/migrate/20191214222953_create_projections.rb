@@ -1,3 +1,4 @@
+# typed: false
 class CreateProjections < ActiveRecord::Migration
   def change
     create_table :projections do |t|

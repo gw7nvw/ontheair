@@ -1,3 +1,4 @@
+# typed: false
 class InvalidReplyUser    < StandardError ; end
 
 class EmailReceive

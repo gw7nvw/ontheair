@@ -1,3 +1,4 @@
+# typed: false
 class AddQrpPortablToContacts < ActiveRecord::Migration
   def change
     add_column :contacts, :is_qrp1, :boolean

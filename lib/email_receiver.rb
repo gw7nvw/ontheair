@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# typed: true
 require 'rubygems'
 require 'resque'
 require 'redis'

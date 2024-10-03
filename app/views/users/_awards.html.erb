@@ -1,32 +1,33 @@
 <script> 
-   reset_map_controllers();
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
+  reset_map_controllers();
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
 </script>
 
 <div id="actionbar" class="span7">
-   <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
-     &nbsp;--&gt;&nbsp;
-     <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
-     &nbsp;--&gt;&nbsp;
-     <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
-     &nbsp;--&gt;&nbsp;
-     <b>Awards</b>
-   </div>
-   <div id="controls">
-       <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
-       <%=render 'map_controls'%>
-   </div>
+  <div id="crumbs">
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    &nbsp;--&gt;&nbsp;
+    <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    &nbsp;--&gt;&nbsp;
+    <b>Awards</b>
+  </div>
+  <div id="controls">
+    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%=render 'map_controls'%>
+  </div>
 </div>
 
 
 <div id="right_scroll">
-   <%= render 'flash' %>
-   <%= render 'award_table' %>
-   <%= render 'region_award_table' %>
-   <%= render 'district_award_table' %>
+  <%= render 'flash' %>
+  <%= render 'award_table' %>
+  <%= render 'region_award_table' %>
+  <%= render 'district_award_table' %>
 </div>
+
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>

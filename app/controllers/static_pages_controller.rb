@@ -1,3 +1,4 @@
+# typed: false
 class StaticPagesController < ApplicationController
 include ApplicationHelper
  
@@ -140,7 +141,7 @@ include ApplicationHelper
          ))
       end 
  
-      if @all_spots then @all_spots.sort_by!{|hsh| hsh[:date].to_s+hsh[:time].to_s}.reverse! end
+      if @all_spots then @all_spots=@all_spots.sort_by{|hsh| hsh[:date].to_s+hsh[:time].to_s}.reverse! end
 
       if @zone and @zone!="all" then
         @all_spots=@all_spots.select{|spot| DxccPrefix.continent_from_call(spot[:activatorCallsign])==@zone}

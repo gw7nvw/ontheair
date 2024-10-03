@@ -1,3 +1,4 @@
+# typed: false
 class AddDistCodeToPark < ActiveRecord::Migration
   def change
      add_column :parks, :dist_code, :string

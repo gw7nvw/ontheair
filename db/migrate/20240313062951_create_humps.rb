@@ -1,3 +1,4 @@
+# typed: false
 class CreateHumps < ActiveRecord::Migration
   def change
     create_table :humps do |t|

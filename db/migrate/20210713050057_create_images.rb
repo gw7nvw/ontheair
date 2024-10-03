@@ -1,3 +1,4 @@
+# typed: false
 class CreateImages < ActiveRecord::Migration
   def change
   create_table "images", force: true do |t|

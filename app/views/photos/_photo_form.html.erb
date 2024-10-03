@@ -29,17 +29,16 @@
           <b>New</b>
         <% end %>
       </div>
+
       <div id="controls">
         <% if @image.id %><% if params[:referring]=='index'%>
-            <%=  link_to "Cancel", '/photos', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
-          <% else %>
-            <%=  link_to "Cancel", '/photos/'+@image.id.to_s, class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+          <%=  link_to "Cancel", '/photos', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+        <% else %>
+          <%=  link_to "Cancel", '/photos/'+@image.id.to_s, class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
         <% end %> <% end %>
-
         <%=render 'map_controls'%>
       </div>
     </div>
-    <%= render 'shared/error_messages' %>	
 
     <div id="right_scroll">
       <%=hidden_field_tag(:topic_id, topic.id)%>
@@ -47,22 +46,18 @@
       <%= render 'shared/error_messages' %>
 
  
-      <span>
-        <%=f.label :title %>
-        <%= f.text_field :title %>
-      </span>
+      <%= f.label :title %>
+      <%= f.text_field :title %>
     
       <%=f.label :description%>
-      <div id="editPanel"></div>
+      <div id="editPanel">
         <span id="descrSpan">
           <%= f.text_area :description %>
         </span>
       </div>      
    
-      <span>
-        <%=f.label :Places %>
-        <%= f.text_field :asset_codes %>
-      </span>
+      <%=f.label :Places %>
+      <%= f.text_field :asset_codes %>
 
       <div id="attachments">
         <div class="erow"><div class="sectiontitle">Attachments:</div></div>
@@ -73,9 +68,10 @@
 
         <div class="erow">
           <div class="hrline">
-             <hr noshade size="3">
+            <hr noshade size="3">
           </div>
         </div>
+
         <% if @image.id then %>
           <%= link_to (image_tag @image.image.url(:original), style: 'max-height:480px;max-width:480px'), @image.image.url(:original), :target=>"_blank"%>
         <% end %>
@@ -83,18 +79,17 @@
 
       <%= f.submit @submit_button, id: "submit", class: "btn btn-small btn-primary btn-highlight" %>
       <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@image.created_by_id)) %>
-        <%= f.submit "Delete Photo", data: {confirm: "Delete image: Are you sure?"}, class: "btn btn-small btn-primary", id:  "deletebutton",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+        <%= f.submit "Delete Photo", data: {confirm: "Delete image: Are you sure?"}, class: "btn btn-small btn-primary", remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
       <% end %>
-   </div>
+    </div>
   <% end %>
 </div>
+
 <script>
-
-function addmore(count) {
-  document.getElementById('row'+(count+1)).style="display:";
-}
-document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
-
+  function addmore(count) {
+    document.getElementById('row'+(count+1)).style="display:";
+  }
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
   startEdit();
 </script>
 

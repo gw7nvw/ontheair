@@ -1,3 +1,4 @@
+# typed: true
 class UpdateUserids
   @queue = :ota_scheduled
 

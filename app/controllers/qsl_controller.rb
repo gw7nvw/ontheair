@@ -1,3 +1,4 @@
+# typed: false
 class QslController < ApplicationController
   layout 'qsl_layout'
 

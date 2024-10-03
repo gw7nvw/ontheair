@@ -1,3 +1,4 @@
+# typed: false
 class SitemapsController < ApplicationController
   #caches_page :index
   def index

@@ -1,3 +1,4 @@
+# typed: false
 class AddIndexToAssetlink < ActiveRecord::Migration
   def self.up
     add_index :asset_links, :parent_code

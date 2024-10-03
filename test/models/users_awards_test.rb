@@ -1,3 +1,4 @@
+# typed: false
 require "test_helper"
 
 class UserAwardTest < ActiveSupport::TestCase
@@ -6,7 +7,7 @@ class UserAwardTest < ActiveSupport::TestCase
     award=Award.find_by(count_based: true, activated: true, programme: 'hut')
     awarded=user1.has_award(award.id)
     assert awarded[:status]==false, "User has not got this award"
-    assert awarded[:latest]==nil, "No threshold achieved"
+    assert_nil awarded[:latest], "No threshold achieved"
     assert awarded[:next]=="Bronze (10)", "Next threshold is 10"
 
     #ISSUE
@@ -123,7 +124,7 @@ class UserAwardTest < ActiveSupport::TestCase
 
     awarded=user1.has_award(activator_award.id)
     assert awarded[:status]==false, "User has NOT got this award after "+count.to_s+" contacts without qualifying park"
-    assert awarded[:latest]==nil
+    assert_nil awarded[:latest]
     assert awarded[:next]=="Bronze (10)", "Next threshold is 10"
 
     awarded=user2.has_award(chaser_award.id)

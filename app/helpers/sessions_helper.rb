@@ -1,3 +1,4 @@
+# typed: false
 module SessionsHelper
 
   def sign_in(user)

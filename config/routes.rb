@@ -1,3 +1,4 @@
+# typed: false
 require 'resque/server'
 
 Hota::Application.routes.draw do

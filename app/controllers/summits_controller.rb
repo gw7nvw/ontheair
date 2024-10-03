@@ -1,3 +1,4 @@
+# typed: false
 class SummitsController < ApplicationController
 
   def index

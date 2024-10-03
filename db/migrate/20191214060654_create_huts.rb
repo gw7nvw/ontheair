@@ -1,3 +1,4 @@
+# typed: false
 class CreateHuts < ActiveRecord::Migration
   def change
     create_table :huts do |t|

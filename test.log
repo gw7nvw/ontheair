@@ -1,0 +1,1391 @@
+/home/mbriggs/.rvm/gems/ruby-2.3.7/gems/activesupport-4.1.0/lib/active_support/values/time_zone.rb:285: warning: circular argument reference - now
+DEPRECATION WARNING: Passing a string to ActiveRecord::Base.establish_connection for a configuration lookup is deprecated, please pass a symbol (:dem15) instead. (called from <class:Dem15> at /home/mbriggs/rails_projects/hota-2.2/app/models/dem15.rb:3)
+Run options: --seed 28989
+
+# Running:
+
+............ignoring attempt to close tr with th
+  opened at byte 8622, line 172
+  closed at byte 9995, line 182
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: " Parks</a></th>\n    </th>\n  </table>\n\n\n<"
+ignoring attempt to close tr with table
+  opened at byte 8622, line 172
+  closed at byte 10003, line 183
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "a></th>\n    </th>\n  </table>\n\n\n<form acc"
+ignoring attempt to close tr with div
+  opened at byte 8622, line 172
+  closed at byte 13701, line 260
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "\n\n  </table>\n</div>\n</div>\n\n\n  <div clas"
+ignoring attempt to close tr with div
+  opened at byte 8622, line 172
+  closed at byte 14547, line 300
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "\n\n</script>\n\n\n\n\n    </div> \n    <div cla"
+ignoring attempt to close tr with div
+  opened at byte 8622, line 172
+  closed at byte 14588, line 302
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "s=\"clear\"></div> \n  </div>\n  </div>\n<div"
+ignoring attempt to close tr with div
+  opened at byte 8622, line 172
+  closed at byte 14597, line 303
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+ignoring attempt to close tr with body
+  opened at byte 8622, line 172
+  closed at byte 14638, line 305
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close tr with html
+  opened at byte 8622, line 172
+  closed at byte 14646, line 306
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+............../home/mbriggs/rails_projects/hota-2.2/app/views/posts/_post_form.html.erb:128: warning: key :id is duplicated and overwritten on line 128
+ignoring attempt to close li with ul
+  opened at byte 13735, line 240
+  closed at byte 14009, line 241
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "/a>\n                </ul>\n              "
+ignoring attempt to close li with ul
+  opened at byte 13504, line 239
+  closed at byte 14047, line 243
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "  </li>\n            </ul>\n          </td"
+ignoring attempt to close li with td
+  opened at byte 13504, line 239
+  closed at byte 14063, line 244
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "    </ul>\n          </td>\n          <td "
+ignoring attempt to close li with tr
+  opened at byte 13504, line 239
+  closed at byte 14181, line 248
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "    </td>\n          </tr>\n        </tabl"
+ignoring attempt to close li with table
+  opened at byte 13504, line 239
+  closed at byte 14195, line 249
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "      </tr>\n        </table>\n    \n      "
+ignoring attempt to close li with div
+  opened at byte 13504, line 239
+  closed at byte 15665, line 286
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "v>\n      </div>\n\n   </div>\n</form></div>"
+ignoring attempt to close li with form
+  opened at byte 13504, line 239
+  closed at byte 15672, line 287
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "  </div>\n\n   </div>\n</form></div>\n<scrip"
+ignoring attempt to close li with div
+  opened at byte 13504, line 239
+  closed at byte 15679, line 287
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: ">\n\n   </div>\n</form></div>\n<script>\n\nfun"
+ignoring attempt to close li with div
+  opened at byte 13504, line 239
+  closed at byte 15906, line 302
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "</script>\n\n\n\n\n\n\n    </div> \n    <div cla"
+ignoring attempt to close li with div
+  opened at byte 13504, line 239
+  closed at byte 15947, line 304
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "s=\"clear\"></div> \n  </div>\n  </div>\n<div"
+ignoring attempt to close li with div
+  opened at byte 13504, line 239
+  closed at byte 15956, line 305
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+ignoring attempt to close li with body
+  opened at byte 13504, line 239
+  closed at byte 15997, line 307
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close li with html
+  opened at byte 13504, line 239
+  closed at byte 16005, line 308
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close body with div
+  opened at byte 1241, line 40
+  closed at byte 12973, line 251
+  attributes at open: {"onload"=>"site_init()", "style"=>"cursor: auto;"}
+  text around open: "</script>\n\n</head>\n <body onload='site_i"
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+.ignoring attempt to close li with ul
+  opened at byte 13385, line 239
+  closed at byte 13659, line 240
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "/a>\n                </ul>\n              "
+ignoring attempt to close li with ul
+  opened at byte 13154, line 238
+  closed at byte 13697, line 242
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "  </li>\n            </ul>\n          </td"
+ignoring attempt to close li with td
+  opened at byte 13154, line 238
+  closed at byte 13713, line 243
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "    </ul>\n          </td>\n          <td "
+ignoring attempt to close li with tr
+  opened at byte 13154, line 238
+  closed at byte 13831, line 247
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "    </td>\n          </tr>\n        </tabl"
+ignoring attempt to close li with table
+  opened at byte 13154, line 238
+  closed at byte 13845, line 248
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "      </tr>\n        </table>\n    \n      "
+ignoring attempt to close li with div
+  opened at byte 13154, line 238
+  closed at byte 15323, line 285
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "v>\n      </div>\n\n   </div>\n</form></div>"
+ignoring attempt to close li with form
+  opened at byte 13154, line 238
+  closed at byte 15330, line 286
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "  </div>\n\n   </div>\n</form></div>\n<scrip"
+ignoring attempt to close li with div
+  opened at byte 13154, line 238
+  closed at byte 15337, line 286
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: ">\n\n   </div>\n</form></div>\n<script>\n\nfun"
+ignoring attempt to close li with div
+  opened at byte 13154, line 238
+  closed at byte 15564, line 301
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "</script>\n\n\n\n\n\n\n    </div> \n    <div cla"
+ignoring attempt to close li with div
+  opened at byte 13154, line 238
+  closed at byte 15605, line 303
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "s=\"clear\"></div> \n  </div>\n  </div>\n<div"
+ignoring attempt to close li with div
+  opened at byte 13154, line 238
+  closed at byte 15614, line 304
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+ignoring attempt to close li with body
+  opened at byte 13154, line 238
+  closed at byte 15655, line 306
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close li with html
+  opened at byte 13154, line 238
+  closed at byte 15663, line 307
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close body with div
+  opened at byte 1241, line 40
+  closed at byte 12965, line 251
+  attributes at open: {"onload"=>"site_init()", "style"=>"cursor: auto;"}
+  text around open: "</script>\n\n</head>\n <body onload='site_i"
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+.ignoring attempt to close li with ul
+  opened at byte 13447, line 239
+  closed at byte 13721, line 240
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "/a>\n                </ul>\n              "
+ignoring attempt to close li with ul
+  opened at byte 13216, line 238
+  closed at byte 13759, line 242
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "  </li>\n            </ul>\n          </td"
+ignoring attempt to close li with td
+  opened at byte 13216, line 238
+  closed at byte 13775, line 243
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "    </ul>\n          </td>\n          <td "
+ignoring attempt to close li with tr
+  opened at byte 13216, line 238
+  closed at byte 13944, line 247
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "    </td>\n          </tr>\n        </tabl"
+ignoring attempt to close li with table
+  opened at byte 13216, line 238
+  closed at byte 13958, line 248
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "      </tr>\n        </table>\n    \n      "
+ignoring attempt to close li with div
+  opened at byte 13216, line 238
+  closed at byte 15454, line 285
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "v>\n      </div>\n\n   </div>\n</form></div>"
+ignoring attempt to close li with form
+  opened at byte 13216, line 238
+  closed at byte 15461, line 286
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "  </div>\n\n   </div>\n</form></div>\n<scrip"
+ignoring attempt to close li with div
+  opened at byte 13216, line 238
+  closed at byte 15468, line 286
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: ">\n\n   </div>\n</form></div>\n<script>\n\nfun"
+ignoring attempt to close li with div
+  opened at byte 13216, line 238
+  closed at byte 15695, line 301
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "</script>\n\n\n\n\n\n\n    </div> \n    <div cla"
+ignoring attempt to close li with div
+  opened at byte 13216, line 238
+  closed at byte 15736, line 303
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "s=\"clear\"></div> \n  </div>\n  </div>\n<div"
+ignoring attempt to close li with div
+  opened at byte 13216, line 238
+  closed at byte 15745, line 304
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+ignoring attempt to close li with body
+  opened at byte 13216, line 238
+  closed at byte 15786, line 306
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close li with html
+  opened at byte 13216, line 238
+  closed at byte 15794, line 307
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+.ignoring attempt to close li with ul
+  opened at byte 13395, line 239
+  closed at byte 13669, line 240
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "/a>\n                </ul>\n              "
+ignoring attempt to close li with ul
+  opened at byte 13164, line 238
+  closed at byte 13707, line 242
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "  </li>\n            </ul>\n          </td"
+ignoring attempt to close li with td
+  opened at byte 13164, line 238
+  closed at byte 13723, line 243
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "    </ul>\n          </td>\n          <td "
+ignoring attempt to close li with tr
+  opened at byte 13164, line 238
+  closed at byte 13864, line 247
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "    </td>\n          </tr>\n        </tabl"
+ignoring attempt to close li with table
+  opened at byte 13164, line 238
+  closed at byte 13878, line 248
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "      </tr>\n        </table>\n    \n      "
+ignoring attempt to close li with div
+  opened at byte 13164, line 238
+  closed at byte 15356, line 285
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "v>\n      </div>\n\n   </div>\n</form></div>"
+ignoring attempt to close li with form
+  opened at byte 13164, line 238
+  closed at byte 15363, line 286
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "  </div>\n\n   </div>\n</form></div>\n<scrip"
+ignoring attempt to close li with div
+  opened at byte 13164, line 238
+  closed at byte 15370, line 286
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: ">\n\n   </div>\n</form></div>\n<script>\n\nfun"
+ignoring attempt to close li with div
+  opened at byte 13164, line 238
+  closed at byte 15597, line 301
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "</script>\n\n\n\n\n\n\n    </div> \n    <div cla"
+ignoring attempt to close li with div
+  opened at byte 13164, line 238
+  closed at byte 15638, line 303
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "s=\"clear\"></div> \n  </div>\n  </div>\n<div"
+ignoring attempt to close li with div
+  opened at byte 13164, line 238
+  closed at byte 15647, line 304
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+ignoring attempt to close li with body
+  opened at byte 13164, line 238
+  closed at byte 15688, line 306
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close li with html
+  opened at byte 13164, line 238
+  closed at byte 15696, line 307
+  attributes at open: {}
+  text around open: ">\n                  <li><a href=\"#\" oncl"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+..........DEPRECATED: Use assert_nil if expecting nil from test/models/logs_import_csv_test.rb:132. This will fail in Minitest 6.
+.................../home/mbriggs/rails_projects/hota-2.2/app/views/assets/_index.html.erb:84: warning: key :onclick is duplicated and overwritten on line 84
+........ignoring attempt to close div with br
+  opened at byte 11999, line 264
+  closed at byte 12095, line 265
+  attributes at open: {"class"=>"erow", "id"=>"chased_by"}
+  text around open: "hased by:</div>\n   <div class=\"erow\" id="
+  text around close: ". Be the first!</i></br>\n\n   </div> \n\n  "
+ignoring attempt to close div with br
+  opened at byte 12171, line 270
+  closed at byte 12273, line 271
+  attributes at open: {"class"=>"erow", "id"=>"activated_by"}
+  text around open: "vated by:</div>\n   <div class=\"erow\" id="
+  text around close: ". Be the first!</i></br>\n\n   </div> \n   "
+ignoring attempt to close p with div
+  opened at byte 12704, line 292
+  closed at byte 12850, line 299
+  attributes at open: {}
+  text around open: "been uploaded. </i><p>\n     <div class=\""
+  text around close: "w\">\n     </div>\n   </div>\n\n\n\n   <div cla"
+ignoring attempt to close p with div
+  opened at byte 13145, line 313
+  closed at byte 13154, line 314
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "irst! </i><p>\n     </div>\n\n  <div class="
+ignoring attempt to close p with div
+  opened at byte 13145, line 313
+  closed at byte 13785, line 337
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "\n</script>\n\n\n\n\n    </div> \n    <div clas"
+ignoring attempt to close p with div
+  opened at byte 13145, line 313
+  closed at byte 13826, line 339
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "=\"clear\"></div> \n  </div>\n  </div>\n<div "
+ignoring attempt to close p with div
+  opened at byte 13145, line 313
+  closed at byte 13835, line 340
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "</div> \n  </div>\n  </div>\n<div class=\"sp"
+ignoring attempt to close p with body
+  opened at byte 13145, line 313
+  closed at byte 13876, line 342
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "nner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close p with html
+  opened at byte 13145, line 313
+  closed at byte 13884, line 343
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "al\"></div>\n</body>\n</html>\n"
+.ignoring attempt to close p with div
+  opened at byte 13594, line 299
+  closed at byte 13740, line 306
+  attributes at open: {}
+  text around open: "been uploaded. </i><p>\n     <div class=\""
+  text around close: "w\">\n     </div>\n   </div>\n\n\n\n   <div cla"
+ignoring attempt to close p with div
+  opened at byte 14035, line 320
+  closed at byte 14044, line 321
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "irst! </i><p>\n     </div>\n\n  <div class="
+ignoring attempt to close p with div
+  opened at byte 14035, line 320
+  closed at byte 14675, line 344
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "\n</script>\n\n\n\n\n    </div> \n    <div clas"
+ignoring attempt to close p with div
+  opened at byte 14035, line 320
+  closed at byte 14716, line 346
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "=\"clear\"></div> \n  </div>\n  </div>\n<div "
+ignoring attempt to close p with div
+  opened at byte 14035, line 320
+  closed at byte 14725, line 347
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "</div> \n  </div>\n  </div>\n<div class=\"sp"
+ignoring attempt to close p with body
+  opened at byte 14035, line 320
+  closed at byte 14766, line 349
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "nner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close p with html
+  opened at byte 14035, line 320
+  closed at byte 14774, line 350
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "al\"></div>\n</body>\n</html>\n"
+.ignoring attempt to close div with br
+  opened at byte 12149, line 263
+  closed at byte 12245, line 264
+  attributes at open: {"class"=>"erow", "id"=>"chased_by"}
+  text around open: "hased by:</div>\n   <div class=\"erow\" id="
+  text around close: ". Be the first!</i></br>\n\n   </div> \n\n  "
+ignoring attempt to close div with br
+  opened at byte 12321, line 269
+  closed at byte 12423, line 270
+  attributes at open: {"class"=>"erow", "id"=>"activated_by"}
+  text around open: "vated by:</div>\n   <div class=\"erow\" id="
+  text around close: ". Be the first!</i></br>\n\n   </div> \n   "
+ignoring attempt to close p with div
+  opened at byte 12854, line 291
+  closed at byte 13000, line 298
+  attributes at open: {}
+  text around open: "been uploaded. </i><p>\n     <div class=\""
+  text around close: "w\">\n     </div>\n   </div>\n\n\n\n   <div cla"
+ignoring attempt to close p with div
+  opened at byte 12854, line 291
+  closed at byte 14204, line 344
+  attributes at open: {}
+  text around open: "been uploaded. </i><p>\n     <div class=\""
+  text around close: "\n</script>\n\n\n\n\n    </div> \n    <div clas"
+ignoring attempt to close p with div
+  opened at byte 12854, line 291
+  closed at byte 14245, line 346
+  attributes at open: {}
+  text around open: "been uploaded. </i><p>\n     <div class=\""
+  text around close: "=\"clear\"></div> \n  </div>\n  </div>\n<div "
+ignoring attempt to close p with div
+  opened at byte 12854, line 291
+  closed at byte 14254, line 347
+  attributes at open: {}
+  text around open: "been uploaded. </i><p>\n     <div class=\""
+  text around close: "</div> \n  </div>\n  </div>\n<div class=\"sp"
+ignoring attempt to close p with body
+  opened at byte 12854, line 291
+  closed at byte 14295, line 349
+  attributes at open: {}
+  text around open: "been uploaded. </i><p>\n     <div class=\""
+  text around close: "nner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close p with html
+  opened at byte 12854, line 291
+  closed at byte 14303, line 350
+  attributes at open: {}
+  text around open: "been uploaded. </i><p>\n     <div class=\""
+  text around close: "al\"></div>\n</body>\n</html>\n"
+.ignoring attempt to close p with div
+  opened at byte 13586, line 298
+  closed at byte 13732, line 305
+  attributes at open: {}
+  text around open: "been uploaded. </i><p>\n     <div class=\""
+  text around close: "w\">\n     </div>\n   </div>\n\n\n\n   <div cla"
+ignoring attempt to close p with div
+  opened at byte 14027, line 319
+  closed at byte 14036, line 320
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "irst! </i><p>\n     </div>\n\n  <div class="
+ignoring attempt to close p with div
+  opened at byte 14027, line 319
+  closed at byte 14667, line 343
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "\n</script>\n\n\n\n\n    </div> \n    <div clas"
+ignoring attempt to close p with div
+  opened at byte 14027, line 319
+  closed at byte 14708, line 345
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "=\"clear\"></div> \n  </div>\n  </div>\n<div "
+ignoring attempt to close p with div
+  opened at byte 14027, line 319
+  closed at byte 14717, line 346
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "</div> \n  </div>\n  </div>\n<div class=\"sp"
+ignoring attempt to close p with body
+  opened at byte 14027, line 319
+  closed at byte 14758, line 348
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "nner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close p with html
+  opened at byte 14027, line 319
+  closed at byte 14766, line 349
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "al\"></div>\n</body>\n</html>\n"
+..ignoring attempt to close div with br
+  opened at byte 12357, line 269
+  closed at byte 12453, line 270
+  attributes at open: {"class"=>"erow", "id"=>"chased_by"}
+  text around open: "hased by:</div>\n   <div class=\"erow\" id="
+  text around close: ". Be the first!</i></br>\n\n   </div> \n\n  "
+ignoring attempt to close div with br
+  opened at byte 12529, line 275
+  closed at byte 12631, line 276
+  attributes at open: {"class"=>"erow", "id"=>"activated_by"}
+  text around open: "vated by:</div>\n   <div class=\"erow\" id="
+  text around close: ". Be the first!</i></br>\n\n   </div> \n   "
+ignoring attempt to close p with div
+  opened at byte 13062, line 297
+  closed at byte 13208, line 304
+  attributes at open: {}
+  text around open: "been uploaded. </i><p>\n     <div class=\""
+  text around close: "w\">\n     </div>\n   </div>\n\n\n\n   <div cla"
+ignoring attempt to close p with div
+  opened at byte 13503, line 318
+  closed at byte 13512, line 319
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "irst! </i><p>\n     </div>\n\n  <div class="
+ignoring attempt to close p with div
+  opened at byte 13503, line 318
+  closed at byte 14143, line 342
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "\n</script>\n\n\n\n\n    </div> \n    <div clas"
+ignoring attempt to close p with div
+  opened at byte 13503, line 318
+  closed at byte 14184, line 344
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "=\"clear\"></div> \n  </div>\n  </div>\n<div "
+ignoring attempt to close p with div
+  opened at byte 13503, line 318
+  closed at byte 14193, line 345
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "</div> \n  </div>\n  </div>\n<div class=\"sp"
+ignoring attempt to close p with body
+  opened at byte 13503, line 318
+  closed at byte 14234, line 347
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "nner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close p with html
+  opened at byte 13503, line 318
+  closed at byte 14242, line 348
+  attributes at open: {}
+  text around open: " be the first! </i><p>\n     </div>\n\n  <d"
+  text around close: "al\"></div>\n</body>\n</html>\n"
+....................................F............DEPRECATED: Use assert_nil if expecting nil from test/models/assets_save_test.rb:16. This will fail in Minitest 6.
+....DEPRECATED: Use assert_nil if expecting nil from test/models/assets_utils_test.rb:33. This will fail in Minitest 6.
+........DEPRECATED: Use assert_nil if expecting nil from test/models/assets_gis_test.rb:47. This will fail in Minitest 6.
+.DEPRECATED: Use assert_nil if expecting nil from test/models/assets_gis_test.rb:62. This will fail in Minitest 6.
+.............................DEPRECATED: Use assert_nil if expecting nil from test/models/contacts_misc_test.rb:229. This will fail in Minitest 6.
+..DEPRECATED: Use assert_nil if expecting nil from test/models/contacts_misc_test.rb:109. This will fail in Minitest 6.
+DEPRECATED: Use assert_nil if expecting nil from test/models/contacts_misc_test.rb:110. This will fail in Minitest 6.
+DEPRECATED: Use assert_nil if expecting nil from test/models/contacts_misc_test.rb:111. This will fail in Minitest 6.
+DEPRECATED: Use assert_nil if expecting nil from test/models/contacts_misc_test.rb:129. This will fail in Minitest 6.
+DEPRECATED: Use assert_nil if expecting nil from test/models/contacts_misc_test.rb:130. This will fail in Minitest 6.
+DEPRECATED: Use assert_nil if expecting nil from test/models/contacts_misc_test.rb:131. This will fail in Minitest 6.
+.DEPRECATED: Use assert_nil if expecting nil from test/models/contacts_misc_test.rb:154. This will fail in Minitest 6.
+DEPRECATED: Use assert_nil if expecting nil from test/models/contacts_misc_test.rb:155. This will fail in Minitest 6.
+DEPRECATED: Use assert_nil if expecting nil from test/models/contacts_misc_test.rb:156. This will fail in Minitest 6.
+DEPRECATED: Use assert_nil if expecting nil from test/models/contacts_misc_test.rb:157. This will fail in Minitest 6.
+DEPRECATED: Use assert_nil if expecting nil from test/models/contacts_misc_test.rb:174. This will fail in Minitest 6.
+DEPRECATED: Use assert_nil if expecting nil from test/models/contacts_misc_test.rb:175. This will fail in Minitest 6.
+DEPRECATED: Use assert_nil if expecting nil from test/models/contacts_misc_test.rb:176. This will fail in Minitest 6.
+DEPRECATED: Use assert_nil if expecting nil from test/models/contacts_misc_test.rb:177. This will fail in Minitest 6.
+..........................................................................DEPRECATION WARNING: Passing a string to ActiveRecord::Base.establish_connection for a configuration lookup is deprecated, please pass a symbol (:lakes) instead. (called from <class:Lake> at /home/mbriggs/rails_projects/hota-2.2/app/models/lake.rb:5)
+.................ignoring attempt to close div with body
+  opened at byte 9476, line 157
+  closed at byte 13565, line 287
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close div with html
+  opened at byte 9476, line 157
+  closed at byte 13573, line 288
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+.ignoring attempt to close div with body
+  opened at byte 7147, line 129
+  closed at byte 11934, line 289
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close div with html
+  opened at byte 7147, line 129
+  closed at byte 11942, line 290
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+.ignoring attempt to close div with body
+  opened at byte 7147, line 129
+  closed at byte 13069, line 334
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close div with html
+  opened at byte 7147, line 129
+  closed at byte 13077, line 335
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close div with body
+  opened at byte 7147, line 129
+  closed at byte 13078, line 334
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close div with html
+  opened at byte 7147, line 129
+  closed at byte 13086, line 335
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close div with body
+  opened at byte 7147, line 129
+  closed at byte 13078, line 334
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close div with html
+  opened at byte 7147, line 129
+  closed at byte 13086, line 335
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+..............................................ignoring attempt to close div with td
+  opened at byte 9048, line 179
+  closed at byte 9934, line 205
+  attributes at open: {"id"=>"right_scroll"}
+  text around open: "v>\n\n      \n\t\n\n      <div id=\"right_scrol"
+  text around close: "TC</option></select></td>\n\n      <label "
+ignoring attempt to close small with i
+  opened at byte 10493, line 217
+  closed at byte 10865, line 217
+  attributes at open: {}
+  text around open: "div class=\"erow\"><i><small>PIN is for ac"
+  text around close: " use elsewhere.<br/></i></small></div> \n"
+ignoring attempt to close i with div
+  opened at byte 10490, line 217
+  closed at byte 10877, line 217
+  attributes at open: {}
+  text around open: ">\n<div class=\"erow\"><i><small>PIN is for"
+  text around close: "re.<br/></i></small></div> \n\n\n      <lab"
+ignoring attempt to close small with i
+  opened at byte 11061, line 222
+  closed at byte 11131, line 222
+  attributes at open: {}
+  text around open: "div class=\"erow\"><i><small>E.164 (Intern"
+  text around close: "g: +64271234567<br/></i></small></div>\n\n"
+ignoring attempt to close i with div
+  opened at byte 11058, line 222
+  closed at byte 11143, line 222
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "567<br/></i></small></div>\n\n      <span "
+ignoring attempt to close i with div
+  opened at byte 11058, line 222
+  closed at byte 12124, line 231
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "ue=\"Create User\" />\n</div>\n\n<div class=\""
+ignoring attempt to close i with div
+  opened at byte 11058, line 222
+  closed at byte 12340, line 234
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "></small></div>\n    </div>\n\n\n</form>  </"
+ignoring attempt to close i with form
+  opened at byte 11058, line 222
+  closed at byte 12349, line 237
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "</div>\n    </div>\n\n\n</form>  </div>\n<scr"
+ignoring attempt to close i with div
+  opened at byte 11058, line 222
+  closed at byte 12358, line 237
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "  </div>\n\n\n</form>  </div>\n<script>\n  do"
+ignoring attempt to close i with div
+  opened at byte 11058, line 222
+  closed at byte 12497, line 248
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "/script>\n\n\n\n\n\n\n\n    </div> \n    <div cla"
+ignoring attempt to close i with div
+  opened at byte 11058, line 222
+  closed at byte 12538, line 250
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "s=\"clear\"></div> \n  </div>\n  </div>\n<div"
+ignoring attempt to close i with div
+  opened at byte 11058, line 222
+  closed at byte 12547, line 251
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+ignoring attempt to close i with body
+  opened at byte 11058, line 222
+  closed at byte 12588, line 253
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close i with html
+  opened at byte 11058, line 222
+  closed at byte 12596, line 254
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+.ignoring attempt to close tr with table
+  opened at byte 9060, line 176
+  closed at byte 10779, line 213
+  attributes at open: {}
+  text around open: "p2p_table\">\n        <tr>\n          <th>D"
+  text around close: "        </tr>\n      </table>\n    </div>\n"
+ignoring attempt to close tr with div
+  opened at byte 9060, line 176
+  closed at byte 10792, line 214
+  attributes at open: {}
+  text around open: "p2p_table\">\n        <tr>\n          <th>D"
+  text around close: "\n      </table>\n    </div>\n</div>\n<scrip"
+ignoring attempt to close tr with div
+  opened at byte 9060, line 176
+  closed at byte 10799, line 215
+  attributes at open: {}
+  text around open: "p2p_table\">\n        <tr>\n          <th>D"
+  text around close: "</table>\n    </div>\n</div>\n<script>\n  do"
+ignoring attempt to close tr with div
+  opened at byte 9060, line 176
+  closed at byte 10935, line 223
+  attributes at open: {}
+  text around open: "p2p_table\">\n        <tr>\n          <th>D"
+  text around close: ";\n</script>\n\n\n\n\n    </div> \n    <div cla"
+ignoring attempt to close tr with div
+  opened at byte 9060, line 176
+  closed at byte 10976, line 225
+  attributes at open: {}
+  text around open: "p2p_table\">\n        <tr>\n          <th>D"
+  text around close: "s=\"clear\"></div> \n  </div>\n  </div>\n<div"
+ignoring attempt to close tr with div
+  opened at byte 9060, line 176
+  closed at byte 10985, line 226
+  attributes at open: {}
+  text around open: "p2p_table\">\n        <tr>\n          <th>D"
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+ignoring attempt to close tr with body
+  opened at byte 9060, line 176
+  closed at byte 11026, line 228
+  attributes at open: {}
+  text around open: "p2p_table\">\n        <tr>\n          <th>D"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close tr with html
+  opened at byte 9060, line 176
+  closed at byte 11034, line 229
+  attributes at open: {}
+  text around open: "p2p_table\">\n        <tr>\n          <th>D"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+./home/mbriggs/rails_projects/hota-2.2/app/views/users/_index.html.erb:43: warning: key :onclick is duplicated and overwritten on line 43
+.....ignoring attempt to close div with td
+  opened at byte 11761, line 210
+  closed at byte 12729, line 236
+  attributes at open: {"id"=>"right_scroll"}
+  text around open: "v>\n\n      \n\t\n\n      <div id=\"right_scrol"
+  text around close: "TC</option></select></td>\n\n      <label "
+ignoring attempt to close small with i
+  opened at byte 13301, line 248
+  closed at byte 13673, line 248
+  attributes at open: {}
+  text around open: "div class=\"erow\"><i><small>PIN is for ac"
+  text around close: " use elsewhere.<br/></i></small></div> \n"
+ignoring attempt to close i with div
+  opened at byte 13298, line 248
+  closed at byte 13685, line 248
+  attributes at open: {}
+  text around open: ">\n<div class=\"erow\"><i><small>PIN is for"
+  text around close: "re.<br/></i></small></div> \n\n\n      <lab"
+ignoring attempt to close small with i
+  opened at byte 13890, line 253
+  closed at byte 13960, line 253
+  attributes at open: {}
+  text around open: "div class=\"erow\"><i><small>E.164 (Intern"
+  text around close: "g: +64271234567<br/></i></small></div>\n\n"
+ignoring attempt to close i with div
+  opened at byte 13887, line 253
+  closed at byte 13972, line 253
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "567<br/></i></small></div>\n\n      <span "
+ignoring attempt to close i with div
+  opened at byte 13887, line 253
+  closed at byte 14990, line 262
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "e=\"Save Changes\" />\n</div>\n\n<div class=\""
+ignoring attempt to close i with div
+  opened at byte 13887, line 253
+  closed at byte 15206, line 265
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "></small></div>\n    </div>\n\n\n</form>  </"
+ignoring attempt to close i with form
+  opened at byte 13887, line 253
+  closed at byte 15215, line 268
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "</div>\n    </div>\n\n\n</form>  </div>\n<scr"
+ignoring attempt to close i with div
+  opened at byte 13887, line 253
+  closed at byte 15224, line 268
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "  </div>\n\n\n</form>  </div>\n<script>\n  do"
+ignoring attempt to close i with div
+  opened at byte 13887, line 253
+  closed at byte 15363, line 279
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "/script>\n\n\n\n\n\n\n\n    </div> \n    <div cla"
+ignoring attempt to close i with div
+  opened at byte 13887, line 253
+  closed at byte 15404, line 281
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "s=\"clear\"></div> \n  </div>\n  </div>\n<div"
+ignoring attempt to close i with div
+  opened at byte 13887, line 253
+  closed at byte 15413, line 282
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+ignoring attempt to close i with body
+  opened at byte 13887, line 253
+  closed at byte 15454, line 284
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close i with html
+  opened at byte 13887, line 253
+  closed at byte 15462, line 285
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+.ignoring attempt to close div with li
+  opened at byte 8854, line 171
+  closed at byte 9068, line 173
+  attributes at open: {"class"=>"erow"}
+  text around open: "ar itself -->\n\n\n    <div class=\"erow\">\n "
+  text around close: "al_count\">2</span>) </li>\n      <table i"
+ignoring attempt to close div with li
+  opened at byte 8915, line 171
+  closed at byte 9228, line 174
+  attributes at open: {"class"=>"erow"}
+  text around open: "ar itself -->\n\n\n    <div class=\"erow\">\n "
+  text around close: "on-qualifying sites)</li>\n      <table i"
+.ignoring attempt to close div with li
+  opened at byte 8856, line 171
+  closed at byte 9072, line 173
+  attributes at open: {"class"=>"erow"}
+  text around open: "ar itself -->\n\n\n    <div class=\"erow\">\n "
+  text around close: "al_count\">3</span>) </li>\n      <table i"
+ignoring attempt to close div with li
+  opened at byte 8917, line 171
+  closed at byte 9232, line 174
+  attributes at open: {"class"=>"erow"}
+  text around open: "ar itself -->\n\n\n    <div class=\"erow\">\n "
+  text around close: "on-qualifying sites)</li>\n      <table i"
+.......ignoring attempt to close div with td
+  opened at byte 9282, line 187
+  closed at byte 10484, line 221
+  attributes at open: {"id"=>"right_scroll"}
+  text around open: "    </div>\n\t\n\n      <div id=\"right_scrol"
+  text around close: "TC</option></select></td>\n\n      <label "
+ignoring attempt to close small with i
+  opened at byte 11130, line 233
+  closed at byte 11502, line 233
+  attributes at open: {}
+  text around open: "div class=\"erow\"><i><small>PIN is for ac"
+  text around close: " use elsewhere.<br/></i></small></div> \n"
+ignoring attempt to close i with div
+  opened at byte 11127, line 233
+  closed at byte 11514, line 233
+  attributes at open: {}
+  text around open: ">\n<div class=\"erow\"><i><small>PIN is for"
+  text around close: "re.<br/></i></small></div> \n\n\n      <lab"
+ignoring attempt to close small with i
+  opened at byte 11719, line 238
+  closed at byte 11789, line 238
+  attributes at open: {}
+  text around open: "div class=\"erow\"><i><small>E.164 (Intern"
+  text around close: "g: +64271234567<br/></i></small></div>\n\n"
+ignoring attempt to close i with div
+  opened at byte 11716, line 238
+  closed at byte 11801, line 238
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "567<br/></i></small></div>\n\n      <span "
+ignoring attempt to close i with div
+  opened at byte 11716, line 238
+  closed at byte 12818, line 247
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "ue=\"Create User\" />\n</div>\n\n<div class=\""
+ignoring attempt to close i with div
+  opened at byte 11716, line 238
+  closed at byte 13034, line 250
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "></small></div>\n    </div>\n\n\n</form>  </"
+ignoring attempt to close i with form
+  opened at byte 11716, line 238
+  closed at byte 13043, line 253
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "</div>\n    </div>\n\n\n</form>  </div>\n<scr"
+ignoring attempt to close i with div
+  opened at byte 11716, line 238
+  closed at byte 13052, line 253
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "  </div>\n\n\n</form>  </div>\n<script>\n  do"
+ignoring attempt to close i with div
+  opened at byte 11716, line 238
+  closed at byte 13191, line 264
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "/script>\n\n\n\n\n\n\n\n    </div> \n    <div cla"
+ignoring attempt to close i with div
+  opened at byte 11716, line 238
+  closed at byte 13232, line 266
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "s=\"clear\"></div> \n  </div>\n  </div>\n<div"
+ignoring attempt to close i with div
+  opened at byte 11716, line 238
+  closed at byte 13241, line 267
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+ignoring attempt to close i with body
+  opened at byte 11716, line 238
+  closed at byte 13282, line 269
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close i with html
+  opened at byte 11716, line 238
+  closed at byte 13290, line 270
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close div with td
+  opened at byte 9635, line 187
+  closed at byte 10810, line 221
+  attributes at open: {"id"=>"right_scroll"}
+  text around open: "    </div>\n\t\n\n      <div id=\"right_scrol"
+  text around close: "TC</option></select></td>\n\n      <label "
+ignoring attempt to close small with i
+  opened at byte 11382, line 233
+  closed at byte 11754, line 233
+  attributes at open: {}
+  text around open: "div class=\"erow\"><i><small>PIN is for ac"
+  text around close: " use elsewhere.<br/></i></small></div> \n"
+ignoring attempt to close i with div
+  opened at byte 11379, line 233
+  closed at byte 11766, line 233
+  attributes at open: {}
+  text around open: ">\n<div class=\"erow\"><i><small>PIN is for"
+  text around close: "re.<br/></i></small></div> \n\n\n      <lab"
+ignoring attempt to close small with i
+  opened at byte 12006, line 238
+  closed at byte 12076, line 238
+  attributes at open: {}
+  text around open: "div class=\"erow\"><i><small>E.164 (Intern"
+  text around close: "g: +64271234567<br/></i></small></div>\n\n"
+ignoring attempt to close i with div
+  opened at byte 12003, line 238
+  closed at byte 12088, line 238
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "567<br/></i></small></div>\n\n      <span "
+ignoring attempt to close i with div
+  opened at byte 12003, line 238
+  closed at byte 13105, line 247
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "ue=\"Create User\" />\n</div>\n\n<div class=\""
+ignoring attempt to close i with div
+  opened at byte 12003, line 238
+  closed at byte 13321, line 250
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "></small></div>\n    </div>\n\n\n</form>  </"
+ignoring attempt to close i with form
+  opened at byte 12003, line 238
+  closed at byte 13330, line 253
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "</div>\n    </div>\n\n\n</form>  </div>\n<scr"
+ignoring attempt to close i with div
+  opened at byte 12003, line 238
+  closed at byte 13339, line 253
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "  </div>\n\n\n</form>  </div>\n<script>\n  do"
+ignoring attempt to close i with div
+  opened at byte 12003, line 238
+  closed at byte 13478, line 264
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "/script>\n\n\n\n\n\n\n\n    </div> \n    <div cla"
+ignoring attempt to close i with div
+  opened at byte 12003, line 238
+  closed at byte 13519, line 266
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "s=\"clear\"></div> \n  </div>\n  </div>\n<div"
+ignoring attempt to close i with div
+  opened at byte 12003, line 238
+  closed at byte 13528, line 267
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+ignoring attempt to close i with body
+  opened at byte 12003, line 238
+  closed at byte 13569, line 269
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close i with html
+  opened at byte 12003, line 238
+  closed at byte 13577, line 270
+  attributes at open: {}
+  text around open: "  <div class=\"erow\"><i><small>E.164 (Int"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+..................................................../home/mbriggs/rails_projects/hota-2.2/app/views/photos/_photo_form.html.erb:86: warning: key :id is duplicated and overwritten on line 86
+ignoring attempt to close form with div
+  opened at byte 10273, line 185
+  closed at byte 12561, line 247
+  attributes at open: {"accept-charset"=>"UTF-8", "action"=>"/photos", "class"=>"new_image", "data-remote"=>"true", "enctype"=>"multipart/form-data", "id"=>"new_image", "method"=>"post", "name"=>"imageform"}
+  text around open: "class=\"fullform\">\n  <form accept-charset"
+  text around close: "Create Photo\" />\n   </div>\n</form></div>"
+ignoring attempt to close body with div
+  opened at byte 1241, line 40
+  closed at byte 12843, line 248
+  attributes at open: {"onload"=>"site_init()", "style"=>"cursor: auto;"}
+  text around open: "</script>\n\n</head>\n <body onload='site_i"
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+.........ignoring attempt to close div with body
+  opened at byte 9476, line 157
+  closed at byte 13851, line 302
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close div with html
+  opened at byte 9476, line 157
+  closed at byte 13859, line 303
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+.ignoring attempt to close div with body
+  opened at byte 7147, line 129
+  closed at byte 12220, line 304
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close div with html
+  opened at byte 7147, line 129
+  closed at byte 12228, line 305
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+.ignoring attempt to close div with body
+  opened at byte 7147, line 129
+  closed at byte 13355, line 349
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close div with html
+  opened at byte 7147, line 129
+  closed at byte 13363, line 350
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close div with body
+  opened at byte 7147, line 129
+  closed at byte 13362, line 349
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close div with html
+  opened at byte 7147, line 129
+  closed at byte 13370, line 350
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close div with body
+  opened at byte 7147, line 129
+  closed at byte 13362, line 349
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close div with html
+  opened at byte 7147, line 129
+  closed at byte 13370, line 350
+  attributes at open: {"class"=>"row-fluid"}
+  text around open: "\n    </header>\n\n\n   <div class=\"row-flui"
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+.......DEPRECATED: Use assert_nil if expecting nil from test/models/assets_by_code_test.rb:48. This will fail in Minitest 6.
+.DEPRECATED: Use assert_nil if expecting nil from test/models/assets_by_code_test.rb:25. This will fail in Minitest 6.
+.DEPRECATED: Use assert_nil if expecting nil from test/models/assets_by_code_test.rb:63. This will fail in Minitest 6.
+.DEPRECATED: Use assert_nil if expecting nil from test/models/assets_by_code_test.rb:106. This will fail in Minitest 6.
+.DEPRECATED: Use assert_nil if expecting nil from test/models/assets_by_code_test.rb:148. This will fail in Minitest 6.
+.DEPRECATED: Use assert_nil if expecting nil from test/models/assets_by_code_test.rb:85. This will fail in Minitest 6.
+.DEPRECATED: Use assert_nil if expecting nil from test/models/assets_by_code_test.rb:127. This will fail in Minitest 6.
+.........................ignoring attempt to close tr with th
+  opened at byte 8622, line 172
+  closed at byte 9995, line 182
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: " Parks</a></th>\n    </th>\n  </table>\n\n\n<"
+ignoring attempt to close tr with table
+  opened at byte 8622, line 172
+  closed at byte 10003, line 183
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "a></th>\n    </th>\n  </table>\n\n\n<form acc"
+ignoring attempt to close tr with div
+  opened at byte 8622, line 172
+  closed at byte 13701, line 260
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "\n\n  </table>\n</div>\n</div>\n\n\n  <div clas"
+ignoring attempt to close tr with div
+  opened at byte 8622, line 172
+  closed at byte 14547, line 300
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "\n\n</script>\n\n\n\n\n    </div> \n    <div cla"
+ignoring attempt to close tr with div
+  opened at byte 8622, line 172
+  closed at byte 14588, line 302
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "s=\"clear\"></div> \n  </div>\n  </div>\n<div"
+ignoring attempt to close tr with div
+  opened at byte 8622, line 172
+  closed at byte 14597, line 303
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+ignoring attempt to close tr with body
+  opened at byte 8622, line 172
+  closed at byte 14638, line 305
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close tr with html
+  opened at byte 8622, line 172
+  closed at byte 14646, line 306
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+.ignoring attempt to close tr with th
+  opened at byte 11255, line 202
+  closed at byte 12628, line 212
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: " Parks</a></th>\n    </th>\n  </table>\n\n\n<"
+ignoring attempt to close tr with table
+  opened at byte 11255, line 202
+  closed at byte 12636, line 213
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "a></th>\n    </th>\n  </table>\n\n\n<form acc"
+ignoring attempt to close tr with div
+  opened at byte 11255, line 202
+  closed at byte 16342, line 290
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "\n\n  </table>\n</div>\n</div>\n\n\n  <div clas"
+ignoring attempt to close tr with div
+  opened at byte 11255, line 202
+  closed at byte 17188, line 330
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "\n\n</script>\n\n\n\n\n    </div> \n    <div cla"
+ignoring attempt to close tr with div
+  opened at byte 11255, line 202
+  closed at byte 17229, line 332
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "s=\"clear\"></div> \n  </div>\n  </div>\n<div"
+ignoring attempt to close tr with div
+  opened at byte 11255, line 202
+  closed at byte 17238, line 333
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+ignoring attempt to close tr with body
+  opened at byte 11255, line 202
+  closed at byte 17279, line 335
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close tr with html
+  opened at byte 11255, line 202
+  closed at byte 17287, line 336
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+.ignoring attempt to close tr with th
+  opened at byte 11255, line 202
+  closed at byte 12628, line 212
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: " Parks</a></th>\n    </th>\n  </table>\n\n  "
+ignoring attempt to close tr with table
+  opened at byte 11255, line 202
+  closed at byte 12636, line 213
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "a></th>\n    </th>\n  </table>\n\n  <h2>\n   "
+ignoring attempt to close tr with div
+  opened at byte 11255, line 202
+  closed at byte 17553, line 323
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "\n\n  </table>\n</div>\n</div>\n\n\n  <div clas"
+ignoring attempt to close tr with div
+  opened at byte 11255, line 202
+  closed at byte 18399, line 363
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "\n\n</script>\n\n\n\n\n    </div> \n    <div cla"
+ignoring attempt to close tr with div
+  opened at byte 11255, line 202
+  closed at byte 18440, line 365
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "s=\"clear\"></div> \n  </div>\n  </div>\n<div"
+ignoring attempt to close tr with div
+  opened at byte 11255, line 202
+  closed at byte 18449, line 366
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+ignoring attempt to close tr with body
+  opened at byte 11255, line 202
+  closed at byte 18490, line 368
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close tr with html
+  opened at byte 11255, line 202
+  closed at byte 18498, line 369
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close tr with th
+  opened at byte 11255, line 202
+  closed at byte 12628, line 212
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: " Parks</a></th>\n    </th>\n  </table>\n\n\n<"
+ignoring attempt to close tr with table
+  opened at byte 11255, line 202
+  closed at byte 12636, line 213
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "a></th>\n    </th>\n  </table>\n\n\n<form acc"
+ignoring attempt to close tr with div
+  opened at byte 11255, line 202
+  closed at byte 16334, line 290
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "\n\n  </table>\n</div>\n</div>\n\n\n  <div clas"
+ignoring attempt to close tr with div
+  opened at byte 11255, line 202
+  closed at byte 17180, line 330
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "\n\n</script>\n\n\n\n\n    </div> \n    <div cla"
+ignoring attempt to close tr with div
+  opened at byte 11255, line 202
+  closed at byte 17221, line 332
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "s=\"clear\"></div> \n  </div>\n  </div>\n<div"
+ignoring attempt to close tr with div
+  opened at byte 11255, line 202
+  closed at byte 17230, line 333
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "></div> \n  </div>\n  </div>\n<div class=\"s"
+ignoring attempt to close tr with body
+  opened at byte 11255, line 202
+  closed at byte 17271, line 335
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "inner_modal\"></div>\n</body>\n</html>\n"
+ignoring attempt to close tr with html
+  opened at byte 11255, line 202
+  closed at byte 17279, line 336
+  attributes at open: {}
+  text around open: "-layout:fixed'>\n    <tr>\n        <th><a "
+  text around close: "dal\"></div>\n</body>\n</html>\n"
+.......
+
+Finished in 96.404336s, 4.4604 runs/s, 36.7203 assertions/s.
+
+  1) Failure:
+UserTest#test_create_user_with_no_password_confirmation [/home/mbriggs/rails_projects/hota-2.2/test/models/users_test.rb:31]:
+User should not save without password confirmation
+
+430 runs, 3540 assertions, 1 failures, 0 errors, 0 skips

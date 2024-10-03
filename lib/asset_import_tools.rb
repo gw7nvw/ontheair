@@ -1,3 +1,4 @@
+# typed: false
 module AssetImportTools
 
 def Asset.add_parks

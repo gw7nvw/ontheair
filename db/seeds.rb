@@ -1,3 +1,4 @@
+# typed: strict
 # This file should contain all the record creation needed to seed the database with its default values.
 # The data can then be loaded with the rake db:seed (or created alongside the db with db:setup).
 #
@@ -36,7 +37,7 @@
 
 #add links
 #Hut.update_links
-
+SotaRegion.destroy_all
 SotaRegion.create(dxcc: "ZL1", region: "AK")
 SotaRegion.create(dxcc: "ZL1", region: "WL")
 SotaRegion.create(dxcc: "ZL1", region: "WK")
@@ -62,9 +63,11 @@ SotaRegion.create(dxcc: "ZL9", region: "AI")
 SotaRegion.create(dxcc: "ZL9", region: "CI")
 SotaRegion.create(dxcc: "ZL9", region: "AN")
 
+Timezone.destroy_all
 Timezone.create({"id"=>3, "name"=>"UTC", "description"=>"UTC", "difference"=>0})
 Timezone.create({"id"=>1, "name"=>"Pacific/Auckland", "description"=>"Pacific / New Zealand / Auckland (NZDT/NZST)", "difference"=>13})
 Timezone.create({"id"=>4, "name"=>"Pacific/Chatham", "description"=>"Pacific / New Zealand / Chatham Islands", "difference"=>nil})
+AssetType.destroy_all
 AssetType.create({"id"=>28, "name"=>"lake", "table_name"=>"Lake", "has_location"=>true, "has_boundary"=>true, "index_name"=>"code", "display_name"=>"Lake", "fields"=>"info_origin", "pnp_class"=>"ZLOTA", "keep_score"=>true, "min_qso"=>2, dist_buffer: 500})
 AssetType.create({"id"=>26, "name"=>"pota park", "table_name"=>"PotaPark", "has_location"=>true, "has_boundary"=>true, "index_name"=>"reference", "display_name"=>" POTA Park", "fields"=>"", "pnp_class"=>"POTA", "keep_score"=>false, "min_qso"=>10})
 AssetType.create({"id"=>27, "name"=>"wwff park", "table_name"=>"WwffPark", "has_location"=>true, "has_boundary"=>true, "index_name"=>"code", "display_name"=>"WWFF Park", "fields"=>"", "pnp_class"=>"WWFF", "keep_score"=>false, "min_qso"=>10})
@@ -75,11 +78,13 @@ AssetType.create({"id"=>25, "name"=>"summit", "table_name"=>"SotaPeak", "has_loc
 AssetType.create({"id"=>30, "name"=>"lighthouse", "table_name"=>"Lighthouse", "has_location"=>true, "has_boundary"=>true, "index_name"=>"code","display_name"=>"Lighthouse", "fields"=>nil, "pnp_class"=>"ZLOTA", "keep_score"=>true, "min_qso"=>4})
 AssetType.create({"id"=>31, "name"=>"hump", "table_name"=>"Hump", "has_location"=>true, "has_boundary"=>false, "has_elevation"=>true, "index_name"=>"code", "display_name"=>"HEMA Hump", "fields"=>"", "pnp_class"=>"HEMA", "keep_score"=>true, "min_qso"=>4, "ele_buffer"=>25})
 AssetType.create({"id"=>24, "name"=>"island", "table_name"=>"Island", "has_location"=>true, "has_boundary"=>true, "index_name"=>"code", "display_name"=>"Island", "fields"=>"status,info_ref,info_origin,info_note", "pnp_class"=>"ZLOTA", "keep_score"=>true, "min_qso"=>5})
+AwardThreshold.destroy_all
 AwardThreshold.create({"id"=>1, "threshold"=>10, "name"=>"bronze"})
 AwardThreshold.create({"id"=>2, "threshold"=>30, "name"=>"silver"})
 AwardThreshold.create({"id"=>3, "threshold"=>100, "name"=>"gold"})
 AwardThreshold.create({"id"=>4, "threshold"=>300, "name"=>"diamond"})
 AwardThreshold.create({"id"=>5, "threshold"=>1000, "name"=>"platinum"})
+Award.destroy_all
 Award.create({"id"=>15, "name"=>"Activated all district (huts)", "description"=>"", "email_text"=>"", "user_qrp"=>false, "contact_qrp"=>nil, "is_active"=>true, "createdBy_id"=>4, "allow_repeat_visits"=>false, "count_based"=>false, "activated"=>true, "chased"=>false, "programme"=>"hut", "all_district"=>true, "all_region"=>false, "all_programme"=>false, "p2p"=>false})
 Award.create({"id"=>18, "name"=>"Activated all district (islands)", "description"=>"", "email_text"=>"", "user_qrp"=>false, "contact_qrp"=>nil, "is_active"=>true, "createdBy_id"=>4, "allow_repeat_visits"=>false, "count_based"=>false, "activated"=>true, "chased"=>false, "programme"=>"island", "all_district"=>true, "all_region"=>false, "all_programme"=>false, "p2p"=>false})
 Award.create({"id"=>14, "name"=>"Activated all district (lakes)", "description"=>"", "email_text"=>"", "user_qrp"=>false, "contact_qrp"=>nil, "is_active"=>true, "createdBy_id"=>4, "allow_repeat_visits"=>false, "count_based"=>false, "activated"=>true, "chased"=>false, "programme"=>"lake", "all_district"=>true, "all_region"=>false, "all_programme"=>false, "p2p"=>false})
@@ -121,6 +126,7 @@ Award.create({"id"=>41, "name"=>"Lighthouse Activator (qualified)", "description
 Award.create({"id"=>44, "name"=>"Activated all region (lighthouses)", "description"=>"Activated all lighthouses in a region", "email_text"=>"", "user_qrp"=>false, "contact_qrp"=>nil, "is_active"=>true, "createdBy_id"=>4, "allow_repeat_visits"=>false, "count_based"=>false, "activated"=>true, "chased"=>false, "programme"=>"lighthouse", "all_district"=>false, "all_region"=>true, "all_programme"=>false, "p2p"=>false})
 Award.create({"id"=>45, "name"=>"Chased all region (lighthouses)", "description"=>"Chased all lighthouses in a region", "email_text"=>"", "user_qrp"=>false, "contact_qrp"=>nil, "is_active"=>true, "createdBy_id"=>4, "allow_repeat_visits"=>false, "count_based"=>false, "activated"=>false, "chased"=>true, "programme"=>"lighthouse", "all_district"=>false, "all_region"=>true, "all_programme"=>false, "p2p"=>false})
 Award.create({"id"=>46, "name"=>"Hut Uniques (bagged)", "description"=>"Bagged (activated or chased) distinct huts", "email_text"=>"", "user_qrp"=>false, "contact_qrp"=>nil, "is_active"=>true, "createdBy_id"=>4, "allow_repeat_visits"=>false, "count_based"=>true, "activated"=>false, "chased"=>false, "programme"=>"hut", "all_district"=>false, "all_region"=>false, "all_programme"=>false, "p2p"=>false})
+Projection.destroy_all
 Projection.create({"id"=>2193, "name"=>"NZTM2000", "proj4"=>"+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +y_0=10000000 +ellps=GRS80 +towg", "wkt"=>"", "epsg"=>2193, "createdBy_id"=>nil})
 Projection.create({"id"=>4326, "name"=>"WGS84", "proj4"=>"+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs", "wkt"=>"", "epsg"=>4326})
 Projection.create({"id"=>27200, "name"=>"NZMG49", "proj4"=>"+proj=nzmg +lat_0=-41 +lon_0=173 +x_0=2510000 +y_0=6023150 +ellps=intl +datum=nzgd49 +units=m +no_defs", "wkt"=>"", "epsg"=>27200})
@@ -128,7 +134,9 @@ Projection.create({"id"=>27291, "name"=>"NIYG", "proj4"=>"+proj=tmerc +lat_0=-39
 Projection.create({"id"=>27292, "name"=>"SIYG", "proj4"=>"+proj=tmerc +lat_0=-44 +lon_0=171.5 +k=1 +x_0=457199.2073080143 +y_0=457199.2073080143 +ellps=intl +datum=nzgd49 +to_meter=0.9143984146160287 +no_defs", "wkt"=>"", "epsg"=>27292})
 Projection.create({"id"=>900913, "name"=>"GOOGLE", "proj4"=>"+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs", "wkt"=>"", "epsg"=>900913})
 Projection.create({"id"=>-99, "name"=>"Maidenhead", "proj4"=>"+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs", "wkt"=>"", "epsg"=>4326})
+AdminSettings.destroy_all
 AdminSettings.create()
+Topic.destroy_all
 Topic.create({"id"=>44, "name"=>"Test ALERTs", "description"=>"A place for test ALERTs to be published without going on the main ALERTs page", "owner_id"=>4, "is_public"=>true, "is_owners"=>true,  "is_members_only"=>false, "date_required"=>true, "allow_mail"=>true, "duration_required"=>true, "is_alert"=>true, "is_spot"=>false, "allow_attachments"=>nil})
 Topic.create({"id"=>43, "name"=>"Test SPOTs", "description"=>"A place for test spots to be published without going on the main SPOTs page", "owner_id"=>4, "is_public"=>true, "is_owners"=>false,  "is_members_only"=>false, "date_required"=>true, "allow_mail"=>true, "duration_required"=>nil, "is_alert"=>false, "is_spot"=>true, "allow_attachments"=>nil})
 Topic.create({"id"=>3, "name"=>"Chat forums", "description"=>"Discussion forums. Open to all users to post.<br>", "owner_id"=>4, "is_public"=>true, "is_owners"=>false,  "is_members_only"=>false, "date_required"=>nil, "allow_mail"=>nil, "duration_required"=>nil, "is_alert"=>nil, "is_spot"=>nil, "allow_attachments"=>nil})
@@ -143,6 +151,7 @@ Topic.create({"id"=>39, "name"=>"ZLOTA - Help", "description"=>"Help pages for Z
 Topic.create({"id"=>42, "name"=>"Awards", "description"=>"<br>\r\n   \r\n\r\n   \r\n      Notification of user's awards and progress", "owner_id"=>4, "is_public"=>true, "is_owners"=>false,  "is_members_only"=>false, "date_required"=>nil, "allow_mail"=>true, "duration_required"=>nil, "is_alert"=>false, "is_spot"=>false, "allow_attachments"=>nil})
 Topic.create({"id"=>4, "name"=>"ZLOTA - What's New", "description"=>"<div>News and updates for this site<br></div>", "owner_id"=>4, "is_public"=>false, "is_owners"=>true,  "is_members_only"=>false, "date_required"=>false, "allow_mail"=>false, "duration_required"=>nil, "is_alert"=>false, "is_spot"=>false, "allow_attachments"=>nil})
 Topic.create({"id"=>45, "name"=>"ZLOTA - Rules", "description"=>"<br>", "owner_id"=>4, "is_public"=>false, "is_owners"=>true,  "is_members_only"=>false, "date_required"=>nil, "allow_mail"=>false, "duration_required"=>nil, "is_alert"=>false, "is_spot"=>false, "allow_attachments"=>nil})
+DxccPrefix.destroy_all
 DxccPrefix.create({"id"=>1, "name"=>"Sov. Mil. Order of Malta", "prefix"=>"1A", "itu_zone"=>"28", "cq_zone"=>"15", "continent_code"=>"EU"})
 DxccPrefix.create({"id"=>2, "name"=>"Monaco", "prefix"=>"3A", "itu_zone"=>"27", "cq_zone"=>"14", "continent_code"=>"EU"})
 DxccPrefix.create({"id"=>3, "name"=>"Agalega & St. Brandon Is.", "prefix"=>"3B6", "itu_zone"=>"53", "cq_zone"=>"39", "continent_code"=>"AF"})
@@ -856,6 +865,7 @@ DxccPrefix.create({"id"=>710, "name"=>"England", "prefix"=>"2E", "itu_zone"=>"27
 DxccPrefix.create({"id"=>711, "name"=>"Wales", "prefix"=>"2W", "itu_zone"=>"27", "cq_zone"=>"14", "continent_code"=>"EU"})
 DxccPrefix.create({"id"=>712, "name"=>"Scotland", "prefix"=>"2M", "itu_zone"=>"27", "cq_zone"=>"14", "continent_code"=>"EU"})
 DxccPrefix.create({"id"=>713, "name"=>"Australia", "prefix"=>"VI", "itu_zone"=>"(I)", "cq_zone"=>"29", "continent_code"=>"OC"})
+Continent.destroy_all
 Continent.create({"id"=>1, "name"=>"Europe", "code"=>"EU"})
 Continent.create({"id"=>2, "name"=>"Africa", "code"=>"AF"})
 Continent.create({"id"=>3, "name"=>"Antartica", "code"=>"AN"})
@@ -863,6 +873,7 @@ Continent.create({"id"=>4, "name"=>"South America", "code"=>"SA"})
 Continent.create({"id"=>5, "name"=>"Asia", "code"=>"AS"})
 Continent.create({"id"=>6, "name"=>"Oceania", "code"=>"OC"})
 Continent.create({"id"=>7, "name"=>"North America", "code"=>"NA"})
+WebLinkClass.destroy_all
 WebLinkClass.create({"id"=>1, "name"=>"hutbagger", "display_name"=>"Hutbagger", "url"=>"https://hutbagger.co.nz/", "is_active"=>nil})
 WebLinkClass.create({"id"=>2, "name"=>"tramper", "display_name"=>"NZ Tramper", "url"=>"https://tramper.nz/", "is_active"=>nil})
 WebLinkClass.create({"id"=>3, "name"=>"doc", "display_name"=>"DOC", "url"=>"https://doc.govt.nz/", "is_active"=>nil})

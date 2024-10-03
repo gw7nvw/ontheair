@@ -1,3 +1,4 @@
+# typed: false
 class ProxyController < ApplicationController
   def get
     if params[:url][0..22]="https://hutbagger.co.nz" then

@@ -1,3 +1,4 @@
+# typed: false
 class CreateAssetPhotoLinks < ActiveRecord::Migration
   def change
     create_table :asset_photo_links do |t|

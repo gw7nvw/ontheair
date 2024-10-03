@@ -1,3 +1,4 @@
+# typed: false
 class RegionsController < ApplicationController
 include ApplicationHelper
 

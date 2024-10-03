@@ -1,3 +1,4 @@
+# typed: false
 class HutsController < ApplicationController
 
   def index

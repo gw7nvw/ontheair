@@ -1,3 +1,4 @@
+# typed: false
 class CreateMaplayers < ActiveRecord::Migration
   def change
     create_table :maplayers do |t|

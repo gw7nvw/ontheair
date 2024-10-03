@@ -77,7 +77,7 @@ $(function () {
     </div>
     <div class="erow">
       <div class="buttonshort">
-        <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+        <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
         <%= link_to "Clear", '/contacts', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
         <a href="#" class="link_to" remote=true onclick='expand_div("advanced");return(false);'>Advanced v</a>
       </div>

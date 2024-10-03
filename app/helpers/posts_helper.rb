@@ -1,3 +1,4 @@
+# typed: false
 module PostsHelper
 
 #converts any array of hash into a csv

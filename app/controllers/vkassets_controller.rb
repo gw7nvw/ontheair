@@ -1,3 +1,4 @@
+# typed: false
 class VkassetsController < ApplicationController
 include ApplicationHelper
 

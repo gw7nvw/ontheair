@@ -1,3 +1,4 @@
+# typed: true
 module GetSpots
 
   @queue = :ota_scheduled

@@ -1,3 +1,4 @@
+# typed: strict
 require "test_helper"
 
 class AssetCalculatedTest < ActiveSupport::TestCase
@@ -56,7 +57,7 @@ class AssetCalculatedTest < ActiveSupport::TestCase
     a=asset3.traditional_owners; assert a=='In or near Ngāti Apa, Ngāi Tahu country', "Correct vague answer rturned ner boundary: "+a.to_s
     #location  with no data
     asset4=create_test_asset(asset_type: 'hut', location: create_point(167,-40.0001))
-    a=asset4.traditional_owners; assert a==nil, "No owners returned where no data: "+a.to_s
+    a=asset4.traditional_owners; assert_nil a, "No owners returned where no data: "+a.to_s
   end
 
   test "First activated from activator log" do

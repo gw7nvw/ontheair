@@ -1,3 +1,4 @@
+# typed: false
 class AddAccessTypesToAsset < ActiveRecord::Migration
   def change
     add_column :assets, :access_road_ids, :string, array: true, default: []

@@ -1,3 +1,4 @@
+# typed: false
 class AssetsController < ApplicationController
 include PostsHelper
 include ApplicationHelper

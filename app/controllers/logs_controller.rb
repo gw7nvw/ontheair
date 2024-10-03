@@ -1,3 +1,4 @@
+# typed: false
 class LogsController < ApplicationController
   before_action :signed_in_user, only: [:edit, :update, :create, :new, :upload]
 
@@ -226,7 +227,7 @@ def new
     @log.callsign1=current_user.callsign
     @log.asset_codes=nil
     @tz=Timezone.find_by_id(current_user.timezone)
-    @log.date=Time.now.in_time_zone(@tz.name).to_date.to_s
+    @log.date=Time.now.in_time_zone(@tz.name).to_date
     @log.timezone=@tz.id
   else
     redirect_to '/'

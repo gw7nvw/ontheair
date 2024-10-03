@@ -1,3 +1,4 @@
+# typed: true
 module RgeoHelper
     def wgs84_proj4
         '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'

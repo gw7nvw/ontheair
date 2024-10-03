@@ -1,3 +1,4 @@
+# typed: false
 class AddCentroidToParks < ActiveRecord::Migration
   def change
     change_table(:parks) do |t|

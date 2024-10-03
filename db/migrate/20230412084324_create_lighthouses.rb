@@ -1,3 +1,4 @@
+# typed: false
 class CreateLighthouses < ActiveRecord::Migration
   def change
     create_table :lighthouses do |t|

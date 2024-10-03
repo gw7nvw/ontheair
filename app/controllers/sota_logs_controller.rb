@@ -1,3 +1,4 @@
+# typed: false
 class SotaLogsController < ApplicationController
   before_action :signed_in_user, only: [:index, :show, :send_email]
 

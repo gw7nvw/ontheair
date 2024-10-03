@@ -1,3 +1,4 @@
+# typed: false
 class PostsController < ApplicationController
 require "uri"
 require "net/http"
@@ -150,8 +151,8 @@ def update
         end
 
          if topic.is_alert then 
-           @post.referenced_time=(params[:post][:referenced_date]+' '+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC').to_time
-           @post.referenced_date=(params[:post][:referenced_date]+' '+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC').to_time
+           @post.referenced_time=(params[:post][:referenced_date]+' '+params[:post][:referenced_time]).to_time.in_time_zone(@tz.name).in_time_zone('UTC').to_time
+           @post.referenced_date=(params[:post][:referenced_date]+' '+params[:post][:referenced_time]).to_time.in_time_zone(@tz.name).in_time_zone('UTC').to_time
          end
 
          @post.updated_by_id=current_user.id
@@ -212,8 +213,8 @@ def create
       @post.updated_by_id = current_user.id #current_user.id
       if @topic.is_alert then
         if params[:post][:referenced_date] and params[:post][:referenced_date].length>0 and params[:post][:referenced_time] and params[:post][:referenced_time].length>0 then
-          @post.referenced_time=(params[:post][:referenced_date]+" "+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC').to_time
-          @post.referenced_date=(params[:post][:referenced_date]+" "+params[:post][:referenced_time]).in_time_zone(@tz.name).in_time_zone('UTC').to_time
+          @post.referenced_time=(params[:post][:referenced_date]+" "+params[:post][:referenced_time]).to_time.in_time_zone(@tz.name).in_time_zone('UTC').to_time
+          @post.referenced_date=(params[:post][:referenced_date]+" "+params[:post][:referenced_time]).to_time.in_time_zone(@tz.name).in_time_zone('UTC').to_time
         else
           invalid=true
           errors+="Date / time are required; "
@@ -222,11 +223,9 @@ def create
 
       if @topic.is_spot then 
        
-#        @post.referenced_time=Time.now.strftime('%H:%M')
         @post.referenced_time=Time.now
         @post.referenced_date=Time.now
 
-#        @post.referenced_date=Time.now.strftime('%Y-%m-%d')
       end
       @topic.last_updated = Time.now
 

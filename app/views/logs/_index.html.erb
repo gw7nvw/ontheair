@@ -53,7 +53,7 @@ $(function () {
       <input type="hidden" name="user" value='<%=@callsign%>'/>
     </div>
     <div class="buttonshort">
-      <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+      <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
       <%=  link_to "Clear", '/logs', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
 
     </div>

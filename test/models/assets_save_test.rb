@@ -1,3 +1,4 @@
+# typed: strict
 require "test_helper"
 
 class AssetSaveTest < ActiveSupport::TestCase
@@ -12,7 +13,7 @@ class AssetSaveTest < ActiveSupport::TestCase
     assert_equal asset1.safecode, 'ZLH_OT-001', "Safe code generated"
     assert_equal asset1.url, 'assets/ZLH_OT-001', "URL generated"
     asset1.reload
-    assert_equal asset1.area, nil, "No area calculated"
+    assert_nil asset1.area, "No area calculated"
   end
 
   test "All calculated fields applied for a polygon site" do

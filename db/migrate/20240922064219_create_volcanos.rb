@@ -1,3 +1,4 @@
+# typed: false
 class CreateVolcanos < ActiveRecord::Migration
   def change
     create_table :volcanos do |t|

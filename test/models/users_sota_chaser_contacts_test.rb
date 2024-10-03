@@ -1,3 +1,4 @@
+# typed: strict
 require "test_helper"
 
 class UserSotaChaserContactsTest < ActiveSupport::TestCase
@@ -13,8 +14,8 @@ class UserSotaChaserContactsTest < ActiveSupport::TestCase
     sota_logs=user1.sota_chaser_contacts
 
     assert sota_logs.count==1, "Expect 1 log: "+sota_logs.count.to_s
-    assert sota_logs[0][:code]==nil, "Expect summit to be nil: "+sota_logs[0][:code].to_json
-    assert sota_logs[0][:date]==nil, "Expect date to be nil: "+sota_logs[0][:date].to_json
+    assert_nil sota_logs[0][:code], "Expect summit to be nil: "+sota_logs[0][:code].to_json
+    assert_nil sota_logs[0][:date], "Expect date to be nil: "+sota_logs[0][:date].to_json
     assert sota_logs[0][:count]==1, "Expect 1 chaser contacts: "+sota_logs[0][:count].to_s
     assert sota_logs[0][:contacts].map{|c| c.id}.sort==[contact.id], "Expect contacts to be correct: "+sota_logs[0][:contacts].map{|c| c.id}.sort.to_json
   end

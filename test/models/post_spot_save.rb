@@ -1,3 +1,4 @@
+# typed: strict
 require "test_helper"
 
 class PostSpotSaveTest < ActiveSupport::TestCase
@@ -11,7 +12,7 @@ class PostSpotSaveTest < ActiveSupport::TestCase
     spot=item.post
 
     assert_equal [asset1.code, asset2.code].sort, spot.asset_codes.sort, "Known asset codes added correctly"
-    assert_equal nil, spot.description, "Correct description"
+    assert_nil spot.description, "Correct description"
   end
 
   test "Known VK asset codes handled OK" do
@@ -23,7 +24,7 @@ class PostSpotSaveTest < ActiveSupport::TestCase
     spot=item.post
 
     assert_equal [asset1.code, asset2.code].sort, spot.asset_codes.sort, "Known asset codes added correctly"
-    assert_equal nil, spot.description, "Correct description"
+    assert_nil spot.description, "Correct description"
   end
 
   test "Correctly formatted external asset handled OK" do
@@ -33,7 +34,7 @@ class PostSpotSaveTest < ActiveSupport::TestCase
     spot=item.post
 
     assert_equal ["GM/SE-001", "GFF-0001"].sort, spot.asset_codes.sort, "Known asset codes added correctly"
-    assert_equal nil, spot.description, "Correct description"
+    assert_nil spot.description, "Correct description"
   end
 
   test "Incorrectly formatted asset handled OK" do
@@ -56,7 +57,7 @@ class PostSpotSaveTest < ActiveSupport::TestCase
     spot=item.post
 
     assert_equal [asset1.code].sort, spot.asset_codes.sort, "Master code applied"
-    assert_equal nil, spot.description, "Correct description"
+    assert_nil spot.description, "Correct description"
   end
 
 
@@ -70,7 +71,7 @@ class PostSpotSaveTest < ActiveSupport::TestCase
     spot=item.post
 
     assert_equal [asset1.code, asset2.code].sort, spot.asset_codes.sort, "Containing parks added"
-    assert_equal nil, spot.description, "Correct description"
+    assert_nil spot.description, "Correct description"
   end
 
   test "Containing POTA and WWFF assets added when user authorised to do so" do
@@ -83,7 +84,7 @@ class PostSpotSaveTest < ActiveSupport::TestCase
     spot=item.post
 
     assert_equal [asset1.code, asset2.code, asset3.code].sort, spot.asset_codes.sort, "Containing POTA and WWFF park added"
-    assert_equal nil, spot.description, "Correct description"
+    assert_nil spot.description, "Correct description"
   end
   test "Containing POTA assets added only when user authorised to do so" do
     user1=create_test_user(logs_pota: false, logs_wwff: true)
@@ -95,7 +96,7 @@ class PostSpotSaveTest < ActiveSupport::TestCase
     spot=item.post
 
     assert_equal [asset1.code, asset3.code].sort, spot.asset_codes.sort, "Containing POTA not added if user requests not"
-    assert_equal nil, spot.description, "Correct description"
+    assert_nil spot.description, "Correct description"
   end
   test "Containing WWFF assets added only when user authorised to do so" do
     user1=create_test_user(logs_pota: true, logs_wwff: false)
@@ -107,7 +108,7 @@ class PostSpotSaveTest < ActiveSupport::TestCase
     spot=item.post
 
     assert_equal [asset1.code, asset2.code].sort, spot.asset_codes.sort, "Containing WWFF not added if user requests not"
-    assert_equal nil, spot.description, "Correct description"
+    assert_nil spot.description, "Correct description"
   end
 
   test "Get loction for spot" do

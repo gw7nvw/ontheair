@@ -1,3 +1,4 @@
+# typed: false
 class MapsController < ApplicationController
 
 def layerswitcher

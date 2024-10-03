@@ -1,3 +1,4 @@
+# typed: false
 class AddRegionToAssets < ActiveRecord::Migration
   def change
     add_column :assets, :region, :string

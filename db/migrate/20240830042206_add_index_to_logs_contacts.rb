@@ -1,3 +1,4 @@
+# typed: false
 class AddIndexToLogsContacts < ActiveRecord::Migration
   def change
     add_index :logs, :date

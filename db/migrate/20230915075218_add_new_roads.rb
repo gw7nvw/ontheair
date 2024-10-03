@@ -1,3 +1,4 @@
+# typed: false
 class AddNewRoads < ActiveRecord::Migration
   def change
     create_table :roads do |t|

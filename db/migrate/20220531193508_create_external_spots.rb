@@ -1,3 +1,4 @@
+# typed: false
 class CreateExternalSpots < ActiveRecord::Migration
   def change
     create_table :external_spots do |t|

@@ -1,3 +1,4 @@
+# typed: false
 class CreateDxccPrefixes < ActiveRecord::Migration
   def change
     create_table :dxcc_prefixes do |t|

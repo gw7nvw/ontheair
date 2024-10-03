@@ -1,77 +1,78 @@
 <script> 
-   reset_map_controllers();
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
+  reset_map_controllers();
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
 </script>
 
 <div id="actionbar" class="span7">
-   <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
-     &nbsp;--&gt;&nbsp;
-     <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
-     &nbsp;--&gt;&nbsp;
-     <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
-     &nbsp;--&gt;&nbsp;
-     <%=  link_to  "Awards", '/users/'+@user.callsign+"/awards", remote: true,  :id => 'awards', :onclick => "linkHandler('awards')" %>
-     &nbsp;--&gt;&nbsp;
-     <b>Regions</b>
-   </div>
-   <div id="controls">
-       <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
-       <%=render 'map_controls'%>
-   </div>
+  <div id="crumbs">
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    &nbsp;--&gt;&nbsp;
+    <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    &nbsp;--&gt;&nbsp;
+    <%=  link_to  "Awards", '/users/'+@user.callsign+"/awards", remote: true,  :id => 'awards', :onclick => "linkHandler('awards')" %>
+    &nbsp;--&gt;&nbsp;
+    <b>Regions</b>
+  </div>
+
+  <div id="controls">
+    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%=render 'map_controls'%>
+  </div>
 </div>
 
 
 <div id="right_scroll">
-   <%= render 'flash' %>
-   <div class="erow">
-      <div class="sectiontitle" style="margin-top: 12px;">Progress towards Worked-all-Region Awards:</div>
-      <div class="sectiontitle" style="margin-top: 12px;">Activations:</div>
-      <% columnsize=100/(3+@award_classes.count) %>
-      <table id="region_activated_table">
-        <tr>
-          <th style="width: <%=3*columnsize%>%">Region</th>
-          <%@award_classes.each do |award_class|%>
-            <th style="text-align: center; width: <%=columnsize%>%"><%=award_class.display_name%></th>
-          <%end%>
-        </tr>
-        <%@regions.each do |region|%>
-          <tr>
-            <td><%=link_to region.name, '/regions/'+region.sota_code+"?callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler('award')" %></td>
-            <%@award_classes.each do |award_class|%>
-              <% assets=@region_assets.select {|d| d.name==region.sota_code and d.type==award_class.name} %>
-              <% activation=@activations.select {|d| d.name==region.sota_code and d.type==award_class.name} %>
-
-              <td class="percentage" style='color: #777; text-align: center; background-size:<%=if activation and activation.count>0 and assets.first.code_count>0 then (1.0*activation.first.site_list.uniq.count/assets.first.code_count)*100 else 0 end%>% 100%'><%=if activation and activation.count>0 then activation.first.site_list.uniq.count.to_s+"/" end%><%=if assets and assets.first then assets.first.code_count.to_s end%></td>
-
-            <% end %>
-          </tr>
+  <%= render 'flash' %>
+  <div class="erow">
+    <div class="sectiontitle" style="margin-top: 12px;">Progress towards Worked-all-Region Awards:</div>
+    <div class="sectiontitle" style="margin-top: 12px;">Activations:</div>
+    <% columnsize=100/(3+@award_classes.count) %>
+    <table id="region_activated_table">
+      <tr>
+        <th style="width: <%=3*columnsize%>%">Region</th>
+        <%@award_classes.each do |award_class|%>
+          <th style="text-align: center; width: <%=columnsize%>%"><%=award_class.display_name%></th>
         <%end%>
-      </table>
+      </tr>
 
-      <div class="sectiontitle" style="margin-top: 12px;">Chases:</div>
-      <table id="region_chased_table">
+      <%@regions.each do |region|%>
         <tr>
-          <th style="width: <%=3*columnsize%>%">Region</th>
+          <td><%=link_to region.name, '/regions/'+region.sota_code+"?callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler('award')" %></td>
           <%@award_classes.each do |award_class|%>
-            <th style="text-align: center; width: <%=columnsize%>%"><%=award_class.display_name%></th>
-          <%end%>
+            <% assets=@region_assets.select {|d| d.name==region.sota_code and d.type==award_class.name} %>
+            <% activation=@activations.select {|d| d.name==region.sota_code and d.type==award_class.name} %>
+            <td class="percentage" style='color: #777; text-align: center; background-size:<%=if activation and activation.count>0 and assets.first.code_count>0 then (1.0*activation.first.site_list.uniq.count/assets.first.code_count)*100 else 0 end%>% 100%'><%=if activation and activation.count>0 then activation.first.site_list.uniq.count.to_s+"/" end%><%=if assets and assets.first then assets.first.code_count.to_s end%></td>
+          <% end %>
         </tr>
-        <%@regions.each do |region|%>
-          <tr>
-            <td><%=link_to region.name, '/regions/'+region.sota_code+"?callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler('award')" %></td>
-            <%@award_classes.each do |award_class|%>
-              <% assets=@region_assets.select {|d| d.name==region.sota_code and d.type==award_class.name} %>
-              <% chase=@chases.select {|d| d.name==region.sota_code and d.type==award_class.name} %>
-              <td class="percentage" style='color: #777; text-align: center; background-size:<%=if chase and chase.count>0 and assets.first.code_count>0 then (1.0*chase.first.site_list.uniq.count/assets.first.code_count)*100 else 0 end%>% 100%'><%=if chase and chase.count>0 then chase.first.site_list.uniq.count.to_s+"/"+assets.first.code_count.to_s end%></td>
-            <% end %>
-          </tr>
-        <%end%>
-      </table>
-    </div>
+      <%end%>
+    </table>
 
+    <div class="sectiontitle" style="margin-top: 12px;">Chases:</div>
+    <table id="region_chased_table">
+      <tr>
+        <th style="width: <%=3*columnsize%>%">Region</th>
+        <%@award_classes.each do |award_class|%>
+          <th style="text-align: center; width: <%=columnsize%>%"><%=award_class.display_name%></th>
+        <%end%>
+      </tr>
+
+      <%@regions.each do |region|%>
+        <tr>
+          <td><%=link_to region.name, '/regions/'+region.sota_code+"?callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler('award')" %></td>
+          <%@award_classes.each do |award_class|%>
+            <% assets=@region_assets.select {|d| d.name==region.sota_code and d.type==award_class.name} %>
+            <% chase=@chases.select {|d| d.name==region.sota_code and d.type==award_class.name} %>
+            <td class="percentage" style='color: #777; text-align: center; background-size:<%=if chase and chase.count>0 and assets.first.code_count>0 then (1.0*chase.first.site_list.uniq.count/assets.first.code_count)*100 else 0 end%>% 100%'><%=if chase and chase.count>0 then chase.first.site_list.uniq.count.to_s+"/"+assets.first.code_count.to_s end%></td>
+          <% end %>
+        </tr>
+      <%end%>
+    </table>
+  </div>
 </div>
+
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>

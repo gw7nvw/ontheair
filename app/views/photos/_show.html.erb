@@ -1,41 +1,40 @@
 <script>
-   reset_map_controllers();
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
-   document.title = '... On The Air'
-   document.getElementById('logo').innerHTML='... On The Air'
+  reset_map_controllers();
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
+  document.title = '... On The Air'
+  document.getElementById('logo').innerHTML='... On The Air'
 </script>
 
 <div id="actionbar" class="span7">
-   <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
-     &nbsp;--&gt;&nbsp;
-     <b>Photos</b>
-     <%if @image.id%>
-       &nbsp;--&gt;&nbsp;
-       <b><%=link_to @image.title, '/images/'+@image.id.to_s%></b>
-     <% end %>
+  <div id="crumbs">
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <b>Photos</b>
+    <%if @image.id%>
+      &nbsp;--&gt;&nbsp;
+      <b><%=link_to @image.title, '/images/'+@image.id.to_s%></b>
+    <% end %>
+  </div>
 
+  <div id="controls">
+    <% if current_user and (current_user.is_admin or @image.created_by_id==current_user.id) %>
+      <%=  link_to "Edit Photo", '/photos/'+@image.id.to_s+'/edit', class: "btn btn-small btn-primary",remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
+      <%=  link_to "Delete Photo", '/photos/'+@image.id.to_s+'/delete', data: {confirm: "Delete image: Are you sure?"}, class: "btn btn-small btn-primary",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')"%>
+    <% end %>
+    <%=render 'map_controls'%> 
+  </div>
 </div>
-   <div id="controls">
-       <% if current_user and (current_user.is_admin or @image.created_by_id==current_user.id) %>
-            <%=  link_to "Edit Photo", '/photos/'+@image.id.to_s+'/edit', class: "btn btn-small btn-primary",remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
-            <%=  link_to "Delete Photo", '/photos/'+@image.id.to_s+'/delete', data: {confirm: "Delete image: Are you sure?"}, class: "btn btn-small btn-primary",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')"%>
-       <% end %>
-       <%=render 'map_controls'%> 
-   </div>
-</div>
-
 
 <div id="right_scroll">
-   <%= render 'flash' %>
+  <%= render 'flash' %>
   <%= render 'photo_details' %>
-<div class="erow">
-   <div class="hrline">
+
+  <div class="erow">
+    <div class="hrline">
       <hr noshade size="4">
-   </div>
-</div>
-</div>
+    </div>
+  </div>
 </div>
 
 <script>

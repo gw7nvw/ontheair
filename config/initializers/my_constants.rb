@@ -1,3 +1,4 @@
+# typed: strict
   SPOT_TOPIC=35
   ALERT_TOPIC=1
   HELP_TOPIC=39

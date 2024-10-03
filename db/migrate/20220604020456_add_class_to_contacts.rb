@@ -1,3 +1,4 @@
+# typed: false
 class AddClassToContacts < ActiveRecord::Migration
   def change
     add_column :contacts, :asset1_classes, :string, array: true, default: [] 

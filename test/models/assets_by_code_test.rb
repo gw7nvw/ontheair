@@ -1,3 +1,4 @@
+# typed: strict
 require "test_helper"
 
 class AssetByCodeTest < ActiveSupport::TestCase
@@ -21,7 +22,7 @@ class AssetByCodeTest < ActiveSupport::TestCase
     assert_equal(a[:code], asset1.code, "Correct code returned")
     assert_equal(a[:type], asset1.asset_type, "Correct type returned")
     assert_equal(a[:external], false, "Internal asset to pur database")
-    assert_equal(a[:external_url], asset1.external_url, "External URL correct")
+    assert_nil(a[:external_url], "External URL correct")
     assert_equal(a[:title], asset1.type.display_name, "Title is asset type display name")
 
     #get_asset_type_from_code
@@ -32,7 +33,7 @@ class AssetByCodeTest < ActiveSupport::TestCase
   end
 
   test "Correct details returned for a known VK asset" do
-    asset1=create_test_vkasset(award: 'POTA', code_prefix: 'AU-0')
+    asset1=create_test_vkasset(award: 'POTA', code_prefix: 'AU-0', site_type: 'POTA Park')
     a_s=Asset.assets_from_code(asset1.code)
  
     assert_equal(a_s.count, 1, "One asset returned")
@@ -59,7 +60,7 @@ class AssetByCodeTest < ActiveSupport::TestCase
 
     assert_equal(1, a_s.count, "One asset returned")
     a=a_s.first
-    assert_equal(a[:asset],nil,"No asset returned")
+    assert_nil(a[:asset],"No asset returned")
     assert_equal(a[:url], "http://hema.org.uk", "Correct URL")
     assert_equal(a[:name], testcode, "Name is code")
     assert_equal(a[:code], testcode, "Correct code returned")
@@ -81,7 +82,7 @@ class AssetByCodeTest < ActiveSupport::TestCase
 
     assert_equal(1, a_s.count, "One asset returned")
     a=a_s.first
-    assert_equal(a[:asset],nil,"No asset returned")
+    assert_nil(a[:asset],"No asset returned")
     assert_equal(a[:url], "https://www.silosontheair.com/silos/#"+testcode, "Correct URL")
     assert_equal(a[:name], testcode, "Name is code")
     assert_equal(a[:code], testcode, "Correct code returned")
@@ -102,7 +103,7 @@ class AssetByCodeTest < ActiveSupport::TestCase
 
     assert_equal(1, a_s.count, "One asset returned")
     a=a_s.first
-    assert_equal(a[:asset],nil,"No asset returned")
+    assert_nil(a[:asset],"No asset returned")
     assert_equal(a[:url], "https://pota.app/#/park/"+testcode, "Correct URL")
     assert_equal(a[:name], testcode, "Name is code")
     assert_equal(a[:code], testcode, "Correct code returned")
@@ -123,7 +124,7 @@ class AssetByCodeTest < ActiveSupport::TestCase
 
     assert_equal(1, a_s.count, "One asset returned")
     a=a_s.first
-    assert_equal(a[:asset],nil,"No asset returned")
+    assert_nil(a[:asset],"No asset returned")
     assert_equal(a[:url], "https://wwff.co/directory/?showRef="+testcode, "Correct URL")
     assert_equal(a[:name], testcode, "Name is code")
     assert_equal(a[:code], testcode, "Correct code returned")
@@ -144,7 +145,7 @@ class AssetByCodeTest < ActiveSupport::TestCase
 
     assert_equal(1, a_s.count, "One asset returned")
     a=a_s.first
-    assert_equal(a[:asset],nil,"No asset returned")
+    assert_nil(a[:asset],"No asset returned")
     assert_equal(a[:url], "https://www.sotadata.org.uk/en/summit/"+testcode, "Correct URL")
     assert_equal(a[:name], testcode, "Name is code")
     assert_equal(a[:code], testcode, "Correct code returned")

@@ -1,3 +1,4 @@
+# typed: false
 class AddQualifiedToUser < ActiveRecord::Migration
   def change
     add_column :users, :qualified_count, :string

@@ -1,64 +1,66 @@
 <script> 
-   reset_map_controllers();
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
+  reset_map_controllers();
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
 </script>
 
 <div id="actionbar" class="span7">
-   <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
-     &nbsp;--&gt;&nbsp;
-     <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
-     &nbsp;--&gt;&nbsp;
-     <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
-     &nbsp;--&gt;&nbsp;
-     <b><%=@asset_type.capitalize.pluralize%> <%@count_type%></b>
-   </div>
-   <div id="controls">
-       <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
-       <%=render 'map_controls'%>
-   </div>
+  <div id="crumbs">
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    &nbsp;--&gt;&nbsp;
+    <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    &nbsp;--&gt;&nbsp;
+    <b><%=@asset_type.capitalize.pluralize%> <%@count_type%></b>
+  </div>
+
+  <div id="controls">
+    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%=render 'map_controls'%>
+  </div>
 </div>
 
 <div id="right_scroll">
-   <%= render 'flash' %>
-    <div class="erow">
-      <div class="sectiontitle" style="margin-top: 12px;"><%=if @asset_type == 'qrp' then "QRP" else @asset_type.capitalize.pluralize end%> <%=@count_type%></div>
-      <% if @count_type=='activated' then %>
-        Unique sites qualified: <span id="valid_count"></span> (including repeat qualified activations: <span id="total_count"><%=@user.qualified_count_total[@asset_type]%></span>) <br/>
-        Unique sites activated: <span id="act_count"><%=@user.activated_count[@asset_type]%></span> (including non-qualifying sites: <span id="act_nq_count"><%=@assets.uniq.count.to_s%></span>, including repeat activations: <span id="act_total_count"><%=@user.activated_count_total[@asset_type]%></span>)<br/> 
-      <% end %>
-      <% if @count_type=='chased' then %>
-        Qualifying sites chased: <span id="valid_count"></span> (total qualifying chases: <span id="total_count"><%=@user.chased_count_total[@asset_type]%></span>)<br/>
-        Total sites chased: <span id="nq_count"><%=@assets.uniq.count.to_s%></span> (including non-qualifying sites)</li>
-      <% end %>
-      <% if @count_type=='bagged' then %>
-        Qualifying sites bagged: <span id="valid_count"></span> (total sites bagged: <span id="total_count"><%=@assets.uniq.count.to_s%></span>) </li>
-      <% end %>
-      <table id="place_table">
-        <% count=0; valid_count=0; invalid_count=0; @assets.uniq.sort_by { |asset| asset[:name] }.each do |a|; count+=1 %>
-          <tr>
+  <%= render 'flash' %>
+  <div class="erow">
+    <div class="sectiontitle" style="margin-top: 12px;"><%=if @asset_type == 'qrp' then "QRP" else @asset_type.capitalize.pluralize end%> <%=@count_type%></div>
+    <% if @count_type=='activated' then %>
+      Unique sites qualified: <span id="valid_count"></span> (including repeat qualified activations: <span id="total_count"><%=@user.qualified_count_total[@asset_type]%></span>) <br/>
+      Unique sites activated: <span id="act_count"><%=@user.activated_count[@asset_type]%></span> (including non-qualifying sites: <span id="act_nq_count"><%=@assets.uniq.count.to_s%></span>, including repeat activations: <span id="act_total_count"><%=@user.activated_count_total[@asset_type]%></span>)<br/> 
+    <% end %>
+    <% if @count_type=='chased' then %>
+      Qualifying sites chased: <span id="valid_count"></span> (total qualifying chases: <span id="total_count"><%=@user.chased_count_total[@asset_type]%></span>)<br/>
+      Total sites chased: <span id="nq_count"><%=@assets.uniq.count.to_s%></span> (including non-qualifying sites)
+    <% end %>
+    <% if @count_type=='bagged' then %>
+      Qualifying sites bagged: <span id="valid_count"></span> (total sites bagged: <span id="total_count"><%=@assets.uniq.count.to_s%></span>
+    <% end %>
+    <table id="place_table">
+      <% count=0; valid_count=0; invalid_count=0; @assets.uniq.sort_by { |asset| asset[:name] }.each do |a|; count+=1 %>
+        <tr>
+          <td>
+            <%if a.minor==true or a.is_active==false or a.type.keep_score==false or not @valid_codes.include?(a.code) %>
+              <%=link_to a.codename, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :class => "link_to", :onclick => "linkHandler('asset')" %>
+              <% invalid_count+=1 %>
+              <%if a.minor==true or a.is_active==false or a.type.keep_score==false%> - site does not qualify<%end%>
+              <%if not @valid_codes.include?(a.code)%> - insufficient contacts<%end%>
+            <%else%>
+              <%=link_to a.codename, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+              <% valid_count+=1 %>
+            <%end%>
+          </td>
+          <% if @asset_type=='summit' then %>
             <td>
-              <%if a.minor==true or a.is_active==false or a.type.keep_score==false or not @valid_codes.include?(a.code) %>
-                <%=link_to a.codename, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :class => "link_to", :onclick => "linkHandler('asset')" %>
-                <% invalid_count+=1 %>
-                <%if a.minor==true or a.is_active==false or a.type.keep_score==false%> - site does not qualify<%end%>
-                <%if not @valid_codes.include?(a.code)%> - insufficient contacts<%end%>
-              <%else%>
-                <%=link_to a.codename, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
-                <% valid_count+=1 %>
-              <%end%>
+              <%=number_with_precision(a.altitude.to_f, precision: 0, delimiter: ',').to_s%> m
             </td>
-            <% if @asset_type=='summit' then %>
-              <td>
-                <%=number_with_precision(a.altitude.to_f, precision: 0, delimiter: ',').to_s%> m
-              </td>
-            <% end %>
-          </tr>
-        <% end %>
-      </table>
-    </div>
+          <% end %>
+        </tr>
+      <% end %>
+    </table>
+  </div>
 </div>
+
 <script>
   document.getElementById('valid_count').innerHTML=`<%=valid_count.to_s%>`
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;

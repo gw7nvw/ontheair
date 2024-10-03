@@ -1,3 +1,4 @@
+# typed: false
 class CreateDocTracks < ActiveRecord::Migration
   def change
     create_table :doc_tracks do |t|

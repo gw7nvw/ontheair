@@ -1,3 +1,4 @@
+# typed: false
 require "test_helper"
 include ApplicationHelper
 include SessionsHelper
@@ -28,6 +29,11 @@ class PostsControllerTest < ActionController::TestCase
     assert_select '#pnp'
     assert_select "#submit", {value: "Create Post"}
 
+    #This user uses non-UTC so display will be in localtime
+    thedate=Time.now
+    tz=Timezone.find_by_id(user1.timezone)
+    userdate=thedate.in_time_zone(tz.name)
+
     #create post
     post :create, topic_id: SPOT_TOPIC, pnp: 'off', post: {callsign: 'ZL4TEST', freq: '7.090', mode: 'AM', asset_codes: asset1.code+", "+asset2.code}
     assert_response :success
@@ -39,15 +45,15 @@ class PostsControllerTest < ActionController::TestCase
     assert_equal user1.id, post.created_by_id, "Spotter callsign"
     assert_equal '7.090', post.freq, "Freq"
     assert_equal 'AM', post.mode, "Mode"
-    assert_equal Time.now.strftime('%Y-%m-%d'), post.referenced_date.strftime('%Y-%m-%d'), "eDate"
-    assert_equal Time.now.strftime('%Y-%m-%d %H:%M'), post.referenced_time.strftime('%Y-%m-%d %H:%M'), "Time"
+    assert_equal thedate.strftime('%Y-%m-%d'), post.referenced_date.strftime('%Y-%m-%d'), "eDate"
+    assert_equal thedate.strftime('%Y-%m-%d %H:%M'), post.referenced_time.strftime('%Y-%m-%d %H:%M'), "Time"
     assert_equal [asset1.code, asset2.code].sort, post.asset_codes, "Codes"
 
     #show post page
     assert_select ".box_header", /ZL4NVW/, "Spotter Callsign"
     assert_select ".box_header", /ZL4TEST/, "Activator Callsign"
     assert_select ".box_header", /Spotted Portable/, "topic"
-    assert_select ".box_header", /#{Time.now.strftime("%Y-%m-%d")}/, "date"
+    assert_select ".box_header", /#{userdate.strftime("%Y-%m-%d")}/, "date"
     assert_select ".box_header", /#{make_regex_safe(asset1.codename)}/, "location"
     assert_select ".box_header", /#{make_regex_safe(asset2.codename)}/, "location"
   end
@@ -129,6 +135,9 @@ class PostsControllerTest < ActionController::TestCase
     assert_select "#submit", {value: "Create Post"}
 
     thedate=Time.now
+    tz=Timezone.find_by_id(user1.timezone) 
+    userdate=thedate.in_time_zone(tz.name)
+
     #create post
     post :create, topic_id: ALERT_TOPIC, pnp: 'off', post: {referenced_date: thedate, referenced_time: thedate,freq: '7.090', mode: 'AM', asset_codes: asset1.code+", "+asset2.code, duration: 1}
     assert_response :success
@@ -148,7 +157,7 @@ class PostsControllerTest < ActionController::TestCase
     #show post page
     assert_select ".box_header", /ZL4NVW/, "Spotter Callsign"
     assert_select ".box_header", /Going Portable/, "topic"
-    assert_select ".box_header", /#{Time.now.strftime("%Y-%m-%d")}/, "date"
+    assert_select ".box_header", /#{userdate.strftime("%Y-%m-%d")}/, "date"
     assert_select ".box_header", /#{make_regex_safe(asset1.codename)}/, "location"
     assert_select ".box_header", /#{make_regex_safe(asset2.codename)}/, "location"
   end

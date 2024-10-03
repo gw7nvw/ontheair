@@ -1,3 +1,4 @@
+# typed: false
 class AddRegionAwards < ActiveRecord::Migration
   def change
      add_column :award_user_links, :award_type, :string

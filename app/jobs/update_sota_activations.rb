@@ -1,3 +1,4 @@
+# typed: true
 class UpdateExternalActivations
   @queue = :ota_scheduled
 

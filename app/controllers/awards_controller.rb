@@ -1,3 +1,4 @@
+# typed: false
 class AwardsController < ApplicationController
   before_action :signed_in_user, only: [:edit, :update, :editgrid]
 

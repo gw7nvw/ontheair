@@ -1,3 +1,4 @@
+# typed: false
 class AddAssetType < ActiveRecord::Migration
   def change
     add_column :sota_activations, :asset_type, :string

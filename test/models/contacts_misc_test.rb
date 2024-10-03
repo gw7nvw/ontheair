@@ -1,3 +1,4 @@
+# typed: strict
 require "test_helper"
 
 class ContactMiscTest < ActiveSupport::TestCase
@@ -93,13 +94,13 @@ class ContactMiscTest < ActiveSupport::TestCase
     asset3=create_test_asset(asset_type: 'park', location: create_point(173.01,-45.01), test_radius: 0.2)
 
     #contact with hut in park
-    contact1=create_test_contact(user1, user2, asset1_codes: [asset1.code, asset2.code, asset3.code], time: '2022-01-01'.to_time)
+    contact1=create_test_contact(user1, user2, asset1_codes: [asset1.code, asset2.code, asset3.code], time: '2022-01-01'.to_time, power1: '10', is_qrp1: true, is_portable1: true)
     #contact with just the park
-    contact3=create_test_contact(user1, user2, asset1_codes: [asset2.code], time: '2022-01-01'.to_time)
+    contact3=create_test_contact(user1, user2, asset1_codes: [asset2.code], time: '2022-01-01'.to_time, power1: '20', is_qrp1: false, is_portable1: true)
 
     contact1.find_create_log_matching_contact
     contact1.reload
-    assert_not_equal nil, contact1.log_id, "Log added to contact"
+    assert_not_nil contact1.log_id, "Log added to contact"
 
     log=contact1.log
 
@@ -137,15 +138,15 @@ class ContactMiscTest < ActiveSupport::TestCase
     user2=create_test_user
 
     #contact with all assets
-    contact1=create_test_contact(user1, user2, asset1_codes: ['VKFF-0001', 'VK1/AC-001'], time: '2022-01-01'.to_time)
+    contact1=create_test_contact(user1, user2, asset1_codes: ['VKFF-0001', 'VK1/AC-001'], time: '2022-01-01'.to_time, power1: 20, is_qrp1: false, is_portable1: false)
     #contact with same assets
-    contact2=create_test_contact(user1, user2, asset1_codes: ['VKFF-0001', 'VK1/AC-001'], time: '2022-01-01'.to_time)
+    contact2=create_test_contact(user1, user2, asset1_codes: ['VKFF-0001', 'VK1/AC-001'], time: '2022-01-01'.to_time, power1: 5, is_qrp1: false, is_portable1: false)
     #contact with just some assets
-    contact3=create_test_contact(user1, user2, asset1_codes: ['VKFF-0001'], time: '2022-01-01'.to_time)
+    contact3=create_test_contact(user1, user2, asset1_codes: ['VKFF-0001'], time: '2022-01-01'.to_time, power1: 10, is_qrp1: true, is_portable1: false)
 
     contact1.find_create_log_matching_contact
     contact1.reload
-    assert_not_equal nil, contact1.log_id, "Log added to contact"
+    assert_not_nil contact1.log_id, "Log added to contact"
 
     log=contact1.log
     assert_equal contact1.callsign1, log.callsign1, " Log correct"
@@ -153,7 +154,7 @@ class ContactMiscTest < ActiveSupport::TestCase
     assert_equal contact1.power1, log.power1, " Log correct"
     assert_equal contact1.is_qrp1, log.is_qrp1, " Log correct"
     assert_equal contact1.is_portable1, log.is_portable1, " Log correct"
-    assert_equal contact1.location1, log.location1, " Log correct"
+    assert_nil log.location1, " Log correct"
     assert_equal contact1.asset1_codes, log.asset_codes, " Log correct"
 
     #now test with just the hut (should be added to same log)
@@ -173,7 +174,7 @@ class ContactMiscTest < ActiveSupport::TestCase
     assert_equal contact3.power1, log3.power1, " Log correct"
     assert_equal contact3.is_qrp1, log3.is_qrp1, " Log correct"
     assert_equal contact3.is_portable1, log3.is_portable1, " Log correct"
-    assert_equal contact3.location1, log3.location1, " Log correct"
+    assert_nil log3.location1, " Log correct"
     assert_equal contact3.asset1_codes, log3.asset_codes, " Log correct"
   end
 
@@ -225,7 +226,7 @@ class ContactMiscTest < ActiveSupport::TestCase
     contact1.refute_chaser_contact
 
     assert_equal [], contact1.asset2_codes, "Chaser location cleared"
-    assert_equal nil, contact1.location2, "Chaser location cleared"
+    assert_nil contact1.location2, "Chaser location cleared"
     assert contact1.loc_desc2["Removed"], "Chaser location descruption updated"
   end
 end

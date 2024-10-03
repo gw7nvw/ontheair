@@ -1,47 +1,45 @@
 
 <script> 
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
 </script>
 
 <%= javascript_include_tag('rsa/jsbn', 'rsa/prng4', 'rsa/rng', 'rsa/rsa', 'rsa/base64', :cache => true) %>
 
 <div class="fullform">
-    <%= form_for(@user) do |f| %>
-      <div id="actionbar" class="span7">
-       <div id="crumbs">
-         <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
-         &nbsp;--&gt;&nbsp;
-         <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
-         &nbsp;--&gt;&nbsp;
-         <%if @user.id%>
-            <b><%=link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true, :id => 'user', :onclick => "linkHandler('user')" %></b>
-            &nbsp;--&gt;&nbsp;
-            <b>Edit</b>
-         <% else %>
-            <b>New</b>
-         <% end %>
+  <%= form_for(@user) do |f| %>
+    <div id="actionbar" class="span7">
+      <div id="crumbs">
+        <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+        &nbsp;--&gt;&nbsp;
+        <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+        &nbsp;--&gt;&nbsp;
+        <%if @user.id%>
+          <b><%=link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true, :id => 'user', :onclick => "linkHandler('user')" %></b>
+          &nbsp;--&gt;&nbsp;
+          <b>Edit</b>
+        <% else %>
+          <b>New</b>
+        <% end %>
+      </div>
 
-       </div>
-
-       <div id="controls">
-          <% if @user.id %><% if params[:referring]=='index'%>
+      <div id="controls">
+        <% if @user.id %>
+          <% if params[:referring]=='index'%>
             <%=  link_to "Cancel", '/users', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
           <% else %>
             <%=  link_to "Cancel", '/users/'+@user.callsign, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
-          <% end %> <% end %>
+          <% end %> 
+        <% end %>
 
-          <%  if(@submit_button == "Save Changes" and @current_user.is_admin) %>
-            <%= f.submit "Delete", data: {confirm: "Delete user: Are you sure?"}, class: "btn btn-small btn-primary", callsign: "delete", id:  "deletebutton", remote: true %>
-          <% end %>
-
-          <%=render 'map_controls'%>
-       </div>
+        <% if(@submit_button == "Save Changes" and @current_user.is_admin) %>
+          <%= f.submit "Delete", data: {confirm: "Delete user: Are you sure?"}, class: "btn btn-small btn-primary", callsign: "delete", id:  "deletebutton", remote: true %>
+        <% end %>
+        <%=render 'map_controls'%>
       </div>
+    </div>
 
-      <%= render 'shared/error_messages' %>	
-
-      <div id="right_scroll">
+    <div id="right_scroll">
       <%= render 'flash' %>
       <%= render 'shared/error_messages' %>
 
@@ -61,24 +59,23 @@
       <%= f.text_field :home_qth %>
 
       <%= f.label :timezone, 'Timezone you will use in logs, spots, etc' %>
-      <%= collection_select( :user, :timezone, Timezone.all.order(:name), :id, :name, {}) %></td>
+      <%= collection_select( :user, :timezone, Timezone.all.order(:name), :id, :name, {}) %>
 
       <%= f.label :password %>
       <%= f.password_field :password %>
 
       <%= f.label :password_confirmation, "Confirmation" %>
       <%= f.password_field :password_confirmation %>
-
-<div class="erow"><small><i>Password rules: any combination of letters and numbers. No spaces or extended characters<br/></i></small></div>
+      <div class="erow"><small><i>Password rules: any combination of letters and numbers. No spaces or extended characters<br/></i></small></div>
 
       <%= f.label :pin, "PIN" %>
       <%= f.text_field :pin %>
-<div class="erow"><i><small>PIN is for access to the SPOT/ALERT gateway from inreach/email only. PIN rules: any 4-character combination of letters and numbers. No spaces or extended characters. InReach may send messages containing your PIN across the internet as unencrypted plain-text or display them to others with access to your InReach web portal. Do not reuse PINs you use elsewhere.<br/></i></small></div> 
+      <div class="erow"><i><small>PIN is for access to the SPOT/ALERT gateway from inreach/email only. PIN rules: any 4-character combination of letters and numbers. No spaces or extended characters. InReach may send messages containing your PIN across the internet as unencrypted plain-text or display them to others with access to your InReach web portal. Do not reuse PINs you use elsewhere.<br/></small></i></div> 
 
 
       <%= f.label :acctnuyber, "Mobile phone (for SMS gateway)" %>
       <%= f.text_field :acctnumber %>
-      <div class="erow"><i><small>E.164 (International) format, no spaces. e.g: +64271234567<br/></i></small></div>
+      <div class="erow"><i><small>E.164 (International) format, no spaces. e.g: +64271234567<br/></small></i></div>
 
       <span title="All activations falling in a POTA park will be sent to the POTA spotting cluster. By selecting this option you commit to submit logs to POTA for all activations that fall in parks. "><%= "Also publish my SPOTs on POTA when in a park" %></span><br/>
       <%= f.check_box :logs_pota%><br/><br/>
@@ -87,14 +84,12 @@
       <%= f.check_box :logs_wwff%><br/><br/>
 
       <%= f.submit @submit_button, id: "submit", onclick: "signupHandler();", class: "btn btn-small btn-primary btn-highlight" %>
+
+      <div class="erow"><small><i>By registering to this site you are agreeing to our privacy and security policy. Details are available on the <%=link_to 'About', '/about', target: '_blank'%> page</i></small></div>
+    </div>
+  <% end %>
 </div>
 
-<div class="erow"><small><i>By registering to this site you are agreeing to our privacy and security policy. Details are available on the <%=link_to 'About', '/about', target: '_blank'%> page</i></small></div>
-    </div>
-
-
-    <% end %>
-  </div>
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>

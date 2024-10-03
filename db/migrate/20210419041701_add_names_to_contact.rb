@@ -1,3 +1,4 @@
+# typed: false
 class AddNamesToContact < ActiveRecord::Migration
   def change
     add_column :contacts, :name1, :string

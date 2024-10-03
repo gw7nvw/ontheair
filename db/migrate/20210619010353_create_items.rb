@@ -1,3 +1,4 @@
+# typed: false
 class CreateItems < ActiveRecord::Migration
   def change
     create_table :items do |t|

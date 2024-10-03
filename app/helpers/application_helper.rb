@@ -1,3 +1,4 @@
+# typed: false
 module ApplicationHelper
   def sign_in(user)
     puts "Self: "+self.to_s

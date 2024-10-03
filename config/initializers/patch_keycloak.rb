@@ -1,3 +1,4 @@
+# typed: false
 Keycloak::Client.module_eval do
     def self.get_token(user, password, client_id = '', secret = '')
       setup_module

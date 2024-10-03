@@ -1,3 +1,4 @@
+# typed: false
 class IslandsController < ApplicationController
 
   def index

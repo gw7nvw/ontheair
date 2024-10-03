@@ -1,3 +1,4 @@
+# typed: false
 class CreateAwardThresholds < ActiveRecord::Migration
   def change
     create_table :award_thresholds do |t|

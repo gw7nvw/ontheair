@@ -1,3 +1,4 @@
+# typed: false
 class CreateAkMaps < ActiveRecord::Migration
   def change
     create_table :ak_maps do |t|

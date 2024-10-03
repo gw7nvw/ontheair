@@ -1,3 +1,4 @@
+# typed: false
 class CreatePotaParks < ActiveRecord::Migration
   def change
     create_table :pota_parks do |t|

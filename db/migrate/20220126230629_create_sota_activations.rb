@@ -1,3 +1,4 @@
+# typed: false
 class CreateSotaActivations < ActiveRecord::Migration
   def change
     create_table :sota_activations do |t|

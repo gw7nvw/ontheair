@@ -1,3 +1,4 @@
+# typed: false
 class CreateLegalRoads < ActiveRecord::Migration
   def change
     create_table :legal_roads do |t|

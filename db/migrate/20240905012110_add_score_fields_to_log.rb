@@ -1,3 +1,4 @@
+# typed: false
 class AddScoreFieldsToLog < ActiveRecord::Migration
   def change
     add_column :logs, :asset_classes, :string, array: true, default: []

@@ -1,3 +1,4 @@
+# typed: false
 class ParksController < ApplicationController
 
   def index

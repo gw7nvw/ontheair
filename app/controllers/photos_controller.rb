@@ -1,3 +1,4 @@
+# typed: false
 class PhotosController < ApplicationController
 require "uri"
 require "net/http"

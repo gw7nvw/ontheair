@@ -1,3 +1,4 @@
+# typed: false
 class Add < ActiveRecord::Migration
   def change
       add_column :assets, :valid_from, :datetime

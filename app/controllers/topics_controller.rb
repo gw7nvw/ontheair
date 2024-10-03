@@ -1,3 +1,4 @@
+# typed: false
 class TopicsController < ApplicationController
 
 before_action :signed_in_user, only: [:destroy, :create, :update]

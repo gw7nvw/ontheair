@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
-ruby '2.2.0'
+ruby '2.3.7'
+
 
   gem 'roo'
   gem 'actionmailer', '>=4.0.5'
@@ -48,9 +49,9 @@ ruby '2.2.0'
 
   gem 'execjs', '>=2.2.2'
 
-  gem 'factory_girl', '>=4.2.0'
+  gem 'factory_bot'
 
-  gem 'factory_girl_rails', '>=4.2.1'
+  gem 'factory_bot_rails'
 
   gem 'ffi', '>=1.9.6'
 
@@ -66,7 +67,7 @@ ruby '2.2.0'
 
   gem 'jquery-ui-rails', '>=5.0.3'
 
-  gem 'json', '>=1.8.1'
+  gem 'json', '>=1.8.3'
 
   gem 'mail', '>=2.5.4'
 
@@ -80,11 +81,11 @@ ruby '2.2.0'
 
   gem 'multi_json', '>=1.10.1'
 
-  gem 'nokogiri', '>=1.6.5'
+  gem 'nokogiri', '=1.6.5'
 
   gem 'paperclip', '>=4.2.0'
 
-  gem 'pg', '>=0.17.1'
+  gem 'pg', '=0.17.1'
 
   gem 'polyglot', '>=0.3.5'
 
@@ -94,7 +95,7 @@ ruby '2.2.0'
 
   gem 'rack-test', '>=0.6.2'
 
-  gem 'rails', '>=4.0.5'
+  gem 'rails', '=4.1.0'
 
   gem 'railties', '>=4.0.5'
 
@@ -139,7 +140,7 @@ ruby '2.2.0'
 
   gem 'sprockets-rails', '>=2.0.1'
 
-  gem 'thor', '>=0.19.1'
+  gem 'thor', '>=0.19.2'
 
   gem 'thread_safe', '>=0.3.4'
 
@@ -162,3 +163,5 @@ ruby '2.2.0'
   gem 'xpath', '>=2.0.0'
 
   gem 'keycloak'
+
+gem "rubocop-ruby2_1", "~> 1.0"

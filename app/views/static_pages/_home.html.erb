@@ -31,7 +31,7 @@
       <% AssetType.where("name != 'all'").order(:name).each do |at| %>
         <th><%=link_to at.display_name.pluralize, '/assets/?asset_type[name]='+at.name,remote: true,:onclick => "linkHandler('"+at.name+"')", :style=>'color:#fff' %></th>
       <% end %>
-    </th>
+    </tr>
   </table>
 
 <% if signed_in? and @items and @items.count>0 then %>
@@ -61,7 +61,7 @@
   </div>
 
   <div class="buttonshort">
-    <%= submit_tag "Find", :id => "find", :onclick => "submit_search('find');", :class => "btn btn-small" %>
+    <%= submit_tag "Find", :id => "find", :onclick => "submitHandler('Finding...');", :class => "btn btn-small" %>
   </div>
 </form>
 

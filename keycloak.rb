@@ -1,3 +1,4 @@
+# typed: false
 require 'keycloak/version'
 require 'rest-client'
 require 'json'

@@ -1,3 +1,4 @@
+# typed: strict
 require "test_helper"
 
 class AssetSaveTest < ActiveSupport::TestCase
@@ -43,7 +44,7 @@ class AssetSaveTest < ActiveSupport::TestCase
     assert_equal [asset1.id.to_s], asset2.access_park_ids,  "Hut access is via park"
     
     assert_equal false, asset3.public_access,  "Hut outside park has no access"
-    assert_equal nil, asset3.access_park_ids,  "Hut has no access"
+    assert_nil asset3.access_park_ids,  "Hut has no access"
     
     assert_equal true, asset4.public_access,  "Lighthouse outside park has access as AZ overlaps park"
     assert_equal [asset1.id.to_s], asset4.access_park_ids,  "Lighhouse AZ has access via park"
@@ -58,7 +59,7 @@ class AssetSaveTest < ActiveSupport::TestCase
     asset3.reload
 
     assert_equal false, asset2.public_access,  "Island has no acess as is 490m from park"
-    assert_equal nil, asset2.access_park_ids,  "No park access to island"
+    assert_nil asset2.access_park_ids,  "No park access to island"
     
     assert_equal true, asset3.public_access,  "Lake does have access as 500m buffer includes park"
     assert_equal [asset1.id.to_s], asset3.access_park_ids,  "Lake has access due to 500m buffer"

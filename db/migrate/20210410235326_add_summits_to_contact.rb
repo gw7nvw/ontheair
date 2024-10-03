@@ -1,3 +1,4 @@
+# typed: false
 class AddSummitsToContact < ActiveRecord::Migration
   def change
    add_column :contacts, :submitted_to_sota, :boolean

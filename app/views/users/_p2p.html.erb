@@ -1,67 +1,70 @@
 <script> 
-   reset_map_controllers();
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
+  reset_map_controllers();
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
 </script>
 
 <div id="actionbar" class="span7">
-   <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
-     &nbsp;--&gt;&nbsp;
-     <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
-     &nbsp;--&gt;&nbsp;
-     <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
-     &nbsp;--&gt;&nbsp;
-     <b>Portable 2 Portable</b>
-   </div>
-   <div id="controls">
-       <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
-       <%=render 'map_controls'%>
-   </div>
+  <div id="crumbs">
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    &nbsp;--&gt;&nbsp;
+    <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    &nbsp;--&gt;&nbsp;
+    <b>Portable 2 Portable</b>
+  </div>
+  <div id="controls">
+    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%=render 'map_controls'%>
+  </div>
 </div>
 
 
 <div id="right_scroll">
-   <%= render 'flash' %>
-    <div class="erow">
-      <div class="sectiontitle" style="margin-top: 12px;">Park 2 Park:</div>
-      <span id="valid_count"><%=@contacts.count.to_s%></span> unique P2P contacts 
-      <table id="p2p_table">
+  <%= render 'flash' %>
+  <div class="erow">
+    <div class="sectiontitle" style="margin-top: 12px;">Park 2 Park:</div>
+    <span id="valid_count"><%=@contacts.count.to_s%></span> unique P2P contacts 
+    <table id="p2p_table">
+      <tr>
+        <th>Date</th>
+        <th>From</th>
+        <th>To</th>
+      </tr>
+
+      <% @contacts.sort.each do |c| %>
         <tr>
-          <th>Date</th>
-          <th>From</th>
-          <th>To</th>
-        <% @contacts.sort.each do |c| %>
-          <tr>
-            <% contact = c.split(" ") %>
-            <% asset1 = Asset.find_by(code: contact[1]) %>
-            <% if !asset1 then asset1=VkAsset.find_by(code: contact[1]) end %>
-            <% asset2 = Asset.find_by(code: contact[2]) %>
-            <% if !asset2 then asset2=VkAsset.find_by(code: contact[2]) end %>
-            <td>
-               <%=link_to contact[0], '/contacts?user='+@user.callsign+'&asset='+contact[1], remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
-            </td>
-            <td>
-               <%if asset1 %>
-                  <% if asset1.url[0]!='/' then asset1.url='/'+asset1.url end %>
-                  <%=link_to asset1.codename, asset1.url, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')", class: (if ! asset1.type or !asset1.type.keep_score or asset1.minor or asset1.is_active==false then "link_to" end) %>
-               <%else%>
-                  <%=contact[1]%>
-               <%end%>
-            </td>
-            <td>
-               <%if asset2 %>
-                  <% if asset2.url[0]!='/' then asset2.url='/'+asset2.url end %>
-                  <%=link_to asset2.codename, asset2.url, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')", class: (if ! asset2.type or !asset2.type.keep_score or asset2.minor or asset2.is_active==false then "link_to" end) %>
-               <%else%>
-                  <%=contact[2]%>
-               <%end%>
-            </td>
-          </tr>
-        <% end %>
-      </table>
-    </div>
+          <% contact = c.split(" ") %>
+          <% asset1 = Asset.find_by(code: contact[1]) %>
+          <% if !asset1 then asset1=VkAsset.find_by(code: contact[1]) end %>
+          <% asset2 = Asset.find_by(code: contact[2]) %>
+          <% if !asset2 then asset2=VkAsset.find_by(code: contact[2]) end %>
+          <td>
+            <%=link_to contact[0], '/contacts?user='+@user.callsign+'&asset='+contact[1], remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+          </td>
+          <td>
+            <%if asset1 %>
+              <% if asset1.url[0]!='/' then asset1.url='/'+asset1.url end %>
+              <%=link_to asset1.codename, asset1.url, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')", class: (if ! asset1.type or !asset1.type.keep_score or asset1.minor or asset1.is_active==false then "link_to" end) %>
+            <%else%>
+              <%=contact[1]%>
+            <%end%>
+          </td>
+          <td>
+            <%if asset2 %>
+              <% if asset2.url[0]!='/' then asset2.url='/'+asset2.url end %>
+              <%=link_to asset2.codename, asset2.url, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')", class: (if ! asset2.type or !asset2.type.keep_score or asset2.minor or asset2.is_active==false then "link_to" end) %>
+            <%else%>
+              <%=contact[2]%>
+            <%end%>
+          </td>
+        </tr>
+      <% end %>
+    </table>
+  </div>
 </div>
+
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>

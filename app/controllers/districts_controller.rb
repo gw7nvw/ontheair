@@ -1,3 +1,4 @@
+# typed: false
 class DistrictsController < ApplicationController
 include ApplicationHelper
 

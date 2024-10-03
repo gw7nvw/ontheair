@@ -1,220 +1,220 @@
 <script> 
-   reset_map_controllers();
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
+  reset_map_controllers();
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
 </script>
 
 <div id="actionbar" class="span7">
-   <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
-     &nbsp;--&gt;&nbsp;
-     <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
-     &nbsp;--&gt;&nbsp;
-     <b><%= @user.callsign.upcase %></b>
-   </div>
-   <div id="controls">
-       <% if current_user and (current_user.is_admin or current_user.id == @user.id) %>
-            <%=  link_to "Edit", '/users/'+@user.callsign+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
-       <% end %>
-       <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
-       <%=render 'map_controls'%>
-   </div>
+  <div id="crumbs">
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    &nbsp;--&gt;&nbsp;
+    <b><%= @user.callsign.upcase %></b>
+  </div>
+
+  <div id="controls">
+    <% if current_user and (current_user.is_admin or current_user.id == @user.id) %>
+      <%=  link_to "Edit", '/users/'+@user.callsign+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
+    <% end %>
+    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%=render 'map_controls'%>
+  </div>
 </div>
 
 
 <div id="right_scroll">
-   <%= render 'flash' %>
+  <%= render 'flash' %>
 
-   <div class="sectiontitle" id="page_title">
-     <b><%=link_to @user.callsign.upcase, 'https://qrz.com/db/'+@user.callsign.upcase, target: "_blank", class: "non_member" %></b> <img src="/assets/external-link-symbol.png"><br/>
-     <br/>
-   </div>
+  <div class="sectiontitle" id="page_title">
+    <b><%=link_to @user.callsign.upcase, 'https://qrz.com/db/'+@user.callsign.upcase, target: "_blank", class: "non_member" %></b> <img src="/assets/external-link-symbol.png"><br/>
+    <br/>
+  </div>
 
-   <div class="erow" id="user_status">
-      <% if @user.activated then %>
-        <% if @user.read_only then %>
-          <i>Restricted user. Contact admin@ontheair if you require full access  </i>
-        <% else %>
-          <i>Registered user  </i>
-          <% if @user.is_modifier then %>
-             <i> - authorised to edit hut and park data </i>
-          <% else %>
-             <i> - not authorised to edit hut and park data </i>
-          <% end %>
-        <% end %>
+  <div class="erow" id="user_status">
+    <% if @user.activated then %>
+      <% if @user.read_only then %>
+        <i>Restricted user. Contact admin@ontheair if you require full access  </i>
       <% else %>
-        <i> Not a registered user </i>
+        <i>Registered user  </i>
+        <% if @user.is_modifier then %>
+           <i> - authorised to edit hut and park data </i>
+        <% else %>
+           <i> - not authorised to edit hut and park data </i>
+        <% end %>
       <% end %>
-   </div>
-   <div class="erow" id="realname">
-      <%= if @user.firstname then @user.firstname.capitalize else "" end+" "+if @user.lastname then @user.lastname.capitalize else "" end %><br/>
-   </div>
-
-   <%     if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
-     <div class="erow" id="PIN">
-         PIN*: <%= @user.pin %>
-     </div>
-
-     <div class="erow" id="acctnumber">
-         Mobile no.**: <%= @user.acctnumber %>
-     </div>
-
-     <div class="erow" id="email">
-         Email: <%= @user.email %>
-     </div>
-
-   <%end%>
-
-   <div class="erow" id="home_qth">
-       Home QTH: <%= @user.home_qth %>
-   </div>
-
-   <div class="erow" id="timezonename">
-       Timezone: <%= @user.timezonename %>
-   </div>
-
-   <div class="erow" id="logs_pota">
-       Logs to POTA: <%= if @user.logs_pota==false then "No" else "Yes" end %>
-   </div>
-
-   <div class="erow" id="logs_wwff">
-       Logs to WWFF: <%= if @user.logs_wwff==false then "No" else "Yes" end %>
-   </div>
-
-</div>
-
-<%     if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
-  <p><i><br/>* PIN is used for access to the Inreach/Email SPOT / ALERT gateway.</i></p>
-  <p><i><br/>** Mobile number is required if you wish to access SMS gateway or post spots to SOTAiwatch.</i></p>
-<% end %>
-
-<div class="erow">
-   <div class="hrline">
-      <hr noshade size="4">
-   </div>
-</div>
-
-<div class="erow">
-  <h2>Callsigns</h2>
-  <%= form_for(@callsign, remote: true, url: callsigns_path) do |f| %> 
-  <table id="callsign_table">
-    <tr> 
-       <th>Callsign</th>
-       <th>From</th>
-       <th>To</th>
-       <th></th>
-    </tr>
-    <% @user.callsigns.each do |c| %>
-      <tr>    
-         <td><%=c.callsign%></td>
-         <td><%=if c.from_date then c.from_date.to_date end%></td>
-         <td><%=if c.to_date then c.to_date.to_date else "present" end%></td>
-         <td>
-          <% if signed_in? and (current_user.id==@user.id or current_user.is_admin) then %>
-            <%=  link_to "Edit", '/callsigns/'+c.id.to_s+"/edit", class: "btn btn-small btn-primary", remote: true,  :id => 'edit_call', :onclick => "linkHandler('edit_call')"  %>
-            <%=  link_to "Delete", '/callsigns/'+c.id.to_s+"/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_call', :onclick => "linkHandler('delete_call')", data: {confirm: "Delete callsign?  This will remove this callsign from the system and you will lose any associated points/contacts.  Use 'Edit' and enter an 'End date' if you wish to retire this callsign and retain past contacts. Really delete?"}  %>
-          <% end %>
-         </td>
-      </tr>
+    <% else %>
+      <i> Not a registered user </i>
     <% end %>
-    <% if signed_in? and (current_user.id==@user.id or current_user.is_admin) then %>
-      <tr>
-        <%= f.hidden_field :user_id %>
-        <td>
-          <%= f.text_field :callsign %>
-        </td>
-        <td>
-          <%= f.date_field :from_date %>
-        </td>
-        <td>
-          <%= f.date_field :to_date %>
-        </td>
-        <td>
-          <%= f.submit 'Add', id:"user_callsign_submit", class: "btn btn-small btn-primary btn-hightlight" %>
-        </td>
-      </tr>
-    <% end %>
-  </table>
+  </div>
+
+  <div class="erow" id="realname">
+    <%= if @user.firstname then @user.firstname.capitalize else "" end+" "+if @user.lastname then @user.lastname.capitalize else "" end %><br/>
+  </div>
+
+  <% if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
+    <div class="erow" id="PIN">
+      PIN*: <%= @user.pin %>
+    </div>
+
+    <div class="erow" id="acctnumber">
+      Mobile no.**: <%= @user.acctnumber %>
+    </div>
+
+    <div class="erow" id="email">
+      Email: <%= @user.email %>
+    </div>
+  <%end%>
+
+  <div class="erow" id="home_qth">
+    Home QTH: <%= @user.home_qth %>
+  </div>
+
+  <div class="erow" id="timezonename">
+    Timezone: <%= @user.timezonename %>
+  </div>
+
+  <div class="erow" id="logs_pota">
+    Logs to POTA: <%= if @user.logs_pota==false then "No" else "Yes" end %>
+  </div>
+
+  <div class="erow" id="logs_wwff">
+    Logs to WWFF: <%= if @user.logs_wwff==false then "No" else "Yes" end %>
+  </div>
+
+  <% if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
+    <p><i><br/>* PIN is used for access to the Inreach/Email SPOT / ALERT gateway.</i></p>
+    <p><i><br/>** Mobile number is required if you wish to access SMS gateway or post spots to SOTAiwatch.</i></p>
   <% end %>
-</div>
 
-<div class="erow">
-   <div class="hrline">
+  <div class="erow">
+    <div class="hrline">
       <hr noshade size="4">
-   </div>
-</div>
+    </div>
+  </div>
 
-<% if current_user and (@user==current_user or current_user.is_admin or current_user.group_admin) then %>
-<h2>Mail</h2>
-   <p>Select the topics for which you would like to receive emails of any new posts</p>
-   <table id="mail_table">
-     <tr>
+  <div class="erow">
+    <h2>Callsigns</h2>
+    <%= form_for(@callsign, remote: true, url: callsigns_path) do |f| %> 
+      <table id="callsign_table">
+        <tr> 
+          <th>Callsign</th>
+          <th>From</th>
+          <th>To</th>
+          <th></th>
+        </tr>
+  
+        <% @user.callsigns.each do |c| %>
+          <tr>    
+            <td><%=c.callsign%></td>
+            <td><%=if c.from_date then c.from_date.to_date end%></td>
+            <td><%=if c.to_date then c.to_date.to_date else "present" end%></td>
+            <td>
+              <% if signed_in? and (current_user.id==@user.id or current_user.is_admin) then %>
+                <%=  link_to "Edit", '/callsigns/'+c.id.to_s+"/edit", class: "btn btn-small btn-primary", remote: true,  :id => 'edit_call', :onclick => "linkHandler('edit_call')"  %>
+                <%=  link_to "Delete", '/callsigns/'+c.id.to_s+"/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_call', :onclick => "linkHandler('delete_call')", data: {confirm: "Delete callsign?  This will remove this callsign from the system and you will lose any associated points/contacts.  Use 'Edit' and enter an 'End date' if you wish to retire this callsign and retain past contacts. Really delete?"}  %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+  
+        <% if signed_in? and (current_user.id==@user.id or current_user.is_admin) then %>
+          <tr>
+            <%= f.hidden_field :user_id %>
+            <td>
+              <%= f.text_field :callsign %>
+            </td>
+            <td>
+              <%= f.date_field :from_date %>
+            </td>
+            <td>
+              <%= f.date_field :to_date %>
+            </td>
+            <td>
+              <%= f.submit 'Add', id:"user_callsign_submit", class: "btn btn-small btn-primary btn-hightlight" %>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    <% end %>
+  </div>
+  <div class="erow">
+    <div class="hrline">
+      <hr noshade size="4">
+    </div>
+  </div>
+
+  <% if current_user and (@user==current_user or current_user.is_admin or current_user.group_admin) then %>
+    <h2>Mail</h2>
+    <p>Select the topics for which you would like to receive emails of any new posts</p>
+    <table id="mail_table">
+      <tr>
         <th>Topic</th>
         <th>Email</th>
         <th>&nbsp;</th>
-     </tr>
-       <tr>
-         <% topic=Topic.find_by_id(SPOT_TOPIC) %>
-         <td> SPOTS </td>
-         <td> <%=if topic.subscribed(@user) then "Yes" else "No" end %></td>
-<% if topic.subscribed(@user) then %>
-         <td> <%=  link_to "Delete", '/users/'+@user.callsign+'/delete?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'delete_spot', :onclick => "linkHandler('delete_spot')"  %> </td>
-<% else %>
-         <td> <%=  link_to "Add", '/users/'+@user.callsign+'/add?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'add_spot', :onclick => "linkHandler('add_spot')"  %> </td>
-<% end %>
-       </tr>
-       <tr>
-         <% topic=Topic.find_by_id(ALERT_TOPIC) %>
-         <td> ALERTS </td>
-         <td> <%=if topic.subscribed(@user) then "Yes" else "No" end %></td>
-<% if topic.subscribed(@user) then %>
-         <td> <%=  link_to "Delete", '/users/'+@user.callsign+'/delete?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'delete__alert', :onclick => "linkHandler('delete_alert')"  %> </td>
-<% else %>
-         <td> <%=  link_to "Add", '/users/'+@user.callsign+'/add?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'add_alert', :onclick => "linkHandler('add_alert')"  %> </td>
-<% end %>
-       </tr>
-       <tr>
-         <% topic=Topic.find_by_id(NEWS_TOPIC) %>
-         <td> NEWS </td>
-         <td> <%=if topic.subscribed(@user) then "Yes" else "No" end %></td>
-<% if topic.subscribed(@user) then %>
-         <td> <%=  link_to "Delete", '/users/'+@user.callsign+'/delete?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'delete__alert', :onclick => "linkHandler('delete_alert')"  %> </td>
-<% else %>
-         <td> <%=  link_to "Add", '/users/'+@user.callsign+'/add?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'add_alert', :onclick => "linkHandler('add_alert')"  %> </td>
-<% end %>
-       </tr>
-   </table>
+      </tr>
+      <tr>
+        <% topic=Topic.find_by_id(SPOT_TOPIC) %>
+        <td> SPOTS </td>
+        <td> <%=if topic.subscribed(@user) then "Yes" else "No" end %></td>
+        <% if topic.subscribed(@user) then %>
+          <td> <%=  link_to "Delete", '/users/'+@user.callsign+'/delete?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'delete_spot', :onclick => "linkHandler('delete_spot')"  %> </td>
+        <% else %>
+          <td> <%=  link_to "Add", '/users/'+@user.callsign+'/add?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'add_spot', :onclick => "linkHandler('add_spot')"  %> </td>
+        <% end %>
+      </tr>
+      <tr>
+        <% topic=Topic.find_by_id(ALERT_TOPIC) %>
+        <td> ALERTS </td>
+        <td> <%=if topic.subscribed(@user) then "Yes" else "No" end %></td>
+        <% if topic.subscribed(@user) then %>
+          <td> <%=  link_to "Delete", '/users/'+@user.callsign+'/delete?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'delete__alert', :onclick => "linkHandler('delete_alert')"  %> </td>
+        <% else %>
+          <td> <%=  link_to "Add", '/users/'+@user.callsign+'/add?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'add_alert', :onclick => "linkHandler('add_alert')"  %> </td>
+        <% end %>
+      </tr>
+      <tr>
+        <% topic=Topic.find_by_id(NEWS_TOPIC) %>
+        <td> NEWS </td>
+        <td> <%=if topic.subscribed(@user) then "Yes" else "No" end %></td>
+        <% if topic.subscribed(@user) then %>
+          <td> <%=  link_to "Delete", '/users/'+@user.callsign+'/delete?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'delete__alert', :onclick => "linkHandler('delete_alert')"  %> </td>
+        <% else %>
+          <td> <%=  link_to "Add", '/users/'+@user.callsign+'/add?topic_id='+topic.id.to_s, class: "btn btn-small btn-primary", remote: true,  :id => 'add_alert', :onclick => "linkHandler('add_alert')"  %> </td>
+        <% end %>
+      </tr>
+    </table>
 
-<div class="erow">
-   <div class="hrline">
+    <div class="erow">
+      <div class="hrline">
+        <hr noshade size="4">
+      </div>
+    </div>
+  <% end %>
+
+  <div class="erow" id="awards_box">
+    <h2>Awards</h2>
+    <%=link_to "Show awards", '/users/'+@user.callsign+'/awards', remote: true,  :id => 'awards_link', :onclick => "linkHandler('awards_link')"  %> 
+  </div>
+
+  <div class="erow">
+    <div class="hrline">
       <hr noshade size="4">
-   </div>
-</div>
-<% end %>
+    </div>
+  </div>
 
-<div class="erow" id="awards_box">
-  <h2>Awards</h2>
-  <%=link_to "Show awards", '/users/'+@user.callsign+'/awards', remote: true,  :id => 'awards_link', :onclick => "linkHandler('awards_link')"  %> 
-</div>
+  <% 
+    ats=AssetType.where(keep_score: true)
+    qrp=AssetType.new
+    qrp.name='qrp'
+    ats << qrp  
+  %>
 
-<div class="erow">
-   <div class="hrline">
-      <hr noshade size="4">
-   </div>
-</div>
-
-<% ats=AssetType.where(keep_score: true)
-   qrp=AssetType.new
-   qrp.name='qrp'
-   ats << qrp  %>
-<% ats.each do |at| %>
-
-
+  <% ats.each do |at| %>
     <div class="erow" id="<%=at.name.pluralize%>">
       <div class="sectiontitle" style="margin-top: 12px;"><%=if at.name == 'qrp' then "QRP" else at.name.capitalize.pluralize end%>:</div>
       <ul>
         <li><%=link_to "Bagged: "+(@user.score[at.name]||0).to_s+" unique", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=bagged", remote: true,  :id => "#{at.name.pluralize}_bagged", :onclick => "linkHandler('bagged')"%></li>
-
         <li><%=link_to "Activated: "+(@user.activated_count[at.name]||0).to_s+" unique ("+(@user.activated_count_total[at.name]||0).to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=activated", remote: true,  :id => "#{at.name.pluralize}_activated", :onclick => "linkHandler('activated')"%></li>
         <li><%=link_to "Qualified: "+(@user.qualified_count[at.name]||0).to_s+" unique ("+(@user.qualified_count_total[at.name]||0).to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=activated", remote: true,  :id => "#{at.name.pluralize}_qualified", :onclick => "linkHandler('qualified')"%></li>
         <li><%=link_to "Chased: "+(@user.chased_count[at.name]||0).to_s+" unique ("+(@user.chased_count_total[at.name]||0).to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=chased", remote: true,  :id => "#{at.name.pluralize}_chased", :onclick => "linkHandler('chased')"%></li>
@@ -231,42 +231,43 @@
     </ul>
   </div>
 
+  <% assets=@user.get_p2p_all %>
 
-<% assets=@user.get_p2p_all %>
+  <div class="erow">
+    <div class="sectiontitle" style="margin-top: 12px;">P2P:</div>
+    <ul>
+      <li><%=link_to "Contacts: "+assets.count.to_s, '/users/'+@user.callsign+"/p2p", remote: true,  :id => 'p2p_count', :onclick => "linkHandler('users')"%></li>
+    </ul>
+  </div>
 
-<% assets=@user.get_p2p_all %>
-<div class="erow">
-  <div class="sectiontitle" style="margin-top: 12px;">P2P:</div>
-  <ul>
-    <li><%=link_to "Contacts: "+assets.count.to_s, '/users/'+@user.callsign+"/p2p", remote: true,  :id => 'p2p_count', :onclick => "linkHandler('users')"%></li>
-  </ul>
-</div>
-<div class="erow">
-   <div class="hrline">
+  <div class="erow">
+    <div class="hrline">
       <hr noshade size="4">
-   </div>
-</div>
+    </div>
+  </div>
 
 
-<div class="erow">
-  <div class="sectiontitle">Contacts: <%=link_to @user.contacts.count.to_s+" (view)", '/contacts?user='+@user.callsign, remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %></div>
-  <div class="sectiontitle">Logs: <%=link_to @user.logs.count.to_s+" (view)", '/logs?user='+@user.callsign, remote: true,  :id => 'logs', :onclick => "linkHandler('logs')" %></div>
-</div>
+  <div class="erow">
+    <div class="sectiontitle">Contacts: <%=link_to @user.contacts.count.to_s+" (view)", '/contacts?user='+@user.callsign, remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %></div>
+    <div class="sectiontitle">Logs: <%=link_to @user.logs.count.to_s+" (view)", '/logs?user='+@user.callsign, remote: true,  :id => 'logs', :onclick => "linkHandler('logs')" %></div>
+  </div>
 
-<div class="erow">
-   <div class="hrline">
+  <div class="erow">
+    <div class="hrline">
       <hr noshade size="4">
-   </div>
+    </div>
+  </div>
 </div>
+
 <script>
   <% if @chaseSites then @chaseSites.each do |chaseSite| %>
-           <% if chaseSite.location then %> map_add_feature_from_wkt('<%=chaseSite.location%>', 'EPSG:4326',site_red_circle); <% end %>
+      <% if chaseSite.location then %> map_add_feature_from_wkt('<%=chaseSite.location%>', 'EPSG:4326',site_red_circle); <% end %>
   <% end end %>
   <% if @qualifySites then @qualifySites.each do |qualifySite| %>
-           <% if qualifySite.location then %> map_add_feature_from_wkt('<%=qualifySite.location%>', 'EPSG:4326',site_green_circle); <% end %>
+      <% if qualifySite.location then %> map_add_feature_from_wkt('<%=qualifySite.location%>', 'EPSG:4326',site_green_circle); <% end %>
   <% end end %>
   <% if @activationSites then @activationSites.each do |activationSite| %>
-           <% if activationSite.location then %> map_add_feature_from_wkt('<%=activationSite.location%>', 'EPSG:4326',site_yellow_circle); <% end %>
+      <% if activationSite.location then %> map_add_feature_from_wkt('<%=activationSite.location%>', 'EPSG:4326',site_yellow_circle); <% end %>
   <% end end %>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>

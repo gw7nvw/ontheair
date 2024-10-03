@@ -1,3 +1,4 @@
+# typed: false
 module MapHelper
 
 #default map is 3x3 tiles

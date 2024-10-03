@@ -1,3 +1,4 @@
+# typed: false
 class CreateIslands < ActiveRecord::Migration
   def change
     create_table :islands do |t|

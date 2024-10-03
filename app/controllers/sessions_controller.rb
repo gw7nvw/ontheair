@@ -1,3 +1,4 @@
+# typed: false
 class SessionsController < ApplicationController
 include SessionsHelper
 

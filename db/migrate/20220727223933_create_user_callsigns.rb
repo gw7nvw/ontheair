@@ -1,3 +1,4 @@
+# typed: false
 class CreateUserCallsigns < ActiveRecord::Migration
   def change
     create_table :user_callsigns do |t|

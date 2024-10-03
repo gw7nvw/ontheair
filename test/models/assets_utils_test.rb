@@ -1,3 +1,4 @@
+# typed: strict
 require "test_helper"
 
 class AssetSaveTest < ActiveSupport::TestCase
@@ -29,7 +30,7 @@ class AssetSaveTest < ActiveSupport::TestCase
     loc=Asset.get_most_accurate_location([asset1.code, asset2.code, asset3.code], 'user', create_point(170,-46))
     assert_equal create_point(170,-46), loc[:location], "Nothing overwrites user location"
     assert_equal 'user', loc[:source], "Nothing overwrites user location"
-    assert_equal nil, loc[:asset], "Asset not used"
+    assert_nil loc[:asset], "Asset not used"
   end
 
   test "Get most accurate location returns point over polygon" do

@@ -1,3 +1,4 @@
+# typed: false
 class AddRepeatVisitToAward < ActiveRecord::Migration
   def change
     add_column :awards, :allow_repeat_visits, :boolean

@@ -1,3 +1,4 @@
+# typed: false
 class ImagesController < ApplicationController
 
 before_action :signed_in_user, only: [:delete, :create, :update]

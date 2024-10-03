@@ -1,3 +1,4 @@
+# typed: false
 class DeleteAssetSpecificStuff < ActiveRecord::Migration
   def change
     remove_column :contacts, :hut1_id

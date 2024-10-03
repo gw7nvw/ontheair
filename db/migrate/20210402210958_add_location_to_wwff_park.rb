@@ -1,3 +1,4 @@
+# typed: false
 class AddLocationToWwffPark < ActiveRecord::Migration
   def change
     change_table(:wwff_parks) do |t|

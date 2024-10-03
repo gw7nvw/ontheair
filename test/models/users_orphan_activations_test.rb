@@ -1,3 +1,4 @@
+# typed: strict
 require "test_helper"
 
 class UserOrphanActivationTest < ActiveSupport::TestCase

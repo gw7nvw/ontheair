@@ -1,3 +1,4 @@
+# typed: true
 Paperclip.options[:content_type_mappings] = {
   adi: %w(application/octet_stream)
 }

@@ -1,3 +1,4 @@
+# typed: false
 class AssetLinksController < ApplicationController
 before_action :signed_in_user
 
