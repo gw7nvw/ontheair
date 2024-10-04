@@ -46,10 +46,10 @@ class ContactsController < ApplicationController
       @asset = Asset.find_by(code: params[:asset].upcase)
       @assetcode = @asset.code if @asset
     end
-    @fullcontacts = if !@orphans
-                      Contact.find_by_sql ['select * from contacts where ' + whereclause + ' order by date desc, time desc']
-                    else
+    @fullcontacts = if @orphans
                       @user.orphan_activations
+                    else
+                      Contact.find_by_sql ['select * from contacts where ' + whereclause + ' order by date desc, time desc']
                     end
 
     # back compatibility
@@ -237,26 +237,6 @@ class ContactsController < ApplicationController
 
   def contact_params
     params.require(:contact).permit(:id, :callsign1, :user1_id, :power1, :signal1, :transceiver1, :antenna1, :comments1, :location1, :park1, :callsign2, :user2_id, :power2, :signal2, :transceiver2, :antenna2, :comments2, :hut2, :park2, :date, :time, :timezone, :frequency, :mode, :loc_desc1, :loc_desc2, :x1, :y1, :altitude1, :location1, :x2, :y2, :altitude2, :location2, :is_active, :hut1_id, :hut2_id, :park1_id, :park2_id, :island1_id, :island2_id, :is_qrp1, :is_qrp2, :is_portable1, :is_portable2, :summit1_id, :summit2_id, :asset2_codes)
-  end
-
-  def post_notification(contact)
-    if contact
-      details1 = contact.location1_text
-      details2 = contact.location2_text
-      details1 = '...' if !details1 || (details1.length < 2)
-      details2 = '...' if !details2 || (details2.length < 2)
-      details = contact.callsign1 + ' and ' + contact.callsign2 + ' logged a contact between ' + details1 + ' and ' + details2 + ' on ' + contact.localdate(current_user)
-
-      hp = HotaPost.new
-      hp.title = details
-      hp.url = 'ontheair.nz/contacts/' + contact.id.to_s
-      hp.save
-      hp.reload
-      i = Item.new
-      i.item_type = 'hota'
-      i.item_id = hp.id
-      i.save
-    end
   end
 
   def convert_location_params1
