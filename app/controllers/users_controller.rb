@@ -1,264 +1,250 @@
+# frozen_string_literal: true
+
 # typed: false
 class UsersController < ApplicationController
   include ApplicationHelper
 
-  before_action :signed_in_user, only: [:edit, :update, :editgrid]
+  before_action :signed_in_user, only: %i[edit update editgrid]
 
   def district_progress
-     @parameters=params_to_query
-     @user=User.find_by(callsign: params[:id].upcase)
-     @activations=@user.area_activations('district')
-     @chases=@user.area_chases('district')
-     @award_classes=AssetType.where("name != 'all' and name !='pota park' and name!='wwff park' and name!='lighthouse'").order(:name)
-     @district_assets=District.get_assets_with_type
-     @districts=District.all.order(:region_code, :name)
+    @user = User.find_by(callsign: params[:id].upcase)
+    @activations = @user.area_activations('district')
+    @chases = @user.area_chases('district')
+    @award_classes = AssetType.where("name != 'all' and name !='pota park' and name!='wwff park' and name!='lighthouse'").order(:name)
+    @district_assets = District.get_assets_with_type
+    @districts = District.all.order(:region_code, :name)
   end
 
   def region_progress
-     @parameters=params_to_query
-     @user=User.find_by(callsign: params[:id].upcase)
-     @activations=@user.area_activations('region')
-     @chases=@user.area_chases('region')
-     @award_classes=AssetType.where("name != 'all'").order(:name)
-     @region_assets=Region.get_assets_with_type
-     @regions=Region.all.order(:name)
+    @user = User.find_by(callsign: params[:id].upcase)
+    @activations = @user.area_activations('region')
+    @chases = @user.area_chases('region')
+    @award_classes = AssetType.where("name != 'all'").order(:name)
+    @region_assets = Region.get_assets_with_type
+    @regions = Region.all.order(:name)
   end
 
   def awards
-     @parameters=params_to_query
-     @user=User.find_by(callsign: params[:id].upcase)
-     @awards=Award.where(count_based: true).sort_by &:name
-     @district_awards=AwardUserLink.where(award_type: "district", user_id: @user.id).sort_by {|a| a.district.name}
-     @region_awards=AwardUserLink.where(award_type: "region", user_id: @user.id).sort_by {|a| a.region.name}
-     @districts=District.get_assets_with_type
-     @regions=Region.get_assets_with_type
-
+    @user = User.find_by(callsign: params[:id].upcase)
+    @awards = Award.where(count_based: true).sort_by &:name
+    @district_awards = AwardUserLink.where(award_type: 'district', user_id: @user.id).sort_by { |a| a.district.name }
+    @region_awards = AwardUserLink.where(award_type: 'region', user_id: @user.id).sort_by { |a| a.region.name }
+    @districts = District.get_assets_with_type
+    @regions = Region.get_assets_with_type
   end
 
-
   def assets
-     @parameters=params_to_query
-     @user=User.find_by(callsign: params[:id].upcase)
-     @count_type=safe_param(params[:count_type])
-     @asset_type=safe_param(params[:asset_type])
+    @user = User.find_by(callsign: params[:id].upcase)
+    @count_type = safe_param(params[:count_type])
+    @asset_type = safe_param(params[:asset_type])
 
-     #include all summit types
-     if @asset_type=='summit' then 
-       @asset_codes=[]
-       @valid_codes=[]
-       ats=AssetType.where(has_elevation: true)
-       ats.each do |at|
-         if at.name=="summit" then include_external=true else include_external=false end
-         @asset_codes+=@user.assets_by_type(at.name, @count_type, true)
+    # include all summit types
+    if @asset_type == 'summit'
+      @asset_codes = []
+      @valid_codes = []
+      ats = AssetType.where(has_elevation: true)
+      ats.each do |at|
+        include_external = at.name == 'summit'
+        @asset_codes += @user.assets_by_type(at.name, @count_type, true)
 
-         #filter by min qso requirements
-         if @count_type=='activated' then
-           @valid_codes+=@user.qualified(asset_type: at.name, include_external: include_external)
-         else
-           @valid_codes=@asset_codes
-         end
-       end
-     else
-       @asset_codes=@user.assets_by_type(@asset_type, @count_type, true) 
+        # filter by min qso requirements
+        if @count_type == 'activated'
+          @valid_codes += @user.qualified(asset_type: at.name, include_external: include_external)
+        else
+          @valid_codes = @asset_codes
+        end
+      end
+    else
+      @asset_codes = @user.assets_by_type(@asset_type, @count_type, true)
 
-       #filter by min qso requirements
-       if @count_type=='activated' then
-         @valid_codes=@user.qualified(asset_type: @asset_type)
-       else
-         @valid_codes=@asset_codes
-       end
-     end
+      # filter by min qso requirements
+      @valid_codes = if @count_type == 'activated'
+                       @user.qualified(asset_type: @asset_type)
+                     else
+                       @asset_codes
+                     end
+    end
 
-
-     @assets = Asset.find_by_sql [ " select asset_type, minor, is_active, id, name, code, altitude from assets where code in (?) ",@asset_codes ] 
+    @assets = Asset.find_by_sql [' select asset_type, minor, is_active, id, name, code, altitude from assets where code in (?) ', @asset_codes]
   end
 
   def p2p
-     @parameters=params_to_query
-     @user=User.find_by(callsign: params[:id].upcase)
-     @contacts=@user.get_p2p_all
+    @user = User.find_by(callsign: params[:id].upcase)
+    @contacts = @user.get_p2p_all
   end
 
   def index_prep
-     whereclause="true"
-     if params[:filter] then
-       @filter=safe_param(params[:filter])
-       whereclause="is_"+@filter+" is true"
-     end
- 
-     @searchtext=safe_param(params[:searchtext] || "")
-     if params[:searchtext] and params[:searchtext]!="" then
-        whereclause=whereclause+" and (lower(callsign) like '%%"+@searchtext.downcase+"%%' )"
-     end
- 
-     @fullusers=User.find_by_sql [ 'select * from users where '+whereclause+' order by callsign' ]
-     @users=@fullusers.paginate(:per_page => 40, :page => params[:page])
+    whereclause = 'true'
+    if params[:filter]
+      @filter = safe_param(params[:filter])
+      whereclause = 'is_' + @filter + ' is true'
+    end
 
+    @searchtext = safe_param(params[:searchtext] || '')
+    if params[:searchtext] && (params[:searchtext] != '')
+      whereclause = whereclause + " and (lower(callsign) like '%%" + @searchtext.downcase + "%%' )"
+    end
+
+    @fullusers = User.find_by_sql ['select * from users where ' + whereclause + ' order by callsign']
+    @users = @fullusers.paginate(per_page: 40, page: params[:page])
   end
 
-
   def index
-     index_prep()
-     respond_to do |format|
-       format.html
-       format.js
-       format.csv { send_data users_to_csv(@fullusers), filename: "users-#{Date.today}.csv" }
-     end
+    index_prep
+    respond_to do |format|
+      format.html
+      format.js
+      format.csv { send_data users_to_csv(@fullusers), filename: "users-#{Date.today}.csv" }
+    end
   end
 
   def show
-     users = User.find_by_sql [ "select * from users where callsign='#{params[:id]}' or id=#{params[:id].to_i}" ] 
-     if !users or users.count<1 then
-       users=UserCallsign.where(callsign: params[:id])
-       if users and users.count>0 then
-          user=users.first.user
-          if user then
-            redirect_to '/users/'+user.callsign
-          else
-            flash[:error]="Callsign "+params[:id]+" not found"
-            redirect_to '/'
-          end
-       else
-         flash[:error]="Callsign "+params[:id]+" not found"
-         redirect_to '/'
-       end
-     elsif users and users.count>0 then
-       @user=users.first
-       activationSites=[]
-       qualifySites=[]
-       asset_types=AssetType.where("name != 'all'")
-       asset_types.each do |at|
-         activationSite=@user.activations(asset_type: at.name)
-         qualifySites+=@user.qualified(asset_type: at.name)
-         activationSites+=activationSite
-       end
-       chaseSites=@user.chased
-       activationSites=activationSites-qualifySites
-       @chaseSites=Asset.find_by_sql [ " select location from assets where code in (?); ",chaseSites ] 
-       @activationSites=Asset.find_by_sql [ " select location from assets where code in (?);",activationSites  ] 
-       @qualifySites=Asset.find_by_sql [ " select location from assets where code in (?);",qualifySites  ] 
-       @callsign=UserCallsign.new
-       @callsign.user_id=@user.id
-     end
+    users = User.find_by_sql ["select * from users where callsign='#{params[:id]}' or id=#{params[:id].to_i}"]
+    if !users || (users.count < 1)
+      users = UserCallsign.where(callsign: params[:id])
+      if users && (users.count > 0)
+        user = users.first.user
+        if user
+          redirect_to '/users/' + user.callsign
+        else
+          flash[:error] = 'Callsign ' + params[:id] + ' not found'
+          redirect_to '/'
+        end
+      else
+        flash[:error] = 'Callsign ' + params[:id] + ' not found'
+        redirect_to '/'
+      end
+    elsif users && (users.count > 0)
+      @user = users.first
+      activationSites = []
+      qualifySites = []
+      asset_types = AssetType.where("name != 'all'")
+      asset_types.each do |at|
+        activationSite = @user.activations(asset_type: at.name)
+        qualifySites += @user.qualified(asset_type: at.name)
+        activationSites += activationSite
+      end
+      chaseSites = @user.chased
+      activationSites -= qualifySites
+      @chaseSites = Asset.find_by_sql [' select location from assets where code in (?); ', chaseSites]
+      @activationSites = Asset.find_by_sql [' select location from assets where code in (?);', activationSites]
+      @qualifySites = Asset.find_by_sql [' select location from assets where code in (?);', qualifySites]
+      @callsign = UserCallsign.new
+      @callsign.user_id = @user.id
+    end
   end
 
   def new
-     @user = User.new
-     @user.timezone=Timezone.find_by(name: 'UTC').id
+    @user = User.new
+    @user.timezone = Timezone.find_by(name: 'UTC').id
   end
 
   def create
-     password=params[:user][:password]
-     password_confirmation=params[:user][:password_confirmation]
- 
-     user = User.new(user_params)
-     user.password=password
-     user.password_confirmation=password_confirmation
- 
-     user.callsign=user.callsign.strip
-     existing_user=User.find_by(callsign: user.callsign.upcase)
- 
- 
- 
-     #register an auto_created user 
-     if existing_user and not existing_user.activated then
-       @user=existing_user 
-     else 
-       @user=user
-     end
-     @user.callsign=user.callsign
-     @user.firstname=user.firstname.strip
-     @user.lastname=user.lastname.strip
-     @user.email=user.email.strip
-     @user.activated=true
-     @user.is_active=true
-     @user.is_modifier=false
-     @user.activated_at=Time.now()
- 
-     if !@user.valid_callsign? then
-       @user.read_only=true
-     end
- 
-     if @user.save
-       @user.reload
-       sign_in @user
- 
-       if @user.read_only then
-         flash[:success]="Welcome to ZL on the Air. Your account has been created as a restricted, non-amatuer user. Contact admin@ontheair if you expected full access"
-       else
-         flash[:success] = "Welcome to ZL On the Air"
-       end
- 
-       redirect_to '/users/'+@user.callsign
-     else
-       render 'new'
-     end
-  end
- 
-  def edit
-     if params[:referring] then @referring=params[:referring] end
-     if !@user then @user = User.where(callsign: params[:id]).first end
+    password = params[:user][:password]
+    password_confirmation = params[:user][:password_confirmation]
 
-     if signed_in? and (current_user.is_admin or current_user.callsign == params[:id]) then
-       #edit
-     else 
-       render 'show'
-     end
+    user = User.new(user_params)
+    user.password = password
+    user.password_confirmation = password_confirmation
+
+    user.callsign = user.callsign.strip
+    existing_user = User.find_by(callsign: user.callsign.upcase)
+
+    # register an auto_created user
+    @user = if existing_user && !existing_user.activated
+              existing_user
+            else
+              user
+            end
+    @user.callsign = user.callsign
+    @user.firstname = user.firstname.strip
+    @user.lastname = user.lastname.strip
+    @user.email = user.email.strip
+    @user.activated = true
+    @user.is_active = true
+    @user.is_modifier = false
+    @user.activated_at = Time.now
+
+    @user.read_only = true unless @user.valid_callsign?
+
+    if @user.save
+      @user.reload
+      sign_in @user
+
+      flash[:success] = if @user.read_only
+                          'Welcome to ZL on the Air. Your account has been created as a restricted, non-amatuer user. Contact admin@ontheair if you expected full access'
+                        else
+                          'Welcome to ZL On the Air'
+                        end
+
+      redirect_to '/users/' + @user.callsign
+    else
+      render 'new'
+    end
+  end
+
+  def edit
+    @referring = params[:referring] if params[:referring]
+    @user ||= User.where(callsign: params[:id]).first
+
+    if signed_in? && (current_user.is_admin || (current_user.callsign == params[:id]))
+      # edit
+    else
+      render 'show'
+    end
   end
 
   def update
-    if signed_in? and (current_user.is_admin or current_user.id == params[:id].to_i) then
-      if params[:commit]=="Delete" then
+    if signed_in? && (current_user.is_admin || (current_user.id == params[:id].to_i))
+      if params[:commit] == 'Delete'
         callsigns = UserCallsign.where(user_id: params[:id].to_i)
-        callsigns.each do |c|
-          c.destroy
-        end
+        callsigns.each(&:destroy)
         user = User.find_by_id(params[:id].to_i)
-        if user and user.destroy then
-          flash[:success] = "User deleted, callsign:"+params[:id]
-          index_prep()
+        if user && user.destroy
+          flash[:success] = 'User deleted, callsign:' + params[:id]
+          index_prep
           render 'index'
         else
-          edit()
+          edit
           render 'edit'
         end
       else
-        password=params[:user][:password]
-        password_confirmation=params[:user][:password_confirmation]
-  
+        password = params[:user][:password]
+        password_confirmation = params[:user][:password_confirmation]
+
         @user = User.find_by_id(params[:id].to_i)
-  
+
         @user.assign_attributes(user_params)
-        if password and password.length>0 then
-          @user.password=password
-          @user.password_confirmation=password_confirmation
+        if password && !password.empty?
+          @user.password = password
+          @user.password_confirmation = password_confirmation
         end
-  
-        if @user then 
-          if @user.firstname then @user.firstname=@user.firstname.strip end
-          if @user.lastname then @user.lastname=@user.lastname.strip end
-          @user.callsign=@user.callsign.strip
-          if @user.email then @user.email=@user.email.strip end
-  
-          #only allow us to change own password unless we are admin
-          if @user.id != current_user.id and not current_user.is_admin then
-            @user.password=nil
-            @user.password_confirmation=nil
+
+        if @user
+          @user.firstname = @user.firstname.strip if @user.firstname
+          @user.lastname = @user.lastname.strip if @user.lastname
+          @user.callsign = @user.callsign.strip
+          @user.email = @user.email.strip if @user.email
+
+          # only allow us to change own password unless we are admin
+          if (@user.id != current_user.id) && !current_user.is_admin
+            @user.password = nil
+            @user.password_confirmation = nil
           end
-    
+
           if @user.save
-            flash[:success] = "User details updated"
-    
+            flash[:success] = 'User details updated'
+
             # Handle a successful update.
-            if params[:referring]=='index' then
-              index_prep()
+            if params[:referring] == 'index'
+              index_prep
               render 'index'
             else
-              show()
+              show
               render 'show'
             end
           else
-            if params[:referring] then @referring=params[:referring] end
+            @referring = params[:referring] if params[:referring]
             render 'edit'
           end
         end
@@ -268,65 +254,62 @@ class UsersController < ApplicationController
     end
   end
 
-  #Add a user-topic-link (mailer)
+  # Add a user-topic-link (mailer)
   def add
-    @user=current_user
-    if current_user and current_user.is_admin or current_user.group_admin then @user = User.where(callsign: params[:id]).first end
-    @topic=Topic.find_by_id(params[:topic_id])
-  
-    if @user and @topic then
-      utl=UserTopicLink.new
-      utl.user_id=@user.id
-      utl.topic_id=@topic.id
-      utl.mail=true
+    @user = current_user
+    if current_user && current_user.is_admin || current_user.group_admin then @user = User.where(callsign: params[:id]).first end
+    @topic = Topic.find_by_id(params[:topic_id])
+
+    if @user && @topic
+      utl = UserTopicLink.new
+      utl.user_id = @user.id
+      utl.topic_id = @topic.id
+      utl.mail = true
       utl.save
     else
-      flash[:error] = "Error locating user or topic specified"
+      flash[:error] = 'Error locating user or topic specified'
     end
-    @topics=Topic.where(is_active=true)
-    show()
+    @topics = Topic.where(is_active = true)
+    show
     render 'show'
   end
 
-  #Delete a user-topic-link (mailer)
+  # Delete a user-topic-link (mailer)
   def delete
-    @user=current_user
-    if current_user and current_user.is_admin then @user = User.where(callsign: params[:id]).first end
-    @topic=Topic.find_by_id(params[:topic_id])
-  
-    if @user and @topic then
-      utls=UserTopicLink.find_by_sql [ "select * from user_topic_links where user_id="+@user.id.to_s+" and topic_id="+@topic.id.to_s ]
-      utls.each do |utl|
-        utl.destroy
-      end
+    @user = current_user
+    if current_user && current_user.is_admin then @user = User.where(callsign: params[:id]).first end
+    @topic = Topic.find_by_id(params[:topic_id])
+
+    if @user && @topic
+      utls = UserTopicLink.find_by_sql ['select * from user_topic_links where user_id=' + @user.id.to_s + ' and topic_id=' + @topic.id.to_s]
+      utls.each(&:destroy)
     else
-      flash[:error] = "Error locating user or topic specified"
+      flash[:error] = 'Error locating user or topic specified'
     end
-    @topics=Topic.where(is_active=true)
-    show()
+    @topics = Topic.where(is_active = true)
+    show
     render 'show'
   end
 
   def users_to_csv(items)
-    if signed_in? and current_user.is_admin then
+    if signed_in? && current_user.is_admin
       require 'csv'
-      csvtext=""
-      if items and items.first then
-        columns=[]; items.first.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") then columns << name end end
+      csvtext = ''
+      if items && items.first
+        columns = []; items.first.attributes.each_pair { |name, _value| if !name.include?('password') && !name.include?('digest') && !name.include?('token') then columns << name end }
         csvtext << columns.to_csv
         items.each do |item|
-           fields=[]; item.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") then fields << value end end
-           csvtext << fields.to_csv
+          fields = []; item.attributes.each_pair { |name, value| if !name.include?('password') && !name.include?('digest') && !name.include?('token') then fields << value end }
+          csvtext << fields.to_csv
         end
      end
-     csvtext
+      csvtext
    end
   end
+
   private
 
-    def user_params
-      params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin, :acctnumber, :logs_pota, :logs_wwff)
-    end
-
-
+  def user_params
+    params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin, :acctnumber, :logs_pota, :logs_wwff)
+  end
 end

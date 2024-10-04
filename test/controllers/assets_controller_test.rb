@@ -217,6 +217,15 @@ class AssetsControllerTest < ActionController::TestCase
     assert_select '#active', /Yes/, "active"
   end
 
+  test "View non existant asset handled correctly" do
+    sign_in users(:zl4nvw)
+    get :show, {id: 'ZLP/XX-9999'}
+    assert_response :redirect
+    assert_redirected_to /assets/
+
+    assert_match "does not exist",  flash[:error]
+  end
+
   test "View asset shows activators, chasers" do
     user1=create_test_user
     user2=create_test_user
@@ -436,6 +445,7 @@ class AssetsControllerTest < ActionController::TestCase
     assert_select '#crumbs', /Home/
     assert_select '#crumbs', /Places/
     assert_select '#crumbs', /test hut/
+    assert_select '#crumbs', /Edit/
 
     #Action control bar
     assert_select '#controls', {count: 1, text: /Cancel/}
@@ -584,4 +594,127 @@ class AssetsControllerTest < ActionController::TestCase
     assert_equal assets-1, Asset.count  
   end
 
+
+  ##################################################################
+  # ASSOCIATE
+  ###################################################################
+  test "Should get associate page" do
+    sign_in users(:zl3cc)
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', description: "This is a comment", location: create_point(173,-45))
+    asset2=create_test_asset(asset_type: 'park', region: 'OT', location: create_point(173,-45), test_radius: 0.1)
+    get :associations, {id: asset1.safecode}
+    assert_response :success
+
+    #Breadcrumbs
+    assert_select '#crumbs', /Home/
+    assert_select '#crumbs', /Places/
+    assert_select '#crumbs', /#{make_regex_safe(asset1.name)}/
+    assert_select '#crumbs', /Associations/
+
+    #Action control bar
+    assert_select '#controls', /Cancel/
+
+    assert_select '#controls', /Smaller Map/
+    assert_select '#controls', /Larger Map/
+    assert_select '#controls', /Back/
+
+    #details
+    assert_select '#code', /#{make_regex_safe(asset1.code)}/, "Code"
+    assert_select '#name', /#{asset1.name}/, "Name"
+    assert_select '#class', /Hut/, "Class"
+
+    #form
+    table=get_table_test(@response.body, 'containing_table')
+    assert_equal 1, get_row_count_test(table), "1 rows"
+    row=get_row_test(table,1)
+    assert_match /Park/, get_col_test(row,1), "Correct programme"
+    assert_match /#{make_regex_safe(asset2.code)}/, get_col_test(row,2), "Correct coe"
+    assert_match /#{asset2.name}/, get_col_test(row,3), "Correct name"
+    assert_no_match /Delete/, row
+
+    table=get_table_test(@response.body, 'contained_tabe')
+    assert_equal 0, get_row_count_test(table), "0 rows"
+    
+  end
+  
+  test "Should get associate page (contained)" do
+    sign_in users(:zl3cc)
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', description: "This is a comment", location: create_point(173,-45))
+    asset2=create_test_asset(asset_type: 'park', region: 'OT', location: create_point(173,-45), test_radius: 0.1)
+    get :associations, {id: asset2.safecode}
+    assert_response :success
+
+    #Breadcrumbs
+    assert_select '#crumbs', /Home/
+    assert_select '#crumbs', /Places/
+    assert_select '#crumbs', /#{make_regex_safe(asset2.name)}/
+    assert_select '#crumbs', /Associations/
+
+    #Action control bar
+    assert_select '#controls', /Cancel/
+
+    assert_select '#controls', /Smaller Map/
+    assert_select '#controls', /Larger Map/
+    assert_select '#controls', /Back/
+
+    #details
+    assert_select '#code', /#{make_regex_safe(asset2.code)}/, "Code"
+    assert_select '#name', /#{asset2.name}/, "Name"
+    assert_select '#class', /Park/, "Class"
+
+    #form
+    table=get_table_test(@response.body, 'containing_table')
+    assert_equal 0, get_row_count_test(table), "0 rows"
+    
+    table=get_table_test(@response.body, 'contained_table')
+    assert_equal 1, get_row_count_test(table), "1 rows"
+    row=get_row_test(table,1)
+    assert_match /Hut/, get_col_test(row,1), "Correct programme"
+    assert_match /#{make_regex_safe(asset1.code)}/, get_col_test(row,2), "Correct code"
+    assert_match /#{asset1.name}/, get_col_test(row,3), "Correct name"
+    assert_no_match /Delete/, row
+  end
+
+  test "Should get associate page (admin)" do
+    sign_in users(:zl4nvw)
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', description: "This is a comment", location: create_point(173,-45))
+    asset2=create_test_asset(asset_type: 'park', region: 'OT', location: create_point(173,-45), test_radius: 0.1)
+    get :associations, {id: asset2.safecode}
+    assert_response :success
+
+    #Breadcrumbs
+    assert_select '#crumbs', /Home/
+    assert_select '#crumbs', /Places/
+    assert_select '#crumbs', /#{make_regex_safe(asset2.name)}/
+    assert_select '#crumbs', /Associations/
+
+    #Action control bar
+    assert_select '#controls', /Cancel/
+
+    assert_select '#controls', /Smaller Map/
+    assert_select '#controls', /Larger Map/
+    assert_select '#controls', /Back/
+
+    #details
+    assert_select '#code', /#{make_regex_safe(asset2.code)}/, "Code"
+    assert_select '#name', /#{asset2.name}/, "Name"
+    assert_select '#class', /Park/, "Class"
+
+    #form
+    table=get_table_test(@response.body, 'containing_table')
+    assert_equal 1, get_row_count_test(table), "1 rows"
+    row=get_row_test(table,1)
+    assert_match /Add/, row, "Add button"
+    
+    table=get_table_test(@response.body, 'contained_table')
+    assert_equal 2, get_row_count_test(table), "2 rows"
+    row=get_row_test(table,1)
+    assert_match /Hut/, get_col_test(row,1), "Correct programme"
+    assert_match /#{make_regex_safe(asset1.code)}/, get_col_test(row,2), "Correct code"
+    assert_match /#{asset1.name}/, get_col_test(row,3), "Correct name"
+    assert_match /Delete/, get_col_test(row,4), "Delete button"
+
+    row=get_row_test(table,2)
+    assert_match /Add/, row, "Add button"
+  end
 end

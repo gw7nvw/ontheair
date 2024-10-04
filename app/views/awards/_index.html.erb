@@ -23,13 +23,16 @@
 <div id="right_scroll">
   <%= render 'flash' %>
   <h2>Awards</h2>
-   <ul>
+   <table class="cleanskin1" id="award_table">
     <% if @awards then @awards.each do |award| %>
-        <li>
+      <tr>
+        <td>
           <% if current_user and current_user.is_admin %>
-             <span title="Click to edit row"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/awards/'+award.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+            <span title="Click to edit row"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/awards/'+award.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
           <% end %>
           <%= link_to award.name, '/awards/'+award.id.to_s, remote: true, :id => 'award_link_'+award.id.to_s, :onclick => "linkHandler('award_link_"+award.id.to_s+"')" %>
+        </td>
+        <td>
           <% if award.count_based then %>
              <% details=[] %>
              <% AwardThreshold.order(:threshold).reverse.each do |t| %>
@@ -81,9 +84,10 @@
 
 
 
-        </li>
+        </td>
+      </tr>
     <% end end %>
-  </ul>
+  </table>
 </div>
 
 <script>

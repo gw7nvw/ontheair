@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 # typed: false
 class SitemapsController < ApplicationController
-  #caches_page :index
+  # caches_page :index
   def index
     @static_paths = [about_path]
     @stats_paths = [root_path, spots_path, alerts_path, results_path, recent_path]
@@ -13,4 +15,3 @@ class SitemapsController < ApplicationController
     end
   end
 end
-

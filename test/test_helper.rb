@@ -223,8 +223,12 @@ NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 
     row=row.split('</tr>')[0]
   end
   def get_row_count_test(body)
-    rows=body.split('<tr>')
-    rows.count-1
+    if body then
+      rows=body.split('<tr>')
+      rows.count-1
+    else
+      0
+    end
   end
 
   def get_col_test(body,number)
@@ -234,7 +238,7 @@ NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 
   end
  
   def make_regex_safe(text)
-   text=text.gsub("[","\\[").gsub("]","\\]").gsub("{","\\{").gsub("}","\\}") 
+   text=text.gsub("[","\\[").gsub("]","\\]").gsub("{","\\{").gsub("}","\\}").gsub("(","\\(").gsub(")","\\)") 
    text
   end
 end

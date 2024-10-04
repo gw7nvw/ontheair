@@ -1,6 +1,10 @@
 <% if @user and @user.errors.any? then @item=@user end %>
 <% if @asset and @asset.errors.any? then @item=@asset end %>
 <% if @callsign and @callsign.errors.any? then @item=@callsign end %>
+<% if @comment and @comment.errors.any? then @item=@comment end %>
+<% if @log and @log.errors.any? then @item=@log end %>
+<% if @contact and @contact.errors.any? then @item=@contact end %>
+<% if @award and @award.errors.any? then @item=@award end %>
 
 <% if @item and @item.errors.any? %>
     <div id="error_explanation" class="erow">

@@ -48,8 +48,6 @@ stats
 test
 test:all
 test:all:db
-test:recent
-test:uncommitted
 time:zones:all
 tmp:clear
 tmp:create

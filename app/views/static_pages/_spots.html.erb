@@ -56,8 +56,9 @@
   <%= render 'flash' %>
   <span id="spots"></span>
   <h2>Spots</h2>
-
-  <p><span id="retrieved">Retrieved at <%=Time.now.in_time_zone(@tz.name).strftime("%H:%M:%S")%> (<%=@tz.name%>) </span><i><%=  link_to "Refresh Now", '/spots?'+raw(@parameters), remote: true,  :onclick => "linkHandler('refresh_link')"%> </i></p>
+  <% as=AdminSettings.first %>
+  <% if as and as.last_spot_read then last_spot_read=as.last_spot_read.in_time_zone(@tz.name).strftime("%H:%M:%S") else last_spot_read="Unknown" end %>
+    <p>Last updated: <%=last_spot_read%> (<%=@tz.name%>) - <span id="retrieved">retrieved at <%=Time.now.in_time_zone(@tz.name).strftime("%H:%M:%S")%> (<%=@tz.name%>)</span><i>&nbsp;<%=  link_to "Refresh Now", '/spots?'+raw(@parameters), remote: true,  :onclick => "linkHandler('refresh_link')"%> </i></p>
   <p>
   <% new_parameters=@parameters.gsub(/zone=[A-Za-z]+/,'') %>
   <% if @zone=='all' then %>

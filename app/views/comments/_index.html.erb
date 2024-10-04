@@ -1,37 +1,35 @@
 <script>
-   reset_map_controllers();
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
-   document.title = '... On the Air'
-   document.getElementById('logo').innerHTML='... On The Air'
-$(function () {
-  $('#right_panel .pagination a').on('click', function () {
-    $.getScript(this.href);
-    return false;
+  reset_map_controllers();
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
+  document.title = '... On the Air'
+  document.getElementById('logo').innerHTML='... On The Air'
+
+  $(function () {
+    $('#right_panel .pagination a').on('click', function () {
+      $.getScript(this.href);
+      return false;
+    });
   });
-});
-
-
 </script>
 
 <div id="actionbar" class="span7">
-   <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
-     &nbsp;--&gt;&nbsp;
-     <b>Comments</b>
-     </div>
-   <div id="controls">
-       <%=render 'map_controls'%>
-   </div>
+  <div id="crumbs">
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <b>Comments</b>
+    </div>
+  <div id="controls">
+    <%=render 'map_controls'%>
+  </div>
 </div>
 
 <div id="right_scroll">
   <%= render 'flash' %>
 
-
   <div class="name_pagination"> <%= will_paginate(@comments) %></div>
 
-  <table class="places">
+  <table class="places" id="comment_table">
     <tr>
       <th>Callsign</th>
       <th>Date</th>
@@ -43,7 +41,7 @@ $(function () {
       <tr>
         <td>
           <% if current_user and (current_user.is_admin or current_user.id == comment.id) %>
-            <span title="Click to edit"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/comments/'+comment.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+            <span title="Click to edit"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/comments/'+comment.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton"+comment.id.to_s, alt: "Edit"  %></span>
           <% end %>
           <%= link_to comment.updated_by_name, '/comments/'+comment.id.to_s, remote: true, :id => 'comment_link_'+comment.id.to_s, :onclick => "linkHandler('comment_link_"+comment.id.to_s+"')" %>
         </td>
@@ -55,7 +53,6 @@ $(function () {
     <% end end %>
   </table>
   <div class="name_pagination"> <%= will_paginate(@comments) %></div>
-
 </div>
 
 <script>

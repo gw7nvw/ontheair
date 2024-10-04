@@ -1,116 +1,124 @@
 <script> 
-   reset_map_controllers();
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
+  reset_map_controllers();
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
 </script>
+
 <div id="actionbar" class="span7">
-   <div id="crumbs">
-     <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler('home')" %>
-     &nbsp;--&gt;&nbsp;
-     <%=link_to "Awards", '/awards', :remote => true,  :onclick => "linkHandler('awards')" %>
-     &nbsp;--&gt;&nbsp;
-     <%= @award.name %>
-     </div>
-   <div id="controls">
-       <% if signed_in? and current_user.is_admin then %>
-          <%=  link_to "Edit", '/awards/'+@award.id.to_s+'/edit', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('edit')"%>
-       <% end %>
-       <%=  link_to "Index", '/awards/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
-       <%=render 'map_controls'%>
-   </div>
+  <div id="crumbs">
+    <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <%=link_to "Awards", '/awards', :remote => true,  :onclick => "linkHandler('awards')" %>
+    &nbsp;--&gt;&nbsp;
+    <%= @award.name %>
+  </div>
+
+  <div id="controls">
+    <% if signed_in? and current_user.is_admin then %>
+      <%=  link_to "Edit", '/awards/'+@award.id.to_s+'/edit', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('edit')"%>
+    <% end %>
+    <%=  link_to "Index", '/awards/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
+    <%=render 'map_controls'%>
+  </div>
 </div>
+
 <div id="right_scroll">
-   <%= render 'flash' %>
-   <div class="erow" id="email">
+  <%= render 'flash' %>
+  <div class="erow" id="name">
+    <div class="rowtitle"><%= "Name" %></div>
+    <div class="rowtext">
+      <%=link_to @award.name, '/awards/'+@award.id.to_s, remote: true,  :id => 'award', :onclick => "linkHandler('home')" %>
+    </div>
+  </div>
+  <div class="erow" id="description">
+    <div class="rowtitle"><%= "Description" %></div>
+    <div class="rowtext"><%= @award.description%></div>
+  </div>
+
+  <% if signed_in? and current_user.is_admin then %>
+    <div class="erow" id="id">
       <div class="rowtitle"><%= "Award Id:" %></div>
       <div class="rowtext"><%= @award.id.to_s %></div>
-   </div>
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Name" %></div>
-      <div class="rowtext">
-        <%=link_to @award.name, '/awards/'+@award.id.to_s, remote: true,  :id => 'award', :onclick => "linkHandler('home')" %>
-      </div>
-   </div>
-   <div class="erow" id="desc">
-      <div class="rowtitle"><%= "Description" %></div>
-      <div class="rowtext"><%= @award.description%></div>
-   </div>
-   <div class="erow" id="email">
-      <div class="rowtitle"><%= "Email to be sent on achiving" %></div>
-      <div class="rowtext"><%= @award.email_text%></div>
-   </div>
-   <div class="erow" id="email">
+    </div>
+    <div class="erow" id="programme">
       <div class="rowtitle"><%= "Programme" %></div>
       <div class="rowtext"><%= @award.programme%></div>
-   </div>
-   <div class="erow" id="user_qrp">
+    </div>
+    <div class="erow" id="threshold_based">
       <div class="rowtitle"><%= "Threshold-based award" %></div>
       <div class="textext"><%= if @award.count_based then "Yes" else "No" end %></div>
-   </div>
-   <div class="erow" id="qrp">
+    </div>
+    <div class="erow" id="district">
       <div class="rowtitle"><%= "All of district award?" %></div>
       <div class="textext"><%= if @award.all_district then "Yes" else "No" end %></div>
-   </div>
-   <div class="erow" id="repeat">
+    </div>
+    <div class="erow" id="region">
       <div class="rowtitle"><%= "All of region award?" %></div>
       <div class="textext"><%= if @award.all_region then "Yes" else "No" end %></div>
-   </div>
-   <div class="erow" id="repeat">
+    </div>
+    <div class="erow" id="programme">
       <div class="rowtitle"><%= "All of programme award?" %></div>
       <div class="textext"><%= if @award.all_programme then "Yes" else "No" end %></div>
-   </div>
-   <div class="erow" id="repeat">
+    </div>
+    <div class="erow" id="activations">
       <div class="rowtitle"><%= "For activations?" %></div>
       <div class="textext"><%= if @award.activated then "Yes" else "No" end %></div>
-   </div>
-   <div class="erow" id="repeat">
+    </div>
+    <div class="erow" id="chases">
       <div class="rowtitle"><%= "For chases?" %></div>
       <div class="textext"><%= if @award.chased then "Yes" else "No" end %></div>
-   </div>
-   <div class="erow" id="repeat">
-      <div class="rowtitle"><%= "For park-to-park?" %></div>
+    </div>
+    <div class="erow" id="p2p">
+      <div class="rowtitle"><%= "For portable-to-portable?" %></div>
       <div class="textext"><%= if @award.p2p then "Yes" else "No" end %></div>
-   </div>
-   <div class="erow" id="active">
+    </div>
+    <div class="erow" id="active">
       <div class="rowtitle"><%= "Active?" %></div>
       <div class="textext"><%= if @award.is_active then "Yes" else "No" end %></div>
-   </div>
+    </div>
+  <% end %>
 
-   <div class="erow">
-      <div class="hrline">
-         <hr noshade size="4">
-      </div>
-   </div>
+  <div class="erow">
+    <div class="hrline">
+      <hr noshade size="4">
+    </div>
+  </div>
 
-   <div class="erow">
-      <div class="hrline">
-         <hr noshade size="4">
-      </div>
-   </div>
-
-   <div class="sectiontitle_bold">Awarded to:</div>
-   <div class="erow">
-     <% if not @award.baggers or (@award.baggers and @award.baggers.count==0) then %>
-        <i>No-one has achieved this award yet. Be the first!</i></br>
-     <% end %>
-     <% @award.baggers.sort_by {|b| if b.user then b.user.callsign else "" end}.each do |ua| %>
+  <div class="sectiontitle_bold">Awarded to:</div>
+  <div class="erow">
+    <% if not @award.baggers or (@award.baggers and @award.baggers.count==0) then %>
+      <span id="no_award"><i>No-one has achieved this award yet. Be the first!</i></span>
+    <% else %>
+      <table class="cleanskin1" id="award_table">
+        <% @award.baggers.sort_by {|b| if b.user then b.user.callsign + b.created_at.to_s else "" end}.each do |ua| %>
           <% if ua.user %>
-            <% if @award.count_based then %>
-              <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>: <%=ua.threshold_name%> (<%=ua.threshold.to_s%>). Awarded: <%=ua.created_at.to_date%>
-            <% elsif @award.all_district then %>
-              <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>: <%=ua.district.name%> (<%=ua.activity_type%>). Awarded: <%=ua.created_at.to_date%>
-            <% elsif @award.all_region then %>
-              <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>: <%=ua.region.name%> (<%=ua.award_class%> <%=ua.activity_type%>). Awarded: <%=ua.created_at.to_date%>
-            <% end %>
-            <% if ua.expired then %>
-              <%=", Expired: "+ua.expired_at.to_date.to_s%>
-            <% end %>
+            <tr>
+              <td>
+                <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
+              </td>
+              <% if @award.count_based then %>
+                <td><%=ua.threshold_name%> (<%=ua.threshold.to_s%>)</td>
+                <td>Awarded: <%=ua.created_at.to_date%></td>
+              <% elsif @award.all_district then %>
+                <td><%=ua.district.name%> (<%=ua.award_class%> <%=ua.activity_type%>)</td>
+                <td>Awarded: <%=ua.created_at.in_time_zone(@tz.name).to_date%></td>
+              <% elsif @award.all_region then %>
+                <td><%=ua.region.name%> (<%=ua.award_class%> <%=ua.activity_type%>)</td>
+                <td>Awarded: <%=ua.created_at.in_time_zone(@tz.name).to_date%></td>
+              <% end %>
+              <td>
+                <% if ua.expired then %>
+                <%="Expired: "+ua.expired_at.to_date.to_s%>
+                <% end %>
+              </td>
+            </tr>
           <% end %>
-          <br/>
-     <% end %>
-   </div>   
-
+        <% end %>
+      </table>
+    <% end %>
+  </div>   
 </div>
+
 <script>
   closeAllHandlers();
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;

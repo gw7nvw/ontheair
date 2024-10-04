@@ -1,123 +1,114 @@
+# frozen_string_literal: true
+
 # typed: false
 class AwardsController < ApplicationController
-  before_action :signed_in_user, only: [:edit, :update, :editgrid]
+  before_action :signed_in_user, only: %i[edit update new create]
 
   def index_prep
-    @awards=Award.all.order(:name)
+    @awards = Award.all.order(:name)
   end
 
   def index
-    index_prep()
-    respond_to do |format|
-      format.html
-      format.js
-    end
+    index_prep
   end
 
   def show
-    if(!(@award = Award.find_by_id(params[:id].to_i)))
-      redirect_to '/'
+    unless (@award = Award.find_by_id(params[:id].to_i))
+      flash[:error] = 'Award not found'
+      redirect_to '/awards'
     end
   end
 
   def edit
-    if params[:referring] then @referring=params[:referring] end
-
-    if(!(@award = Award.where(id: params[:id]).first))
-      redirect_to '/'
+    if signed_in? && current_user.is_admin
+      unless (@award = Award.where(id: params[:id]).first)
+        flash[:error] = 'Award not found'
+        redirect_to '/awards'
+      end
+    else
+      flash[:error] = 'You do not have permissions to edit an award'
+      redirect_to '/awards'
     end
   end
 
   def new
-    @award = Award.new
+    if signed_in? && current_user.is_admin
+      @award = Award.new
+    else
+      flash[:error] = 'You do not have permissions to create a new award'
+      redirect_to '/awards'
+    end
   end
 
   def create
-    if signed_in? and current_user.is_admin then
+    if signed_in? && current_user.is_admin
       @award = Award.new(award_params)
-      @award.createdBy_id=current_user.id
- 
+      @award.createdBy_id = current_user.id
+
       if @award.save
         @award.reload
-        if params[:referring]=='index' then
-          index_prep()
-          render 'index'
+        flash[:success] = 'Success!'
+        if params[:referring] == 'index'
+          index_prep
+          redirect_to '/awards'
         else
-          render 'show'
+          redirect_to '/awards/' + @award.id.to_s
         end
       else
         render 'new'
       end
     else
-       redirect_to '/'
+      flash[:error] = 'You do not have permissions to create a new award'
+      redirect_to '/awards'
     end
   end
 
   def update
-    if signed_in? and current_user.is_admin then
-      if params[:delete] then
+    if signed_in? && current_user.is_admin
+      if params[:delete]
         award = Award.find_by_id(params[:id])
-        if award and award.destroy
-          auls=AwardUserLink.where(:award_id => award.id)
-          auls.each do |aul| aul.destroy; end
-          flash[:success] = "Award deleted, id:"+params[:id]
-          index_prep()
-          render 'index'
+        if award && award.destroy
+          auls = AwardUserLink.where(award_id: award.id)
+          auls.each(&:destroy)
+          flash[:success] = 'Award deleted, id:' + params[:id]
+          redirect_to '/awards'
         else
-          edit()
+          edit
           render 'edit'
         end
       else
-        if(!@award = Award.find_by_id(params[:id]))
-          flash[:error] = "Award does not exist: "+@award.id.to_s
-  
-          #tried to update a nonexistant hut
-          render 'edit'
+        unless (@award = Award.find_by_id(params[:id]))
+          flash[:error] = 'Award does not exist: ' + @award.id.to_s
+
+          # tried to update a nonexistant award
+          redirect_to '/awards'
         end
 
         @award.assign_attributes(award_params)
-        @award.createdBy_id=current_user.id
+        @award.createdBy_id = current_user.id
 
         if @award.save
-          flash[:success] = "Award details updated"
+          flash[:success] = 'Award details updated'
 
           # Handle a successful update.
-          if params[:referring]=='index' then
-            index_prep()
-            render 'index'
+          if params[:referring] == 'index'
+            redirect_to '/awards'
           else
-            render 'show'
+            redirect_to '/awards/' + @award.id.to_s
           end
         else
           render 'edit'
         end
       end
     else
-      redirect_to '/'
-    end
-  end
-
-
-  def awards_to_csv(items)
-    if signed_in? and current_user.is_admin then
-      require 'csv'
-      csvtext=""
-      if items and items.first then
-        columns=[]; items.first.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") then columns << name end end
-        csvtext << columns.to_csv
-        items.each do |item|
-          fields=[]; item.attributes.each_pair do |name, value| if !name.include?("password") and !name.include?("digest") and !name.include?("token") then fields << value end end
-          csvtext << fields.to_csv
-        end
-      end
-      csvtext
+      flash[:error] = 'You do not have permissions to edit an award'
+      redirect_to '/awards'
     end
   end
 
   private
+
   def award_params
-    params.require(:award).permit(:id, :name, :description, :email_text, :count_based, :all_district, :all_region, :all_programme, :p2p,  :user_qrp, :contact_qrp, :is_active, :allow_repeat_visits, :activated, :chased, :programme)
+    params.require(:award).permit(:id, :name, :description, :email_text, :count_based, :all_district, :all_region, :all_programme, :p2p, :user_qrp, :contact_qrp, :is_active, :allow_repeat_visits, :activated, :chased, :programme)
   end
-
 end
-

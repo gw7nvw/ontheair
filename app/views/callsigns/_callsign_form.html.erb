@@ -7,15 +7,20 @@
          <%=  link_to  "Users:", '/users', remote: true,  :id => 'assets', :onclick => "linkHandler('users')" %>
          &nbsp;--&gt;&nbsp;
          <%=  link_to  @callsign.user.callsign, '/users/'+@callsign.user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
+         &nbsp;--&gt;&nbsp;
+         Callsigns
+         &nbsp;--&gt;&nbsp;
          <%if @callsign.id%> 
-            <b><%=@callsign.callsign%></b>
+            <%=@callsign.callsign%>
             &nbsp;--&gt;&nbsp;
             <b>Edit</b>
          <% else %>
             <b>New</b>
          <% end %>
        </div>
+
        <div id="controls">
+          <%=  link_to "Delete", '/callsigns/'+@callsign.id.to_s+"/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_call', :onclick => "linkHandler('delete_call')", confirm: "Delete callsign?  This will remove this callsign from the system and you will lose any associated points/contacts.  Use 'Edit' and enter an 'End date' if you wish to retire this callsign and retain past contacts. Really delete?"  %>
           <%=  link_to "Cancel", '/users/'+@callsign.user.callsign, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
           <%=render 'map_controls'%>
        </div>
@@ -25,24 +30,25 @@
       <%= render 'flash' %>
       <%= render 'shared/error_messages' %>
 
-      <div class="sectiontitle">Callsign ID</div>
-      <%if current_user and current_user.is_admin%><%= f.text_field :id %><%else%><%= f.text_field :id, readonly: true %><% end %>
+      <%if current_user and current_user.is_admin%>
+        <%= f.label :id, "Callsign ID" %>
+        <%= f.text_field :id %>
 
-      <div class="sectiontitle">User Id</div>
-      <%if current_user and current_user.is_admin %><%= f.text_field :user_id %><%else%><%= f.text_field :user_id, readonly: true %><% end %>
+        <%= f.label :user_id, "User ID" %>
+        <%= f.text_field :user_id %>
+      <% end %>
 
-      <div class="sectiontitle">Callsign</div>
+      <%= f.label :callsign %>
       <%= f.text_field :callsign %>
 
-      <div class="sectiontitle">Valid From Date</div>
+      <%= f.label :from_date, "Valid From Date" %>
       <%= f.date_field :from_date %>
 
-      <div class="sectiontitle">Valid To Date</div>
+      <%= f.label :to_date, "Valid To Date" %>
       <%= f.date_field :to_date %>
 
-      <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-hightlight" %>
+      <%= f.submit @submit_button, id: 'submit', class: "btn btn-small btn-primary btn-hightlight" %>
       <%  if(@submit_button == "Save Changes" and current_user and (current_user.is_admin or current_user.id==@callsign.user_id)) %>
-        <%=  link_to "Delete", '/callsigns/'+@callsign.id.to_s+"/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_call', :onclick => "linkHandler('delete_call')", confirm: "Delete callsign?  This will remove this callsign from the system and you will lose any associated points/contacts.  Use 'Edit' and enter an 'End date' if you wish to retire this callsign and retain past contacts. Really delete?"  %>
       <% end %>
     </div>
   <% end %>

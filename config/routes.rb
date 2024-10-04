@@ -9,6 +9,28 @@ root 'static_pages#home'
   get "password_reset/edit"
 mount Resque::Server.new, at: "/resque"
 
+resources :asset_links, only: [:create]
+get 'asset_links/:id/delete', to: 'asset_links#delete'
+
+resources :asset_web_links, only: [:create]
+get 'asset_web_links/:id/delete', to: 'asset_web_links#delete'
+
+resources :assets, only: [:index, :show, :edit, :new, :create, :update]
+match "/assets/:id/associations", :to => "assets#associations", :via => "get"
+get 'assets/:id/refresh_sota', to: 'assets#refresh_sota'
+get 'assets/:id/refresh_pota', to: 'assets#refresh_pota'
+
+resources :awards, only: [:index, :show, :edit, :new, :create, :update]
+
+resources :callsigns, only: [:create, :edit, :update]
+get 'callsigns/:id/delete', to: 'callsigns#delete'
+patch 'callsigns/:id', to: 'callsigns#update'
+
+resources :comments
+get 'comments/:id/delete', to: 'comments#delete'
+
+resources :districts, only: [:index, :show]
+
 get "humps", to: 'assets#index', defaults: {type: 'hump'}
 get "lighthouses", to: 'assets#index', defaults: {type: 'lighthouse'}
 get "wwff", to: 'assets#index', defaults: {type: 'wwff park'}
@@ -24,17 +46,7 @@ match '/recent',   to: 'static_pages#recent',   via: 'get'
 match '/spots',   to: 'static_pages#spots',   via: 'get'
 match '/alerts',   to: 'static_pages#alerts',   via: 'get'
 match '/ack_news',   to: 'static_pages#ack_news',   via: 'get'
-resources :callsigns
-get 'callsigns/:id/delete', to: 'callsigns#delete'
-patch 'callsigns/:id', to: 'callsigns#update'
 resources :sessions, only: [:new, :create, :destroy]
-resources :asset_web_links, only: [:create]
-resources :awards
-resources :comments
-get 'comments/:id/delete', to: 'comments#delete'
-resources :asset_links, only: [:create]
-get 'asset_web_links/:id/delete', to: 'asset_web_links#delete'
-get 'asset_links/:id/delete', to: 'asset_links#delete'
 resources :qsl, only: [:show]
 resources :users
 get 'users/:id/assets', to: 'users#assets'
@@ -81,18 +93,13 @@ match "/contacts/:id/confirm", :to => "contacts#confirm", :via => "get"
 match "/contacts/:id/refute", :to => "contacts#refute", :via => "get"
 resources :contacts
 
-resources :assets
 resources :vkassets
-resources :districts
 resources :regions
-match "/assets/:id/associations", :to => "assets#associations", :via => "get"
 resources :huts
 resources :summits
 resources :parks
 resources :islands
 
-  get 'assets/:id/refresh_sota', to: 'assets#refresh_sota'
-  get 'assets/:id/refresh_pota', to: 'assets#refresh_pota'
   match '/sessions', to: 'static_pages#home',    via:'get'
   match '/signin',  to: 'sessions#new',         via: 'get'
   match '/signup',  to: 'users#new',         via: 'get'

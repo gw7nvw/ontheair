@@ -96,6 +96,20 @@ tr {
   }
 }
 
+.cleanskin1 {
+  td, th {
+    border: none;
+    font-size: 0.9em;
+    line-height: 0.9em;
+    text-align: left;
+    padding-top: 6px;
+    padding-top: 6px;
+    padding-top: 6px;
+    padding-top: 6px;
+    border-bottom: 1px solid #ddd;
+  }
+}
+
 .cleanskin {
   td, th {
     border: none;
@@ -840,6 +854,11 @@ input {
     white-space: nowrap;
 
   }
+
+.cleanlist {
+    list-style: none;
+    margin: 0 0 18px 0;
+}
 
 /* mobile specific */
 @media only screen and (max-width: 540px) {

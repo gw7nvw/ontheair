@@ -29,32 +29,32 @@
       <%= render 'flash' %>
       <%= render 'shared/error_messages' %>
 
-      <div class="sectiontitle">Asset ID</div>
+      <%= f.label :id, "Asset ID"%>
       <%if current_user and current_user.is_admin%><%= f.text_field :id %><%else%><%= f.text_field :id, readonly: true %><% end %>
 
-      <div class="sectiontitle">Asset Code</div>
+      <%= f.label :code, "Asset Code" %>
       <%if current_user and current_user.is_admin %><%= f.text_field :code %><%else%><%= f.text_field :code, readonly: true %><% end %>
 
-      <div class="sectiontitle">Asset Type</div>
+      <%= f.label :asset_type, "Asset Type" %>
       <%= f.collection_select( :asset_type, AssetType.where("name != 'all'").order(:name), :name, :display_name) %>
 
-      <div class="sectiontitle">Region</div>
+      <%= f.label :region %>
       <%= f.collection_select( :region, Region.all.order(:name), :sota_code, :name,{selected: @asset.region, include_blank: 'None'}, style: "margin-bottom: 0px;height: 24px;") %>
 
-      <div class="sectiontitle">District</div>
+      <%= f.label :district %>
       <%= f.collection_select( :district, District.all.order(:name), :district_code, :name,{selected: @asset.district, include_blank: 'None'}, style: "margin-bottom: 0px;height: 24px;") %>
 
-      <div class="sectiontitle">Name</div>
+      <%= f.label :name %>
       <%= f.text_field :name %>
 
-      <div class="sectiontitle">Description</div>
+      <%= f.label :description %>
       <%= f.text_area :description %>
 
       <%if current_user and current_user.is_admin%>
-        <div class="sectiontitle">AZ Radius (km)</div>
+        <%= f.label :az_radius, 'AZ Radius' %>
         <%= f.text_field :az_radius %>
 
-        <div class="sectiontitle">Points</div>
+        <%= f.label :points %>
         <%= f.text_field :points %>
       <%end%>
 

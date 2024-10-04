@@ -1,16 +1,15 @@
-  <script type="text/javascript">
-     bkLib.onDomLoaded(startEdit);
-  
-    function startEdit() {
-      nicEditors.allTextAreas();
-    }
-  </script>
-<script>
-   reset_map_controllers();
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
-   document.title = '... On The Air'
-   document.getElementById('logo').innerHTML='... On The Air'
+<script type="text/javascript">
+  bkLib.onDomLoaded(startEdit);
+
+  function startEdit() {
+    nicEditors.allTextAreas();
+  }
+
+  reset_map_controllers();
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
+  document.title = '... On The Air'
+  document.getElementById('logo').innerHTML='... On The Air'
 </script>
 
 <div class="fullform">
@@ -32,16 +31,15 @@
         <% end %>
       </div>
       <div id="controls">
-        <% if @comment.id %><% if params[:referring]=='index'%>
-            <%=  link_to "Cancel", '/comments', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
-          <% else %>
-            <%=  link_to "Cancel", '/comments/'+@comment.id.to_s, class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
-        <% end %> <% end %>
+        <% if params[:referring]=='index'%>
+          <%=  link_to "Cancel", '/comments', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+        <% else %>
+          <%=  link_to "Cancel", '/assets/'+(if @comment.asset then @comment.asset.safecode else '' end), class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+        <% end %>
 
         <%=render 'map_controls'%>
       </div>
     </div>
-    <%= render 'shared/error_messages' %>	
 
     <div id="right_scroll">
       <%= render 'flash' %>
@@ -57,22 +55,18 @@
       </div>      
 
       <div class="erow">   
-        <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Commenting ...');" %>
-        <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@comment.created_by_id)) %>
-          <%= f.submit "Delete Comment", confirm: "Delete comment: Are you sure?", class: "btn btn-small btn-primary", id:  "deletebutton",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+        <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight", id: 'submit', :onclick => "submitHandler('Commenting ...');" %>
+        <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@comment.updated_by_id)) %>
+          <%= f.submit "Delete Comment", confirm: "Delete comment: Are you sure?", class: "btn btn-small btn-primary", remote: true,  :id => 'deletebutton', :onclick => "linkHandler('delete')" %>
         <% end %>
       </div>
 
    </div>
   <% end %>
 </div>
+
 <script>
-
-function addmore(count) {
-  document.getElementById('row'+(count+1)).style="display:";
-}
-document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
-
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
   startEdit();
 </script>
 
