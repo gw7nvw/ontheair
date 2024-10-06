@@ -2,6 +2,7 @@
 
 # typed: false
 class QueriesController < ApplicationController
+  #TODO: Delete controller once we're sure it's not used
 #  skip_before_action :verify_authenticity_token
 #
 #  def asset
@@ -19,4 +20,4 @@ class QueriesController < ApplicationController
 #  def test
 #    puts request.raw_post
 #  end
-#end
+end
