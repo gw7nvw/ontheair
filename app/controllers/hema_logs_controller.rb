@@ -2,30 +2,33 @@
 
 # typed: false
 class HemaLogsController < ApplicationController
+  before_action :signed_in_user
   def index
     callsign = ''
     callsign = current_user.callsign if current_user
     callsign = params[:user].upcase if params[:user]
-    users = User.where(callsign: callsign)
-    @user = users.first if users
+    @user = User.find_by(callsign: callsign)
     unless @user
       flash[:error] = 'User ' + callsign + ' does not exist'
       redirect_to '/'
+      return
     end
-
+    unless @user==current_user or current_user.is_admin
+      flash[:error] = "You do not have permissions to view HEMA logs for this user"
+      redirect_to '/'
+      return
+    end
     contacts = Contact.where('user1_id=' + @user.id.to_s + " and 'hump'=ANY(asset1_classes)")
     all_ids = contacts.map(&:log_id)
     log_ids = all_ids.uniq
-    logs = Log.where('id in (?)', log_ids)
+    logs = Log.find_by_sql [' select  * from logs where id in (?) order by date desc', log_ids]
 
-    # weed out any non hema
+    # get submitted status for log
     @logs = []
     logs.each do |log|
-      found = false
       log.asset_codes.each do |code|
         next unless Asset.get_asset_type_from_code(code) == 'hump'
         asset = Asset.find_by(code: code)
-        found = true
         submitted_to_hema = true
         log.contacts.each do |c|
           submitted_to_hema = false unless c.submitted_to_hema
@@ -38,10 +41,20 @@ class HemaLogsController < ApplicationController
 
   def show
     @log = Log.find(params[:id])
+    unless @log.user1_id==current_user.id or current_user.is_admin
+      flash[:error] = "You do not have permissions to view HEMA logs for this user"
+      redirect_to '/'
+      return
+    end
   end
 
   def submit
     @log = Log.find(params[:id])
+    unless @log.user_id==current_user.id or current_user.is_admin
+      flash[:error] = "You do not have permissions to view HEMA logs for this user"
+      redirect_to '/'
+      return
+    end
     cookie = login_to_hema(params[:hema_user], params[:hema_pass])
 
     if cookie
@@ -62,6 +75,11 @@ class HemaLogsController < ApplicationController
 
   def delete
     @log = Log.find(params[:id])
+    unless @log.user_id==current_user.id or current_user.is_admin
+      flash[:error] = "You do not have permissions to view HEMA logs for this user"
+      redirect_to '/'
+      return
+    end
     summit = params[:summitKey]
     activation = params[:activationKey]
     logentry = params[:dActivationKey]
@@ -82,6 +100,11 @@ class HemaLogsController < ApplicationController
 
   def finalise
     @log = Log.find(params[:id])
+    unless @log.user_id==current_user.id or current_user.is_admin
+      flash[:error] = "You do not have permissions to view HEMA logs for this user"
+      redirect_to '/'
+      return
+    end
     summit = params[:summitKey]
     activation = params[:activationKey]
     cookie = params[:cookie]

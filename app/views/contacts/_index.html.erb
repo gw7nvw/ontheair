@@ -1,57 +1,44 @@
 <script>
-   reset_map_controllers();
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
-   document.title = '... On the Air'
-   document.getElementById('logo').innerHTML='... On The Air'
+  reset_map_controllers();
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
+  document.title = '... On the Air'
+  document.getElementById('logo').innerHTML='... On The Air'
 
-$(function () {
-  $('#right_panel .pagination a').on('click', function () {
-    $.getScript(this.href);
-    return false;
+  $(function () {
+    $('#right_panel .pagination a').on('click', function () {
+      $.getScript(this.href);
+      return false;
+    });
   });
-});
-
-$(function () {
-  $('#right_panel .pagination a').on('click', function () {
-    $.getScript(this.href);
-    return false;
-  });
-})
-
 </script>
  
 <div id="actionbar" class="span7">
-   <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
-     &nbsp;--&gt;&nbsp;
-     <b>Contacts <%=
-          if @hut then "("+@hut.name+")"
-          elsif @summit then "("+@summit.name+")"
-          elsif @park then "("+@park.name+")" 
-          elsif @all then "(All)"
-          elsif @user then "("+@user.callsign+")" end%></b>
-     </div>
-   <div id="controls">
-       <% if write_access?  %>
-            <% if current_user.is_admin then %>
-              <%=  link_to "View All", '/contacts/?all=true', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('all')" %>
-            <% end %>
-            <%=  link_to "Add Contacts", '/logs/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
-       <% end %>
-       <% if signed_in? and ((@user and current_user.id==@user.id) or current_user.is_admin) %>
-          <% 
-            parmtext=""
-            params.each do |k, v|
-              parmtext+="&"+k.to_s+"="+v.to_s
-            end
-            if parmtext!="" then parmtext[0]="?" end
-          %>
-           <%=  link_to "Download", '/contacts.csv'+parmtext, class: "btn btn-small btn-primary"%>
-       <% end %>
-       <%=render 'map_controls'%>
-   </div>
+  <div id="crumbs">
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <b>Contacts</b>
+    <% if @user then %>&nbsp;--&gt;&nbsp;<b><%= @user.callsign %></b><% end %>
+      <% if @asset then %>&nbsp;--&gt;&nbsp;<b><%= @asset.codename %></b>
+        <% elsif @assetcode then %>&nbsp;--&gt;&nbsp;<b><%= @assetcode %></b>
+        <% elsif @all then %>&nbsp;--&gt;&nbsp;<b>All</b>
+        <% elsif @class then %>&nbsp;--&gt;&nbsp;<b><%= @class.capitalize.pluralize %></b>
+        <% elsif @orphans then %>&nbsp;--&gt;&nbsp;<b>Unmatched Contacts</b><% end %>
+  </div>
+  <div id="controls">
+    <% if write_access?  %>
+      <% if current_user.is_admin then %>
+        <%=  link_to "View All", '/contacts/?user=all', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('all')" %>
+      <% end %>
+      <%=  link_to "Add Contacts", '/logs/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+    <% end %>
+    <% if signed_in? and ((@user and current_user.id==@user.id) or current_user.is_admin) %>
+      <%=  link_to "Download", '/contacts.csv?'+raw(@parameters), class: "btn btn-small btn-primary"%>
+    <% end %>
+    <%=render 'map_controls'%>
+  </div>
 </div>
+
 <div id="right_scroll">
   <%= render 'flash' %>
   <% if @orphans==true then%>
@@ -61,83 +48,81 @@ $(function () {
     <div class="erow">
        This page lists contacts logged by others that record you in locations for which
        you have never submitted an activator log. If everyone's logs are correct and 
-       up to date then there should be no contacts listed here</br>
+       up to date then there should be no contacts listed here<br/>
        <ul>
-         <li><b>Confirm contact</b> will confirm the contact and create the appropriate activator log </li>
+         <li><b>Confirm contact</b> will confirm the contact and create the appropriate activator log</li>
          <li><b>Refute contact</b> will remove an incorrect location for you from the chaser's log</li>
        </ul>
     </div>
   <% else %>
-
-  <%= form_tag '/contacts', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
-    <br/>
-    <div class="erow">
-      <div class="rowtitle">Show contacts for (location code):</div>
-      <div class="rowtext"> <input type="text" name="asset" value='<%=@assetcode%>'/> </div>
-    </div>
-    <div class="erow">
-      <div class="buttonshort">
-        <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
-        <%= link_to "Clear", '/contacts', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
-        <a href="#" class="link_to" remote=true onclick='expand_div("advanced");return(false);'>Advanced v</a>
-      </div>
-    </div>
-    <div id="advanced" style="display:none">
+    <%= form_tag '/contacts', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+      <br/>
       <div class="erow">
-        <div class="rowtitle">Callsign:</div>
-        <div class="rowtext"><input type="text" name="user" value='<%=@callsign%>'/></div>
+        <div class="rowtitle">Show contacts for (location code):</div>
+        <div class="rowtext"> <input type="text" name="asset" value='<%=@assetcode%>'/> </div>
       </div>
       <div class="erow">
-        <div class="rowtitle">Result per page:</div>
-        <div class="rowtext"><input type="text" name="pagelen" value='<%=@page_len%>'/></div>
-      </div>
-      <div class="erow">
-        <div class="rowtitle">Class:</div>
-        <div class="rowtext">
-          <select name="class" id="class">
-            <%for type in AssetType.all%>
-              <option value="<%=type.name%>" <%if @class==type.name then%> selected <% end %>><%=type.display_name%></option>
-            <%end%>
-          </select> 
+        <div class="buttonshort">
+          <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+          <%= link_to "Clear", '/contacts', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
+          <a href="#" class="link_to" remote=true onclick='expand_div("advanced");return(false);'>Advanced v</a>
         </div>
       </div>
-      <div class="erow">
-        <div class="rowtitle">Activator?:</div>
-        <div class="rowtext"><input type="checkbox" name="activator" <% if @activator then %>checked<% end %>/></div>
+      <div id="advanced" style="display:none">
+        <div class="erow">
+          <div class="rowtitle">Callsign:</div>
+          <div class="rowtext"><input type="text" name="user" value='<%=@callsign%>'/></div>
+        </div>
+        <div class="erow">
+          <div class="rowtitle">Result per page:</div>
+          <div class="rowtext"><input type="text" name="pagelen" value='<%=@page_len%>'/></div>
+        </div>
+        <div class="erow">
+          <div class="rowtitle">Class:</div>
+          <div class="rowtext">
+            <select name="class" id="class">
+              <%for type in AssetType.all%>
+                <option value="<%=type.name%>" <%if @class==type.name then%> selected <% end %>><%=type.display_name%></option>
+              <%end%>
+            </select> 
+          </div>
+        </div>
+        <div class="erow">
+          <div class="rowtitle">Activator?:</div>
+          <div class="rowtext"><input type="checkbox" name="activator" <% if @activator then %>checked<% end %>/></div>
+        </div>
+        <div class="erow">
+          <div class="rowtitle">Chaser?:</div>
+          <div class="rowtext"><input type="checkbox" name="chaser" <% if @chaser then %>checked<% end %>/></div>
+        </div>
       </div>
-      <div class="erow">
-        <div class="rowtitle">Chaser?:</div>
-        <div class="rowtext"><input type="checkbox" name="chaser" <% if @chaser then %>checked<% end %>/></div></div>
-      </div>
-    </div>
-  </form>
+    </form>
   <% end %>
+
   <div class="erow">
     <%= render 'list' %>
   </div>
+  
+  <div class="erow">Key: <div style="color:green">QRP</div>  <div style="text-decoration:underline">Home Station</div></div>
 </div>
 
-<div class="erow">Key: <div style="color:green">QRP</div>  <div style="text-decoration:underline">Home Station</div></div>
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
   <% if @contacts then %>
-
-   <%  @contacts.each do |contact| %>
+    <% @contacts.each do |contact| %>
       <% if @user and @user.id==contact.user2_id then
-            l2=contact.location1
-            l1=contact.location2
-         else
-            l1=contact.location1
-            l2=contact.location2
-         end
-      %>
+        l2=contact.location1
+        l1=contact.location2
+      else
+        l1=contact.location1
+        l2=contact.location2
+      end %>
       <% if l1 then %> 
-           map_add_feature_from_wkt('<%=l1%>', 'EPSG:4326',site_green_circle);
+        map_add_feature_from_wkt('<%=l1%>', 'EPSG:4326',site_green_circle);
       <% end %>
       <% if l2 then %>
-           map_add_feature_from_wkt('<%=l2%>', 'EPSG:4326',site_red_circle);
+        map_add_feature_from_wkt('<%=l2%>', 'EPSG:4326',site_red_circle);
       <% end %>
+    <% end %>
   <% end %>
-
-<% end %>
 </script>

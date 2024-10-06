@@ -177,7 +177,7 @@ class User < ActiveRecord::Base
       year = code_year.split(' ')[1]
       contacts += Contact.find_by_sql [" select * from contacts where user2_id=#{id} and '#{code}'=ANY(asset2_codes) and date_part('year', time)='#{year}';"]
     end
-    contacts
+    contacts.uniq
   end
 
   #############################################################################################

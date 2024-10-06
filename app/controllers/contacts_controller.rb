@@ -2,7 +2,7 @@
 
 # typed: false
 class ContactsController < ApplicationController
-  before_action :signed_in_user, only: %i[edit update create new]
+  before_action :signed_in_user, only: %i[edit update create new refute confirm]
 
   def index_prep
     whereclause = 'true'
@@ -14,89 +14,59 @@ class ContactsController < ApplicationController
       @filter = params[:filter]
       whereclause = 'is_' + @filter + ' is true'
     end
-    whereclause += ' and is_qrp1=true and is_qrp2=true' if params[:contact_qrp]
-    if params[:class] && (params[:class] != 'all')
-      if params[:activator]
-        whereclause = whereclause + " and ('" + params[:class] + "'=ANY(asset1_classes))"
-        @activator = 'on'
-      elsif params[:chaser]
-        whereclause = whereclause + " and ('" + params[:class] + "'=ANY(asset2_classes))"
-        @chaser = 'on'
+
+    if params[:user] && params[:user].casecmp('ALL').zero?
+      @callsign = 'ALL'
+    else
+      if params[:user] && !params[:user].empty?
+        @user = User.find_by(callsign: params[:user].upcase)
       else
-        whereclause = whereclause + " and ('" + params[:class] + "'=ANY(asset1_classes) or '" + params[:class] + "'=ANY(asset2_classes))"
+        @user=current_user
       end
-    end
-    if params[:user] && !params[:user].empty?
-      if params[:user].casecmp('ALL').zero?
-        @callsign = 'ALL'
-      else
-        whereclause = whereclause + " and (callsign1='" + params[:user].upcase + "' or callsign2='" + params[:user].upcase + "')"
-        @user = User.find_by(callsign: params[:user])
-        @user ||= current_user
-        @user ||= User.first
-        @callsign = params[:user].upcase
-      end
-    elsif current_user
-      whereclause = whereclause + " and (user1_id='" + current_user.id.to_s + "' or user2_id='" + current_user.id.to_s + "')"
-      @user = current_user
+      #fallback of last resort
+      @user ||= User.first
       @callsign = @user.callsign
     end
-    if params[:asset] && !params[:asset].empty?
-      whereclause = whereclause + " and ('" + params[:asset].tr('_', '/') + "'=ANY(asset1_codes) or '" + params[:asset].tr('_', '/') + "'=ANY(asset2_codes))"
-      @asset = Asset.find_by(code: params[:asset].upcase)
-      @assetcode = @asset.code if @asset
-    end
-    @fullcontacts = if @orphans
-                      @user.orphan_activations
-                    else
-                      Contact.find_by_sql ['select * from contacts where ' + whereclause + ' order by date desc, time desc']
-                    end
 
-    # back compatibility
-    params[:class] = params[:type] if params[:type]
+    #QRP
+    whereclause += ' and is_qrp1=true and is_qrp2=true' if params[:contact_qrp]
 
+    #All of class for this user's logs
     if params[:class] && (params[:class] != 'all')
-      @class = params[:class]
-      as = []
-      cs = []
-      @fullcontacts.each do |contact|
-        contact = contact.reverse if contact.callsign2 == @user.callsign
-        assets = Asset.assets_from_code(contact.asset1_codes.join(','))
-        assets.each do |a|
-          if a[:asset] && (a[:type] == @class)
-            contact.asset1_codes = [a[:code]]
-            as.push(contact)
-          end
-        end
-        assets = Asset.assets_from_code(contact.asset2_codes.join(','))
-        assets.each do |a|
-          if a[:asset] && (a[:type] == @class)
-            contact.asset2_codes = [a[:code]]
-            cs.push(contact)
-          end
-        end
-      end
+      @class=params[:class]
       if params[:activator]
-        @fullcontacts = as
+        whereclause = whereclause + " and ('" + @class + "'=ANY(asset1_classes)) and (callsign1='" + @callsign + "')"
         @activator = 'on'
       elsif params[:chaser]
-        @fullcontacts = cs
+        whereclause = whereclause + " and ('" + @class + "'=ANY(asset2_classes)) and (callsign1='" + @callsign + "')"
         @chaser = 'on'
       else
-        @fullcontacts = cs + as
+        whereclause = whereclause + " and (callsign1='" + @callsign + "') and (('" + params[:class] + "'=ANY(asset1_classes)) or ('" + params[:class] + "'=ANY(asset2_classes)))"
       end
-      @fullcontacts = @fullcontacts.uniq
+    elsif @callsign != 'ALL'
+      whereclause = whereclause + " and (callsign1='" + @callsign + "' or callsign2='" + @callsign + "')"
+    end
+
+    if params[:asset] && !params[:asset].empty?
+      whereclause = whereclause + " and ('" + params[:asset].tr('_', '/') + "'=ANY(asset1_codes) or '" + params[:asset].tr('_', '/') + "'=ANY(asset2_codes))"
+      @asset = Asset.find_by(safecode: params[:asset].upcase)
+      @assetcode = @asset.code if @asset
+    end
+
+    if @orphans then 
+      @fullcontacts = @user.orphan_activations 
+    else
+      @fullcontacts = Contact.find_by_sql ['select * from contacts where ' + whereclause + ' order by date desc, time desc']
     end
 
     @page_len = params[:pagelen] ? params[:pagelen].to_i : 20
 
-    if params[:user_qrp] && (params[:user] || signed_in?)
-      callsign = params[:user] ? params[:user].upcase : current_user.callsign.upcase
+    if params[:user_qrp] && @callsign
       cs = []
 
       @fullcontacts.each do |contact|
-        if ((contact.callsign1.upcase == callsign) && contact.is_qrp1) ||
-           ((contact.callsign2.upcase == callsign) && contact.is_qrp2)
+        if ((contact.callsign1.upcase == @callsign) && contact.is_qrp1) ||
+           ((contact.callsign2.upcase == @callsign) && contact.is_qrp2)
           cs.push(contact)
         end
       end
@@ -117,7 +87,7 @@ class ContactsController < ApplicationController
           @contact.time = Time.now.in_time_zone('UTC').at_beginning_of_minute
           @contact.frequency = spot.frequency
           @contact.mode = spot.mode
-          @contact.asset2_codes = [spot.code]
+          @contact.asset2_codes = spot.code
         end
       else
         spot = Post.find(-spotid)
@@ -127,7 +97,7 @@ class ContactsController < ApplicationController
           @contact.time = Time.now.in_time_zone('UTC').at_beginning_of_minute
           @contact.frequency = spot.freq
           @contact.mode = spot.mode
-          @contact.asset2_codes = spot.asset_codes
+          @contact.asset2_codes = spot.asset_codes.join(',')
         end
       end
     end
@@ -135,26 +105,25 @@ class ContactsController < ApplicationController
   end
 
   def create
+    @contact = Contact.new(contact_params)
     if signed_in?
-      if params[:commit]
-        @contact = Contact.new(contact_params)
-        puts ':' + params[:contact][:asset2_codes] + ':'
+      user = User.find_by_callsign_date(@contact.callsign1.upcase, @contact.date)
+      if (user.id === current_user.id) || current_user.is_admin
         @contact.asset2_codes = params[:contact][:asset2_codes].delete('[').delete(']').delete('"').split(',')
         @contact.createdBy_id = current_user.id
         @log = @contact.create_log
         @log.save
         @contact.log_id = @log.id
         if @contact.save
-          @contact.reload
-          @id = @contact.id
-          params[:id] = @contact
-          @user = User.find_by_callsign_date(@contact.callsign1.upcase, @contact.date)
+          flash[:success]="Success!"
           redirect_to '/spots'
         else
+          flash[:error]="Failed to save contact"
           render 'new'
         end
       else
-        redirect_to '/'
+        @contact.errors[:callsign1]="You do not have permission to use this callsign on this date"
+        render 'new'
       end
     else
       redirect_to '/'
@@ -177,22 +146,22 @@ class ContactsController < ApplicationController
   def refute
     unless (contact = Contact.find_by_id(params[:id].to_i.abs))
       redirect_to '/'
+      return
     end
     if current_user && ((current_user.id == contact.user2_id) || current_user.is_admin)
       contact.refute_chaser_contact
-      flash[:success] = 'Your location details for this contact have been updated'
+      flash.now[:success] = 'Your location details for this contact have been updated'
     else
       flash[:error] = 'You do not have permissions to refute this contact'
     end
-    params[:orphans] = true
-    params[:user] = contact.callsign2
-    index_prep
-    render 'index'
+    redirect_to "/contacts/?user=#{contact.callsign2}&orphans=true"
   end
 
   def confirm
     unless (contact = Contact.find_by_id(params[:id].to_i.abs))
+      flash[:error] = 'Contact not found'
       redirect_to '/'
+      return
     end
     if current_user && ((current_user.id == contact.user2_id) || current_user.is_admin)
       contact.confirm_chaser_contact
@@ -200,10 +169,7 @@ class ContactsController < ApplicationController
     else
       flash[:error] = 'You do not have permissions to confirm this contact'
     end
-    params[:orphans] = true
-    params[:user] = contact.callsign2
-    index_prep
-    render 'index'
+    redirect_to "/contacts/?user=#{contact.callsign2}&orphans=true"
   end
 
   def contacts_to_csv(items)

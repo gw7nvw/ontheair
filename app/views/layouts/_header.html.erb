@@ -74,8 +74,8 @@
                     <li><%= link_to "My Contacts", '/contacts',  remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')"  %></li>
                     <li><%= link_to "Unmatched contacts with Me", '/contacts?orphans=true',  remote: true,  :id => 'orphans_link', :onclick => "linkHandler('orphans_link')"  %></li>
                     <li class="divider"></li>
-                    <li><%= link_to "Lake Activator Log", '/contacts.csv?type=lake&simple=true&activator=true', :id => 'zlla_link' %></li>
-                    <li><%= link_to "Lake Chaser Log", '/contacts.csv?type=lake&simple=true&chaser=true', :id => 'zllc_link' %></li>
+                    <li><%= link_to "Lake Activator Log", '/contacts?class=lake&simple=true&activator=true', :id => 'zlla_link', remote: true, :onclick => "linkHandler('sota_link')" %></li>
+                    <li><%= link_to "Lake Chaser Log", '/contacts?class=lake&simple=true&chaser=true', :id => 'zllc_link', remote: true, :onclick => "linkHandler('sota_link')" %></li>
                     <li class="divider"></li>
                     <li><%= link_to "SOTA Logs", '/sota_logs', remote: true, :id => 'sota_link', :onclick => "linkHandler('sota_link')" %></li>
                     <li class="divider"></li>

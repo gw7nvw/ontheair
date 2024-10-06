@@ -1,242 +1,254 @@
 <script> 
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
-   document.title = '... On the Air'
-   document.getElementById('logo').innerHTML='... On The Air'
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
+  document.title = '... On the Air'
+  document.getElementById('logo').innerHTML='... On The Air'
 </script>
+
 <div id="actionbar" class="span7">
-   <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
-     &nbsp;--&gt;&nbsp;
-     <%=  link_to  "Contacts:", '/contacts', remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %>
-     &nbsp;--&gt;&nbsp;
-     <b><%= @contact.id.to_s %></b>
-     </div>
-   <div id="controls">
-     <% if signed_in?  and (current_user.id==@contact.user1_id or current_user.id==@contact.user2_id) %>
-            <%=  link_to "QSL", '/qsl/'+@contact.id.to_s, class: "btn btn-small btn-primary", :target => "_blank" %>
-     <% end %>
-     <% if write_access?  and (current_user.id==@contact.user1_id or current_user.is_admin) %>
-            <%=  link_to "Edit", '/contacts/'+@contact.id.to_s+'/editlog', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
-       <% end %>
-       <%=  link_to "Index", "/contacts", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
-       <%=render 'map_controls'%>
-   </div>
+  <div id="crumbs">
+    <%= link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <%=  link_to  "Contacts:", '/contacts', remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %>
+    &nbsp;--&gt;&nbsp;
+    <b><%= @contact.id.to_s %></b>
+  </div>
+
+  <div id="controls">
+    <% if write_access? and (current_user.id==@contact.user1_id or current_user.is_admin) %>
+      <%=  link_to "Edit", '/contacts/'+@contact.id.to_s+'/editlog', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
+    <% end %>
+    <%= link_to "Index", "/contacts", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%= render 'map_controls' %>
+  </div>
 </div>
+
 <div id="right_scroll">
-   <%= render 'flash' %>
-   <div class="erow" id="email">
-      <div class="rowtitle"><%= "Contact Id:" %></div>
-      <div class="rowtext"><%= @contact.id.to_s %></div>
-   </div>
-   <div class="erow" id="email">
-      <div class="rowtitle"><%= "Log Id:" %></div>
-      <div class="rowtext"><%= if @contact.log_id then link_to @contact.log_id.to_s, '/logs/'+@contact.log_id.to_s, remote: true,  :id => 'log', :onclick => "linkHandler('log')" end %></div>
-   </div>
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Callsign 1" %></div>
-      <div class="rowtext"><%=link_to @contact.callsign1, '/users/'+@contact.callsign1, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
-      <%if @contact.is_qrp1 or @contact.is_portable1 then  %>
-          &nbsp;(
-          <%=if @contact.is_qrp1 then "QRP " end %>
-          <%=if @contact.is_portable1 then "Portable" end %>
-          )
+  <%= render 'flash' %>
+  <div class="erow" id="id">
+    <div class="rowtitle">Contact Id></div>
+    <div class="rowtext"><%= @contact.id.to_s %></div>
+  </div>
+  <div class="erow" id="log_id">
+    <div class="rowtitle">Log Id</div>
+    <div class="rowtext"><%= if @contact.log_id then link_to @contact.log_id.to_s, '/logs/'+@contact.log_id.to_s, remote: true,  :id => 'log', :onclick => "linkHandler('log')" end %></div>
+  </div>
+  <div class="erow" id="callsign1">
+    <div class="rowtitle">Callsign 1</div>
+    <div class="rowtext"><%=link_to @contact.callsign1, '/users/'+@contact.callsign1, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
+      <% if @contact.is_qrp1 or @contact.is_portable1 then  %>
+        &nbsp;(
+        <%=if @contact.is_qrp1 then "QRP " end %>
+        <%=if @contact.is_portable1 then "Portable" end %>
+        )
       <% end %>
-      </div>
-   </div>
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Callsign 2" %></div>
-      <div class="rowtext"><%=link_to @contact.callsign2, '/users/'+@contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
-      <%if @contact.is_qrp2 or @contact.is_portable2 then  %>
-          &nbsp;(
-          <%=if @contact.is_qrp2 then "QRP " end %>
-          <%=if @contact.is_portable2 then "Portable" end %>
-          )
+    </div>
+  </div>
+  <div class="erow" id="callsign2">
+    <div class="rowtitle">Callsign 2</div>
+    <div class="rowtext"><%= link_to @contact.callsign2, '/users/'+@contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
+      <% if @contact.is_qrp2 or @contact.is_portable2 then  %>
+        &nbsp;(
+        <%=if @contact.is_qrp2 then "QRP " end %>
+        <%=if @contact.is_portable2 then "Portable" end %>
+        )
       <% end %>
-      </div>
-   </div>
+    </div>
+  </div>
 
-   <div class="erow" id="name">
-     <div class="rowtitle">Date</div><div class="rowtext"> <%= @contact.localdate(current_user) %></div>
-   </div>
-   <div class="erow" id="name">
-     <div class="rowtitle">Time</div><div class="rowtext"> <%= if @contact.time then @contact.localtime(current_user)+" "+@contact.localtimezone(current_user) end%></div>
-   </div>
-   <div class="erow" id="name">
-     <div class="rowtitle">Frequency (MHz)</div><div class="rowtext"> <%= if @contact.frequency then  '%.3f' % @contact.frequency else '' end%></div>
-   </div>
-   <div class="erow" id="name">
-     <div class="rowtitle">Mode</div><div class="rowtext"> <%= @contact.mode %></div>
-   </div>
+  <div class="erow" id="date">
+    <div class="rowtitle">Date</div>
+    <div class="rowtext"> <%= @contact.localdate(current_user) %></div>
+  </div>
+  <div class="erow" id="time">
+    <div class="rowtitle">Time</div>
+    <div class="rowtext"> <%= if @contact.time then @contact.localtime(current_user)+" "+@contact.localtimezone(current_user) end%></div>
+  </div>
+  <div class="erow" id="frequency">
+    <div class="rowtitle">Frequency (MHz)</div>
+    <div class="rowtext"> <%= if @contact.frequency then  '%.3f' % @contact.frequency else '' end%></div>
+  </div>
+  <div class="erow" id="mode">
+    <div class="rowtitle">Mode</div>
+    <div class="rowtext"> <%= @contact.mode %></div>
+  </div>
 
-      <div class="erow">
-         <div class="hrline">
-            <hr noshade size="4">
-         </div>
-      </div>
-   <div class="sectiontitle_bold" id="page_title">
-     First party details
-   </div> 
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Callsign" %></div>
-      <div class="rowtext"><b><%=link_to @contact.callsign1, '/users/'+@contact.callsign1, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %></b>
-        <%if @contact.is_qrp1 or @contact.is_portable1 then  %>
-          &nbsp;(
-          <%=if @contact.is_qrp1 then "QRP " end %>
-          <%=if @contact.is_portable1 then "Portable" end %>
-          )
-        <% end %>
-      </div>
-   </div>
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Name" %></div>
-      <div class="rowtext"> <%= @contact.name1 %></div>
-   </div>
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Signal reported" %></div>
-      <div class="rowtext"> <%= @contact.signal1 %></div>
-   </div>
-   <% @contact.asset1_codes.each do |cal|%>
-     <%links=Asset.assets_from_code(cal)%>
-     <%links.each do |link|%>
-       <% if link[:external] then %>
-         <div class="erow" id="name">
-           <div class="rowtitle"><%=link[:title]%></div>
-           <div class="rowtext"> <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png"> </div>
-         </div>
-       <% else %>
-         <div class="erow" id="name">
-           <% if link[:asset] then %>
-           <div class="rowtitle"><%=link[:asset].type.display_name%></div>
-           <div class="rowtext"> <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
-           <% else %>
-           <div class="rowtext">Asset no longer exists <%=cal%></div>
-           <% end %>
-         </div>
-       <% end %>
-     <% end %>
-   <% end %>
-   <div class="erow" id="location">
-      <div class="rowtitle"><%= "Location" %></div>
-      <% if @contact.x1 and @contact.y1 %>
-        <div class="rowtext"> <%= "NZTM2000: "+@contact.x1.round().to_s+", "+@contact.y1.round().to_s %><% if @contact.altitude1 %><%=" (alt: "+@contact.altitude1.to_i.to_s+"m)"%> <% end %> </div>
+  <div class="erow">
+    <div class="hrline">
+      <hr noshade size="4">
+    </div>
+  </div>
+
+  <div class="sectiontitle_bold" id="page_title">
+    First party details
+  </div> 
+  <div class="erow" id="p1_callsign">
+    <div class="rowtitle">Callsign</div>
+    <div class="rowtext"><b><%=link_to @contact.callsign1, '/users/'+@contact.callsign1, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %></b>
+      <% if @contact.is_qrp1 or @contact.is_portable1 %>
+        &nbsp;(
+        <%=if @contact.is_qrp1 then "QRP " end %>
+        <%=if @contact.is_portable1 then "Portable" end %>
+        )
       <% end %>
-   </div>
-   <div class="erow" id="name">
-      <div class="rowtitle">&nbsp</div>
-      <div class="rowtext"> <%= @contact.loc_desc1 %></div>
-   </div>
+    </div>
+  </div>
+  <div class="erow" id="p1_name">
+    <div class="rowtitle">Name</div>
+    <div class="rowtext"> <%= @contact.name1 %></div>
+  </div>
+  <div class="erow" id="p1_signal">
+    <div class="rowtitle">Signal reported</div>
+    <div class="rowtext"><%= @contact.signal1 %></div>
+  </div>
+  <% @contact.asset1_codes.each do |cal| %>
+    <% links=Asset.assets_from_code(cal) %>
+    <% count = 0 %>
+    <%links.each do |link|%>
+      <% count+=1 %>
+      <% if link[:external] %>
+        <div class="erow" id='p1_asset_code<%= count %>'>
+          <div class="rowtitle"><%= link[:title] %></div>
+          <div class="rowtext"> <%= link_to link[:code], link[:url], target: "_blank" %><img src="/assets/external-link-symbol.png"> </div>
+        </div>
+      <% else %>
+        <div class="erow" id="p1_asset_code<%= count %>">
+          <% if link[:asset] then %>
+            <div class="rowtitle"><%= link[:asset].type.display_name %></div>
+            <div class="rowtext"><%= link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')" %></div>
+          <% else %>
+            <div class="rowtext">Asset no longer exists <%= cal %></div>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+  <div class="erow" id="p1_location">
+    <div class="rowtitle">Location</div>
+    <% if @contact.x1 and @contact.y1 %>
+      <div class="rowtext"><%= "NZTM2000: "+@contact.x1.round().to_s+", "+@contact.y1.round().to_s %><% if @contact.altitude1 %><%= " (alt: "+@contact.altitude1.to_i.to_s+"m)" %><% end %></div>
+    <% end %>
+  </div>
+  <div class="erow" id="p1_loc_desc">
+    <div class="rowtitle">&nbsp;</div>
+    <div class="rowtext"> <%= @contact.loc_desc1 %></div>
+  </div>
 
-<div id="your_details" style='display:none'>
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Power TX" %></div>
+  <div id="your_details" style='display:none'>
+    <div class="erow" id="p1_power">
+      <div class="rowtitle">Power TX</div>
       <div class="rowtext"> <%= @contact.power1 %></div>
-   </div>
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Transceiver" %></div>
-      <div class="rowtext"> <%= @contact.transceiver1 %></div>
-   </div>
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Antenna" %></div>
-      <div class="rowtext"> <%= @contact.antenna1 %></div>
-   </div>
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Notes" %></div>
-      <div class="rowtext"> <%= @contact.comments1 %></div>
-   </div>
-</div>
+    </div>
+    <div class="erow" id="p1_transceiver">
+      <div class="rowtitle">Transceiver</div>
+      <div class="rowtext"><%= @contact.transceiver1 %></div>
+    </div>
+    <div class="erow" id="p1_antenna">
+      <div class="rowtitle">Antenna</div>
+      <div class="rowtext"><%= @contact.antenna1 %></div>
+    </div>
+    <div class="erow" id="p1_notes">
+      <div class="rowtitle">Notes</div>
+      <div class="rowtext"><%= @contact.comments1 %></div>
+    </div>
+  </div>
 
-      <%=render :partial => 'expand_buttons',  :locals => {:expName => "your_details", :initialSt => 0} %>
+  <%=render :partial => 'expand_buttons',  :locals => {:expName => "your_details", :initialSt => 0} %>
 
-   <div class="erow">
-      <div class="hrline">
-         <hr noshade size="4">
-      </div>
-   </div>
+  <div class="erow">
+    <div class="hrline">
+      <hr noshade size="4">
+    </div>
+  </div>
 
-   <div class="sectiontitle_bold" id="page_title">
-     Second party details
-   </div> 
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Callsign" %></div>
-      <div class="rowtext"><b><%=link_to @contact.callsign2, '/users/'+@contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %></b>
-        <%if @contact.is_qrp2 or @contact.is_portable2 then  %>
-          &nbsp;(
-          <%=if @contact.is_qrp2 then "QRP " end %>
-          <%=if @contact.is_portable2 then "Portable" end %>
-          )
-        <% end %>
-      </div>
-   </div>
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Name" %></div>
-      <div class="rowtext"> <%= @contact.name2 %></div>
-   </div>
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Signal reported" %></div>
-      <div class="rowtext"> <%= @contact.signal2 %></div>
-   </div>
-   <% @contact.asset2_codes.each do |cal|%>
-     <%links=Asset.assets_from_code(cal)%>
-     <% links.each do |link| %>
-       <% if link[:external] then %>
-         <div class="erow" id="name">
-           <div class="rowtitle"><%=link[:title]%></div>
-           <div class="rowtext"> <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png"> </div>
-         </div>
-       <% else %>
-         <div class="erow" id="name">
-           <% if link[:asset] then %>
-           <div class="rowtitle"><%=if link[:asset].respond_to?(:type) then link[:asset].type.display_name else link[:type] end%></div>
-           <div class="rowtext"> <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
-           <% else %>
-           <div class="rowtext">Asset no longer exists <%=cal%></div>
-           <% end %>
-         </div>
-       <% end %>
-     <% end %>
-   <% end %>
+  <div class="sectiontitle_bold" id="page_title">
+    Second party details
+  </div> 
 
-   <div class="erow" id="location">
-      <div class="rowtitle"><%= "Location" %></div>
-      <% if @contact.x2 and @contact.y2 %>
-        <div class="rowtext"> <%= "NZTM2000: "+@contact.x2.round().to_s+", "+@contact.y2.round().to_s %><% if @contact.altitude2 %><%=" (alt: "+@contact.altitude2.to_i.to_s+"m)"%> <% end %> </div>
+  <div class="erow" id="p2_callsign">
+    <div class="rowtitle">Callsign</div>
+    <div class="rowtext"><b><%=link_to @contact.callsign2, '/users/'+@contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %></b>
+      <% if @contact.is_qrp2 or @contact.is_portable2 then  %>
+        &nbsp;(
+        <%=if @contact.is_qrp2 then "QRP " end %>
+        <%=if @contact.is_portable2 then "Portable" end %>
+        )
       <% end %>
-   </div>
-   <div class="erow" id="name">
-      <div class="rowtitle">&nbsp</div>
-      <div class="rowtext"> <%= @contact.loc_desc2 %></div>
-   </div>
+    </div>
+  </div>
+  <div class="erow" id="p2_name">
+    <div class="rowtitle">Name</div>
+    <div class="rowtext"><%= @contact.name2 %></div>
+  </div>
+  <div class="erow" id="p2_signal">
+    <div class="rowtitle">Signal reported</div>
+    <div class="rowtext"><%= @contact.signal2 %></div>
+  </div>
+  <% @contact.asset2_codes.each do |cal| %>
+    <% links=Asset.assets_from_code(cal) %>
+    <% count = 0 %>
+    <% links.each do |link| %>
+      <% count += 1%>
+      <% if link[:external] then %>
+        <div class="erow" id="p2_asset_code<%= count %>">
+          <div class="rowtitle"><%= link[:title] %></div>
+          <div class="rowtext"><%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png"> </div>
+        </div>
+      <% else %>
+        <div class="erow" id="p2_asset_code<%=count%>">
+          <% if link[:asset] then %>
+            <div class="rowtitle"><%= if link[:asset].respond_to?(:type) then link[:asset].type.display_name else link[:type] end %></div>
+            <div class="rowtext"><%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')" %></div>
+          <% else %>
+            <div class="rowtext">Asset no longer exists <%= cal %></div>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
 
-<div id="their_details" style='display:none'>
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Power TX" %></div>
-      <div class="rowtext"> <%= @contact.power2 %></div>
-   </div>
-   <div class="erow" id="name">
+  <div class="erow" id="p2_location">
+    <div class="rowtitle">Location</div>
+    <% if @contact.x2 and @contact.y2 %>
+      <div class="rowtext"><%= "NZTM2000: "+@contact.x2.round().to_s+", "+@contact.y2.round().to_s %><% if @contact.altitude2 %><%=" (alt: "+@contact.altitude2.to_i.to_s+"m)" %> <% end %> </div>
+    <% end %>
+  </div>
+  <div class="erow" id="p2_loc_desc">
+    <div class="rowtitle">&nbsp;</div>
+    <div class="rowtext"><%= @contact.loc_desc2 %></div>
+  </div>
+
+  <div id="their_details" style='display:none'>
+    <div class="erow" id="p2_power">
+      <div class="rowtitle">Power TX</div>
+      <div class="rowtext"><%= @contact.power2 %></div>
+    </div>
+    <div class="erow" id="p2_transceiver">
       <div class="rowtitle"><%= "Transceiver" %></div>
       <div class="rowtext"> <%= @contact.transceiver2 %></div>
-   </div>
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Antenna" %></div>
-      <div class="rowtext"> <%= @contact.antenna2 %></div>
-   </div>
-   <div class="erow" id="name">
-      <div class="rowtitle"><%= "Notes" %></div>
-      <div class="rowtext"> <%= @contact.comments2 %></div>
-   </div>
+    </div>
+    <div class="erow" id="p2_antenna">
+      <div class="rowtitle">Antenna</div>
+      <div class="rowtext"><%= @contact.antenna2 %></div>
+    </div>
+    <div class="erow" id="p2_notes">
+      <div class="rowtitle">Notes</div>
+      <div class="rowtext"><%= @contact.comments2 %></div>
+    </div>
+  </div>
+
+  <%=render :partial => 'expand_buttons',  :locals => {:expName => "their_details", :initialSt => 0} %>
+
+  <div class="erow">
+    <div class="hrline">
+      <hr noshade size="4">
+    </div>
+  </div>
 </div>
 
-      <%=render :partial => 'expand_buttons',  :locals => {:expName => "their_details", :initialSt => 0} %>
-   <div class="erow">
-      <div class="hrline">
-         <hr noshade size="4">
-      </div>
-   </div>
-</div>
 <script>
-    document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
-    place_init('<%=@contact.location1%>', 0, site_green_circle);
-    place_init('<%=@contact.location2%>', 1, site_red_circle);
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+  place_init('<%=@contact.location1%>', 0, site_green_circle);
+  place_init('<%=@contact.location2%>', 1, site_red_circle);
 </script>
 

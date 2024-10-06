@@ -6,8 +6,8 @@ class PostsControllerTest < ActionController::TestCase
   test "Can create new spot" do
     sign_in users(:zl4nvw)
     user1=User.find_by(callsign: 'ZL4NVW')
-    asset1=create_test_asset
-    asset2=create_test_asset
+    asset1=create_test_asset(location: create_point(173.1,-43))
+    asset2=create_test_asset(location: create_point(173.1,-44))
 
     get :new, {topic_id: SPOT_TOPIC}
     assert_response :success
@@ -61,7 +61,7 @@ class PostsControllerTest < ActionController::TestCase
   test "Can spot from asset" do
     sign_in users(:zl4nvw)
     user1=User.find_by(callsign: 'ZL4NVW')
-    asset1=create_test_asset
+    asset1=create_test_asset(location: create_point(173.1,-43))
 
     get :new, {topic_id: SPOT_TOPIC, code: asset1.safecode}
     assert_response :success
@@ -80,8 +80,8 @@ class PostsControllerTest < ActionController::TestCase
     sign_in users(:zl4nvw)
     user1=User.find_by(callsign: 'ZL4NVW')
     user2=create_test_user
-    asset1=create_test_asset
-    asset2=create_test_asset
+    asset1=create_test_asset(location: create_point(173.1,-43))
+    asset2=create_test_asset(location: create_point(173.1,-44))
 
     item=create_test_spot(user1, asset_codes: [asset1.code, asset2.code], callsign: user2.callsign, freq: 7.09, mode: "SSB")
     spot=item.post
@@ -109,8 +109,8 @@ class PostsControllerTest < ActionController::TestCase
   test "Can create new alert" do
     sign_in users(:zl4nvw)
     user1=User.find_by(callsign: 'ZL4NVW')
-    asset1=create_test_asset
-    asset2=create_test_asset
+    asset1=create_test_asset(location: create_point(173.1,-43))
+    asset2=create_test_asset(location: create_point(173.1,-44))
 
     get :new, {topic_id: ALERT_TOPIC}
     assert_response :success

@@ -197,7 +197,7 @@ class Contact < ActiveRecord::Base
   # - silently remove chaser location if this happens
   # - better than failing a log upload or save where we have not ability to display error
   def check_for_same_place_error
-    if asset1_codes.sort == asset2_codes.sort
+    if asset1_codes and asset1_codes!=[] and asset1_codes.sort == asset2_codes.sort
       logger.debug 'Removing invalid asset2 codes'
       self.asset2_codes = []
       self.loc_desc2 = 'INVALID'

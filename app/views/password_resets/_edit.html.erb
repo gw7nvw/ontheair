@@ -1,6 +1,5 @@
 <% provide(:title, "Password Reset") %>
 <% @title=" | Password Reset " %>
-<%= render 'flash' %>
 
 <script> 
    reset_map_controllers();
@@ -9,9 +8,24 @@
    document.body.classList.remove('loading');
 </script>
 
- <div class="erow">
-  <div class="span6">
+<div id="actionbar" class="span7">
+  <div id="crumbs">
+    <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <b>Password Reset</b>
+  </div>
+
+  <div id="controls">
+    <%=render 'map_controls'%>
+  </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+
+  <div class="erow">
     <%= form_for @user, url: password_reset_path(params[:id]) do |f| %>
+      <p>Please enter your new password details to reset your password</p>
       <%= render 'shared/error_messages' %>
 
       <%= hidden_field_tag :email, @user.email %>
@@ -28,3 +42,8 @@
     <% end %>
   </div>
 </div>
+<script>
+  closeAllHandlers();
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>
+

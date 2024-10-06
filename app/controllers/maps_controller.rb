@@ -6,12 +6,13 @@ class MapsController < ApplicationController
     @maplayers = Maplayer.all
   end
 
-  def print
-    @papersize = Papersize.all
-  end
+  # No current support for printing - though code is all there
+  # def print
+  #   @papersize = Papersize.all
+  # end
 
   def legend
     @projections = Projection.all.order(:name)
     @projection = params[:projection] || '2193'
-    end
+  end
 end

@@ -40,7 +40,7 @@
         <tr><td>Comments</td><td><%= f.text_area :comments1 %></td></tr>
       </table>
       <div class="erow">
-        <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Saving ...');" %>
+        <%= f.submit @submit_button, id: "submit", class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Saving ...');" %>
         <%  if(@submit_button == "Save Changes" and current_user) %>
           <%= f.submit "Delete", confirm: "Delete contact: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>
         <% end %>

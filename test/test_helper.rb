@@ -238,7 +238,7 @@ NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 
   end
  
   def make_regex_safe(text)
-   text=text.gsub("[","\\[").gsub("]","\\]").gsub("{","\\{").gsub("}","\\}").gsub("(","\\(").gsub(")","\\)") 
+   text=text.gsub("[","\\[").gsub("]","\\]").gsub("{","\\{").gsub("}","\\}").gsub("(","\\(").gsub(")","\\)").gsub(":","\\:") 
    text
   end
 end

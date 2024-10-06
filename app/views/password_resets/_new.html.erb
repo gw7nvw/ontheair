@@ -1,6 +1,5 @@
 <% provide(:title, "Password Reset") %>
 <% @title=" | Password Reset " %>
-<%= render 'flash' %>
 
 <script> 
    reset_map_controllers();
@@ -8,26 +7,34 @@
    document.getElementById("page_status").innerHTML = '';
    document.body.classList.remove('loading');
 </script>
+
+<div id="actionbar" class="span7">
+  <div id="crumbs">
+    <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <b>Password Reset</b>
+  </div>
+
+  <div id="controls">
+    <%=render 'map_controls'%>
+  </div>
+</div>
+
 <div id="right_scroll">
    <%= render 'flash' %>
 
    <div class="erow">
-   Enter your account's registered email below to request a password reset.  You will be emailed with a link to reset your password.  </div>
-   <div class="erow">The email may end up in your spam folder. There are known issues with delivery being rejected to yahoo addresses due to their filters on apparent bulk-mail. </div>
-   <div class="erow">Email me mattbriggs@yahoo.com if you need to request a manual reset instead.  
+     <p>Enter your account's registered email below to request a password reset.  You will be emailed with a link to reset your password.</p>
+     <p>The email may end up in your spam folder.</p>
+     <p>Email me mattbriggs@yahoo.com if you need to request a manual reset instead.  </p>
    </div>
-   <div class="row">
-     <div class="span6">
-       <%= form_for :password_reset, url: password_resets_path, remote: true do |f| %>
 
-         <%= f.label :email %>
-         <%= f.text_field :email %>
-
-         <br/>
-
-         <%= f.submit "Reset password", class: "btn btn-small btn-primary" %>
-       <% end %>
-
-     </div>
+   <div class="erow">
+     <%= form_for :password_reset, url: password_resets_path, remote: true do |f| %>
+       <%= f.label :email %>
+       <%= f.text_field :email %>
+       <br/>
+       <%= f.submit "Reset password", id: 'submit', class: "btn btn-small btn-primary" %>
+     <% end %>
    </div>
 </div>

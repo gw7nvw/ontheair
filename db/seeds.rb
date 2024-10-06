@@ -880,3 +880,8 @@ WebLinkClass.create({"id"=>3, "name"=>"doc", "display_name"=>"DOC", "url"=>"http
 WebLinkClass.create({"id"=>4, "name"=>"routeguides", "display_name"=>"NZ Route Guides", "url"=>"https://routeguides.co.nz/", "is_active"=>nil})
 WebLinkClass.create({"id"=>5, "name"=>"other", "display_name"=>"Other", "url"=>"", "is_active"=>nil})
 WebLinkClass.create({"id"=>6, "name"=>"climbnz", "display_name"=>"NZAC ClimbNZ", "url"=>"https://climbnz.org.nz/", "is_active"=>true})
+Maplayer.destroy_all
+Maplayer.create({"id"=>2, "name"=>"(LINZ) Topo50 latest", "baseurl"=>"http://tiles-a.data-cdn.linz.govt.nz/services;key=d8c83efc690a4de4ab067eadb6ae95e4/tiles/v4/layer=767/EPSG:2193/", "basemap"=>"linz", "maxzoom"=>16, "minzoom"=>0, "imagetype"=>"png"})
+Maplayer.create({"id"=>3, "name"=>"(LINZ) Airphoto latest", "baseurl"=>"http://tiles-a.data-cdn.linz.govt.nz/services;key=d8c83efc690a4de4ab067eadb6ae95e4/tiles/v4/set=2/EPSG:2193/", "basemap"=>"linz", "maxzoom"=>16, "minzoom"=>0, "imagetype"=>"png"})
+Maplayer.create({"id"=>1, "name"=>"NZTM Topo 2019", "baseurl"=>"http://au.mapspast.org.nz/topo50-2019/", "basemap"=>"mapspast", "maxzoom"=>10, "minzoom"=>0, "imagetype"=>"png"})
+Maplayer.create({"id"=>4, "name"=>"Public Access Land", "baseurl"=>"http://au.mapspast.org.nz/pal-2019/", "basemap"=>"mapspast", "maxzoom"=>10, "minzoom"=>0, "imagetype"=>"png"})
