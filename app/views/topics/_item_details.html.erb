@@ -12,7 +12,6 @@
   <% @contact=HotaPost.find_by_id(item.item_id) %>
   <%=if @contact then  render 'topics/hota_details' end %>
 <% elsif item.item_type=="topic" then %>
-  <% puts "got subtopic" %>
   <% @subtopic=item.subtopic %>
   <%=if @subtopic then render 'topics/topic_details' end%>
 <% end %>

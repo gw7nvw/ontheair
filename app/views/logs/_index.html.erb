@@ -19,8 +19,13 @@ $(function () {
    <div id="crumbs">
      <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
      &nbsp;--&gt;&nbsp;
-     <b>Logs <%=
-          if @user then "("+@user.callsign+")" end%></b>
+     <b>Logs</b>
+     <% if @user then %>&nbsp;--&gt;&nbsp;<b><%= @user.callsign %></b><% end %>
+     <% if @asset then %>&nbsp;--&gt;&nbsp;<b><%= @asset.codename %></b>
+       <% elsif @assetcode then %>&nbsp;--&gt;&nbsp;<b><%= @assetcode %></b>
+       <% elsif @all then %>&nbsp;--&gt;&nbsp;<b>All</b>
+       <% elsif @class then %>&nbsp;--&gt;&nbsp;<b><%= @class.capitalize.pluralize %></b>
+     <% end %>
      </div>
    <div id="controls">
        <% if write_access?  %>
@@ -49,8 +54,8 @@ $(function () {
     <br/>
     <div class="rowtitle">Show logs from (location code):</div>
     <div class="rowtext">
-      <input type="text" name="asset" value='<%=@assetcode%>'/>
-      <input type="hidden" name="user" value='<%=@callsign%>'/>
+      <input type="text" id="asset" name="asset" value='<%=@assetcode%>'/>
+      <input type="hidden" id="user" name="user" value='<%=@callsign%>'/>
     </div>
     <div class="buttonshort">
       <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>

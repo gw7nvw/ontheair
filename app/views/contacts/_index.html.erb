@@ -19,11 +19,12 @@
     &nbsp;--&gt;&nbsp;
     <b>Contacts</b>
     <% if @user then %>&nbsp;--&gt;&nbsp;<b><%= @user.callsign %></b><% end %>
-      <% if @asset then %>&nbsp;--&gt;&nbsp;<b><%= @asset.codename %></b>
-        <% elsif @assetcode then %>&nbsp;--&gt;&nbsp;<b><%= @assetcode %></b>
-        <% elsif @all then %>&nbsp;--&gt;&nbsp;<b>All</b>
-        <% elsif @class then %>&nbsp;--&gt;&nbsp;<b><%= @class.capitalize.pluralize %></b>
-        <% elsif @orphans then %>&nbsp;--&gt;&nbsp;<b>Unmatched Contacts</b><% end %>
+    <% if @asset then %>&nbsp;--&gt;&nbsp;<b><%= @asset.codename %></b>
+      <% elsif @assetcode then %>&nbsp;--&gt;&nbsp;<b><%= @assetcode %></b>
+      <% elsif @all then %>&nbsp;--&gt;&nbsp;<b>All</b>
+      <% elsif @class then %>&nbsp;--&gt;&nbsp;<b><%= @class.capitalize.pluralize %></b>
+      <% elsif @orphans then %>&nbsp;--&gt;&nbsp;<b>Unmatched Contacts</b>
+    <% end %>
   </div>
   <div id="controls">
     <% if write_access?  %>

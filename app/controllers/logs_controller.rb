@@ -2,7 +2,7 @@
 
 # typed: false
 class LogsController < ApplicationController
-  before_action :signed_in_user, only: %i[edit update new create upload savefile delete save]
+  before_action :signed_in_user, only: %i[edit editcontact update new create upload savefile delete save]
 
   skip_before_filter :verify_authenticity_token, only: %i[save savefile]
 
@@ -11,18 +11,21 @@ class LogsController < ApplicationController
       @callsign = current_user.callsign
       @user = current_user
     end
+
     if params[:user] && !params[:user].empty?
       if params[:user].casecmp('ALL').zero?
         @callsign = nil
+        @user = nil
       else
         @callsign = params[:user].upcase
         @user = User.find_by(callsign: @callsign.upcase)
       end
     end
+
     whereclause = 'true'
     if params[:asset] && !params[:asset].empty?
       whereclause = "('#{params[:asset].upcase.tr('_', '/')}' = ANY(asset_codes))"
-      @asset = Asset.find_by(code: params[:asset].upcase)
+      @asset = Asset.find_by(code: params[:asset].tr('_', '/').upcase)
       @assetcode = @asset.code if @asset
     end
 
@@ -59,23 +62,25 @@ class LogsController < ApplicationController
 
   def create
     if signed_in?
-      if params[:commit]
-        @log = Log.new(log_params)
+      @log = Log.new(log_params)
+      @user = User.find_by_callsign_date(@log.callsign1.upcase, @log.date)
+      if (@user.id === current_user.id) || current_user.is_admin
         @log.asset_codes = params[:log][:asset_codes].delete('{').delete('}').split(',')
         @log.createdBy_id = current_user.id
         if @log.save
           @log.reload
           @id = @log.id
           params[:id] = @id
-          @user = User.find_by_callsign_date(@log.callsign1.upcase, @log.date)
           redirect_to '/logs/' + @id.to_s + '/edit'
         else
           render 'new'
         end
       else
-        redirect_to '/'
+        @log.errors[:callsign1]="You do not have permission to use this callsign on this date"
+        render 'new'
       end
     else
+      flash[:error]="You do not have permission to create a log"
       redirect_to '/'
     end
   end
@@ -99,7 +104,7 @@ class LogsController < ApplicationController
         c.asset2_names = asset2_names.join("\n")
       end
     else
-      flash[:error] = 'Unable to edit requested log'
+      flash[:error] = "You do not have permission to use this callsign on this date"
       redirect_to '/'
     end
   end
@@ -132,39 +137,35 @@ class LogsController < ApplicationController
         redirect_to '/'
       end
     else
-      flash[:error] = 'You are not authorised to edit this contact'
+      flash[:error] = 'You do not have permission to use this callsign on this date'
       redirect_to '/'
     end
   end
 
   def update
     if signed_in?
-      if params[:commit]
-        unless (@log = Log.find_by_id(params[:id]))
-          flash[:error] = 'Log does not exist: ' + @log.id.to_s
-          redirect_to '/'
-        end
+      unless (@log = Log.find_by_id(params[:id]))
+        flash[:error] = 'Log does not exist: ' + @log.id.to_s
+        redirect_to '/'
+      end
 
-        @log.assign_attributes(log_params)
-        loguser = User.find_by_callsign_date(@log.callsign1.upcase, @log.date)
-        if (loguser.id === current_user.id) || current_user.is_admin
-          @log.asset_codes = params[:log][:asset_codes].delete('{').delete('}').split(',')
-          if @log.save
-            flash[:success] = 'Log details updated'
-            @user = User.find_by(callsign: @log.callsign1)
-            @contacts = Contact.where(log_id: @log.id).order(:time)
-            redirect_to '/logs/' + @log.id.to_s + '/edit'
-          else
-            @user = User.find_by(callsign: @log.callsign1)
-            @contacts = Contact.where(log_id: @log.id).order(:time)
-            redirect_to '/logs/' + @log.id.to_s + '/edit'
-          end
+      @log.assign_attributes(log_params)
+      loguser = User.find_by_callsign_date(@log.callsign1.upcase, @log.date)
+      if (loguser.id === current_user.id) || current_user.is_admin
+        @log.asset_codes = params[:log][:asset_codes].delete('{').delete('}').split(',')
+        if @log.save
+          flash[:success] = 'Log details updated'
+          @user = User.find_by(callsign: @log.callsign1)
+          @contacts = Contact.where(log_id: @log.id).order(:time)
+          redirect_to '/logs/' + @log.id.to_s + '/edit'
         else
-          flash[:error] = 'You do not have permissions to take this action'
-          redirect_to '/'
+          @user = User.find_by(callsign: @log.callsign1)
+          @contacts = Contact.where(log_id: @log.id).order(:time)
+          redirect_to '/logs/' + @log.id.to_s + '/edit'
         end
       else
-        redirect_to '/'
+        @log.errors[:callsign1]="You do not have permission to use this callsign on this date"
+        render 'edit'
       end
     else
       flash[:error] = 'You do not have permissions to take this action'
@@ -181,8 +182,9 @@ class LogsController < ApplicationController
           cl.contacts.each(&:destroy)
           cl.destroy
           flash[:success] = 'Log deleted'
+        else
+          flash[:error] = 'You do not have permission to use this callsign on this date'
         end
-
         redirect_to '/logs/'
       end
     else
