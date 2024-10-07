@@ -48,10 +48,10 @@ match "/hema_logs/:id/finalise", :to => "hema_logs#finalise", :as => "hema_final
 #controller no longer used - delete handled in photos
 #get 'images/:id/delete', to: 'images#delete'
 
-resources :logs
-get 'logs/:id/delete', to: 'logs#delete'
 get 'logs/upload', to: 'logs#upload' #log uploads
 post 'logs/upload', to: 'logs#savefile' #log uploads
+resources :logs
+get 'logs/:id/delete', to: 'logs#delete'
 match "/logs/:id/save", :to => "logs#save", :as => "log_save_data", :via => "post" #spreadsheet editor
 match "/logs/:id/load", :to => "logs#load", :as => "log_load_data", :via => "get" #spreadsheet editor
 

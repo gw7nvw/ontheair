@@ -206,7 +206,7 @@ class LogsController < ApplicationController
     location = location.upcase if location && !location.empty?
 
     if params[:upload][:doc_callsign]
-      puts 'Got callsign: ' + params[:upload][:doc_callsign]
+      logger.debug 'Got callsign: ' + params[:upload][:doc_callsign]
       callsign = params[:upload][:doc_callsign]
       force_callsign = true
     end
@@ -216,8 +216,7 @@ class LogsController < ApplicationController
              current_user
            end
     callsign ||= user.callsign
-
-    if params[:upload][:doc_do_not_lookup] && (params[:upload][:doc_do_not_lookup] == '1')
+    if params[:upload][:doc_do_not_lookup] && (params[:upload][:doc_do_not_lookup] == '1' or params[:upload][:doc_do_not_lookup] == true)
       do_not_lookup = true
     end
     success = @upload.save
@@ -235,7 +234,7 @@ class LogsController < ApplicationController
       success = results[:success]
       if errors && (errors.count > 0)
         @errors = errors
-        puts errors.join('\n')
+        logger.warn errors.join('\n')
       end
       if (success == false) && (params[:upload][:doc_ignore_error] != '1')
         flash[:success] = 'Found ' + results[:good_contacts].to_s + ' valid contact(s) and ' + results[:good_logs].to_s + ' valid logs but did not upload due to other errors.'
@@ -309,9 +308,9 @@ class LogsController < ApplicationController
         cle.asset1_codes = log.asset_codes
         cle.asset1_codes = [''] if cle.asset1_codes.nil?
         cle.asset2_codes = row[13]
-        puts 'DEBUG asset codes'
-        puts cle.asset2_codes
-        puts cle.loc_desc2
+        logger.debug 'DEBUG asset codes'
+        logger.debug cle.asset2_codes
+        logger.debug cle.loc_desc2
         if cle.asset2_codes.nil? || (cle.asset2_codes == []) then cle.asset2_codes = [''] end
         cle.location2 = row[14]
         cle.x2 = row[15]

@@ -709,9 +709,250 @@ class LogsControllerTest < ActionController::TestCase
   ##################################################################
   # UPLOAD / SAVEFILE 
   ##################################################################
+  test "Can view log upload form" do
+    user1=create_test_user
+    sign_in user1
 
+    get :upload
+
+    assert_response :success
+
+    #Breadcrumbs
+    assert_select '#crumbs', /Home/
+    assert_select '#crumbs', /Logs/
+    assert_select '#crumbs', /Upload/
+
+    #Action control bar
+    assert_select '#controls', /Index/
+    assert_select '#controls', /Smaller Map/
+    assert_select '#controls', /Larger Map/
+    assert_select '#controls', /Back/
+
+    assert_select "#upload_doc_callsign"
+    assert_select "#upload_doc_location"
+    assert_select "#upload_doc_no_create"
+    assert_select "#upload_doc_ignore_error"
+    assert_select "#upload_doc_do_not_lookup"
+    assert_select "#upload_doc"
+  end
+
+  test "Cannot view log upload form if not logged in" do
+    user1=create_test_user
+
+    get :upload
+    
+    assert_response :redirect
+    assert_redirected_to /signin/
+
+    assert_equal "Please sign in.",  flash[:notice]
+  end
+
+  test "Can submit a hamrs log" do
+    user1=create_test_user
+    sign_in user1
+
+    #upload log
+    upload_file = fixture_file_upload("files/logs/hamrs.adi",'text/plain')
+    post :savefile, upload: {doc_callsign: user1.callsign, doc_location: '', doc_no_create: false, doc_ignore_error: false, doc_do_not_lookup: false, doc: upload_file}
+    assert_response :redirect
+    log=Log.order(:created_at).last
+
+    #log created
+    assert_equal user1.id, log.user1_id, "User ID"
+    assert_equal ['ZL-0147'], log.asset_codes, "Asset codes"
+    assert_equal ['pota park'], log.asset_classes, "Asset classes"
+    assert_equal 100, log.power1, "Power"
+    assert_equal user1.callsign, log.callsign1, "Callsign"
+    assert_equal true, log.is_portable1, "Portable"
+
+    #contacts created
+    assert_equal 10, log.contacts.count, "Correct # contacts"
+    contacts=log.contacts.order(:time)
+   
+    #1st entry correct 
+    assert_equal "40m", contacts[0].band, "Band"
+    assert_equal 7.09, contacts[0].frequency, "Freq"
+    assert_equal "Rick Jackson", contacts[0].name2, "Name"
+    assert_equal "ZL3RIK", contacts[0].callsign2, "Callsign"
+    assert_equal "2023-02-03", contacts[0].date.strftime("%Y-%m-%d"), "Date"
+    assert_equal "02:18", contacts[0].time.strftime("%H:%M"), "Time"
+    assert_equal "Christchurch, New Zealand", contacts[0].loc_desc2, "Location2"
+    assert_equal "57", contacts[0].signal1, "Signal1"
+    assert_equal "59", contacts[0].signal2, "Signal2"
+    #loc2=Asset.maidenhead_to_lat_lon('RE66gk') 
+    assert_equal "POINT (172.5 -43.583333333333336)", contacts[0].location2.as_text, "Location2"
+
+    #rest of entries exist
+    assert_equal "ZL3GIG", contacts[1].callsign2, "Callsign"
+    assert_equal "ZL3ABY", contacts[2].callsign2, "Callsign"
+    assert_equal "ZL3QR", contacts[3].callsign2, "Callsign"
+    assert_equal "ZL3AWB", contacts[4].callsign2, "Callsign"
+    assert_equal "ZL3OCT", contacts[5].callsign2, "Callsign"
+    assert_equal "ZL4KD", contacts[6].callsign2, "Callsign"
+    assert_equal "ZL4LO", contacts[7].callsign2, "Callsign"
+    assert_equal "ZL3YF", contacts[8].callsign2, "Callsign"
+    assert_equal "ZL3ABY", contacts[9].callsign2, "Callsign"
+  end
+
+  test "Can submit a eqsl log" do
+    user1=create_test_user
+    asset1=create_test_asset
+    sign_in user1
+
+    #upload log
+    upload_file = fixture_file_upload("files/logs/eqsl.adi",'text/plain')
+    post :savefile, upload: {doc_callsign: user1.callsign, doc_location: asset1.code, doc_no_create: false, doc_ignore_error: false, doc_do_not_lookup: false, doc: upload_file}
+    assert_response :redirect
+    log=Log.order(:created_at).last
+
+    #log created
+    assert_equal user1.id, log.user1_id, "User ID"
+    assert_equal [asset1.code], log.asset_codes, "Asset codes"
+    assert_equal ['hut'], log.asset_classes, "Asset classes"
+    assert_equal user1.callsign, log.callsign1, "Callsign"
+
+    #contacts created
+    assert_equal 12, log.contacts.count, "Correct # contacts"
+    contacts=log.contacts.order(:time)
+   
+    #1st entry correct 
+    assert_equal "10m", contacts[0].band, "Band"
+    assert_equal 28, contacts[0].frequency, "Freq"
+    assert_equal 'SSB', contacts[0].mode, "Mode"
+    assert_equal "JA7MYQ", contacts[0].callsign2, "Callsign"
+    assert_equal "1983-04-23", contacts[0].date.strftime("%Y-%m-%d"), "Date"
+    assert_equal "00:01", contacts[0].time.strftime("%H:%M"), "Time"
+    assert_equal "59", contacts[0].signal2, "Signal2"
+
+    #rest of entries exist
+    assert_equal "EA1ABT", contacts[1].callsign2, "Callsign"
+    assert_equal "EA1AKS", contacts[2].callsign2, "Callsign"
+    assert_equal "HA8ZB", contacts[3].callsign2, "Callsign"
+    assert_equal "AD8I", contacts[4].callsign2, "Callsign"
+    assert_equal "EA8AKN", contacts[5].callsign2, "Callsign"
+    assert_equal "JR2UJT", contacts[6].callsign2, "Callsign"
+    assert_equal "YO7ARZ", contacts[7].callsign2, "Callsign"
+    assert_equal "I0MWI", contacts[8].callsign2, "Callsign"
+    assert_equal "OE3OKS", contacts[9].callsign2, "Callsign"
+    assert_equal "KA2CC", contacts[10].callsign2, "Callsign"
+    assert_equal "EA3BOX", contacts[11].callsign2, "Callsign"
+  end
+
+  test "Can submit a zldr-logger log" do
+    user1=create_test_user
+    sign_in user1
+
+    #upload log
+    upload_file = fixture_file_upload("files/logs/zl2dr.adi",'text/plain')
+    post :savefile, upload: {doc_callsign: user1.callsign, doc_location: '', doc_no_create: false, doc_ignore_error: false, doc_do_not_lookup: false, doc: upload_file}
+    assert_response :redirect
+    log=Log.order(:created_at).last
+
+    #log created
+    assert_equal user1.id, log.user1_id, "User ID"
+    assert_equal ['NZ-0001', 'ZL3/CB-001'].sort, log.asset_codes.sort, "Asset codes"
+    assert_equal ['pota park', 'summit'].sort, log.asset_classes.sort, "Asset classes"
+    assert_equal user1.callsign, log.callsign1, "Callsign"
+    assert_equal true, log.is_portable1, "Portable"
+
+    #contacts created
+    assert_equal 2, log.contacts.count, "Correct # contacts"
+    contacts=log.contacts.order(:time)
+   
+    #1st entry correct 
+    assert_equal "10m", contacts[0].band, "Band"
+    assert_equal 28.39, contacts[0].frequency, "Freq"
+    assert_equal 'SSB', contacts[0].mode, "Mode"
+    assert_equal "K6ARK", contacts[0].callsign2, "Callsign"
+    assert_equal "2023-11-04", contacts[0].date.strftime("%Y-%m-%d"), "Date"
+    assert_equal "01:32", contacts[0].time.strftime("%H:%M"), "Time"
+    assert_equal "55", contacts[0].signal1, "Signal1"
+    assert_equal "55", contacts[0].signal2, "Signal1"
+    assert_equal ["W6/SD396"], contacts[0].asset2_codes, "Asset2_codes"
+    assert_equal ['NZ-0001', 'ZL3/CB-001'], contacts[0].asset1_codes, "Asset1_codes"
+    assert_equal "ESTIMATED RSTS BY EAR-OMETER ON G90", contacts[0].comments1, "Comment1"
+
+    #rest of entries exist
+    assert_equal "VK4MWL", contacts[1].callsign2, "Callsign"
+  end
+
+  test "non logged in cannot submit log" do
+    user1=create_test_user
+
+    #upload log
+    upload_file = fixture_file_upload("files/logs/zl2dr.adi",'text/plain')
+    post :savefile, upload: {doc_callsign: user1.callsign, doc_location: '', doc_no_create: false, doc_ignore_error: false, doc_do_not_lookup: false, doc: upload_file}
+    assert_response :redirect
+    assert_redirected_to /signin/
+
+    assert_equal "Please sign in.",  flash[:notice]
+  end
+
+  test "cannot submit log ofr another users callsign" do
+    user1=create_test_user
+    user2=create_test_user
+    sign_in user2
+
+    #upload log
+    upload_file = fixture_file_upload("files/logs/zl2dr.adi",'text/plain')
+    post :savefile, upload: {doc_callsign: user1.callsign, doc_location: '', doc_no_create: false, doc_ignore_error: false, doc_do_not_lookup: false, doc: upload_file}
+    assert_response :success
+
+    assert_select '#file_errors', /Create log 0 failed: you cannot create a log for a callsign not registered to your account/
+  end
+
+  test "can specify do not lookup on log upload" do
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', description: "This is a comment", location: create_point(173,-45))
+    asset2=create_test_asset(asset_type: 'park', region: 'OT', location: create_point(173,-45), test_radius: 0.1)
+    user1=create_test_user
+    sign_in user1
+
+    upload_file = fixture_file_upload("files/logs/single.adi",'text/plain')
+    post :savefile, upload: {doc_callsign: user1.callsign, doc_location: asset1.code, doc_no_create: false, doc_ignore_error: false, doc_do_not_lookup: true, doc: upload_file}
+    assert_response :redirect
+
+    log=Log.order(:created_at).last
+
+    #log created
+    assert_equal [asset1.code].sort, log.asset_codes.sort, "Asset codes"
+    assert_equal ['hut'].sort, log.asset_classes.sort, "Asset classes"
+
+    #contacts created
+    contacts=log.contacts.order(:time)
+
+    #1st entry correct 
+    assert_equal [asset1.code].sort, contacts[0].asset1_codes.sort, "Asset codes"
+  end
+
+  test "can specify lookup on log upload" do
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', description: "This is a comment", location: create_point(173,-45))
+    asset2=create_test_asset(asset_type: 'park', region: 'OT', location: create_point(173,-45), test_radius: 0.1)
+    user1=create_test_user
+    sign_in user1
+
+    upload_file = fixture_file_upload("files/logs/single.adi",'text/plain')
+    post :savefile, upload: {doc_callsign: user1.callsign, doc_location: asset1.code, doc_no_create: false, doc_ignore_error: false, doc_do_not_lookup: false, doc: upload_file}
+    assert_response :redirect
+
+    log=Log.order(:created_at).last
+
+    #log created
+    assert_equal [asset1.code, asset2.code].sort, log.asset_codes.sort, "Asset codes"
+    assert_equal ['hut', 'park'].sort, log.asset_classes.sort, "Asset classes"
+
+    #contacts created
+    contacts=log.contacts.order(:time)
+
+    #1st entry correct 
+    assert_equal [asset1.code, asset2.code].sort, contacts[0].asset1_codes.sort, "Asset codes"
+  end
+
+  #TODO: Only known contacts
+  #TODO: Ignore errors and continue
+  #
   ##################################################################
   # LOAD / SAVE spreadsheet
   ##################################################################
-  
+
+
 end

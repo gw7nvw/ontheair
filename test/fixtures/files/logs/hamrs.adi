@@ -1,0 +1,206 @@
+Generated on 2023-02-03T05:51:49.182Z 
+<adif_ver:5>3.0.5
+<programid:5>HAMRS
+<programversion:5>1.0.6
+<EOH>
+
+<band:3>40m
+<call:6>ZL3RIK
+<country:11>New Zealand
+<freq:5>7.090
+<gridsquare:6>RE66gk
+<mode:3>SSB
+<my_gridsquare:6>RE56vr
+<my_sig:4>POTA
+<my_sig_info:7>ZL-0147
+<name:12>Rick Jackson
+<operator:6>ZL1HOG
+<qso_date:8>20230203
+<qso_date_off:8>20230203
+<qth:12>Christchurch
+<rst_rcvd:2>57
+<rst_sent:2>59
+<time_on:6>021809
+<tx_pwr:3>100
+<eor>
+
+<band:3>40m
+<call:6>ZL3GIG
+<country:11>New Zealand
+<freq:5>7.090
+<gridsquare:6>RE66ij
+<mode:3>SSB
+<my_gridsquare:6>RE56vr
+<my_sig:4>POTA
+<my_sig_info:7>ZL-0147
+<name:12>Ian Galletly
+<operator:6>ZL1HOG
+<qso_date:8>20230203
+<qso_date_off:8>20230203
+<qth:24>Lyttelton , Christchurch
+<rst_rcvd:2>58
+<rst_sent:2>58
+<time_on:6>022005
+<tx_pwr:3>100
+<eor>
+
+<band:3>40m
+<call:6>ZL3ABY
+<country:11>New Zealand
+<freq:5>7.090
+<gridsquare:6>RE66hm
+<mode:3>SSB
+<my_gridsquare:6>RE56vr
+<my_sig:4>POTA
+<my_sig_info:7>ZL-0147
+<name:18>KEVIN D O'SULLIVAN
+<operator:6>ZL1HOG
+<qso_date:8>20230203
+<qso_date_off:8>20230203
+<qth:12>Christchurch
+<rst_rcvd:2>57
+<rst_sent:2>58
+<time_on:6>022115
+<tx_pwr:3>100
+<eor>
+
+<band:3>40m
+<call:5>ZL3QR
+<country:11>New Zealand
+<freq:5>7.090
+<gridsquare:6>RE66hq
+<mode:3>SSB
+<my_gridsquare:6>RE56vr
+<my_sig:4>POTA
+<my_sig_info:7>ZL-0147
+<name:11>G H GILLMAN
+<operator:6>ZL1HOG
+<qso_date:8>20230203
+<qso_date_off:8>20230203
+<qth:13>RANGIORA 7400
+<rst_rcvd:2>58
+<rst_sent:2>59
+<time_on:6>022152
+<tx_pwr:3>100
+<eor>
+
+<band:3>40m
+<call:6>ZL3AWB
+<country:11>New Zealand
+<freq:5>7.090
+<gridsquare:6>RE66ik
+<mode:3>SSB
+<my_gridsquare:6>RE56vr
+<my_sig:4>POTA
+<my_sig_info:7>ZL-0147
+<name:13>Andrew Buxton
+<operator:6>ZL1HOG
+<qso_date:8>20230203
+<qso_date_off:8>20230203
+<qth:12>Christchurch
+<rst_rcvd:2>58
+<rst_sent:2>58
+<time_on:6>022216
+<tx_pwr:3>100
+<eor>
+
+<band:3>40m
+<call:6>ZL3OCT
+<country:11>New Zealand
+<freq:5>7.090
+<gridsquare:6>RF71hi
+<mode:3>SSB
+<my_gridsquare:6>RE56vr
+<my_sig:4>POTA
+<my_sig_info:7>ZL-0147
+<name:13>Graeme Connor
+<operator:6>ZL1HOG
+<qso_date:8>20230203
+<qso_date_off:8>20230203
+<qth:5>Mokau
+<rst_rcvd:2>54
+<rst_sent:2>56
+<time_on:6>023015
+<tx_pwr:3>100
+<eor>
+
+<band:3>40m
+<call:5>ZL4KD
+<country:11>New Zealand
+<freq:5>7.090
+<gridsquare:6>RE66gl
+<mode:3>SSB
+<my_gridsquare:6>RE56vr
+<my_sig:4>POTA
+<my_sig_info:7>ZL-0147
+<name:9>Ken Duffy
+<operator:6>ZL1HOG
+<qso_date:8>20230203
+<qso_date_off:8>20230203
+<qth:12>Christchurch
+<rst_rcvd:2>59
+<rst_sent:2>55
+<time_on:6>023724
+<tx_pwr:3>100
+<eor>
+
+<band:3>40m
+<call:5>ZL4LO
+<country:11>New Zealand
+<freq:5>7.090
+<gridsquare:6>RE57on
+<mode:3>SSB
+<my_gridsquare:6>RE56vr
+<my_sig:4>POTA
+<my_sig_info:7>ZL-0147
+<name:13>Neil Shepherd
+<operator:6>ZL1HOG
+<qso_date:8>20230203
+<qso_date_off:8>20230203
+<qth:9>Greymouth
+<rst_rcvd:2>54
+<rst_sent:2>54
+<time_on:6>023836
+<tx_pwr:3>100
+<eor>
+
+<band:3>40m
+<call:5>ZL3YF
+<country:11>New Zealand
+<freq:5>7.090
+<gridsquare:6>RE66gl
+<mode:3>SSB
+<my_gridsquare:6>RE56vr
+<my_sig:4>POTA
+<my_sig_info:7>ZL-0147
+<name:14>Margaret Duffy
+<operator:6>ZL1HOG
+<qso_date:8>20230203
+<qso_date_off:8>20230203
+<qth:8>Sockburn
+<rst_rcvd:2>59
+<rst_sent:2>58
+<time_on:6>023936
+<tx_pwr:3>100
+<eor>
+
+<band:3>40m
+<call:6>ZL3ABY
+<country:11>New Zealand
+<freq:5>7.090
+<gridsquare:6>RE66hm
+<mode:2>AM
+<my_gridsquare:6>RE56vr
+<my_sig:4>POTA
+<my_sig_info:7>ZL-0147
+<name:18>KEVIN D O'SULLIVAN
+<operator:6>ZL1HOG
+<qso_date:8>20230203
+<qso_date_off:8>20230203
+<qth:12>Christchurch
+<rst_rcvd:2>57
+<rst_sent:2>57
+<time_on:6>025449
+<tx_pwr:3>100
+<eor>
+
