@@ -217,6 +217,7 @@ NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 
     if body and body["<table"] then body=body.split(/<table(?:.*?)>/)[1] end
     body
   end
+
   def get_row_test(body,number)
     rows=body.split('<tr>')
     row=rows[number]

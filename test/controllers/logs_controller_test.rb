@@ -949,10 +949,108 @@ class LogsControllerTest < ActionController::TestCase
 
   #TODO: Only known contacts
   #TODO: Ignore errors and continue
-  #
+
   ##################################################################
   # LOAD / SAVE spreadsheet
   ##################################################################
 
+  #Cannot test load as happens in JS
+
+  test "Can post log contacts form" do
+    user1=create_test_user
+    user2=create_test_user
+    asset1=create_test_asset(asset_type: 'hut')
+    asset2=create_test_asset(asset_type: 'hut')
+    asset3=create_test_asset(asset_type: 'hut')
+    log=create_test_log(user1, asset_codes: [asset3.code], date: '2022-01-01'.to_date, power1: '10w', loc_desc1: "roadside spot", is_qrp1: true, is_portable1: true)
+    sign_in user1
+
+    post :save, id: log.id, data: [[nil, '00:01', user2.callsign, true, true, 'FM', 145.5, '59', '57', 'John', 'Good spot',nil ,"" , [asset1.code,asset2.code], nil, nil, nil]], :format => :json
+    assert_response :success
+
+    contact=log.contacts.first
+    assert_equal user2.callsign, contact.callsign2
+    assert_equal true, contact.is_portable2
+    assert_equal true, contact.is_qrp2
+    assert_equal 'FM', contact.mode
+    assert_equal 145.5, contact.frequency
+    assert_equal '2022-01-01', contact.date.strftime('%Y-%m-%d')
+    assert_equal '00:01', contact.time.strftime('%H:%M')
+    assert_equal '57', contact.signal1
+    assert_equal '59', contact.signal2
+    assert_equal 'John', contact.name2
+    assert_equal 'Good spot', contact.loc_desc2
+    assert_equal [asset1.code, asset2.code].sort, contact.asset2_codes.sort
+    assert_equal user1.callsign, contact.callsign1
+    assert_equal true, contact.is_portable1
+    assert_equal true, contact.is_qrp1
+    assert_equal 10, contact.power1
+    assert_equal 'roadside spot', contact.loc_desc1
+    assert_equal [asset3.code].sort, contact.asset1_codes.sort
+  end
+
+  test "Can post log contacts form to update comntacts" do
+    user1=create_test_user
+    user2=create_test_user
+    asset1=create_test_asset(asset_type: 'hut')
+    asset2=create_test_asset(asset_type: 'hut')
+    asset3=create_test_asset(asset_type: 'hut')
+    log=create_test_log(user1, asset_codes: [asset3.code], date: '2022-01-01'.to_date, power1: '10w', loc_desc1: "roadside spot", is_qrp1: true, is_portable1: true)
+    contact=create_test_contact(user1, user2, log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-02 01:00'.to_time, frequency: 7.09, mode: 'SSB', loc_desc2: 'Hamilton')
+
+    sign_in user1
+
+    post :save, id: log.id, data: [[contact.id, '00:01', user2.callsign, true, true, 'FM', 145.5, '59', '57', 'John', 'Good spot',nil ,"" , [asset1.code,asset2.code], nil, nil, nil]], :format => :json
+    assert_response :success
+
+    contact.reload
+    assert_equal user2.callsign, contact.callsign2
+    assert_equal true, contact.is_portable2
+    assert_equal true, contact.is_qrp2
+    assert_equal 'FM', contact.mode
+    assert_equal 145.5, contact.frequency
+    assert_equal '2022-01-01', contact.date.strftime('%Y-%m-%d')
+    assert_equal '00:01', contact.time.strftime('%H:%M')
+    assert_equal '57', contact.signal1
+    assert_equal '59', contact.signal2
+    assert_equal 'John', contact.name2
+    assert_equal 'Good spot', contact.loc_desc2
+    assert_equal [asset1.code, asset2.code].sort, contact.asset2_codes.sort
+    assert_equal user1.callsign, contact.callsign1
+    assert_equal true, contact.is_portable1
+    assert_equal true, contact.is_qrp1
+    assert_equal 10, contact.power1
+    assert_equal 'roadside spot', contact.loc_desc1
+    assert_equal [asset3.code].sort, contact.asset1_codes.sort
+  end
+
+  test "cannot post log contacts for another user" do
+    user1=create_test_user
+    user2=create_test_user
+    asset1=create_test_asset(asset_type: 'hut')
+    asset2=create_test_asset(asset_type: 'hut')
+    asset3=create_test_asset(asset_type: 'hut')
+    log=create_test_log(user1, asset_codes: [asset3.code], date: '2022-01-01'.to_date, power1: '10w', loc_desc1: "roadside spot", is_qrp1: true, is_portable1: true)
+    sign_in user2
+
+    post :save, id: log.id, data: [[nil, '00:01', user2.callsign, true, true, 'FM', 145.5, '59', '57', 'John', 'Good spot',nil ,"" , [asset1.code,asset2.code], nil, nil, nil]], :format => :json
+
+    assert_response 401
+    assert_equal 0, log.contacts.count
+  end
+
+  test "cannot post log contacts when not logged in" do
+    user1=create_test_user
+    user2=create_test_user
+    asset1=create_test_asset(asset_type: 'hut')
+    asset2=create_test_asset(asset_type: 'hut')
+    asset3=create_test_asset(asset_type: 'hut')
+    log=create_test_log(user1, asset_codes: [asset3.code], date: '2022-01-01'.to_date, power1: '10w', loc_desc1: "roadside spot", is_qrp1: true, is_portable1: true)
+
+    post :save, id: log.id, data: [[nil, '00:01', user2.callsign, true, true, 'FM', 145.5, '59', '57', 'John', 'Good spot',nil ,"" , [asset1.code,asset2.code], nil, nil, nil]], :format => :json
+
+    assert_response 401
+    assert_equal 0, log.contacts.count
+  end
 
 end

@@ -2,7 +2,7 @@
 
 # typed: false
 class LogsController < ApplicationController
-  before_action :signed_in_user, only: %i[edit editcontact update new create upload savefile delete save]
+  before_action :signed_in_user, only: %i[edit editcontact update new create upload savefile delete]
 
   skip_before_filter :verify_authenticity_token, only: %i[save savefile]
 
@@ -277,7 +277,7 @@ class LogsController < ApplicationController
     if current_user && ((current_user.id == loguser.id) || current_user.is_admin)
 
       data.each do |row|
-        rid = row[0]
+        rid = row[0].to_i
         if rid && (rid >= 1)
           cle = Contact.find_by_id(rid)
         else
