@@ -1,38 +1,43 @@
 <div id="actionbar" class="span7">
-   <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
-     &nbsp;--&gt;&nbsp;
-     <b>POTA Logs</b>
-     </div>
-   <div id="controls">
-     <%=render 'map_controls'%>
-   </div>
+  <div id="crumbs">
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <%=link_to "POTA Logs", '/pota_logs/?'+@parameters, remote: true,  :id => 'index', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <b><%=@user.callsign+" / "+@park.code+" / "+@logdate%></b>
+  </div>
+  <div id="controls">
+    <%=link_to "Index", '/pota_logs/?'+@parameters, class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%=render 'map_controls'%>
+  </div>
 </div>
+
 <div class="erow">
-<br/>
-<br/>
-<p>Please check that the following log is correct, and click the <b>Send Log</b> button to email it to POTA, or the <b>Download Log</b> button to save the log so that you can upload it to the POTA website.</p>
-<br/>
-<br/>
-Filename: <%=@filename%><br/>
-Email to send to: <%=@address%><br/>
-<br/>
-<% @pota_log.split('<eor>').each do |pota_log| %>
-  <%=if pota_log and pota_log.length>1 then pota_log+"<eor>" end%></br>
-<% end %>
-<br/>
-<br/>
-Duplicate contacts rejected: <%=@duplicate_contacts.count%><br/>
-<% @duplicate_contacts.each do |contact| %>
-  <%=link_to "Contact: "+contact.id.to_s, '/contacts/'+contact.id.to_s ,remote: true, :onclick => "linkHandler('submit')"%> <%=contact.callsign1%>&lt=&gt<%=contact.callsign2%><br/>
-<% end %>
-Invalid contacts rejected: <%=@invalid_contacts.count%><br/>
-<% @invalid_contacts.each do |contact| %>
-  <%=link_to "Contact: "+contact[:contact].id.to_s, '/contacts/'+contact[:contact].id.to_s ,remote: true, :onclick => "linkHandler('submit')"%> <%=contact[:contact].callsign1%>&lt=&gt<%=contact[:contact].callsign2%> -- <%=contact[:message]%><br/>
-<% end %>
-<%=link_to "Send Log", '/pota_logs/'+@park.safecode+"/send?date="+@logdate+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
-<%=link_to "Download Log", '/pota_logs/'+@park.safecode+"/download.adi?date="+@logdate+"&user="+@user.callsign, class: "btn btn-small btn-primary" %>
-<%=link_to "Cancel", '/pota_logs?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
+  <br/>
+  <br/>
+  <p>Please check that the following log is correct, and click the <b>Send Log</b> button to email it to POTA, or the <b>Download Log</b> button to save the log so that you can upload it to the POTA website.</p>
+  <br/>
+  <br/>
+  Filename: <%=@filename%><br/>
+  Email to send to: <%=@address%><br/>
+  <br/>
+  <% @pota_log.split('<eor>').each do |pota_log| %>
+    <%=if pota_log and pota_log.length>1 then pota_log+"<eor>" end%><br/>
+  <% end %>
+  <br/>
+  <br/>
+  Contacts accepted: <%=@contacts.count-@duplicate_contacts.count-@invalid_contacts.count%>
+  Duplicate contacts rejected: <%=@duplicate_contacts.count%><br/>
+  <% @duplicate_contacts.each do |contact| %>
+    <%=link_to "Contact: "+contact.id.to_s, '/contacts/'+contact.id.to_s ,remote: true, :onclick => "linkHandler('submit')"%> <%=contact.callsign1%>&lt;=&gt;<%=contact.callsign2%><br/>
+  <% end %>
+  Invalid contacts rejected: <%=@invalid_contacts.count%><br/>
+  <% @invalid_contacts.each do |contact| %>
+    <%=link_to "Contact: "+contact[:contact].id.to_s, '/contacts/'+contact[:contact].id.to_s ,remote: true, :onclick => "linkHandler('submit')"%> <%=contact[:contact].callsign1%>&lt;=&gt;<%=contact[:contact].callsign2%> -- <%=contact[:message]%><br/>
+  <% end %>
+  <%=link_to "Send Log", '/pota_logs/'+@park.safecode+"/send?date="+@logdate+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
+  <%=link_to "Download Log", '/pota_logs/'+@park.safecode+"/download.adi?date="+@logdate+"&user="+@user.callsign, class: "btn btn-small btn-primary" %>
+  <%=link_to "Cancel", '/pota_logs?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
 </div>
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;

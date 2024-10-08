@@ -218,6 +218,16 @@ NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 
     body
   end
 
+  def get_adif_lines(body)
+    lines=body.split('<eor>')
+  end
+
+  def get_adif_param(line, tag)
+    text=line.split('<'+tag)[1]
+    text=text.split('>')[1]
+    text=text.split('<')[0]
+  end
+
   def get_row_test(body,number)
     rows=body.split('<tr>')
     row=rows[number]

@@ -19,7 +19,7 @@
 </div>
 <div id="right_scroll">
   <%= render 'flash' %>
-  <table> 
+  <table id="logs_table"> 
     <tr>
       <th>Park</th>
       <th>POTA Code</th>
@@ -36,7 +36,7 @@
         <td><%=logday[:date]%></td>
         <td><%=logday[:count]%></td>
         <% 
-           if logday[:submitted]==0 then submitted_to_pota=false else submitted_to_pota=true end 
+            if logday[:submitted]<logday[:count] then submitted_to_pota=false else submitted_to_pota=true end 
         %>
         <td><%=if !submitted_to_pota then  link_to "Submit Log", '/pota_logs/'+logday[:safecode]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" else link_to "Resend Log", '/pota_logs/'+logday[:safecode]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" end%></td>
       </tr>
