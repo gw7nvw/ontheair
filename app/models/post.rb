@@ -348,6 +348,8 @@ class Post < ActiveRecord::Base
         region = parts[0]
         subcode = parts[1]
 
+        #workaround - add .0 to integer frequencies
+        if freq and !freq.blank? and !freq.include?('.') then freq=freq.to_i.to_s+".0" end
         payloadspot = {
           'To': '+64273105319',
           'MessageTime': Time.now.utc.strftime('%a %b %d %H:%M:%S %Y'),
@@ -361,8 +363,7 @@ class Post < ActiveRecord::Base
           puts payloadspot
         end
 
-        req = Net::HTTP::Get.new("#{url.path}?".concat(payloadspot.collect { |k, v| "#{k}=#{CGI.escape(v.to_s)}" }.join('&')), 'Content-Type' => 'application/json', 'Authorization' => 'bearer ' + access_token, 'id_token' => id_token, 'connection' => 'keep-alive')
-
+        req = Net::HTTP::Get.new("#{url.path}?"+(payloadspot.collect { |k, v| "#{k}=#{CGI.escape(v.to_s)}" }.join('&')), 'Content-Type' => 'application/json', 'Authorization' => 'bearer ' + access_token, 'id_token' => id_token, 'connection' => 'keep-alive')
         begin
           res = http.request(req)
         rescue StandardError

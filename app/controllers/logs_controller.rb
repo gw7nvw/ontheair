@@ -205,7 +205,7 @@ class LogsController < ApplicationController
     location = params[:upload][:doc_location]
     location = location.upcase if location && !location.empty?
 
-    if params[:upload][:doc_callsign]
+    if params[:upload][:doc_callsign] and !params[:upload][:doc_callsign].blank?
       logger.debug 'Got callsign: ' + params[:upload][:doc_callsign]
       callsign = params[:upload][:doc_callsign]
       force_callsign = true

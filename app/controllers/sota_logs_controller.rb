@@ -54,6 +54,8 @@ class SotaLogsController < ApplicationController
           # no S2S in chaser logs, must be in an activation
           summit_code = nil
           other_summit_code = contact.asset2_codes
+        elsif p = contact.find_asset2_by_type('summit')
+          other_summit_code = p[:asset][:code]
         end
         if !contact.band.empty? && !contact.adif_mode.empty? && contact.time && (contact.time.strftime('%H%M').length == 4)
           if contact.is_portable2 && (other_callsign[-2..-1] != '/P') then other_callsign += '/P' end

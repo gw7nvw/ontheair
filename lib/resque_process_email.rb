@@ -21,7 +21,7 @@ class EmailReceive
       puts 'DEBUG: ALERT'
       posttype = 'alert'
     end
-    if to[0..6].casecmp('ZL-SOTA').zero?
+    if to[0..6].casecmp('ZL-SOTA').zero? or to[0..5].casecmp('ZLSOTA').zero?
       puts 'DEBUG: ZL-SOTA'
       posttype = 'zlsota'
     end

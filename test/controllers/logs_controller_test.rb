@@ -748,12 +748,12 @@ class LogsControllerTest < ActionController::TestCase
   end
 
   test "Can submit a hamrs log" do
-    user1=create_test_user
+    user1=users(:zl4nvw)
     sign_in user1
 
     #upload log
     upload_file = fixture_file_upload("files/logs/hamrs.adi",'text/plain')
-    post :savefile, upload: {doc_callsign: user1.callsign, doc_location: '', doc_no_create: false, doc_ignore_error: false, doc_do_not_lookup: false, doc: upload_file}
+    post :savefile, upload: {doc_callsign: '', doc_location: '', doc_no_create: false, doc_ignore_error: false, doc_do_not_lookup: false, doc: upload_file}
     assert_response :redirect
     log=Log.order(:created_at).last
 
