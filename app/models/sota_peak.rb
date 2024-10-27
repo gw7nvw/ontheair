@@ -1,6 +1,7 @@
-# frozen_string_literal: true
+# frozen_string_literal: false
 
 # typed: false
+require 'asset_import_tools.rb'
 class SotaPeak < ActiveRecord::Base
   ############################################################################
   # To pull updates from SOTA
@@ -22,11 +23,14 @@ class SotaPeak < ActiveRecord::Base
     new_codes = []
     srs = SotaRegion.all
     srs.each do |sr|
-      url = 'https://api2.sota.org.uk/api/regions/' + sr.dxcc + '/' + sr.region + '?client=sotawatch&user=anon'
+      url = 'https://api-db2.sota.org.uk/api/regions/' + sr.dxcc + '/' + sr.region + '?client=sotawatch&user=anon'
       data = JSON.parse(open(url).read)
       next unless data
       summits = data['summits']
-      next unless summits summits.each do |s|
+      puts summits.to_json
+      next unless summits 
+      summits.each do |s|
+        puts "HERE"
         ss = SotaPeak.new
         ss.summit_code = s['summitCode']
         ss.name = s['name']

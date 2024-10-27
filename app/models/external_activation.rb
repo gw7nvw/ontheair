@@ -49,7 +49,7 @@ class ExternalActivation < ActiveRecord::Base
     #  summitId=data[0]["SummitId"]
     #      url = "https://api-db.sota.org.uk/admin/summit_history?summitID="+summitId.to_s
     # data = JSON.parse(open(url, {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE}).read)
-    url = URI.parse('https://api2.sota.org.uk/api/activations/' + summit.code)
+    url = URI.parse('https://api-db2.sota.org.uk/api/activations/' + summit.code)
     http = Net::HTTP.new(url.host, url.port)
     http.use_ssl = true
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
