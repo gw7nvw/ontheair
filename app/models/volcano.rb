@@ -32,6 +32,7 @@ class Volcano < ActiveRecord::Base
 
   def self.import(filename)
     CSV.foreach(filename, headers: true) do |row|
+      puts row.to_json
       place = row.to_hash
       newplace = {}
       place.each do |key, value|
@@ -43,6 +44,7 @@ class Volcano < ActiveRecord::Base
       p.code = newplace['code']
       p.name = newplace['name']
       p.field_name = newplace['field_name']
+      p.field_code = newplace['field_code']
       p.age = newplace['age']
       p.height = newplace['height']
       p.lat = newplace['lat']
@@ -56,7 +58,7 @@ class Volcano < ActiveRecord::Base
       p.epoch = newplace['epoch']
       p.min_age = nil
       p.max_age = nil
-      p.age = nil if p.age.zero?
+      p.age = nil if p.age.nil? or p.age.zero?
       p.min_age = p.age if p.age
       p.max_age = p.age if p.age
       if !p.min_age && !p.max_age

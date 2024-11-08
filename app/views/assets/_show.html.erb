@@ -228,6 +228,15 @@
     </div>
   <% end %>
 
+  <% if @asset.field_code and @asset.geology%>
+    <div class="erow" id="geology">
+      <div class="rowtitle">Geology</div>
+      <div class="rowtext"> 
+        <%=link_to @asset.geology.name, '/'+@asset.geology.url, remote: true,  :id => 'geology', :onclick => "linkHandler('geology')"  %>
+      </div>
+    </div>
+  <% end %>
+
   <% if @asset.traditional_owners %>
     <div class="erow" id="trad_owner">
       <div class="rowtitle">Iwi</div>

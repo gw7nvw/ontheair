@@ -225,12 +225,12 @@ module AssetImportTools
       puts 'Adding new volcano'
     end
     a.asset_type = 'volcano'
-    #  if a.description=nil or a.description=="" then a.description=(p.status||"").capitalize+" based "+(if p.str_type=="lighthouse" then "lighthouse" else "light/beacon" end)+(if p.status then " ("+p.status+")" else "" end) end
     a.code = p.code
     a.is_active = true
     a.name = p.name
     a.location = p.location
     a.az_radius = p.az_radius
+    a.field_code = p.field_code
     a.save
 
     awl = AssetWebLink.find_by(asset_code: a.code)

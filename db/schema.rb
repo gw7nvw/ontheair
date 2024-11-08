@@ -1,4 +1,3 @@
-# typed: false
 # encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
@@ -12,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240923094850) do
+ActiveRecord::Schema.define(version: 20241108050228) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -30,6 +29,7 @@ ActiveRecord::Schema.define(version: 20240923094850) do
     t.datetime "last_pota_update_at"
     t.datetime "last_wwff_update_at"
     t.datetime "last_spot_read"
+    t.string   "sota_epoch"
   end
 
   create_table "ak_maps", force: true do |t|
@@ -71,6 +71,8 @@ ActiveRecord::Schema.define(version: 20240923094850) do
     t.boolean  "has_elevation"
     t.integer  "ele_buffer"
     t.integer  "dist_buffer"
+    t.boolean  "is_zlota"
+    t.boolean  "use_volcanic_field"
   end
 
   add_index "asset_types", ["name"], :name => "index_asset_types_on_name"
@@ -121,6 +123,7 @@ ActiveRecord::Schema.define(version: 20240923094850) do
     t.string   "access_track_ids",                                                        default: [], array: true
     t.boolean  "public_access"
     t.float    "az_radius"
+    t.string   "field_code"
   end
 
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
@@ -334,6 +337,10 @@ ActiveRecord::Schema.define(version: 20240923094850) do
     t.string   "spot_type"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "epoch"
+    t.boolean  "is_test"
+    t.string   "points"
+    t.string   "altM"
   end
 
   create_table "geological_eons", force: true do |t|
@@ -848,6 +855,24 @@ ActiveRecord::Schema.define(version: 20240923094850) do
   add_index "vk_assets", ["award"], :name => "vk_award_indx"
   add_index "vk_assets", ["code"], :name => "vk_code_indx"
 
+  create_table "volcanic_fields", force: true do |t|
+    t.string  "code"
+    t.string  "name"
+    t.string  "period"
+    t.string  "epoch"
+    t.string  "eon"
+    t.string  "era"
+    t.float   "min_age"
+    t.float   "max_age"
+    t.string  "description"
+    t.spatial "location",                  limit: {:srid=>4326, :type=>"point"}
+    t.spatial "boundary",                  limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.string  "url"
+    t.spatial "boundary_quite_simplified", limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial "boundary_simplified",       limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
+  end
+
   create_table "volcanos", force: true do |t|
     t.string  "code"
     t.string  "name"
@@ -868,6 +893,7 @@ ActiveRecord::Schema.define(version: 20240923094850) do
     t.float   "min_age"
     t.float   "max_age"
     t.string  "date_range"
+    t.string  "field_code"
   end
 
   create_table "web_link_classes", force: true do |t|

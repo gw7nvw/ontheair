@@ -1,0 +1,87 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+   document.title = '... On the Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+$(function () {
+  $('#right_panel .pagination a').on('click', function () {
+    $.getScript(this.href);
+    return false;
+  });
+});
+
+
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Geology</b>
+     </div>
+   <div id="controls">
+       <% if current_user and current_user.is_admin %>
+            <%=  link_to "Add", '/geology/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('add')" %>
+       <% end %>
+       <%=render 'map_controls'%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+
+<%= form_tag '/geology', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+  <br/>
+  <div class="rowtitle">Find:</div>
+  <div class="rowtext">
+    <input type="text" id="searchtext" name="searchtext" value='<%=@searchtext%>'/>
+  </div>
+  <div class="buttonshort">
+    <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+    <%=  link_to "Clear", '/geology', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
+
+  </div>
+</form>
+
+<% if !@geologies %>
+  Your search returned no results.
+
+<% else %>
+
+  <div class="name_pagination"> <%= will_paginate(@geologies) %></div>
+
+  <table class="places" id="geology_table">
+    <tr>
+      <th>Code</th>
+      <th>Name</th>
+      <th>Min age</th>
+      <th>Max Age</th>
+
+
+    </tr>
+
+    <% if @geologies then @geologies.each do |geology| %>
+      <tr>
+        <td>
+          <% if current_user and (current_user.is_admin) %>
+            <span title="Click to edit"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/geology/'+geology.code+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+          <% end %>
+          <%= link_to geology.code.upcase, '/geology/'+geology.code, remote: true, :id => 'geology_link_'+geology.id.to_s, :onclick => "linkHandler('geology_link_"+geology.id.to_s+"')" %>
+        </td>
+
+        <td><%= if geology.name then geology.name end%></td>
+        <td><%= geology.min_age%> MA</td>
+        <td><%= geology.max_age%> MA</td>
+      </tr>
+    <% end end %>
+  </table>
+  <div class="name_pagination"> <%= will_paginate(@geologies) %></div>
+
+</div>
+<% end %>
+
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>
+

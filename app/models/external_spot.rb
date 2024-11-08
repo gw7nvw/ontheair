@@ -9,6 +9,12 @@ class ExternalSpot < ActiveRecord::Base
     errors.add(:id, 'Record is duplicate') if dup
   end
 
+  def self.delete_old_spots
+    oneweekago=Time.at(Time.now.to_i - 60 * 60 * 24 * 7).in_time_zone('UTC').to_s
+    ActiveRecord::Base.connection.execute("delete from external_spots where time < '#{oneweekago}'")
+
+  end
+
   def self.fetch
     spots = nil
 
@@ -20,24 +26,44 @@ class ExternalSpot < ActiveRecord::Base
       as.last_spot_read = Time.now
       as.save
 
-      # clear old spots > 1 year ago from DB
-      oneyearago = Time.at(Time.now.to_i - 60 * 60 * 24 * 365).in_time_zone('UTC').to_s
-      # TODO: do we actually do this somewhere else or need to implement it here?
+      # clear old spots > 1 week ago from DB
+      ExternalSpot.delete_old_spots
 
-      begin
-        Timeout.timeout(30) do
-          # read new spots
-          url = 'https://api2.sota.org.uk/api/spots/50/all?client=sotawatch&user=anon'
-          spots = JSON.parse(open(url).read)
-          puts "GOT SOTA: "+spots.to_json
+      #SOTA
+      spots=[]
+      #Check 'epoch' latest spot update key
+      epoch_url = 'https://api-db2.sota.org.uk/api/spots/epoch'
+      as=AdminSettings.first
+      old_epoch=as.sota_epoch
+      new_epoch=open(epoch_url).read
+
+      puts old_epoch
+      puts new_epoch
+      puts old_epoch==new_epoch
+      #if epoch has chnaged, get new spots
+      unless old_epoch==new_epoch 
+        as.sota_epoch=new_epoch
+        as.save
+
+        begin
+          Timeout.timeout(30) do
+            # read new spots
+            #url = 'https://api2.sota.org.uk/api/spots/50/all?client=sotawatch&user=anon'
+            url = 'https://api-db2.sota.org.uk/api/spots/50/all/all'
+  
+            spots = JSON.parse(open(url).read)
+            puts "GOT SOTA: "+spots.to_json
+          end
+        rescue Timeout::Error
+          puts 'ERROR: SOTA Timeout'
+        else
         end
-      rescue Timeout::Error
-        puts 'ERROR: SOTA Timeout'
-      else
       end
 
       zlvk_sota_spots = spots || []
 
+      #POTA
+      spots=[]
       begin
         Timeout.timeout(30) do
           url = 'https://api.pota.app/spot/activator'
@@ -51,6 +77,8 @@ class ExternalSpot < ActiveRecord::Base
 
       zlvk_pota_spots = spots || []
 
+      #Parks N Peaks
+      spots=[]
       begin
         Timeout.timeout(30) do
           url = 'http://www.parksnpeaks.org/api/ALL'
@@ -64,6 +92,7 @@ class ExternalSpot < ActiveRecord::Base
 
       pnp_spots = spots || []
 
+      #HEMA
       hemaspots = []
       begin
         Timeout.timeout(30) do
@@ -91,15 +120,19 @@ class ExternalSpot < ActiveRecord::Base
           time: spot['timeStamp'].to_datetime ? spot['timeStamp'].to_datetime.in_time_zone('UTC') : nil,
           callsign: spot['callsign'].strip,
           activatorCallsign: spot['activatorCallsign'].strip,
-          code: spot['associationCode'] + '/' + spot['summitCode'],
+          code: spot['summitCode'],
           name: spot['summitDetails'],
-          frequency: spot['frequency'],
+          frequency: spot['frequency'].to_s,
           mode: spot['mode'],
           comments: spot['comments'],
+          epoch: spot['epoch'] || "",
+          points: spot['points'].to_s || "",
+          altM: spot['AltM'].to_s || "",
+          is_test: (spot['type']=='TEST'),
           spot_type: 'SOTA'
         )
       end
-
+     
       zlvk_pota_spots.each do |spot|
         ExternalSpot.create(
           time: spot['spotTime'].to_datetime ? spot['spotTime'].to_datetime.in_time_zone('UTC') : nil,
@@ -128,8 +161,7 @@ class ExternalSpot < ActiveRecord::Base
       end
 
       hemaspots.each do |spot|
-        dups = ExternalSpot.where(spot)
-        ExternalSpot.create(spot) unless dups && dups.count.positive?
+        ExternalSpot.create(spot)
       end
     end
   end

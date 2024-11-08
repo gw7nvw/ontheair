@@ -159,6 +159,10 @@ class Asset < ActiveRecord::Base
     Contact.find_by_sql ["select * from contacts c where '" + code + "' = ANY(asset1_codes) or '" + code + "' = ANY(asset2_codes);"]
   end
 
+  def geology
+    VolcanicField.find_by(code: field_code)
+  end
+
   # all logs referring to this asset
   def logs
     Log.find_by_sql ["select * from logs l where '" + code + "' = ANY(asset_codes);"]

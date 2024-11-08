@@ -23,6 +23,11 @@
       <%=check_box_tag "Regions", "1", checked, :onclick => "site_toggle_region_layer()"%>
       <%="Regions"%>
     </li>
+    <li>
+      <% if params[:territorylayers] and params[:territorylayers].include?("geology") then checked=true else checked=false end %>
+      <%=check_box_tag "Geology", "1", checked, :onclick => "site_toggle_geology_layer()"%>
+      <%="Geology"%>
+    </li>
   </ul>
 </div>
 <div id="point_layers">

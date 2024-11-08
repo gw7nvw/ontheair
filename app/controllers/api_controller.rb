@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+# frozen_string_literal: false
 
 # typed: false
 class ApiController < ApplicationController
@@ -77,7 +77,12 @@ class ApiController < ApplicationController
       whereclause += " and updated_at > '" + params[:updated_since] + "'"
     end
 
-    whereclause += " and asset_type = '" + asset_type + "'" if asset_type
+    if asset_type then 
+      whereclause += " and asset_type = '" + asset_type + "'" 
+    else
+      ats=AssetType.where(is_zlota: true)
+      whereclause += " and asset_type in ("+ats.map{|at| "'"+at.name+"'"}.join(', ')+")"
+    end
 
     @searchtext = params[:searchtext] || ''
     if params[:searchtext]

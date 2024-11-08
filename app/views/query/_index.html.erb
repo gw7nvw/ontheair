@@ -1,5 +1,7 @@
-  <% assetfield=params[:assetfield]
-     if assetfield=='' then assetfield='asset' end %>
+<% 
+  assetfield=params[:assetfield]
+  if assetfield=='' then assetfield='asset' end 
+%>
 <%= form_tag '/query?assetfield='+assetfield, :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
   <div class="erow">
     <div class="rowtitle">Type:</div>
@@ -8,16 +10,18 @@
     </div>
   </div>
   <div class="erow" style="margin-bottom:6px">
-  <span title="Include places that are not valid for NZOnTheAir in the results. This includes duplicate place names, names of groups of islands and lakes, reserves that are smaller than the minimum size, Queen's chain reserves, special purpose reserves, and others."><div class="rowtitle">ZLOTA only</div></span>
-  <div class="rowtext">
-    <input id="minor" name="minor" type="checkbox" checked="checked">
-  </div>
+    <span title="Include places that are not valid for NZOnTheAir in the results. This includes duplicate place names, names of groups of islands and lakes, reserves that are smaller than the minimum size, Queen's chain reserves, special purpose reserves, and others.">
+      <div class="rowtitle">ZLOTA only</div>
+    </span>
+    <div class="rowtext">
+      <input id="minor" name="minor" type="checkbox" <% if @minor then %> checked="checked" <% end %>>
+    </div>
   </div>
 
   <div class="erow">
     <div class="rowtitle">Find:</div>
     <div class="rowtext">
-      <input type="text" name="searchtext" value='<%=@searchtext%>'/>
+      <input type="text" id="searchtext" name="searchtext" value='<%=@searchtext%>'/>
     </div>
   </div>
   <div class="buttonshort">
@@ -27,28 +31,29 @@
 </form>
 
 <div id="info_results2">
-<% if @assets and @assets.count>0 %>
-  <% if @assets.count>39 then %>
-    <div class="erow">
-    Your search returned more results than listed. Please refine
-    </div>
+  <% if @assets and @assets.count>0 %>
+    <% if @assets.count>39 then %>
+      <div class="erow">
+        Your search returned more results than listed. Please refine
+      </div>
+    <% end %>
+    <table id="result_table">
+      <% @assets.each do |asset| %>
+        <tr>
+          <td> 
+            <%= link_to asset.codename.to_s, '#', :id => 'asset_link'+asset.id.to_s, :onclick => "select_asset('"+assetfield+"', '"+asset.code+"', '"+asset.name.gsub("'","")+"', '"+asset.x.to_s+"', '"+asset.y.to_s+"', '"+asset.location.to_s+"', '', '');return(false);" %>
+          </td>
+          <td>
+            <% if(asset.contained_by_assets and asset.contained_by_assets.count>0) then %>
+              <% asset.contained_by_assets.each do |a| %>
+                <%=link_to a.codename, '#', :id => 'assetc_link'+a.id.to_s, :onclick => "select_asset('"+assetfield+"', '"+a.code+"', '"+a.name.gsub("'","")+"', '"+a.x.to_s+"', '"+a.y.to_s+"', '"+a.location.to_s+"', '', '');return(false);" %><br/>
+              <% end %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </table>
+  <% else %>
+    No results found
   <% end %>
-  <table>
-  <% @assets.each do |asset| %>
-    <tr>
-      <td> 
-        <%= link_to asset.codename.to_s, '#', :id => 'asset_link'+asset.id.to_s, :onclick => "select_asset('"+assetfield+"', '"+asset.code+"', '"+asset.name.gsub("'","")+"', '"+asset.x.to_s+"', '"+asset.y.to_s+"', '"+asset.location.to_s+"', '', '');return(false);" %>
-      </td>
-      <td>
-        <% if(asset.contained_by_assets and asset.contained_by_assets.count>0) then %>
-          <% asset.contained_by_assets.each do |a| %>
-            <%=link_to a.codename, '#', :id => 'assetc_link'+a.id.to_s, :onclick => "select_asset('"+assetfield+"', '"+a.code+"', '"+a.name.gsub("'","")+"', '"+a.x.to_s+"', '"+a.y.to_s+"', '"+a.location.to_s+"', '', '');return(false);" %><br/>
-          <% end %>
-        <% end %>
-      </td>
-    </tr>
-  <% end %>
-<% else %>
-  No results found
-<% end %>
 </div>

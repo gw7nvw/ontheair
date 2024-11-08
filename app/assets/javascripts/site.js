@@ -23,6 +23,9 @@ var site_current_click_layer=null;
 //layers
 var district_layer;
 var region_layer;
+var geology_layer;
+var geology_simple_layer;
+var geology_detail_layer;
 var district_simple_layer;
 var region_simple_layer;
 var district_detail_layer;
@@ -40,6 +43,7 @@ var site_default_polygon_layers=[]
 var site_docland_style;
 var site_district_style;
 var site_region_style;
+var site_geology_style;
 var site_island_style;
 var site_lake_style;
 var site_public_lake_point_style;
@@ -303,6 +307,9 @@ function site_add_vector_layers() {
   district_layer=map_add_vector_layer("District", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district",site_district_style,false,12,15);
   district_simple_layer=map_add_vector_layer("District Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_simple",site_district_style,false,7,12);
   district_detail_layer=map_add_vector_layer("District Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_detail",site_district_style,false,15,32);
+  geology_layer=map_add_vector_layer("Geology", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology",site_geology_style,false,12,15);
+  geology_simple_layer=map_add_vector_layer("Geology Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology_simple",site_geology_style,false,7,12);
+  geology_detail_layer=map_add_vector_layer("Geology Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology_detail",site_geology_style,false,15,32);
   region_layer=map_add_vector_layer("Region", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region",site_region_style,false,12,15);
   region_simple_layer=map_add_vector_layer("Region Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_simple",site_region_style,false,7,12);
   region_detail_layer=map_add_vector_layer("Region Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_detail",site_region_style,false,15,32);
@@ -314,6 +321,9 @@ function site_add_vector_layers() {
   map_map.addLayer(district_layer);
   map_map.addLayer(district_simple_layer);
   map_map.addLayer(district_detail_layer);
+  map_map.addLayer(geology_layer);
+  map_map.addLayer(geology_simple_layer);
+  map_map.addLayer(geology_detail_layer);
   map_map.addLayer(region_layer);
   map_map.addLayer(region_simple_layer);
   map_map.addLayer(region_detail_layer);
@@ -387,6 +397,7 @@ function site_init_styles() {
   site_highlight_polygon=map_create_style("", null, 'rgba(128,0,0,0.3)', "#660000", 2);
   site_red_polygon=map_create_style("", null, 'rgba(256,0,0,0.6)', "#880000", 2);
   site_district_style=map_create_style("", null, 'rgba(0,0,0,0.0)', "#880088", 4);
+  site_geology_style=map_create_style("", null, 'rgba(256,0,100,0.3)', "#4d001f", 2);
   site_region_style=map_create_style("", null, 'rgba(0,0,0,0.0)', "#AA0044", 4);
   site_green_polygon=map_create_style("", null, 'rgba(0,256,0,0.6)', "#008800", 2);
   site_pota_style=map_create_style('',0, 'rgba(128,0,128,0.2)', "#900090", 2);
@@ -995,6 +1006,19 @@ function site_toggle_vector_layers(filter, layer) {
   site_set_map_filters(filter,site_map_layers[filter]);
 }
 
+function site_toggle_geology_layer() { 
+  if (site_territory_layers.includes("geology")) {
+    geology_layer.setVisible(false);
+    geology_simple_layer.setVisible(false);
+    geology_detail_layer.setVisible(false);
+    site_territory_layers.remove("geology");
+  } else {
+    geology_layer.setVisible(true);
+    geology_simple_layer.setVisible(true);
+    geology_detail_layer.setVisible(true);
+    site_territory_layers.push("geology");
+  }
+}
 function site_toggle_region_layer() { 
   if (site_territory_layers.includes("region")) {
     region_layer.setVisible(false);

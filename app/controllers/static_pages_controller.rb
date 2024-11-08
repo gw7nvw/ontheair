@@ -19,6 +19,7 @@ class StaticPagesController < ApplicationController
     if !as.last_sota_activation_update_at || ((as.last_sota_activation_update_at + 30.days) < time_now)
       if ENV['RAILS_ENV'] == 'production'
         Resque.enqueue(UpdateExternalActivations)
+        Resque.enqueue(ExportAssets)
       elsif ENV['RAILS_ENV'] == 'development'
         as.last_sota_activation_update_at = Time.now
         as.save

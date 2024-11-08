@@ -117,6 +117,8 @@ resources :vkassets
 
 resources :regions
 
+resources :geology, only: [:index, :show]
+
 match '/sessions', to: 'static_pages#home',    via:'get'
 match '/signin',  to: 'sessions#new',         via: 'get'
 match '/signout', to: 'sessions#destroy',     via: 'delete'
