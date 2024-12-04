@@ -44,6 +44,10 @@
       <%= f.label :district %>
       <%= f.collection_select( :district, District.all.order(:name), :district_code, :name,{selected: @asset.district, include_blank: 'None'}, style: "margin-bottom: 0px;height: 24px;") %>
 
+      <%= f.label :field_code %>
+      <%= f.collection_select( :field_code, VolcanicField.all.order(:name), :code, :name, {selected: @asset.field_code, include_blank: 'None'}, style: "margin-bottom: 0px;height: 24px;") %>
+
+
       <%= f.label :name %>
       <%= f.text_field :name %>
 

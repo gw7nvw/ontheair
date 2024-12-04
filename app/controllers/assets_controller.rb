@@ -219,7 +219,7 @@ class AssetsController < ApplicationController
   private
 
   def asset_params
-    params.require(:asset).permit(:id, :name, :description, :altitude, :is_active, :is_nzart, :minor, :is_doc, :park_id, :asset_type, :code, :valid_from, :valid_to, :az_radius, :points, :public_access, :region, :district)
+    params.require(:asset).permit(:id, :name, :description, :altitude, :is_active, :is_nzart, :minor, :is_doc, :park_id, :asset_type, :code, :valid_from, :valid_to, :az_radius, :points, :public_access, :region, :district, :field_code)
   end
 
   def convert_location_params(x, y)

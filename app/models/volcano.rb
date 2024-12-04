@@ -32,7 +32,7 @@ class Volcano < ActiveRecord::Base
 
   def self.import(filename)
     CSV.foreach(filename, headers: true) do |row|
-      puts row.to_json
+      #puts row.to_json
       place = row.to_hash
       newplace = {}
       place.each do |key, value|
@@ -51,13 +51,15 @@ class Volcano < ActiveRecord::Base
       p.long = newplace['long']
       p.az_radius = newplace['az_radius']
       p.url = newplace['url']
+      p.description = newplace['description']
       p.location = "POINT(#{p.long} #{p.lat})"
       p.eon = newplace['eon']
       p.era = newplace['era']
       p.period = newplace['period']
       p.epoch = newplace['epoch']
-      p.min_age = nil
-      p.max_age = nil
+      p.min_age = newplace['min_age']
+      p.max_age = newplace['max_age']
+      puts p.to_json
       p.age = nil if p.age.nil? or p.age.zero?
       p.min_age = p.age if p.age
       p.max_age = p.age if p.age
@@ -86,8 +88,49 @@ class Volcano < ActiveRecord::Base
       puts p.to_json
     end
   end
-end
 
+  def add_dates
+    p=self
+
+    if !p.min_age && !p.max_age
+      if p.epoch
+        p.min_age = p.epoch_data.end_mya
+        p.max_age = p.epoch_data.start_mya
+      elsif p.period
+        p.min_age = p.period.end_mya
+        p.max_age = p.period.start_mya
+      elsif p.era
+        p.min_age = p.era.end_mya
+        p.max_age = p.era.start_mya
+      elsif p.eon
+        p.min_age = p.eon.end_mya
+        p.max_age = p.eon.start_mya
+      end
+    end
+    p.date_range = p.get_date_range
+
+    p.eon = GeologicalEon.from_date(p.max_age) unless p.eon
+    p.era = GeologicalEra.from_date(p.max_age) unless p.era
+    p.period = GeologicalPeriod.from_date(p.max_age) unless p.period
+    p.epoch = GeologicalEpoch.from_date(p.max_age) unless p.epoch
+    p.save
+  end
+
+  def self.volcano_from_asset(code)
+    a=Asset.find_by(code: code)
+    v=Volcano.new
+    v.code=a.code
+    v.name=a.name
+    v.description=a.description
+    v.field_code=a.field_code
+    v.field_name=a.geology.name
+    v.location=a.location
+    v.height=a.altitude
+    v.url=a.url
+    v
+  end
+
+end
 private
 
 def age_format(age)

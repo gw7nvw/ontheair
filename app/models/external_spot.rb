@@ -5,7 +5,7 @@ class ExternalSpot < ActiveRecord::Base
   validate :record_is_unique
 
   def record_is_unique
-    dup = ExternalSpot.find_by(attributes.except('id', 'created_at', 'updated_at'))
+    dup = ExternalSpot.find_by(attributes.except('id', 'created_at', 'updated_at', 'epoch'))
     errors.add(:id, 'Record is duplicate') if dup
   end
 

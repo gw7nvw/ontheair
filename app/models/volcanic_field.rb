@@ -4,7 +4,7 @@ class VolcanicField < ActiveRecord::Base
   def self.import(filename)
     CSV.foreach(filename, headers: true) do |row|
       place = row.to_hash
-      ActiveRecord::Base.connection.execute("insert into volcanic_fields (code, name, boundary, min_age, max_age, url) values ('" + place['code'] + "','" + place['name'].gsub("'", "''") + "',ST_GeomFromText('" + place['boundary'] + "',4326), "+place['min_age']+", "+place['max_age']+", 'geology/" + place['code'] + "');")
+      ActiveRecord::Base.connection.execute("insert into volcanic_fields (code, name, boundary, min_age, max_age, url) values ('" + place['GROUP_CODE'] + "','" + place['VOLC_NAME'].gsub("'", "''") + "',ST_GeomFromText('" + place['WKT'] + "',4326), "+place['ABSMIN_MA']+", "+place['ABSMAX_MA']+", 'geology/" + place['GROUP_CODE'] + "');")
     end; true
   end
 

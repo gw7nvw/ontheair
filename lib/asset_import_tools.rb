@@ -223,13 +223,14 @@ module AssetImportTools
     unless a
       a = Asset.new
       puts 'Adding new volcano'
+      a.is_active = true
+      a.asset_type = 'volcano'
+      a.code = p.code
     end
-    a.asset_type = 'volcano'
-    a.code = p.code
-    a.is_active = true
-    a.name = p.name
-    a.location = p.location
-    a.az_radius = p.az_radius
+    a.name = p.name if p.name
+    a.description = p.description if p.description and !a.description
+    a.location = p.location if p.location
+    a.az_radius = p.az_radius if p.az_radius
     a.field_code = p.field_code
     a.save
 

@@ -29,7 +29,7 @@ class Asset < ActiveRecord::Base
     # do this here rather then before save to keep it pure PostGIS: no slow RGeo
     add_area
     add_altitude
-    add_activation_zone
+    add_activation_zone(true)
     add_links
     add_simple_boundary
   end
@@ -39,13 +39,17 @@ class Asset < ActiveRecord::Base
     self.valid_from = Time.new('1900-01-01') unless valid_from
     self.minor = false if minor != true
 
-    self.district = add_district unless district
-    self.region = add_region unless region
+    self.district = add_district if !district or district.blank?
+    self.region = add_region if !region or region.blank? 
 
     if code.nil? || (code == '')
-      self.code = Asset.get_next_code(asset_type, region)
+      if self.type.use_volcanic_field then 
+        self.code = Asset.get_next_code(asset_type, field_code)
+      else
+        self.code = Asset.get_next_code(asset_type, region)
+      end
     end
-    self.safecode = code.tr('/', '_') if safecode.nil? || (safecode == '')
+    self.safecode = code.tr('/', '_') 
 
     self.url = 'assets/' + safecode
   end
@@ -900,6 +904,9 @@ class Asset < ActiveRecord::Base
     when 'hut'
       prefix = 'ZLH/'
       length = 3
+    when 'volcano'
+      prefix = 'ZLV/'
+      length = 3
     when 'park'
       prefix = 'ZLP/'
       length = 4
@@ -952,7 +959,7 @@ class Asset < ActiveRecord::Base
         newcode = prefix + codenumber.to_s.rjust(codestring.length, '0')
       end
     end
-    logger.debug 'Code: ' + newcode
+    logger.debug 'Code: ' + newcode||""
     newcode
   end
 

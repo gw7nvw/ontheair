@@ -122,6 +122,22 @@ module AssetConsoleTools
     end
   end
 
+  def add_url_from_description(move=false)
+    urls=description.scan(/(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/) if description
+    if urls
+      urls.each do |url|
+        awl = AssetWebLink.new
+        awl.asset_code = code
+        awl.url = url[0]+"://"+url[1]+url[2]
+        awl.link_class = 'other'
+        dup_awl = AssetWebLink.find_by(asset_code: code, url: awl.url)
+        puts "Found: "+awl.url
+        awl.save unless dup_awl
+      end
+      description.gsub(/(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/,'') if move
+    end
+  end
+
   ##################################################
   # Step through assets without loading entire list
   ##################################################

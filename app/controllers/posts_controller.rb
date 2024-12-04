@@ -193,8 +193,9 @@ class PostsController < ApplicationController
       @post.updated_by_id = current_user.id # current_user.id
       if @topic.is_alert
         if params[:post][:referenced_date] && !params[:post][:referenced_date].empty? && params[:post][:referenced_time] && !params[:post][:referenced_time].empty?
-          @post.referenced_time = (params[:post][:referenced_date] + ' ' + params[:post][:referenced_time]).to_time.in_time_zone(@tz.name).in_time_zone('UTC').to_time
-          @post.referenced_date = (params[:post][:referenced_date] + ' ' + params[:post][:referenced_time]).to_time.in_time_zone(@tz.name).in_time_zone('UTC').to_time
+          t=(params[:post][:referenced_date] + ' ' + params[:post][:referenced_time]).to_time
+          @post.referenced_time = Time.new.in_time_zone(@tz.name).change(year: t.year, month: t.month, day: t.day, hour: t.hour, min: t.min, sec: t.sec).in_time_zone('UTC').to_time
+          @post.referenced_date = @post.referenced_time
         else
           invalid = true
           errors += 'Date / time are required; '

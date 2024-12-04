@@ -137,9 +137,8 @@ class PostsControllerTest < ActionController::TestCase
     thedate=Time.now
     tz=Timezone.find_by_id(user1.timezone) 
     userdate=thedate.in_time_zone(tz.name)
-
     #create post
-    post :create, topic_id: ALERT_TOPIC, pnp: 'off', post: {referenced_date: thedate, referenced_time: thedate,freq: '7.090', mode: 'AM', asset_codes: asset1.code+", "+asset2.code, duration: 1}
+    post :create, topic_id: ALERT_TOPIC, pnp: 'off', post: {referenced_date: userdate.strftime('%Y-%m-%d'), referenced_time: userdate.strftime('%H:%M'),freq: '7.090', mode: 'AM', asset_codes: asset1.code+", "+asset2.code, duration: 1}
     assert_response :success
     post=Post.last
     assert_select ".alert-success", /Posted/, "Success message"
@@ -157,7 +156,7 @@ class PostsControllerTest < ActionController::TestCase
     #show post page
     assert_select ".box_header", /ZL4NVW/, "Spotter Callsign"
     assert_select ".box_header", /Going Portable/, "topic"
-    assert_select ".box_header", /#{userdate.strftime("%Y-%m-%d")}/, "date"
+    assert_select ".box_header", /#{userdate.strftime("%Y-%m-%d %H:%M")}/, "date"
     assert_select ".box_header", /#{make_regex_safe(asset1.codename)}/, "location"
     assert_select ".box_header", /#{make_regex_safe(asset2.codename)}/, "location"
   end

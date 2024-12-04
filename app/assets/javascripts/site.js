@@ -397,7 +397,7 @@ function site_init_styles() {
   site_highlight_polygon=map_create_style("", null, 'rgba(128,0,0,0.3)', "#660000", 2);
   site_red_polygon=map_create_style("", null, 'rgba(256,0,0,0.6)', "#880000", 2);
   site_district_style=map_create_style("", null, 'rgba(0,0,0,0.0)', "#880088", 4);
-  site_geology_style=map_create_style("", null, 'rgba(256,0,100,0.3)', "#4d001f", 2);
+  site_geology_style=map_create_style("", null, 'rgba(153,0,255,0.2)', "#9900ff", 1);
   site_region_style=map_create_style("", null, 'rgba(0,0,0,0.0)', "#AA0044", 4);
   site_green_polygon=map_create_style("", null, 'rgba(0,256,0,0.6)', "#008800", 2);
   site_pota_style=map_create_style('',0, 'rgba(128,0,128,0.2)', "#900090", 2);

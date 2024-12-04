@@ -1192,7 +1192,7 @@ class User < ActiveRecord::Base
     if awls && (awls.count == 1)
       awarded[:latest] = awls.first.threshold_name.capitalize + ' (' + awls.first.threshold.to_s + ')'
       score = awls.first.threshold
-      awarded[:status] = true if (score == threshold) || threshold.nil?
+      awarded[:status] = true if threshold.nil? || (score >= threshold) 
     end
     if score
       next_threshold = AwardThreshold.find_by_sql [' select * from award_thresholds where threshold>' + score.to_s + ' order by threshold asc limit 1']
@@ -1234,7 +1234,6 @@ class User < ActiveRecord::Base
     user = self
     awards = Award.where(is_active: true)
     awards.each do |award|
-      next if user.has_award(award.id, nil)[:status]
       next unless award.count_based == true
       if (award.activated == true) && (award.chased == true)
       # this is where completed awards would go, when the code supports them!

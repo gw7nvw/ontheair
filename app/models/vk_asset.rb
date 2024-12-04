@@ -29,7 +29,7 @@ class VkAsset < ActiveRecord::Base
     data = JSON.parse(open(url).read)
     if data
       data.each do |site|
-        next unless site && site['ID'] && (site['ID'][0..1] == 'VK') && (site['ID'].length > 4)
+        next unless site && site['ID'] && ((site['ID'][0..1] == 'VK') || (site['ID'][0..1] == 'AU')) && (site['ID'].length > 4)
         p = VkAsset.new
         p.award = site['Award']
         p.wwff_code = site['Location']
