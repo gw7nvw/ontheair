@@ -38,6 +38,10 @@
         <p>
           <%=@post.site%>
         </p>
+      <% elsif @post.location %>
+        <p>
+          <%=link_to "WGS: "+@post.location.x.to_s+", "+@post.location.y.to_s, "/?x=#{@post.location.x.to_s}&y=#{@post.location.y.to_s}&zoom=13", :target=>"_blank" %>
+        </p>
       <% end %>
       <%if (@post.freq and @post.freq.length>0) or (@post.mode and @post.mode.length>0) then%><p><%=@post.freq%> - <%=@post.mode%></p><% end %> 
    </div>

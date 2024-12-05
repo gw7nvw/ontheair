@@ -12,6 +12,7 @@ class ApplicationController < ActionController::Base
   #  before_action :check_resque_workers
 
   include SessionsHelper
+  include MapHelper
   include RgeoHelper
 
   helper_method :retrieve_last_index_page_or_default
@@ -30,6 +31,22 @@ class ApplicationController < ActionController::Base
     else
       @tz = Timezone.find_by(name: 'UTC')
     end
+
+    x = params[:x] if params[:x]
+    y = params[:y] if params[:y]
+    if x and y then
+      if params[:epsg] then 
+        srs=params[:epsg].to_i 
+      else
+        srs=4326
+      end
+  
+      trs=2193
+      xyarr= transform_geom(x, y, srs, trs)
+      @map_x=xyarr[0]
+      @map_y=xyarr[1]
+    end
+    @zoomlevel = params[:zoom] if params[:zoom]
   end
 
   def store_last_index_page

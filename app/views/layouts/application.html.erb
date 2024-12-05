@@ -31,7 +31,7 @@ if( /Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent))
 </script>
 
     <script>
-      <% if @zoomlevel and @zoomlevel.to_i>=5 and @zoomlevel.to_i<=15%> var defzoom=<%=@zoomlevel%> <% end %>
+      <% if @zoomlevel and @zoomlevel.to_i>=5 and @zoomlevel.to_i<=15%> var def_zoom=<%=@zoomlevel%> <% end %>
       <% if @map_x %> var def_x=<%=@map_x%> <% end %>
       <% if @map_y %> var def_y=<%=@map_y%> <% end %>
     </script>
