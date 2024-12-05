@@ -124,7 +124,21 @@ class PostsController < ApplicationController
           end
         else
           @post.assign_attributes(post_params)
-          if params[:post][:asset_codes] then @post.asset_codes = params[:post][:asset_codes].delete('{').delete('}').split(',') end
+          if params[:post][:asset_codes]
+            #check fo X,Y
+            if params[:post][:asset_codes].match(/-?([0-9\.])+,( )?-?([0-9\.])+/)
+              loc_text=params[:post][:asset_codes]
+              puts loc_text
+              loc_arr=loc_text.split(',')
+              puts loc_arr
+              x1=loc_arr[0].to_f
+              y1=loc_arr[1].to_f
+              @post.location="POINT(#{x1} #{y1})"
+              @post.loc_source='user'
+            else
+              @post.asset_codes = params[:post][:asset_codes].upcase.delete('{').delete('}').split(',').map(&:strip)
+            end
+          end
 
           @post.site = ''
           @post.asset_codes.each do |ac|
@@ -181,7 +195,19 @@ class PostsController < ApplicationController
       @post = Post.new(post_params)
       if @post.callsign.nil? || (@post.callsign == '') then @post.callsign = current_user.callsign end
       if params[:post][:asset_codes]
-        @post.asset_codes = params[:post][:asset_codes].upcase.delete('{').delete('}').split(',').map(&:strip)
+        #check fo X,Y
+        if params[:post][:asset_codes].match(/-?([0-9\.])+,( )?-?([0-9\.])+/)
+          loc_text=params[:post][:asset_codes]
+          puts loc_text
+          loc_arr=loc_text.split(',')
+          puts loc_arr
+          x1=loc_arr[0].to_f
+          y1=loc_arr[1].to_f
+          @post.location="POINT(#{x1} #{y1})"
+          @post.loc_source='user'
+        else
+          @post.asset_codes = params[:post][:asset_codes].upcase.delete('{').delete('}').split(',').map(&:strip)
+        end
       end
 
       @post.site = ''

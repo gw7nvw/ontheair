@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20241108050228) do
+ActiveRecord::Schema.define(version: 20241204222740) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -656,9 +656,11 @@ ActiveRecord::Schema.define(version: 20241108050228) do
     t.string   "island"
     t.string   "summit"
     t.string   "callsign"
-    t.string   "asset_codes",         default: [], array: true
+    t.string   "asset_codes",                                               default: [], array: true
     t.integer  "user_id"
     t.boolean  "do_not_lookup"
+    t.spatial  "location",            limit: {:srid=>4326, :type=>"point"}
+    t.string   "loc_source"
   end
 
   create_table "pota_parks", force: true do |t|
@@ -894,6 +896,39 @@ ActiveRecord::Schema.define(version: 20241108050228) do
     t.float   "max_age"
     t.string  "date_range"
     t.string  "field_code"
+  end
+
+  create_table "volcanos_raw", primary_key: "gid", force: true do |t|
+    t.string "descr",      limit: 254
+    t.string "typename",   limit: 50
+    t.string "geolhist",   limit: 254
+    t.string "repage_uri", limit: 150
+    t.string "yngage_uri", limit: 150
+    t.string "oldage_uri", limit: 150
+    t.string "stratage",   limit: 50
+    t.float  "absmin_ma"
+    t.float  "absmax_ma"
+    t.string "stratrank",  limit: 50
+    t.string "mbrequiv",   limit: 150
+    t.string "fmnequiv",   limit: 254
+    t.string "sbgrpequiv", limit: 150
+    t.string "grpequiv",   limit: 150
+    t.string "spgrpequiv", limit: 150
+    t.string "terrequiv",  limit: 150
+    t.string "megaequiv",  limit: 150
+    t.string "stratlex",   limit: 100
+    t.string "litho2014",  limit: 100
+    t.string "lithology",  limit: 150
+    t.string "mainrock",   limit: 50
+    t.string "subrocks",   limit: 150
+    t.string "protolith",  limit: 150
+    t.string "tzone",      limit: 10
+    t.string "rockgroup",  limit: 50
+    t.string "rockclass",  limit: 50
+    t.string "simplename", limit: 254
+    t.string "keygrpname", limit: 100
+    t.string "volc_name",  limit: 80
+    t.string "group_code", limit: 10
   end
 
   create_table "web_link_classes", force: true do |t|

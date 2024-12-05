@@ -849,11 +849,12 @@ class Asset < ActiveRecord::Base
 
   # Look up all assets that contain a given location point / polygon
   # Optionally provide an asset from which the location was derived
-  # Input: location: Point, asset: Asset or nil
+  # Optionally also check for point locations with activation_zones
+  # Input: location: Point, asset: Asset or nil, include_point: boolean 
   # Returns: codes: [code]
   #
   # TODO: Logic here is same as that in def add_links, can the two be combined?
-  def self.containing_codes_from_location(location, asset = nil)
+  def self.containing_codes_from_location(location, asset = nil, include_point = false)
     loc_type = 'point'
     codes = []
     if asset && asset.type.has_boundary && asset.area && (asset.area > 0)
@@ -862,7 +863,11 @@ class Asset < ActiveRecord::Base
 
     if !location.nil? && !location.to_s.empty?
       # find all assets containing this location point
-      codes = Asset.find_by_sql ["select code from assets a inner join asset_types at on at.name=a.asset_type where a.is_active=true and at.has_boundary=true and ST_Within(ST_GeomFromText('#{location}',4326), a.boundary); "]
+      if include_point then
+        codes = Asset.find_by_sql ["select code from assets a inner join asset_types at on at.name=a.asset_type where a.is_active=true and ST_Within(ST_GeomFromText('#{location}',4326), a.boundary); "]
+      else
+        codes = Asset.find_by_sql ["select code from assets a inner join asset_types at on at.name=a.asset_type where a.is_active=true and at.has_boundary=true and ST_Within(ST_GeomFromText('#{location}',4326), a.boundary); "]
+      end
       # For locations based on a polygon:
       # filter the list by those that overlap at least 90% of the asset
       # defining our polygon

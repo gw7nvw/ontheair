@@ -458,6 +458,21 @@ function site_centreMap() {
 
 }
 
+function site_get_map_position(elementId) {
+  if (map_show_position==0) {
+    site_show_position();
+  }
+  posn=map_geolocation.getPosition();
+  if (posn && posn.length==2) {
+    x=posn[0];
+    y=posn[1];
+    document.getElementById(elementId).value = x.toString()+","+y.toString();
+  } else {
+    document.getElementById(elementId).value = "GPS not ready, try again";
+  }
+}
+
+
 function site_navigate_to(url) {
   if(url.length>0) {
         document.body.classList.add("loading");

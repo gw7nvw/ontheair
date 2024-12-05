@@ -90,4 +90,40 @@ module MapHelper
     # return path to downloaded tile
     filename
   end
+
+  def transform_geom(x,y,srs,trs)
+    # convert to WGS84 (EPSG4326) for database
+    fromproj4s = Projection.find_by_id(srs).proj4
+    toproj4s = Projection.find_by_id(trs).proj4
+
+    fromproj = RGeo::CoordSys::Proj4.new(fromproj4s)
+    toproj = RGeo::CoordSys::Proj4.new(toproj4s)
+
+    xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, x.to_f, y.to_f)
+  end
+
+
+  def transform_geom(x,y,srs,trs)
+    # convert to WGS84 (EPSG4326) for database
+    fromproj4s = Projection.find_by_id(srs).proj4
+    toproj4s = Projection.find_by_id(trs).proj4
+
+    fromproj = RGeo::CoordSys::Proj4.new(fromproj4s)
+    toproj = RGeo::CoordSys::Proj4.new(toproj4s)
+
+    xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, x.to_f, y.to_f)
+  end
+
+
+  def transform_geom(x,y,srs,trs)
+    # convert to WGS84 (EPSG4326) for database
+    fromproj4s = Projection.find_by_id(srs).proj4
+    toproj4s = Projection.find_by_id(trs).proj4
+
+    fromproj = RGeo::CoordSys::Proj4.new(fromproj4s)
+    toproj = RGeo::CoordSys::Proj4.new(toproj4s)
+
+    xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, x.to_f, y.to_f)
+  end
+
 end

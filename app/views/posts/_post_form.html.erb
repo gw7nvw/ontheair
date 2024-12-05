@@ -80,7 +80,11 @@
             <td>Operating from:</td>
             <td>
              <% asset_code_names=@post.asset_code_names.join("<br/>")%>
-             <% @post.asset_codes=@post.asset_codes.join(',') %>
+             <% if @post.location then
+                  @post.asset_codes=@post.location.x.to_s+","+@post.location.y.to_s
+             else
+                  @post.asset_codes=@post.asset_codes.join(',') 
+             end %>
              <%= f.text_field :asset_codes, :placeholder => 'Enter code', :style => 'display:block' %>
              <%= f.text_field :x1, :readonly => true, :style => 'display:none' %>
              <%= f.text_field :y1, :readonly => true, :style => 'display:none' %>
@@ -95,6 +99,7 @@
                   <ul class="dropdown-menu">
                     <li><%= link_to "... from list", '/query?assetfield=asset', :remote => true,  :onclick => "search_assets('asset')" %></li>
                     <li><%= link_to "... from map", '#',  :onclick => "site_selectPlace(null,'post_asset_codes', 'asset_names', 'x1', 'y1', 'location1', null, null, site_green_star,true);return false;" %></li>
+                    <li><%= link_to "... from GPS", '#',  :onclick => 'site_get_map_position("post_asset_codes");return(false);' %></li>
                     <li><%= link_to "Clear", '#',  :onclick => "site_clear_element(['post_asset_codes', 'post_location1', 'post_x1', 'post_y1']);site_clear_html_element(['asset_names']);map_clear_scratch_layer(null,site_green_star);return false;" %></li>
                   </ul>
                 </li>

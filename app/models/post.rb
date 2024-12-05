@@ -15,6 +15,7 @@ class Post < ActiveRecord::Base
 
   def before_save_actions
     check_codes
+    location=get_most_accurate_location
     add_containing_codes
     # again to vet child codes added
     check_codes
@@ -61,23 +62,28 @@ class Post < ActiveRecord::Base
   end
 
   def add_map_image
-    location = nil
-    if asset_codes
-      point_loc = nil
-      poly_loc = nil
-      asset_codes.each do |ac|
-        a = Asset.find_by(code: ac)
-        if a && a.type.has_boundary
-          poly_loc = { x: a.x, y: a.y } if a.location
-        elsif a && a.location
-          point_loc = { x: a.x, y: a.y }
+    if location == nil
+      puts "X,Y"
+      if asset_codes
+        point_loc = nil
+        poly_loc = nil
+        asset_codes.each do |ac|
+          a = Asset.find_by(code: ac)
+          if a && a.type.has_boundary
+            poly_loc = { x: a.x, y: a.y } if a.location
+          elsif a && a.location
+            point_loc = { x: a.x, y: a.y }
+          end
         end
+        calc_loc = point_loc || poly_loc
       end
-      location = point_loc || poly_loc
+    else
+      xyarr = transform_geom(location.x, location.y, 4326, 2193)
+      calc_loc = { x: xyarr[0], y: xyarr[1] }
     end
 
-    if location
-      filename = get_map(location[:x], location[:y], 9, 'map_' + id.to_s)
+    if calc_loc
+      filename = get_map(calc_loc[:x], calc_loc[:y], 9, 'map_' + id.to_s)
       #    filename=get_map_zoomed(location[:x], location[:y], 7,15, "map_"+self.id.to_s)
       begin
         self.image = File.open(filename, 'rb')
@@ -156,9 +162,13 @@ class Post < ActiveRecord::Base
   def get_all_asset_codes
     codes = asset_codes
     newcodes = codes
-    codes.each do |code|
-      newcodes += Asset.containing_codes_from_parent(code)
-      newcodes += VkAsset.containing_codes_from_parent(code)
+    if loc_source=='user' then
+      newcodes = Asset.containing_codes_from_location(location, nil, true)
+    else
+      codes.each do |code|
+        newcodes += Asset.containing_codes_from_parent(code)
+        newcodes += VkAsset.containing_codes_from_parent(code)
+      end
     end
     newcodes = newcodes.uniq
     # filter out POTA / WWFF if user does not use those schemes
@@ -473,9 +483,13 @@ class Post < ActiveRecord::Base
   end
 
   def get_most_accurate_location
-    location = nil
-    loc = Asset.get_most_accurate_location(asset_codes)
-    location = loc[:location] if loc
-    location
+    if loc_source!='user'
+      location = nil
+      loc = Asset.get_most_accurate_location(asset_codes)
+      location = loc[:location] if loc
+      location
+    else
+      location = self.location
+    end
   end
 end

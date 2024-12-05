@@ -125,8 +125,8 @@ const map_geolocation = new ol.Geolocation({
 
 function map_enable_tracking() {
   map_show_position=!map_show_position;
-  map_position_layer.setVisible(map_show_position)
-  map_geolocation.setTracking(map_show_position)
+  map_position_layer.setVisible(map_show_position);
+  map_geolocation.setTracking(map_show_position);
 }
 
 function map_add_control(item) {
