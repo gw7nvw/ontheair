@@ -63,7 +63,6 @@ class Post < ActiveRecord::Base
 
   def add_map_image
     if location == nil
-      puts "X,Y"
       if asset_codes
         point_loc = nil
         poly_loc = nil

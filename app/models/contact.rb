@@ -23,7 +23,7 @@ class Contact < ActiveRecord::Base
     add_user_ids
     check_codes_in_location
     location = get_most_accurate_location(true)
-    add_containing_codes(location[:asset])
+    add_containing_codes(location[:asset]) if !do_not_lookup == true
 
     check_for_same_place_error # again incase they match after adding child codes
     update_classes

@@ -97,6 +97,7 @@ resources :topics, only: [:index, :new, :create, :show, :edit, :update]
 
 #match '/queries/asset', to: 'queries#asset',    via:'get'
 resources :query, only: [:index]
+match '/query_location', to: 'query#location',    via:'get'
 
 resources :api, only: [:index]
 match '/api/assets', to: 'api#asset',    via:'get'

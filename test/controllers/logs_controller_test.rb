@@ -965,7 +965,7 @@ class LogsControllerTest < ActionController::TestCase
     log=create_test_log(user1, asset_codes: [asset3.code], date: '2022-01-01'.to_date, power1: '10w', loc_desc1: "roadside spot", is_qrp1: true, is_portable1: true)
     sign_in user1
 
-    post :save, id: log.id, data: [[nil, '00:01', user2.callsign, true, true, 'FM', 145.5, '59', '57', 'John', 'Good spot',nil ,"" , [asset1.code,asset2.code], nil, nil, nil]], :format => :json
+    post :save, id: log.id, data: [[nil, '00:01', user2.callsign, true, true, 'FM', 145.5, '59', '57', 'John', 'Good spot', false, nil ,"" , [asset1.code,asset2.code], nil, nil, nil]], :format => :json
     assert_response :success
 
     contact=log.contacts.first
@@ -1000,7 +1000,7 @@ class LogsControllerTest < ActionController::TestCase
 
     sign_in user1
 
-    post :save, id: log.id, data: [[contact.id, '00:01', user2.callsign, true, true, 'FM', 145.5, '59', '57', 'John', 'Good spot',nil ,"" , [asset1.code,asset2.code], nil, nil, nil]], :format => :json
+    post :save, id: log.id, data: [[contact.id, '00:01', user2.callsign, true, true, 'FM', 145.5, '59', '57', 'John', 'Good spot',false,nil ,"" , [asset1.code,asset2.code], nil, nil, nil]], :format => :json
     assert_response :success
 
     contact.reload

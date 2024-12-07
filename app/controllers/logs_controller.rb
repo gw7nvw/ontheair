@@ -305,16 +305,17 @@ class LogsController < ApplicationController
         cle.signal1 = row[8]
         cle.name2 = row[9]
         cle.loc_desc2 = row[10]
+        cle.do_not_lookup = row[11]
         cle.asset1_codes = log.asset_codes
         cle.asset1_codes = [''] if cle.asset1_codes.nil?
-        cle.asset2_codes = row[13]
+        cle.asset2_codes = row[14]
         logger.debug 'DEBUG asset codes'
         logger.debug cle.asset2_codes
         logger.debug cle.loc_desc2
         if cle.asset2_codes.nil? || (cle.asset2_codes == []) then cle.asset2_codes = [''] end
-        cle.location2 = row[14]
-        cle.x2 = row[15]
-        cle.y2 = row[16]
+        cle.location2 = row[15]
+        cle.x2 = row[16]
+        cle.y2 = row[17]
         cle.log_id = id
         cle.convert_user_timezone_to_utc(current_user)
 

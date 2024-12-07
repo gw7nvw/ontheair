@@ -221,7 +221,12 @@
         var data2= <%=raw @contacts.to_json(methods: [:timetext, :asset2_names])%>;
         var hot = new Handsontable(container, {
           data: data2,
-          colHeaders: ['id','Time','Callsign','QRP', 'Port', 'Mode','Frq (MHz)','Snt RST','Rcd RST','Name','Description','', 'codes', 'name', 'Id','loc','x','y'],
+          colHeaders: ['id','Time','Callsign','QRP', 'Port', 'Mode','Frq (MHz)','Snt RST','Rcd RST','Name','Description','Mnl?', 'codes', 'name', 'Id','loc','x','y'],
+          afterGetColHeader(index, TH) {
+            if (index === 11 && TH) {
+              TH.children[0].title = 'I will specify parks manually - do not add automatically'
+            }
+          },
           columns: [
         {data: 'id', type: 'numeric',readOnly:true} , 
         {data: 'timetext', type: 'text', renderer: reqTextRenderer},  
@@ -234,6 +239,7 @@
         {data: 'signal1', type: 'numeric', renderer: reqValueRenderer}, 
         {data: 'name2', type: 'text', wordWrap: 'false', renderer: truncatedTextRenderer}, 
         {data: 'loc_desc2', type: 'text', renderer: truncatedTextRenderer}, 
+        {data: 'do_not_lookup', type: 'checkbox'}, 
         {data: 'acton', renderer: actionRenderer}, 
         {data: 'asset2_names', type: 'text',readOnly:true}, 
         {data: 'asset2_codes', readOnly:true, renderer: arrayRenderer}, 
@@ -245,7 +251,7 @@
           minSpareRows: 1,
           minSpareCols: 0,
           enterMoves: {row: 0, col: 1},
-          maxCols: 23,
+          maxCols: 24,
           licenseKey: 'non-commercial-and-evaluation',
           rowHeaders: false,
           afterChange: function (change, source) {
@@ -269,7 +275,7 @@
         });
          hot.updateSettings({
                 hiddenColumns: {
-                  columns: [0,13,14,15,16],
+                  columns: [0,14,15,16,17],
                   indicators: false
                 }
               })

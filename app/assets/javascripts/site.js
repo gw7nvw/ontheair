@@ -8,6 +8,7 @@ var site_show_controls=true;
 var site_back = false;
 var refreshInterval;
 var currZoom;
+var debug_response;
 
 //callback variabkles
 var site_select_row;
@@ -458,7 +459,19 @@ function site_centreMap() {
 
 }
 
+function site_search_map_position(pos_ele, code_ele) {
+  posn=site_get_map_position(pos_ele);
+  if (posn[0]!=null && posn[1]!=null) {
+    x=posn[0];
+    y=posn[1];
+    search_location(x,y,code_ele)
+  }
+  return(false)
+}
+
 function site_get_map_position(elementId) {
+  x=null;
+  y=null;
   if (map_show_position==0) {
     site_show_position();
   }
@@ -470,6 +483,7 @@ function site_get_map_position(elementId) {
   } else {
     document.getElementById(elementId).value = "GPS not ready, try again";
   }
+  return([x,y])
 }
 
 
@@ -903,6 +917,23 @@ function select_asset(field, code, name, x, y, loc, containing_codes, containing
   return false;
 }
 
+
+function search_location(x,y,elementId) {
+        $.ajax({
+          beforeSend: function (xhr){
+            xhr.setRequestHeader("Content-Type","application/javascript");
+            xhr.setRequestHeader("Accept","text/javascript");
+          },
+          type: "GET",
+          timeout: 6000,
+          url: "/query_location?qx="+x+"&qy="+y,
+          complete: function(response) {
+            debug_response=response;
+              document.getElementById(elementId).innerHTML = response.responseText;
+          }
+        });
+ return(false);
+}
 
 function search_assets(field) {
         BootstrapDialog.show({
