@@ -376,9 +376,24 @@
     <% if not @asset.chasers_including_external or (@asset.chasers_including_external and @asset.chasers_including_external.count==0) then %>
       <i>No-one has chased this place yet. Be the first!</i><br/>
     <% end %>
-    <% @asset.chasers_including_external.each do |user| %>
-      <%=link_to user.callsign, '/users/'+user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp;
+    <% count = 0 
+       chasers = @asset.chasers_including_external 
+       callsigns = chasers.map { |chaser| chaser.callsign }
+       chase_count = callsigns.count
+       if current_user and callsigns.include?(current_user.callsign) then  %>
+         <%=link_to current_user.callsign, '/users/'+current_user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp;
+    <%  callsigns = callsigns - [current_user.callsign] 
+        chase_count-=1
+       end
+       callsigns = callsigns[0..39]
+       chase_count -= 40 %>
+    <% callsigns.each do |callsign| %>
+      <%=link_to callsign, '/users/'+callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp;
     <% end %>
+
+    <% if chase_count>0 then %> <%= "... and #{chase_count.to_s} more" %> <% end %>
+        
+    
   </div> 
 
   <div class="sectiontitle_bold">Activated by:</div>

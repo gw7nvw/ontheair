@@ -547,7 +547,7 @@ class Asset < ActiveRecord::Base
   # Asset type list (assets we contain)
   def contains_classes
     als = AssetLink.where(containing_code: code)
-    acs = als.map { |al| al.parent.asset_type }
+    acs = als.map { |al| if al.parent then al.parent.asset_type else 'unknown' end }
     acs.uniq
   end
 
@@ -783,7 +783,7 @@ class Asset < ActiveRecord::Base
     if codes.count > 1
       codes.each do |code|
         logger.debug "DEBUG: assessing code2 #{code}"
-        assets = Asset.find_by_sql [" select id, asset_type, location, area from assets where code='#{code}' limit 1"]
+        assets = Asset.find_by_sql [" select id, code, safecode, asset_type, location, area from assets where code='#{code}' limit 1"]
         asset = assets ? assets.first : nil
         if asset
           # only consider polygon loc's if we don't already have a point loc
@@ -814,7 +814,7 @@ class Asset < ActiveRecord::Base
     end
     # single asset or nothing found from search, just use the first location
     if !location && (codes.count > 0)
-      assets = Asset.find_by_sql [" select id, asset_type, location, area from assets where code='#{codes.first}' limit 1"]
+      assets = Asset.find_by_sql [" select id, code, safecode, asset_type, location, area from assets where code='#{codes.first}' limit 1"]
       if assets && (assets.count > 0)
         loc_asset = assets.first
         loc_asset.type.has_boundary ? (loc_source = 'area') : (loc_source = 'point')

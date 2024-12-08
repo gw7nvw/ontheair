@@ -1,6 +1,11 @@
 class VolcanicField < ActiveRecord::Base
   require 'csv'
 
+  def site_count
+    sites=Volcano.find_by_sql [ "select count(id) as id from volcanos where field_code = '#{code}';" ]
+    if sites and sites.count>0 then sites.first.id else nil end
+  end
+
   def self.import(filename)
     CSV.foreach(filename, headers: true) do |row|
       place = row.to_hash

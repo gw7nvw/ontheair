@@ -57,8 +57,7 @@ $(function () {
       <th>Name</th>
       <th>Min age</th>
       <th>Max Age</th>
-
-
+      <th>Volcanic Sites</th>
     </tr>
 
     <% if @geologies then @geologies.each do |geology| %>
@@ -73,6 +72,7 @@ $(function () {
         <td><%= if geology.name then geology.name end%></td>
         <td><%= geology.min_age%> MA</td>
         <td><%= geology.max_age%> MA</td>
+        <td><%= if geology.site_count>0 then geology.site_count.to_s else '-' end%></td>
       </tr>
     <% end end %>
   </table>

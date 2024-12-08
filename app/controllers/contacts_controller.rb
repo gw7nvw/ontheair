@@ -47,10 +47,19 @@ class ContactsController < ApplicationController
       whereclause = whereclause + " and (callsign1='" + @callsign + "' or callsign2='" + @callsign + "')"
     end
 
+    if params[:whochased] && !params[:whochased].empty?
+      @whochased=true
+      whereclause = whereclause + " and ('" + params[:whochased].tr('_', '/') + "'=ANY(asset2_codes) and (callsign2='" + @callsign + "'))"
+    end
+
     if params[:asset] && !params[:asset].empty?
       whereclause = whereclause + " and ('" + params[:asset].tr('_', '/') + "'=ANY(asset1_codes) or '" + params[:asset].tr('_', '/') + "'=ANY(asset2_codes))"
       @asset = Asset.find_by(safecode: params[:asset].upcase)
       @assetcode = @asset.code if @asset
+    end
+
+    if params[:date] && !params[:date].empty?
+      whereclause = whereclause + " and (date = '#{params[:date]}')"
     end
 
     if @orphans then 

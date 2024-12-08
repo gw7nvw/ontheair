@@ -191,6 +191,9 @@ class Contact < ActiveRecord::Base
     if asset2_codes.nil? || (asset2_codes == []) || (asset2_codes == [''])
       self.asset2_codes = Asset.check_codes_in_text(loc_desc2)
     end
+    if asset2_codes.nil? || (asset2_codes == []) || (asset2_codes == [''])
+      self.asset2_codes = Asset.check_codes_in_text(comments2)
+    end
   end
 
   # do not allow activator & chaser to be in same place

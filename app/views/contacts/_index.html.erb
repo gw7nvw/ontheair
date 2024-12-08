@@ -18,6 +18,7 @@
     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
     &nbsp;--&gt;&nbsp;
     <b>Contacts</b>
+    <% if @whochased then %>&nbsp;--&gt;&nbsp;Who Chased<% end %>
     <% if @user then %>&nbsp;--&gt;&nbsp;<b><%= @user.callsign %></b><% end %>
     <% if @asset then %>&nbsp;--&gt;&nbsp;<b><%= @asset.codename %></b>
       <% elsif @assetcode then %>&nbsp;--&gt;&nbsp;<b><%= @assetcode %></b>

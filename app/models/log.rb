@@ -97,6 +97,9 @@ class Log < ActiveRecord::Base
     if asset_codes.nil? || (asset_codes == []) || (asset_codes == [''])
       self.asset_codes = Asset.check_codes_in_text(loc_desc1)
     end
+    if asset_codes.nil? || (asset_codes == []) || (asset_codes == [''])
+      self.asset_codes = Asset.check_codes_in_text(comments1)
+    end
   end
 
   def get_most_accurate_location(force = false)
