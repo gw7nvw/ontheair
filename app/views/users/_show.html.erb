@@ -60,10 +60,16 @@
     <div class="erow" id="acctnumber">
       Mobile no.**: <%= @user.acctnumber %>
     </div>
+    
+    <% provider = @user.email.split('@')[1] if @user.email %>
+    <% providers = EmailBlacklist.all.map{|eb| eb.email_provider} %>
 
     <div class="erow" id="email">
       Email: <%= @user.email %>
     </div>
+    <% if providers.include?(provider) %>
+      <p style="color:red"><i>Due to their email rejection policies, we are unable to accept accounts with this email provider.  Please enter another email provider, or remove this email address</i></p>
+    <% end %>
   <%end%>
 
   <div class="erow" id="home_qth">

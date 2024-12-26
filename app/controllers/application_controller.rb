@@ -82,6 +82,9 @@ class ApplicationController < ActionController::Base
         Rails.logger.info 'USER: ' + request.remote_ip
       end
     end
+    if current_user then 
+      current_user.update_column :updated_at, Time.now()
+    end
   end
 
   def set_cache_headers

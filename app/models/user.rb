@@ -32,12 +32,23 @@ class User < ActiveRecord::Base
                        uniqueness: { case_sensitive: false }, format: { with: VALID_NAME_REGEX }
 
   VALID_EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i
+  validate :email_is_valid
   has_secure_password
 
   VALID_PHONE_REGEX = /\A\+[1-9]\d{1,14}\z/i
   validates :acctnumber, allow_blank: true, format: { with: VALID_PHONE_REGEX }
 
   VALID_CALLSIGN_REGEX = /^\d{0,1}[a-zA-Z]{1,2}\d{1,4}[a-zA-Z]{1,4}$/
+
+  def email_is_valid
+    if email 
+      provider=email.split('@')[1]
+      providers=EmailBlacklist.all.map{|ep| ep.email_provider}
+      if providers.include?(provider) then
+        errors.add(:email, 'This email provider does not accept emails from ontheair.nz. Please use a different email address or leave blank for no email services')
+      end
+    end
+  end
 
   def self.new_token
     SecureRandom.urlsafe_base64

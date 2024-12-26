@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20241207063114) do
+ActiveRecord::Schema.define(version: 20241224005139) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -73,6 +73,7 @@ ActiveRecord::Schema.define(version: 20241207063114) do
     t.integer  "dist_buffer"
     t.boolean  "is_zlota"
     t.boolean  "use_volcanic_field"
+    t.boolean  "use_az"
   end
 
   add_index "asset_types", ["name"], :name => "index_asset_types_on_name"
@@ -296,6 +297,10 @@ ActiveRecord::Schema.define(version: 20241207063114) do
     t.string "itu_zone"
     t.string "cq_zone"
     t.string "continent_code"
+  end
+
+  create_table "email_blacklists", force: true do |t|
+    t.string "email_provider"
   end
 
   create_table "external_activations", force: true do |t|

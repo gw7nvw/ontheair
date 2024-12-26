@@ -4,7 +4,7 @@
 class SitemapsController < ApplicationController
   # caches_page :index
   def index
-    @static_paths = [about_path]
+    @static_paths = []
     @stats_paths = [root_path, spots_path, alerts_path, results_path, recent_path]
     @assets = Asset.where('is_active=true and minor is not true')
     @users = User.where(activated: true)

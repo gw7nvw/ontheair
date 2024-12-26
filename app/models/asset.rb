@@ -65,18 +65,19 @@ class Asset < ActiveRecord::Base
     end
 
     return unless is_active
+    area_query='true';
 
     # check assets contained by us, then assets containign us
     ['we are contained by', 'we contain'].each do |link_type|
       if link_type == 'we are contained by'
         within_query = 'ST_Within(a.location, b.boundary)'
-        area_query = 'b.area>a.area*0.9'
+        area_query = 'b.area>a.area*0.9' if type.has_boundary
       else
         within_query = 'ST_Within(b.location, a.boundary)'
-        area_query = 'a.area>b.area*0.9'
+        area_query = 'a.area>b.area*0.9' if type.has_boundary
       end
       linked_assets = Asset.find_by_sql ["
-        select b.code as code, at.has_boundary as has_boundary, b.area as area
+        select b.code as code, at.has_boundary as has_boundary, at.use_az as use_az, b.area as area
           from assets a
         inner join assets b
           on b.is_active=true and " + within_query + "
@@ -578,99 +579,101 @@ class Asset < ActiveRecord::Base
     if codes
       code_arr = codes.split(',')
       code_arr.each do |code|
-        code = code.delete('[').delete(']')
-        code = code.lstrip
-        asset = { asset: nil, code: nil, name: nil, url: nil, external: nil, type: nil }
-        next unless code
-        code = code.upcase
-        a = Asset.find_by(code: code.split(' ')[0])
-        a ||= Asset.find_by(old_code: code.split(' ')[0])
-        va = VkAsset.find_by(code: code.split(' ')[0])
-
-        # Assets listed on ontheair.nz - look up in db
-        if a
-          asset[:asset] = a
-          asset[:url] = a.url
-          a[:url] = a[:url][1..-1] if a[:url][0] == '/'
-          asset[:name] = a.name
-          asset[:codename] = a.codename
-          asset[:external] = false
-          asset[:code] = a.code
-          asset[:type] = a.asset_type
-          asset[:external_url] = a.external_url unless code =~ /ZL^[a-zA-Z]-./
-          a.type ? (asset[:title] = a.type.display_name) : (logger.error 'ERROR: cannot find type ' + a.asset_type)
-          asset[:url] = '/' + asset[:url] if asset[:url][0] != '/'
-
-        # Assets in VK pulled in from PnP - look up in VK db tables
-        elsif va
-          asset[:asset] = va
-          asset[:url] = '/vkassets/' + va.get_safecode
-          asset[:name] = va.name
-          asset[:codename] = va.codename
-          asset[:external] = false
-          asset[:code] = va.code
-          asset[:type] = va.award
-          asset[:type] = 'summit' if asset[:type] == 'SOTA'
-          asset[:type] = 'pota park' if asset[:type] == 'POTA'
-          asset[:type] = 'wwff park' if asset[:type] == 'WWFF'
-          asset[:external_url] = va.external_url
-
-          asset[:title] = va.site_type
-
-        # Otherwise - we guess based on the reference
-        elsif (thecode = code.match(HEMA_REGEX))
-          # HEMA
-          logger.debug 'HEMA'
-          asset[:name] = code
-          asset[:url] = 'http://hema.org.uk'
-          asset[:external] = true
-          asset[:code] = thecode.to_s
-          asset[:type] = 'hump'
-          asset[:title] = 'HEMA'
-
-        elsif (thecode = code.match(SIOTA_REGEX))
-          # SiOTA
-          logger.debug 'SiOTA'
-          asset[:name] = code
-          asset[:url] = SIOTA_ASSET_URL + thecode.to_s
-          asset[:external] = true
-          asset[:code] = thecode.to_s
-          asset[:type] = 'silo'
-          asset[:title] = 'SiOTA'
-
-        elsif (thecode = code.match(POTA_REGEX))
-          # POTA
-          logger.debug 'POTA'
-          asset[:url] = POTA_ASSET_URL + thecode.to_s
-          asset[:title] = 'POTA'
-          asset[:name] = code
-          asset[:external] = true
-          asset[:code] = thecode.to_s
-          asset[:type] = 'pota park'
-
-        elsif (thecode = code.match(WWFF_REGEX))
-          # WWFF
-          logger.debug 'WWFF'
-          logger.debug thecode
-          asset[:url] = WWFF_ASSET_URL + thecode.to_s
-          asset[:name] = code
-          asset[:external] = true
-          asset[:code] = thecode.to_s
-          asset[:type] = 'wwff park'
-          asset[:title] = 'WWFF'
-
-        elsif (thecode = code.match(SOTA_REGEX))
-          # SOTA
-          logger.debug 'SOTA'
-          asset[:name] = code
-          asset[:url] = SOTA_ASSET_URL + thecode.to_s
-          asset[:external] = true
-          asset[:code] = thecode.to_s
-          asset[:type] = 'summit'
-          asset[:title] = 'SOTA'
-        end
-        assets.push(asset) if asset[:code]
-        # if code provided
+        if code and code.match(/[a-zA-Z]/) then
+          code = code.delete('[').delete(']')
+          code = code.lstrip
+          asset = { asset: nil, code: nil, name: nil, url: nil, external: nil, type: nil }
+          next unless code
+          code = code.upcase
+          a = Asset.find_by(code: code.split(' ')[0])
+          a ||= Asset.find_by(old_code: code.split(' ')[0])
+          va = VkAsset.find_by(code: code.split(' ')[0])
+  
+          # Assets listed on ontheair.nz - look up in db
+          if a
+            asset[:asset] = a
+            asset[:url] = a.url
+            a[:url] = a[:url][1..-1] if a[:url][0] == '/'
+            asset[:name] = a.name
+            asset[:codename] = a.codename
+            asset[:external] = false
+            asset[:code] = a.code
+            asset[:type] = a.asset_type
+            asset[:external_url] = a.external_url unless code =~ /ZL^[a-zA-Z]-./
+            a.type ? (asset[:title] = a.type.display_name) : (logger.error 'ERROR: cannot find type ' + a.asset_type)
+            asset[:url] = '/' + asset[:url] if asset[:url][0] != '/'
+  
+          # Assets in VK pulled in from PnP - look up in VK db tables
+          elsif va
+            asset[:asset] = va
+            asset[:url] = '/vkassets/' + va.get_safecode
+            asset[:name] = va.name
+            asset[:codename] = va.codename
+            asset[:external] = false
+            asset[:code] = va.code
+            asset[:type] = va.award
+            asset[:type] = 'summit' if asset[:type] == 'SOTA'
+            asset[:type] = 'pota park' if asset[:type] == 'POTA'
+            asset[:type] = 'wwff park' if asset[:type] == 'WWFF'
+            asset[:external_url] = va.external_url
+  
+            asset[:title] = va.site_type
+  
+          # Otherwise - we guess based on the reference
+          elsif (thecode = code.match(HEMA_REGEX))
+            # HEMA
+            logger.debug 'HEMA'
+            asset[:name] = code
+            asset[:url] = 'http://hema.org.uk'
+            asset[:external] = true
+            asset[:code] = thecode.to_s
+            asset[:type] = 'hump'
+            asset[:title] = 'HEMA'
+  
+          elsif (thecode = code.match(SIOTA_REGEX))
+            # SiOTA
+            logger.debug 'SiOTA'
+            asset[:name] = code
+            asset[:url] = SIOTA_ASSET_URL + thecode.to_s
+            asset[:external] = true
+            asset[:code] = thecode.to_s
+            asset[:type] = 'silo'
+            asset[:title] = 'SiOTA'
+  
+          elsif (thecode = code.match(POTA_REGEX))
+            # POTA
+            logger.debug 'POTA'
+            asset[:url] = POTA_ASSET_URL + thecode.to_s
+            asset[:title] = 'POTA'
+            asset[:name] = code
+            asset[:external] = true
+            asset[:code] = thecode.to_s
+            asset[:type] = 'pota park'
+  
+          elsif (thecode = code.match(WWFF_REGEX))
+            # WWFF
+            logger.debug 'WWFF'
+            logger.debug thecode
+            asset[:url] = WWFF_ASSET_URL + thecode.to_s
+            asset[:name] = code
+            asset[:external] = true
+            asset[:code] = thecode.to_s
+            asset[:type] = 'wwff park'
+            asset[:title] = 'WWFF'
+  
+          elsif (thecode = code.match(SOTA_REGEX))
+            # SOTA
+            logger.debug 'SOTA'
+            asset[:name] = code
+            asset[:url] = SOTA_ASSET_URL + thecode.to_s
+            asset[:external] = true
+            asset[:code] = thecode.to_s
+            asset[:type] = 'summit'
+            asset[:title] = 'SOTA'
+          end
+          assets.push(asset) if asset[:code]
+          # if code provided
+        end # if code
       end # for each code in codes
     end # if codes provided
 

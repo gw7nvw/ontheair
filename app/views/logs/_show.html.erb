@@ -10,12 +10,12 @@
      <% if write_access? and @log.id and (@log.user1_id==current_user.id or current_user.is_admin) then %>
        <% location = @log.get_most_accurate_location 
           if !location or !location[:asset] then 
-            loc_asset=@log.asset_codes.first 
+            loc_asset=@log.asset_codes.first.gsub('/','_') if @log.asset_codes.count>0
           else
             loc_asset = location[:asset]
+            if loc_asset then loc_asset_safecode=loc_asset.safecode end
           end 
           if loc_asset then 
-            loc_asset_safecode=loc_asset.safecode 
        %>
           
      <%=  link_to "Who Chased Me?", "/contacts?user=#{@log.callsign1}&whochased=#{loc_asset_safecode}&date=#{@log.date.strftime("%Y-%m-%d")}", class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('whochasedme')"%>
