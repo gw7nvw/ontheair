@@ -22,20 +22,19 @@ module AssetGisTools
   # Polygons will need to call get_access(_with_buffer) manually when needed
   # as we don't want to recalculate it on every save
   def add_activation_zone(force = false)
-    asset_test = Asset.find_by_sql [" select (boundary is not null) as has_boundary from assets where id=#{id}"]
+    asset_test = Asset.find_by_sql [" select (az_boundary is not null) as has_boundary from assets where id=#{id}"]
     if (asset_test.first[:has_boundary] == false) || (force == true)
       if type.ele_buffer
         add_sota_activation_zone(type.ele_buffer)
-      elsif az_radius
+      else
         add_buffered_activation_zone
       end
     end
 
-    if type.dist_buffer
-      get_access_with_buffer(type.dist_buffer)
-    else
-      get_access
-    end
+    add_az_area
+
+    get_access
+
   end
 
   # add activation zone as area contained by contour 24m below summit,
@@ -51,7 +50,7 @@ module AssetGisTools
       if az_poly && az_poly.count.positive? && az_poly.first['geom']
         logger.debug az_poly.first['geom']
         boundary = make_multipolygon(az_poly.first['geom'])
-        ActiveRecord::Base.connection.execute("update assets set boundary=ST_geomfromtext('#{boundary}',4326) where id=#{id};")
+        ActiveRecord::Base.connection.execute("update assets set az_boundary=ST_geomfromtext('#{boundary}',4326) where id=#{id};")
       end
     end
   end
@@ -61,50 +60,16 @@ module AssetGisTools
   # direct to db so callback-safe
   def get_access
     # roads
-    ActiveRecord::Base.connection.execute("update assets set access_road_ids=(select array_agg(r.id) as road_ids from assets a, roads r where (ST_intersects (a.boundary, r.linestring) or ST_intersects (a.location, r.linestring)) and a.code='#{code}') where code='#{code}'")
+    ActiveRecord::Base.connection.execute("update assets set access_road_ids=(select array_agg(r.id) as road_ids from assets a, roads r where (ST_intersects (a.az_boundary, r.linestring) or ST_intersects (a.location, r.linestring)) and a.code='#{code}') where code='#{code}'")
 
     # legal_roads
-    ActiveRecord::Base.connection.execute("update assets set access_legal_road_ids=(select array_agg(r.id) as legal_road_ids from assets a, legal_roads r where (ST_intersects (a.boundary, r.boundary) or ST_intersects (a.location, r.boundary)) and a.code='#{code}') where code='#{code}'")
+    ActiveRecord::Base.connection.execute("update assets set access_legal_road_ids=(select array_agg(r.id) as legal_road_ids from assets a, legal_roads r where (ST_intersects (a.az_boundary, r.boundary) or ST_intersects (a.location, r.boundary)) and a.code='#{code}') where code='#{code}'")
 
     # parks
-    ActiveRecord::Base.connection.execute("update assets set access_park_ids=(select array_agg(r.id) as park_ids from assets a, assets r where (ST_intersects (a.boundary, r.boundary) or ST_intersects (a.location, r.boundary)) and a.code='#{code}' and r.asset_type='park') where code='#{code}'")
+    ActiveRecord::Base.connection.execute("update assets set access_park_ids=(select array_agg(r.id) as park_ids from assets a, assets r where (ST_intersects (a.az_boundary, r.boundary) or ST_intersects (a.location, r.boundary)) and a.code='#{code}' and r.asset_type='park') where code='#{code}'")
 
     # tracks
-    ActiveRecord::Base.connection.execute("update assets set access_track_ids=(select array_agg(r.id) as track_ids from assets a, doc_tracks r where (ST_intersects (a.boundary, r.linestring) or ST_intersects (a.location, r.linestring)) and a.code='#{code}') where code='#{code}'")
-
-    reload
-    if access_legal_road_ids.nil? && access_track_ids.nil? && access_park_ids.nil?
-      ActiveRecord::Base.connection.execute("update assets set public_access=false where code='#{code}'")
-    else
-      ActiveRecord::Base.connection.execute("update assets set public_access=true where code='#{code}'")
-    end
-    reload
-  end
-
-  # Find any public access areas overlapping the point or the boundary (if present)
-  # applying
-  # a ###m buffer aroud the asset (e.g. 500m for a lake)
-  # Add them to the access_###_ids list for the asset
-  # direct to db so callback-safe
-  def get_access_with_buffer(buffer)
-    if boundary
-      logger.debug 'boundary'
-      queryfield = 'a.boundary'
-    else
-      queryfield = 'a.location'
-    end
-
-    # roads
-    ActiveRecord::Base.connection.execute("update assets set access_road_ids=(select array_agg(r.id) as road_ids from assets a, roads r where ST_DWithin(ST_Transform(#{queryfield},2193), ST_Transform(r.linestring,2193), #{buffer}) and a.code='#{code}') where code='#{code}'")
-
-    # legal_roads
-    ActiveRecord::Base.connection.execute("update assets set access_legal_road_ids=(select array_agg(r.id) as legal_road_ids from assets a, legal_roads r where ST_DWithin(ST_Transform(#{queryfield},2193), ST_Transform(r.boundary,2193), #{buffer}) and a.code='#{code}') where code='#{code}'")
-
-    # parks
-    ActiveRecord::Base.connection.execute("update assets set access_park_ids=(select array_agg(r.id) as park_ids from assets a, assets r where ST_DWithin(ST_Transform(#{queryfield},2193), ST_Transform(r.boundary,2193), #{buffer}) and a.code='#{code}' and r.asset_type='park') where code='#{code}'")
-
-    # tracks
-    ActiveRecord::Base.connection.execute("update assets set access_track_ids=(select array_agg(r.id) as track_ids from assets a, doc_tracks r where ST_DWithin(ST_Transform(#{queryfield},2193), ST_Transform(r.linestring,2193), #{buffer}) and a.code='#{code}') where code='#{code}'")
+    ActiveRecord::Base.connection.execute("update assets set access_track_ids=(select array_agg(r.id) as track_ids from assets a, doc_tracks r where (ST_intersects (a.az_boundary, r.linestring) or ST_intersects (a.location, r.linestring)) and a.code='#{code}') where code='#{code}'")
 
     reload
     if access_legal_road_ids.nil? && access_track_ids.nil? && access_park_ids.nil?
@@ -149,6 +114,15 @@ module AssetGisTools
     end
   end
 
+  # add az_areas for all assets
+  # Calculate az_area of the asset
+  def add_az_area
+    asset_test = Asset.find_by_sql [" select (az_boundary is not null) as has_boundary from assets where id=#{id}"]
+    if asset_test.first.has_boundary == true
+      ActiveRecord::Base.connection.execute(' update assets set az_area=ST_Area(ST_Transform(az_boundary,2193)) where id=' + id.to_s)
+    end
+  end
+
   def add_altitude(force = false, read_only = false)
     # if altitude is not entered, calculate it from map
     if location && (!altitude || altitude.to_i.zero? || (force == true))
@@ -173,8 +147,18 @@ module AssetGisTools
   end
 
   def add_buffered_activation_zone
-    logger.debug "update assets set boundary=ST_Transform(ST_Buffer(ST_Transform(a.location,2193),#{az_radius * 1000}),4326) where a.id=#{id}"
-    ActiveRecord::Base.connection.execute("update assets a set boundary=ST_Multi(ST_Transform(ST_Buffer(ST_Transform(a.location,2193),#{az_radius * 1000}),4326)) where a.id=#{id}")
+    calc_az_radius=az_radius
+    calc_az_radius=0 if calc_az_radius==nil
+
+    if self.type.has_boundary and area and area>0 then
+      if calc_az_radius==0
+        ActiveRecord::Base.connection.execute("update assets a set az_boundary=boundary where a.id=#{id}")
+      else
+        ActiveRecord::Base.connection.execute("update assets a set az_boundary=ST_Multi(ST_Transform(ST_Buffer(ST_Transform(a.boundary,2193),#{calc_az_radius * 1000}),4326)) where a.id=#{id}")
+      end
+    else
+      ActiveRecord::Base.connection.execute("update assets a set az_boundary=ST_Multi(ST_Transform(ST_Buffer(ST_Transform(a.location,2193),#{calc_az_radius * 1000}),4326)) where a.id=#{id}")
+    end
   end
 
   def make_multipolygon(boundary)

@@ -64,6 +64,21 @@
 
       <div class="erow">
         <div class="leftbuttons">
+          <span title="Click to draw boundary on map">
+            <img id="bndryplus" src="/assets/draw.png" onclick="site_drawBoundary('bndrytick', 'bndryplus', 'asset_boundary')" width="16" style="display:block">
+          </span>
+
+          <span title="Click to confirm selection">
+            <img id="bndrytick" src="/assets/tick.png" onclick="site_selectNothing('bndrytick', 'bndryplus')" width="16" style="display:none">
+          </span>
+        </div>
+
+        <div class="sectiontitle25">Boundary:</div>
+      </div>
+      <%= f.text_field :boundary, :readonly => true %>
+
+      <div class="erow">
+        <div class="leftbuttons">
           <span title="Click to draw location on map">
             <img id="placeplus" src="/assets/draw-point.png" onclick="site_drawPlace('placetick', 'placeplus', 'asset_location', 'asset_x', 'asset_y')" width="16" style="display:block">
           </span>

@@ -29,9 +29,10 @@ class Asset < ActiveRecord::Base
     # do this here rather then before save to keep it pure PostGIS: no slow RGeo
     add_area
     add_altitude
-    add_activation_zone(true)
     add_links
     add_simple_boundary
+    self.reload
+    add_activation_zone(true)
   end
 
   # After validation but before save
@@ -52,6 +53,8 @@ class Asset < ActiveRecord::Base
     self.safecode = code.tr('/', '_') 
 
     self.url = 'assets/' + safecode
+
+    self.az_radius=1.0*self.type.dist_buffer/1000 if az_radius==nil and self.type.dist_buffer
   end
 
   def add_links(flush = true)
@@ -70,14 +73,14 @@ class Asset < ActiveRecord::Base
     # check assets contained by us, then assets containign us
     ['we are contained by', 'we contain'].each do |link_type|
       if link_type == 'we are contained by'
-        within_query = 'ST_Within(a.location, b.boundary)'
-        area_query = 'b.area>a.area*0.9' if type.has_boundary
+        within_query = 'ST_Within(a.location, b.az_boundary)'
+        area_query = 'b.az_area>a.az_area*0.9' if az_area 
       else
-        within_query = 'ST_Within(b.location, a.boundary)'
-        area_query = 'a.area>b.area*0.9' if type.has_boundary
+        within_query = 'ST_Within(b.location, a.az_boundary)'
+        area_query = 'a.az_area>b.az_area*0.9' if az_area
       end
       linked_assets = Asset.find_by_sql ["
-        select b.code as code, at.has_boundary as has_boundary, at.use_az as use_az, b.area as area
+        select b.code as code, at.has_boundary as has_boundary, at.use_az as use_az, b.az_area as az_area
           from assets a
         inner join assets b
           on b.is_active=true and " + within_query + "
@@ -85,7 +88,7 @@ class Asset < ActiveRecord::Base
           on at.name=b.asset_type
         where
           b.id!=a.id
-          and (b.area is null or " + area_query + ")
+          and (b.az_area is null or " + area_query + ")
           and a.id = " + id.to_s]
       logger.debug code + ' might ' + link_type + ' ' + linked_assets.to_json
       linked_assets.each do |linked_asset|
@@ -99,9 +102,9 @@ class Asset < ActiveRecord::Base
           containing_asset_code = linked_asset['code']
           contained_asset_code = code
         end
-        # for polygon assets, ensure >=90% overlap
-        if type.has_boundary && area && (area > 0) && linked_asset['has_boundary'] && linked_asset['area']
-          overlap = ActiveRecord::Base.connection.execute(" select ST_Area(ST_intersection(a.boundary, b.boundary)) as overlap, ST_Area(b.boundary) as area from assets a join assets b on b.code='#{contained_asset_code}' where a.code='#{containing_asset_code}'; ")
+        # for assets with az_boundary, ensure >=90% overlap
+        if az_area && (az_area > 0) && linked_asset['az_area'] && (linked_asset['az_area'] > 0)
+          overlap = ActiveRecord::Base.connection.execute(" select ST_Area(ST_intersection(a.az_boundary, b.az_boundary)) as overlap, ST_Area(b.az_boundary) as area from assets a join assets b on b.code='#{contained_asset_code}' where a.code='#{containing_asset_code}'; ")
           prop_overlap = overlap.first['overlap'].to_f / overlap.first['area'].to_f
           logger.debug "DEBUG: overlap #{prop_overlap} " + linked_asset['code']
           matched = true if prop_overlap > 0.9
@@ -302,6 +305,18 @@ class Asset < ActiveRecord::Base
       lenfactor = Math.sqrt((pp.first['numpoints'] || 0) / 10_000)
       rnd = 0.000002 * 10**lenfactor
       boundarys = Asset.find_by_sql ['select id, ST_AsText(ST_Simplify("boundary", ' + rnd.to_s + ')) as "boundary" from assets where id=' + id.to_s]
+      boundary = boundarys.first.boundary
+      boundary
+    end
+  end
+
+  # simplified az boundary with downscaling big assets (and detail/accuracy for small assets)
+  def az_boundary_simple
+    pp = Asset.find_by_sql ['select id, ST_NPoints(az_boundary) as numpoints from assets where id=' + id.to_s]
+    if pp
+      lenfactor = Math.sqrt((pp.first['numpoints'] || 0) / 10_000)
+      rnd = 0.000002 * 10**lenfactor
+      boundarys = Asset.find_by_sql ['select id, ST_AsText(ST_Simplify("az_boundary", ' + rnd.to_s + ')) as "boundary" from assets where id=' + id.to_s]
       boundary = boundarys.first.boundary
       boundary
     end
@@ -786,7 +801,7 @@ class Asset < ActiveRecord::Base
     if codes.count > 1
       codes.each do |code|
         logger.debug "DEBUG: assessing code2 #{code}"
-        assets = Asset.find_by_sql [" select id, code, safecode, asset_type, location, area from assets where code='#{code}' limit 1"]
+        assets = Asset.find_by_sql [" select id, code, safecode, asset_type, location, az_area, area from assets where code='#{code}' limit 1"]
         asset = assets ? assets.first : nil
         if asset
           # only consider polygon loc's if we don't already have a point loc
@@ -817,7 +832,7 @@ class Asset < ActiveRecord::Base
     end
     # single asset or nothing found from search, just use the first location
     if !location && (codes.count > 0)
-      assets = Asset.find_by_sql [" select id, code, safecode, asset_type, location, area from assets where code='#{codes.first}' limit 1"]
+      assets = Asset.find_by_sql [" select id, code, safecode, asset_type, location, az_area, area from assets where code='#{codes.first}' limit 1"]
       if assets && (assets.count > 0)
         loc_asset = assets.first
         loc_asset.type.has_boundary ? (loc_source = 'area') : (loc_source = 'point')
@@ -857,19 +872,19 @@ class Asset < ActiveRecord::Base
   # Returns: codes: [code]
   #
   # TODO: Logic here is same as that in def add_links, can the two be combined?
-  def self.containing_codes_from_location(location, asset = nil, include_point = false)
+  def self.containing_codes_from_location(location, asset = nil, include_point = false, min_overlap=0.9)
     loc_type = 'point'
     codes = []
-    if asset && asset.type.has_boundary && asset.area && (asset.area > 0)
+    if asset && asset.az_area && (asset.az_area > 0)
       loc_type = 'area'
     end
 
     if !location.nil? && !location.to_s.empty?
       # find all assets containing this location point
       if include_point then
-        codes = Asset.find_by_sql ["select code from assets a inner join asset_types at on at.name=a.asset_type where a.is_active=true and ST_Within(ST_GeomFromText('#{location}',4326), a.boundary); "]
+        codes = Asset.find_by_sql ["select code from assets a where a.is_active=true and ST_Intersects(ST_GeomFromText('#{location}',4326), a.az_boundary); "]
       else
-        codes = Asset.find_by_sql ["select code from assets a inner join asset_types at on at.name=a.asset_type where a.is_active=true and at.has_boundary=true and ST_Within(ST_GeomFromText('#{location}',4326), a.boundary); "]
+        codes = Asset.find_by_sql ["select code from assets a where a.is_active=true and a.az_area>0 and ST_Intersects(ST_GeomFromText('#{location}',4326), a.az_boundary); "]
       end
       # For locations based on a polygon:
       # filter the list by those that overlap at least 90% of the asset
@@ -878,10 +893,10 @@ class Asset < ActiveRecord::Base
         logger.debug 'Filtering codes by area overlap'
         validcodes = []
         codes.each do |code|
-          overlap = ActiveRecord::Base.connection.execute(" select ST_Area(ST_intersection(a.boundary, b.boundary)) as overlap, ST_Area(a.boundary) as area from assets a join assets b on b.code='#{code.code}' where a.id=#{asset.id}; ")
+          overlap = ActiveRecord::Base.connection.execute(" select ST_Area(ST_intersection(a.az_boundary, b.az_boundary)) as overlap, ST_Area(a.az_boundary) as area from assets a join assets b on b.code='#{code.code}' where a.id=#{asset.id}; ")
           prop_overlap = overlap.first['overlap'].to_f / overlap.first['area'].to_f
           logger.debug "DEBUG: overlap #{prop_overlap} " + code.code
-          validcodes += [code] if prop_overlap > 0.9
+          validcodes += [code] if prop_overlap > min_overlap
         end
         codes = validcodes
       end
@@ -1007,7 +1022,7 @@ class Asset < ActiveRecord::Base
   #   def add_altitude
   #   def add_buffered_activation_zone
   #   def get_access
-  #   def get_access_with_buffer(buffer)
+  #   def get_access_with_buffer(buffer) REMOVED
   # Asset. methods:
   #   def self.add_areas
   #   def self.fix_invalid_polygons

@@ -196,9 +196,11 @@ class UsersController < ApplicationController
 
   def update
     if signed_in? && (current_user.is_admin || (current_user.id == params[:id].to_i))
-      if params[:commit] == 'Delete'
+      if params[:delete] == 'Delete'
         callsigns = UserCallsign.where(user_id: params[:id].to_i)
         callsigns.each(&:destroy)
+        topics = UserTopicLink.where(user_id: params[:id].to_i)
+        topics.each(&:destroy)
         user = User.find_by_id(params[:id].to_i)
         if user && user.destroy
           flash[:success] = 'User deleted, callsign:' + params[:id]

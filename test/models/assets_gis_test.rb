@@ -18,15 +18,15 @@ class AssetSaveTest < ActiveSupport::TestCase
   test "add AZ (SOTA)" do
     asset1=create_test_asset(asset_type: 'summit', location: create_point(175.47459411621094,-38.25600051879883), code_prefix: 'ZL3/OT-', altitude: 496)
     asset1.reload
-    result=Asset.find_by_sql [" select ST_Area(ST_Transform(boundary,2193)) as area from assets where id=#{asset1.id}; "]
-    assert_in_delta 34502, result.first.area, 3500, "AZ added of size expected +/- 10%"
+    result=Asset.find_by_sql [" select ST_Area(ST_Transform(az_boundary,2193)) as az_area from assets where id=#{asset1.id}; "]
+    assert_in_delta 34502, result.first.az_area, 3500, "AZ added of size expected +/- 10%"
   end
 
   test "add AZ (lighthouse)" do
     asset1=create_test_asset(asset_type: 'lighthouse', location: create_point(168.163650908159, -46.8955991917859), az_radius: 10)
     asset1.reload
-    result=Asset.find_by_sql [" select ST_Area(ST_Transform(boundary,2193)) as area from assets where id=#{asset1.id}; "]
-    assert_in_delta 312144515, result.first.area, 300000, "AZ added of size expected +/- 1%"
+    result=Asset.find_by_sql [" select ST_Area(ST_Transform(az_boundary,2193)) as az_area from assets where id=#{asset1.id}; "]
+    assert_in_delta 312144515, result.first.az_area, 300000, "AZ added of size expected +/- 1%"
   end
 
   #no roads, DOC tracks, legal road data in test env, so just test with parks

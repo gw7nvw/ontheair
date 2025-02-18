@@ -32,9 +32,6 @@
           <% end %> 
         <% end %>
 
-        <% if(@submit_button == "Save Changes" and @current_user.is_admin) %>
-          <%= f.submit "Delete", data: {confirm: "Delete user: Are you sure?"}, class: "btn btn-small btn-primary", callsign: "delete", id:  "deletebutton", remote: true %>
-        <% end %>
         <%=render 'map_controls'%>
       </div>
     </div>
@@ -87,6 +84,9 @@
       <%= f.check_box :logs_wwff%><br/><br/>
 
       <%= f.submit @submit_button, id: "submit", onclick: "signupHandler();", class: "btn btn-small btn-primary btn-highlight" %>
+      <%  if(@submit_button == "Save Changes" and current_user and current_user.is_admin) %>
+        <%= f.submit "Delete", confirm: "Delete user: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>
+      <% end %>
 
       <div class="erow"><small><i>By registering to this site you are agreeing to our privacy and security policy. Details are available on the <%=link_to 'About', '/about', target: '_blank'%> page</i></small></div>
     </div>

@@ -4,6 +4,7 @@
 class AssetsController < ApplicationController
   include PostsHelper
   include ApplicationHelper
+  include AssetGisTools
 
   before_action :signed_in_user, only: %i[edit update create new associations]
 
@@ -141,6 +142,7 @@ class AssetsController < ApplicationController
       @asset = Asset.new(asset_params)
 
       convert_location_params(params[:asset][:x], params[:asset][:y])
+      @asset.boundary=make_multipolygon(params[:asset][:boundary]) if params[:asset][:boundary]
 
       @asset.createdBy_id = current_user.id
       @asset.region = @asset.add_region unless @asset.region
@@ -194,6 +196,8 @@ class AssetsController < ApplicationController
 
         @asset.assign_attributes(asset_params)
         convert_location_params(params[:asset][:x], params[:asset][:y])
+        @asset.boundary=make_multipolygon(params[:asset][:boundary]) if params[:asset][:boundary]
+
         # assign a asset
         @asset.createdBy_id = current_user.id
 

@@ -19,13 +19,15 @@ class ContactsController < ApplicationController
       @callsign = 'ALL'
     else
       if params[:user] && !params[:user].empty?
-        @user = User.find_by(callsign: params[:user].upcase)
+#        @user = User.find_by(callsign: params[:user].upcase)
+        @user = User.find_by_callsign_date(params[:user].upcase, Time.now())
+        @callsign = params[:user].upcase
       else
         @user=current_user
       end
       #fallback of last resort
       @user ||= User.first
-      @callsign = @user.callsign
+      @callsign ||= @user.callsign
     end
 
     #QRP

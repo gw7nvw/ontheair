@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20241224005139) do
+ActiveRecord::Schema.define(version: 20250218041707) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -42,6 +42,7 @@ ActiveRecord::Schema.define(version: 20241224005139) do
   create_table "asset_links", force: true do |t|
     t.string "contained_code"
     t.string "containing_code"
+    t.float  "overlap"
   end
 
   add_index "asset_links", ["contained_code"], :name => "index_asset_links_on_contained_code"
@@ -74,6 +75,7 @@ ActiveRecord::Schema.define(version: 20241224005139) do
     t.boolean  "is_zlota"
     t.boolean  "use_volcanic_field"
     t.boolean  "use_az"
+    t.boolean  "use_within_sight"
   end
 
   add_index "asset_types", ["name"], :name => "index_asset_types_on_name"
@@ -125,6 +127,8 @@ ActiveRecord::Schema.define(version: 20241224005139) do
     t.boolean  "public_access"
     t.float    "az_radius"
     t.string   "field_code"
+    t.spatial  "az_boundary",               limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.float    "az_area"
   end
 
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"

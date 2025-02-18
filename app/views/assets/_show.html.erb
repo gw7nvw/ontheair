@@ -85,7 +85,8 @@
     <div class="erow" id="radius">
       <div class="rowtitle"><%= "Radius of Activation Zone" %></div>
       <div class="rowtext"> 
-        Within <%= @asset.az_radius %>km, or within sight
+        Within <%= @asset.az_radius %>km
+        <% if @asset.type and @asset.type.use_within_sight==true %>or within sight<% end %>
       </div>
     </div>
   <% end %>
@@ -516,6 +517,9 @@
   place_init('<%=@asset.location%>',  0, site_purple_star);
   <% if @asset.boundary_simple then %>
     place_init('<%=@asset.boundary_simple%>',  1,site_highlight_polygon);
+  <% end %>
+  <% if @asset.az_boundary_simple then %>
+    place_init('<%=@asset.az_boundary_simple%>',  1,site_az_style);
   <% end %>
 
   function editlinks() {

@@ -118,7 +118,7 @@ module AssetConsoleTools
     as = Asset.where(asset_type: 'lake')
     as.each do |a|
       logger.debug a.code
-      a.get_access_with_buffer(500)
+      a.get_access
     end
   end
 

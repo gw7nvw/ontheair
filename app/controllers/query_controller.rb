@@ -60,7 +60,7 @@ class QueryController < ApplicationController
     if x and y then
       a=Asset.new
       a.location="POINT(#{x} #{y})"
-      @codes = Asset.containing_codes_from_location(a.location, nil, true) 
+      @codes = Asset.containing_codes_from_location(a.location, nil, true, 0.1) 
       assets = Asset.assets_from_code(@codes.join(","))
       @codenames = assets.map {|a| a[:codename] }
     end
