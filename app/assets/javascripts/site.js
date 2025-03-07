@@ -303,22 +303,22 @@ function site_points_style_function(feature, resoluton) {
 
 function site_add_vector_layers() {
   site_set_map_filters('polygon',site_default_polygon_layers);
-  polygon_layer=map_add_vector_layer("Polygon", "https://new.ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon",site_polygon_style_function,true,12,15,'polygon');
-  polygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://new.ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_simple",site_polygon_style_function,true,9,12,'polygon');
-  polygon_detail_layer=map_add_vector_layer("Polygon Detail", "https://new.ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_detail",site_polygon_style_function,true,15,32,'polygon');
-  district_layer=map_add_vector_layer("District", "https://new.ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district",site_district_style,false,12,15);
-  district_simple_layer=map_add_vector_layer("District Simple", "https://new.ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_simple",site_district_style,false,7,12);
-  district_detail_layer=map_add_vector_layer("District Detail", "https://new.ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_detail",site_district_style,false,15,32);
-  geology_layer=map_add_vector_layer("Geology", "https://new.ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology",site_geology_style,false,12,15);
-  geology_simple_layer=map_add_vector_layer("Geology Simple", "https://new.ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology_simple",site_geology_style,false,7,12);
-  geology_detail_layer=map_add_vector_layer("Geology Detail", "https://new.ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology_detail",site_geology_style,false,15,32);
-  region_layer=map_add_vector_layer("Region", "https://new.ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region",site_region_style,false,12,15);
-  region_simple_layer=map_add_vector_layer("Region Simple", "https://new.ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_simple",site_region_style,false,7,12);
-  region_detail_layer=map_add_vector_layer("Region Detail", "https://new.ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_detail",site_region_style,false,15,32);
+  polygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon",site_polygon_style_function,true,12,15,'polygon');
+  polygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_simple",site_polygon_style_function,true,9,12,'polygon');
+  polygon_detail_layer=map_add_vector_layer("Polygon Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_detail",site_polygon_style_function,true,15,32,'polygon');
+  district_layer=map_add_vector_layer("District", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district",site_district_style,false,12,15);
+  district_simple_layer=map_add_vector_layer("District Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_simple",site_district_style,false,7,12);
+  district_detail_layer=map_add_vector_layer("District Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_detail",site_district_style,false,15,32);
+  geology_layer=map_add_vector_layer("Geology", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology",site_geology_style,false,12,15);
+  geology_simple_layer=map_add_vector_layer("Geology Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology_simple",site_geology_style,false,7,12);
+  geology_detail_layer=map_add_vector_layer("Geology Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology_detail",site_geology_style,false,15,32);
+  region_layer=map_add_vector_layer("Region", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region",site_region_style,false,12,15);
+  region_simple_layer=map_add_vector_layer("Region Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_simple",site_region_style,false,7,12);
+  region_detail_layer=map_add_vector_layer("Region Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_detail",site_region_style,false,15,32);
 
   site_set_map_filters('point',site_default_point_layers);
-  points_layer=map_add_vector_layer("Points", "https://new.ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,7,32,'point');
-  contacts_layer=map_add_vector_layer("Contacts", "https://new.ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "contacts",site_contacts_style,false,1,32);
+  points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,7,32,'point');
+  contacts_layer=map_add_vector_layer("Contacts", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "contacts",site_contacts_style,false,1,32);
 
   map_map.addLayer(district_layer);
   map_map.addLayer(district_simple_layer);
@@ -347,6 +347,7 @@ function site_set_map_filters(filter, list) {
 }
 
 function site_add_layers() {
+        map_add_raster_layer('OpenTopoMap', 'https://a.tile.opentopomap.org/{z}/{x}/{y}.png', 'osm', 0, 17);
         map_add_raster_layer('NZTM Topo 2019', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
         map_add_raster_layer('Public Access Land', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/pal-2193/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
         map_add_raster_layer('(LINZ) Topo50 latest','http://tiles-a.data-cdn.linz.govt.nz/services;key=d8c83efc690a4de4ab067eadb6ae95e4/tiles/v4/layer=767/EPSG:2193/{z}/{x}/{y}.png','linz',8690, 17);

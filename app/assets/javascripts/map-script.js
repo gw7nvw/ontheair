@@ -224,6 +224,7 @@ function map_add_projections() {
   proj4.defs('EPSG:999998', '+proj=tmerc +lat_0=0 +lon_0=170 +k=0.9996 +x_0=1600000 +y_0=10000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
   proj4.defs('EPSG:999997', '+proj=tmerc +lat_0=0 +lon_0=167.625 +k=0.9996 +x_0=1600000 +y_0=10000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
   proj4.defs('EPSG:900913', '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs');
+  proj4.defs('EPSG:3857', '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs');
   proj4.defs('EPSG:27200', '+proj=nzmg +lat_0=-41 +lon_0=173 +x_0=2510000 +y_0=6023150 +ellps=intl +datum=nzgd49 +units=m +no_defs');
   proj4.defs('EPSG:27291', '+proj=tmerc +lat_0=-39 +lon_0=175.5 +k=1 +x_0=274319.5243848086 +y_0=365759.3658464114 +ellps=intl +datum=nzgd49 +to_meter=0.9143984146160287 +no_defs');
   proj4.defs('EPSG:27292', '+proj=tmerc +lat_0=-44 +lon_0=171.5 +k=1 +x_0=457199.2073080143 +y_0=457199.2073080143 +ellps=intl +datum=nzgd49 +to_meter=0.9143984146160287 +no_defs');
@@ -232,6 +233,7 @@ function map_add_projections() {
   proj4.defs('EPSG:4167', '+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs');
   ol.proj.proj4.register(proj4);
   epsg2193=ol.proj.get('EPSG:2193');
+  epsg3857=ol.proj.get('EPSG:3857');
   map_projection=ol.proj.get(map_projection_name);
 }
 function map_add_wmts_layer(name,url,layer,source,maxresolution,numzooms) {
@@ -263,24 +265,48 @@ function map_add_wmts_layer(name,url,layer,source,maxresolution,numzooms) {
 function map_add_raster_layer(name,url,source,maxresolution,numzooms) {
    if (source=="mapspast") {
            var tilegrid=mapspast_tilegrid;
-   } else {
-	   var tilegrid=linz_tilegrid;
+           var layer_proj=epsg2193;
    };
-   maplayers[map_layer_count]=new ol.layer.Tile({
-     source: new ol.source.XYZ({
+   if (source=="linz") {
+	   var tilegrid=linz_tilegrid;
+           var layer_proj=epsg2193;
+   };
+   if (source=="osm") {
+           var layer_proj=epsg3857;
+   };
+   if (layer_proj!=epsg3857) {
+     maplayers[map_layer_count]=new ol.layer.Tile({
+       source: new ol.source.XYZ({
+         projection: epsg2193,
+         url: url,
+         maxResolution: maxresolution,
+         numZoomLevels: numzooms,
+         tileGrid: tilegrid,
+         crossOrigin: 'anonymous'
+       }),
+       name: name,
+       visible: false,
        projection: epsg2193,
-       url: url,
        maxResolution: maxresolution,
-       numZoomLevels: numzooms,
-       tileGrid: tilegrid,
-       crossOrigin: 'anonymous'
-     }),
-     name: name,
-     visible: false,
-     projection: epsg2193,
-     maxResolution: maxresolution,
-     numZoomLevels: numzooms
-   });
+       numZoomLevels: numzooms
+     });
+   } else {
+     maplayers[map_layer_count]=new ol.layer.Tile({
+       source: new ol.source.XYZ({
+         projection: epsg3857,
+         url: url,
+//         maxResolution: maxresolution,
+//         numZoomLevels: numzooms,
+//         tileGrid: tilegrid,
+         crossOrigin: 'anonymous'
+       }),
+       name: name,
+       visible: false,
+       projection: epsg3857,
+//       maxResolution: maxresolution,
+//       numZoomLevels: numzooms
+     });
+   }
    map_layer_count=map_layer_count+1;
 }
 
