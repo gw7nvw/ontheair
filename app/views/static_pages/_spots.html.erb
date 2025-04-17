@@ -82,7 +82,7 @@
     <b>Showing class <%=@class%></b> only.  <i><%=link_to "Show All Classes", "/spots?#{raw(new_class_parameters)}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
   <% else %>
     <b>Showing all classes</b>. <i>Show only 
-       <%=link_to "ZLOTA", "/spots?#{new_class_parameters}&class=ZLOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to  @site_name, "/spots?#{new_class_parameters}&class=ZLOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
        <%=link_to "SOTA", "/spots?#{new_class_parameters}&class=SOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
        <%=link_to "POTA", "/spots?#{new_class_parameters}&class=POTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
        <%=link_to "WWFF", "/spots?#{new_class_parameters}&class=WWFF", remote: true, id: "add",   :onclick => "linkHandler('add')"%>

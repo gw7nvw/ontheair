@@ -222,28 +222,31 @@ class Asset < ActiveRecord::Base
   # if many, proide as comma-separated list
   # If we are near the boundary, hedge our bets and say 'in or near'
   def traditional_owners
-    buffer = 5000 # say in or near if we are withing this distance of boundary (meters)
-    if type.has_boundary && area && (area > 0)
-      tos1 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.boundary, tl.wkb_geometry) "]
-      tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.boundary,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
-    else
-      tos1 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.location, tl.wkb_geometry) "]
-      tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.location,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
-
-    end
-    ids1 = tos1.map(&:id)
-    ids2 = tos2.map(&:id)
-    if ids2 && (ids2.count > 0)
-      names = []
-      if ids1.sort != ids2.sort
-        tos2.each { |t| names.push(t['name']) }
-        trad_owners = 'In or near ' + names.join(', ') + ' country'
+    trad_owners=nil
+    if (!!NzTribalLands rescue false) then
+      buffer = 5000 # say in or near if we are withing this distance of boundary (meters)
+      if type.has_boundary && area && (area > 0)
+        tos1 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.boundary, tl.wkb_geometry) "]
+        tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.boundary,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
       else
-        tos1.each { |t| names.push(t['name']) }
-        trad_owners = names.join(', ') + ' country'
+        tos1 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.location, tl.wkb_geometry) "]
+        tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.location,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
+  
       end
-    else
-      trad_owners = nil
+      ids1 = tos1.map(&:id)
+      ids2 = tos2.map(&:id)
+      if ids2 && (ids2.count > 0)
+        names = []
+        if ids1.sort != ids2.sort
+          tos2.each { |t| names.push(t['name']) }
+          trad_owners = 'In or near ' + names.join(', ') + ' country'
+        else
+          tos1.each { |t| names.push(t['name']) }
+          trad_owners = names.join(', ') + ' country'
+        end
+      else
+        trad_owners = nil
+      end
     end
     trad_owners
   end
@@ -336,9 +339,10 @@ class Asset < ActiveRecord::Base
 
   # NZTM coordinates: x
   def x
+    if(Projection.find_by_id(2193)) then srs=2193 else srs=4326 end
     if location
       fromproj4s = Projection.find_by_id(4326).proj4
-      toproj4s = Projection.find_by_id(2193).proj4
+      toproj4s = Projection.find_by_id(srs).proj4
 
       fromproj = RGeo::CoordSys::Proj4.new(fromproj4s)
       toproj = RGeo::CoordSys::Proj4.new(toproj4s)
@@ -350,9 +354,10 @@ class Asset < ActiveRecord::Base
 
   # NZTM coordinates: y
   def y
+    if(Projection.find_by_id(2193)) then srs=2193 else srs=4326 end
     if location
       fromproj4s = Projection.find_by_id(4326).proj4
-      toproj4s = Projection.find_by_id(2193).proj4
+      toproj4s = Projection.find_by_id(srs).proj4
 
       fromproj = RGeo::CoordSys::Proj4.new(fromproj4s)
       toproj = RGeo::CoordSys::Proj4.new(toproj4s)

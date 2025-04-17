@@ -1,4 +1,4 @@
-if ((window.history.pushState!=null) && (site_back!=true)) window.history.pushState(null, 'ZL on the Air', '/assets/new?<%=@parameters%>');
+if ((window.history.pushState!=null) && (site_back!=true)) window.history.pushState(null, <%= raw(@site_title) %>, '/assets/new?<%=@parameters%>');
 $('#right_panel').html("<%= escape_javascript(render(:partial => 'assets/new')).html_safe %>");
 
 

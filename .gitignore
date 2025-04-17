@@ -5,6 +5,8 @@ log
 tmp
 database.yml
 config/database.yml
+config/database-lota.yml
+config/database-zlota.yml
 config/initializers/secrets.rb
 db/*.sqlite3
 db/*.sqlite3-journal

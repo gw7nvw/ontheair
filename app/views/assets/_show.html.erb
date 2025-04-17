@@ -1,8 +1,8 @@
 <script> 
   document.getElementById("page_status").innerHTML = '';
   document.body.classList.remove('loading');
-  document.title = 'ZL On the Air'
-  document.getElementById('logo').innerHTML='ZL On The Air'
+  document.title = <%= raw(@site_title) %>;
+  document.getElementById('logo').innerHTML=<%= raw(@site_title) %>;
 </script>
 
 <div id="actionbar" class="span7">
@@ -249,14 +249,15 @@
 
   <div class="erow" id="location">
     <div class="rowtitle"><%= "Location" %></div>
+    <% if @proj_srs==2193 then proj="NZTM2000"; round=0 else proj="WGS";round=4 end%>
     <% if @asset.x and @asset.y %>
-      <div class="rowtext"> <%= "NZTM2000: "+@asset.x.round().to_s+", "+@asset.y.round().to_s %><% if @asset.altitude %><%=" (alt: "+@asset.altitude.to_s+"m)"%> <% end %> </div>
+      <div class="rowtext"> <%= proj+": "+@asset.x.round(round).to_s+", "+@asset.y.round(round).to_s %><% if @asset.altitude %><%=" (alt: "+@asset.altitude.to_s+"m)"%> <% end %> </div>
     <% end %>
   </div>
 
   <div class="erow" id="maidenhead">
     <div class="rowtitle"><%= "Maidenhead" %></div>
-    <% if @asset.x and @asset.y %>
+    <% if @asset.location and @asset.location.x and @asset.location.y %>
       <div class="rowtext"> <%= @asset.maidenhead %> </div>
     <% end %>
   </div>

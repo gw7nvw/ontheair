@@ -2,8 +2,8 @@
    reset_map_controllers();
    document.getElementById("page_status").innerHTML = '';
    document.body.classList.remove('loading');
-   document.title = '... On The Air'
-   document.getElementById('logo').innerHTML='... On The Air'
+   document.title = <%= raw(@site_title) %>
+   document.getElementById('logo').innerHTML = <%= raw(@site_title) %>
 
 </script>
 
@@ -22,8 +22,8 @@
 
 <div id="right_scroll">
   <%= render 'flash' %>
-  <div style="background-image: url('assets/hota-logo4.JPG'); background-size: cover;padding-bottom: 10px">
-    <h1>ZL ... On The Air</h1>
+  <div style="background-image: url(<%=@site_title_image%>); background-size: cover;padding-bottom: 10px">
+    <h1> <%= raw(@site_title_unquoted) %> </h1>
   </div>
 
   <table style='table-layout:fixed'>

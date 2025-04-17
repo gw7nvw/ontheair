@@ -227,8 +227,9 @@ class AssetsController < ApplicationController
   end
 
   def convert_location_params(x, y)
+    if @proj_srs==2193 then src_srs=2193 else src_srs=4326 end
     # convert to WGS84 (EPSG4326) for database
-    fromproj4s = Projection.find_by_id(2193).proj4
+    fromproj4s = Projection.find_by_id(src_srs).proj4
     toproj4s = Projection.find_by_id(4326).proj4
 
     fromproj = RGeo::CoordSys::Proj4.new(fromproj4s)

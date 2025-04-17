@@ -1,6 +1,6 @@
 # typed: false
 class AddParkIdToPota < ActiveRecord::Migration
   def change
-    add_column :pota_parks, :park_id, :integer
+#    add_column :pota_parks, :park_id, :integer
   end
 end

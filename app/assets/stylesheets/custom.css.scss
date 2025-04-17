@@ -133,8 +133,12 @@ tr {
 th {
     padding-top: 11px;
     padding-bottom: 11px;
-    background-color: #4CAF50;
-    color: white;
+    //background-color: #4CAF50;
+    background-color: #4C8F50;
+    color: white !important;
+    a {
+      color: white !important;
+    }
 }
 
 html {

@@ -52,10 +52,11 @@ var proj4=proj4
 //var register=ol.proj.proj4.register
 var map_map;
 var map_current_layer="NZTM Topo 2019";
-var map_current_proj="2193"
-var map_projection_name="EPSG:2193"
+var map_view_projection_name="EPSG:2193";
+var map_current_proj="2193";
+var map_projection_name="EPSG:2193";
 var map_projection;
-var map_current_projname="NZTM2000"
+var map_current_projname="NZTM2000";
 var map_current_projdp=0;
 var map_mpc;
 var mapBounds = [827933.23, 3729820.29, 3195373.59, 7039943.58];
@@ -111,6 +112,7 @@ var linz_tilegrid=new ol.tilegrid.TileGrid({
         resolutions: linz_resolutions,
         extent: linz_extent});
 var epsg2193;
+var epsg3857;
 
 //Map position stuff
 var map_show_position=false;
@@ -205,7 +207,7 @@ function map_create_control(buttonicon, buttontitle, callback, id ) {
 
 
 
-function map_init_mapspast(divid) {
+function map_init_mapspast(divid,projection) {
   map_add_projections();
   mapset="mapspast";
   currentextent=mapBounds;
@@ -213,7 +215,7 @@ function map_init_mapspast(divid) {
      var currentextent=map_map.getView().calculateExtent()
      return 1;
   }
-  map_init(divid);
+  map_init(divid, projection);
   //map_map.getView().fit(currentextent , map_map.getSize());
 }
 
@@ -236,7 +238,7 @@ function map_add_projections() {
   epsg3857=ol.proj.get('EPSG:3857');
   map_projection=ol.proj.get(map_projection_name);
 }
-function map_add_wmts_layer(name,url,layer,source,maxresolution,numzooms) {
+function map_add_wmts_layer(name,url,layer,source,maxresolution,numzooms,projection) {
    if (source=="mapspast") {
            var tilegrid=mapspast_tilegrid;
    } else {
@@ -244,7 +246,7 @@ function map_add_wmts_layer(name,url,layer,source,maxresolution,numzooms) {
    };
    maplayers[map_layer_count]=new ol.layer.Tile({
      source: new ol.source.WMTS({
-       projection: epsg2193,
+       projection: ol.proj.get(projection),
        url: url,
        layer: layer,
        maxResolution: maxresolution,
@@ -254,7 +256,7 @@ function map_add_wmts_layer(name,url,layer,source,maxresolution,numzooms) {
      }),
      name: name,
      visible: false,
-     projection: epsg2193,
+     projection: ol.proj.get(projection),
      maxResolution: maxresolution,
      numZoomLevels: numzooms
    });
@@ -311,7 +313,7 @@ function map_add_raster_layer(name,url,source,maxresolution,numzooms) {
 }
 
 
-function map_add_vector_layer(name, url, field, style, visible,minzoom,maxzoom,filter) {
+function map_add_vector_layer(name, url, field, style, visible,minzoom,maxzoom,filter,projection) {
   var vector;
   var zeroresolution=156543.0339;
   var maxresolution=zeroresolution/Math.pow(2,minzoom);
@@ -330,6 +332,7 @@ function map_add_vector_layer(name, url, field, style, visible,minzoom,maxzoom,f
   if (filter) {
     var vectorSource = new ol.source.Vector({
       loader: function(extent) {
+//        var my_extent=ol.proj.transformExtent(extent, projection, map_view_projection_name);
         $.ajax(url, {
           type: 'GET',
           data: {
@@ -337,12 +340,17 @@ function map_add_vector_layer(name, url, field, style, visible,minzoom,maxzoom,f
             version: '1.0.0',
             request: 'GetFeature',
             typename: field,
-            srsname: 'EPSG:2193',
+            srsname: projection,
             outputFormat: 'application/geojson',
-            FILTER: '<ogc:Filter><AND><ogc:BBOX><ogc:PropertyName>Shape</ogc:PropertyName><gml:Box srsName="urn:x-ogc:def:crs:EPSG:2193"><gml:coordinates>'+extent[0]+','+extent[1]+' '+extent[2]+','+extent[3]+'</gml:coordinates></gml:Box></ogc:BBOX>'+map_filters[filter]+'</AND></ogc:Filter>'
+            FILTER: '<ogc:Filter><AND><ogc:BBOX><ogc:PropertyName>Shape</ogc:PropertyName><gml:Box srsName="urn:x-ogc:def:crs:'+map_view_projection_name+'"><gml:coordinates>'+extent[0]+','+extent[1]+' '+extent[2]+','+extent[3]+'</gml:coordinates></gml:Box></ogc:BBOX>'+map_filters[filter]+'</AND></ogc:Filter>'
           }
         }).done(function(response) {
-          var tmp_f=new ol.format.GeoJSON().readFeatures(response);
+          var tmp_f=new ol.format.GeoJSON({defaultDataProjection: projection}).readFeatures(
+            response, {
+              dataProjection: projection,
+              featureProjection: map_view_projection_name
+            }
+          );
           var length=tmp_f.length;
           for(var count=0; count<length; count++) {
              tmp_f[count].id_=tmp_f[count].get('id');
@@ -351,7 +359,7 @@ function map_add_vector_layer(name, url, field, style, visible,minzoom,maxzoom,f
         });    
       },
       strategy: ol.loadingstrategy.bbox,
-      projection: 'EPSG:2193'
+      projection: ol.proj.get(projection)
     })
   } else {
     var vectorSource = new ol.source.Vector({
@@ -363,9 +371,9 @@ function map_add_vector_layer(name, url, field, style, visible,minzoom,maxzoom,f
             version: '1.0.0',
             request: 'GetFeature',
             typename: field,
-            srsname: 'EPSG:2193',
+            srsname: projection,
               outputFormat: 'application/geojson',
-            bbox: extent.join(',') + ',EPSG:2193'
+            bbox: extent.join(',') + ',' + projection
           }
         }).done(function(response) {
           var tmp_f=new ol.format.GeoJSON().readFeatures(response);
@@ -377,7 +385,7 @@ function map_add_vector_layer(name, url, field, style, visible,minzoom,maxzoom,f
         });
       },
       strategy: ol.loadingstrategy.bbox,
-      projection: 'EPSG:2193'
+      projection: ol.proj.get(projection)
     });
   }
 
@@ -523,16 +531,23 @@ function map_enable_draw(type, style, loc_dest, x_dest, y_dest, move) {
                 persist_feature=feature; 
 		x=feature.values_.geometry.flatCoordinates[0];
 		y=feature.values_.geometry.flatCoordinates[1];
+                if(map_view_projection_name=='EPSG:2193') {
+                  dest_projection='EPSG:2193';
+                } else {
+                  dest_projection='EPSG:4326';
+                }
 		var loc=format.writeGeometry(feature.getGeometry(),
                      {
                             dataProjection: 'EPSG:4326',
-                            featureProjection: map_projection_name
+                            featureProjection: map_view_projection_name
                      });
+
+                feature.getGeometry().transform(map_view_projection_name, dest_projection)
                 debug_f=feature;
 		// write back to webpage
                 if(loc_dest!=null)  document.getElementById(loc_dest).value=loc; 
-                if(x_dest!=null)  document.getElementById(x_dest).value=x; 
-                if(y_dest!=null)  document.getElementById(y_dest).value=y;
+                if(x_dest!=null)  document.getElementById(x_dest).value=feature.getGeometry().flatCoordinates[0];
+                if(y_dest!=null)  document.getElementById(y_dest).value=feature.getGeometry().flatCoordinates[1];
 
 	 });
 	map_draw.on('drawstart',function(event){
@@ -547,16 +562,25 @@ function map_enable_draw(type, style, loc_dest, x_dest, y_dest, move) {
 
 
 
-function map_init(divid) {
+function map_init(divid, projection) {
+        map_view_projection_name=projection;
         if(divid==null) divid='map';
-        var view = new ol.View({
+        if(projection=='EPSG:2193') {
+          var view = new ol.View({
                      center: [1600000, 5500000],
                      zoom: 2, 
-		     projection: map_projection,
+		     projection: ol.proj.get(projection),
 //   		     maxResolution: 4891.969809375,
    		     maxResolution: 2445.9849046875,
                      numZoomLevels: 11
-        });
+          });
+        } else {
+          var view = new ol.View({
+                     zoom: 6,
+                     center: [0, 0],
+                     projection: ol.proj.get(projection)
+          });
+        }
 
         map_mpc= new ol.control.MousePosition({
              coordinateFormat: createStringXY(map_current_projdp),
@@ -742,7 +766,7 @@ function map_add_feature_from_wkt(wkt, source_proj, style) {
   var format = new ol.format.WKT();
   var feature=format.readFeature(wkt, {
     dataProjection: source_proj,
-    featureProjection: map_projection_name
+    featureProjection: map_view_projection_name
     });
   feature.setStyle(style);
   map_scratch_source.addFeature(feature);
@@ -806,7 +830,7 @@ function map_centre(wkt,proj) {
   var format = new ol.format.WKT();
   var feature=format.readFeature(wkt, {
     dataProjection: proj,
-    featureProjection: map_projection_name
+    featureProjection: map_view_projection_name
     });
   debug_f=feature;
   map_map.getView().setCenter(feature.getGeometry().flatCoordinates);
@@ -827,7 +851,7 @@ function map_refresh_layer(layer) {
 
 function map_get_current_extent(proj) {
     var extent= map_map.getView().calculateExtent();
-    return ol.proj.transformExtent(extent,'EPSG:2193',proj);
+    return ol.proj.transformExtent(extent,map_projection_name,proj);
 }
 
    function map_WKTtoGPX(wktfield, gpxfield) {

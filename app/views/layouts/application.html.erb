@@ -34,6 +34,8 @@ if( /Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent))
       <% if @zoomlevel and @zoomlevel.to_i>=5 and @zoomlevel.to_i<=15%> var def_zoom=<%=@zoomlevel%> <% end %>
       <% if @map_x %> var def_x=<%=@map_x%> <% end %>
       <% if @map_y %> var def_y=<%=@map_y%> <% end %>
+      <% if @proj %> var def_proj=<%=raw("'"+@proj+"'")%> <% end %>
+      <% if @layer %> var def_layer=<%=raw("'"+@layer+"'")%> <% end %>
     </script>
     <%  @init_name = "site_init()" %>
 

@@ -2,8 +2,8 @@
 <script>
    document.getElementById("page_status").innerHTML = '';
    document.body.classList.remove('loading');
-   document.title = 'ZL On The Air';
-   document.getElementById('logo').innerHTML='ZL On The Air';
+   document.title = <%= raw(@site_title) %>;
+   document.getElementById('logo').innerHTML=<%= raw(@site_title) %>;
 </script>
 
 <div id="actionbar" class="span7">

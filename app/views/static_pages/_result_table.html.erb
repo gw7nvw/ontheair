@@ -16,22 +16,22 @@ end%>
 <% if !@sortby then @sortby="park" end%>
 <table id="result_headings">
   <tr>
-    <th <%=if @scoreby == 'bagged' then 'style=background-color:#33ff22 !important' end%>>
+    <th <%=if @scoreby == 'bagged' then 'style=background-color:#33bb22 !important' end%>>
       <span title="Unique locations chased or activated">
         <%=link_to 'Bagged','?scoreby=bagged&sortby='+@sortby, remote: true,:onclick => "linkHandler('bagged')"%>
       </span>
     </th>
-    <th <%=if @scoreby == 'activated' then 'style=background-color:#33ff22 !important' end%>>
+    <th <%=if @scoreby == 'activated' then 'style=background-color:#33bb22 !important' end%>>
       <span title="Locations activated (including repeats in different UTC year)">
         <%=link_to 'Activated','?scoreby=activated&sortby='+@sortby, remote: true,:onclick => "linkHandler('activated')"%>
       </span>
     </th>
-    <th <%=if @scoreby == 'qualified' then 'style=background-color:#33ff22 !important' end%>>
+    <th <%=if @scoreby == 'qualified' then 'style=background-color:#33bb22 !important' end%>>
       <span title="Locations activated with minimum QSO count achieved (including repeats in different UTC year)">
         <%=link_to 'Qualified','?scoreby=qualified&sortby='+@sortby, remote: true,:onclick => "linkHandler('qualified')"%>
       </span>
     </th>
-    <th <%=if @scoreby == 'chased' then 'style=background-color:#33ff22 !important' end%>>
+    <th <%=if @scoreby == 'chased' then 'style=background-color:#33bb22 !important' end%>>
       <span title="Locations chased (including repeats on different UTC day)">
         <%=link_to 'Chased','?scoreby=chased&sortby='+@sortby, remote: true,:onclick => "linkHandler('chased')"%>
       </span>
@@ -44,17 +44,17 @@ end%>
       <th>Position</th>
       <th>Callsign</th>
       <% AssetType.where("keep_score = true").order(:name).each do |asset_type| %>
-        <th <%=if asset_type.name == @sortby then 'style=background-color:#33ff22 !important' end%>><%=link_to asset_type.name.capitalize, "?scoreby="+@scoreby+"&sortby="+asset_type.name, remote: true, onclick: "linkHandler('default_order')" %></th>
+        <th <%=if asset_type.name == @sortby then 'style=background-color:#33bb22 !important' end%>><%=link_to asset_type.name.capitalize, "?scoreby="+@scoreby+"&sortby="+asset_type.name, remote: true, onclick: "linkHandler('default_order')" %></th>
       <% end %>
-      <th <%=if 'elevation' == @sortby then 'style=background-color:#33ff22 !important' end%>>
+      <th <%=if 'elevation' == @sortby then 'style=background-color:#33bb22 !important' end%>>
         <span title="Sum of elevations of all summits worked"> 
           <%=link_to "Summit Elevation", "?scoreby="+@scoreby+"&sortby=elevation", remote: true, onclick: "linkHandler('default_order')" %>
         </span>
       </th>
    
-      <th <%=if 'p2p' == @sortby then 'style=background-color:#33ff22 !important' end%>>
+      <th <%=if 'p2p' == @sortby then 'style=background-color:#33bb22 !important' end%>>
         <span title="Places worked Portable to Portable"><%=link_to 'P2P', "?scoreby=bagged&sortby=p2p", remote: true, onclick: "linkHandler('default_order')" %></span></th>
-      <th <%=if 'qrp' == @sortby then 'style=background-color:#33ff22 !important' end%>>
+      <th <%=if 'qrp' == @sortby then 'style=background-color:#33bb22 !important' end%>>
         <span title="Places worked operating QRP"><%=link_to 'QRP', "?scoreby="+@scoreby+"&sortby=qrp", remote: true, onclick: "linkHandler('default_order')" %></span></th>
     </tr>
 

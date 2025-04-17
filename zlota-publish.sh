@@ -1,4 +1,6 @@
 #!/bin/bash
+cp config/database-zlota.yml config/database.yml
+cp db/seeds-zlota.rb db/seeds.rb
 RAILS_ENV=production bundle exec rake assets:clean assets:precompile
 sudo cp -r /var/www/html/hota/public/system /tmp/
 sudo rm -r /var/www/html/hota/*

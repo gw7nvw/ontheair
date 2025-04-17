@@ -274,6 +274,7 @@ class Log < ActiveRecord::Base
       # create a new contact from the log entry data
       contact = Contact.new(contact.attributes)
 
+      puts contact.to_json
       # get time/date into correct format
       timestring = (timestring || '').rjust(4, '0')
 
@@ -348,6 +349,8 @@ class Log < ActiveRecord::Base
       elsif errors.empty? || ignore_error
         contact.log_id = logs[contact.log_id].id
         if contact.save
+          contact.reload
+          puts contact.to_json
           good_contacts += 1
         else
           errors.push("FATAL: Save contact #{cc} failed: " + contact.errors.messages.to_s)

@@ -1,4 +1,4 @@
-LINZ_API_KEY='d01gerrwb5fqmwwhpx3s65p62hj'
+LINZ_API_KEY='d01gerrwb5fqmwwhpx3s65p62hj';
 var site_map_size=1;
 var contacts_layer;
 var site_show_polygon=true;
@@ -6,6 +6,9 @@ var site_territory_layers=[];
 var site_map_pinned=false;
 var site_show_controls=true;
 var site_back = false;
+var site_default_projection="EPSG:2193";
+var def_zoom=7;
+var site_projection=site_default_projection;
 var refreshInterval;
 var currZoom;
 var debug_response;
@@ -86,7 +89,10 @@ function site_init() {
  try {
   if(typeof(map_map)=='undefined') {
     site_init_styles();
-    map_init_mapspast('map_map');
+    if(typeof(def_proj)!='undefined') {
+       site_projection=def_proj;
+    }
+    map_init_mapspast('map_map',site_projection);
     site_add_vector_layers();
     map_map.addLayer(map_scratch_layer);
     map_add_position_layer();
@@ -100,9 +106,14 @@ function site_init() {
       }
       if(typeof(def_x)!='undefined' && typeof(def_y)!='undefined') {
          var centre='POINT('+def_x+' '+def_y+')';
-         map_centre(centre,'EPSG:2193');
+         map_centre(centre,site_projection);
       }
     }
+
+    if(typeof(def_layer)!='undefined') {
+       map_show_only_layer(def_layer);
+    }
+
     if(typeof(def_zoom)!='undefined') {
        map_zoom(def_zoom);
     }
@@ -303,22 +314,22 @@ function site_points_style_function(feature, resoluton) {
 
 function site_add_vector_layers() {
   site_set_map_filters('polygon',site_default_polygon_layers);
-  polygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon",site_polygon_style_function,true,12,15,'polygon');
-  polygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_simple",site_polygon_style_function,true,9,12,'polygon');
-  polygon_detail_layer=map_add_vector_layer("Polygon Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_detail",site_polygon_style_function,true,15,32,'polygon');
-  district_layer=map_add_vector_layer("District", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district",site_district_style,false,12,15);
-  district_simple_layer=map_add_vector_layer("District Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_simple",site_district_style,false,7,12);
-  district_detail_layer=map_add_vector_layer("District Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_detail",site_district_style,false,15,32);
-  geology_layer=map_add_vector_layer("Geology", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology",site_geology_style,false,12,15);
-  geology_simple_layer=map_add_vector_layer("Geology Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology_simple",site_geology_style,false,7,12);
-  geology_detail_layer=map_add_vector_layer("Geology Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology_detail",site_geology_style,false,15,32);
-  region_layer=map_add_vector_layer("Region", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region",site_region_style,false,12,15);
-  region_simple_layer=map_add_vector_layer("Region Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_simple",site_region_style,false,7,12);
-  region_detail_layer=map_add_vector_layer("Region Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_detail",site_region_style,false,15,32);
+  polygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon",site_polygon_style_function,true,12,15,'polygon', 'EPSG:2193');
+  polygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_simple",site_polygon_style_function,true,9,12,'polygon', 'EPSG:2193');
+  polygon_detail_layer=map_add_vector_layer("Polygon Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_detail",site_polygon_style_function,true,15,32,'polygon', 'EPSG:2193');
+  district_layer=map_add_vector_layer("District", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district",site_district_style,false,12,15, 'EPSG:2193');
+  district_simple_layer=map_add_vector_layer("District Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_simple",site_district_style,false,7,12, 'EPSG:2193');
+  district_detail_layer=map_add_vector_layer("District Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_detail",site_district_style,false,15,32, 'EPSG:2193');
+  geology_layer=map_add_vector_layer("Geology", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology",site_geology_style,false,12,15, 'EPSG:2193');
+  geology_simple_layer=map_add_vector_layer("Geology Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology_simple",site_geology_style,false,7,12, 'EPSG:2193');
+  geology_detail_layer=map_add_vector_layer("Geology Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology_detail",site_geology_style,false,15,32, 'EPSG:2193');
+  region_layer=map_add_vector_layer("Region", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region",site_region_style,false,12,15, 'EPSG:2193');
+  region_simple_layer=map_add_vector_layer("Region Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_simple",site_region_style,false,7,12, 'EPSG:2193');
+  region_detail_layer=map_add_vector_layer("Region Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_detail",site_region_style,false,15,32, 'EPSG:2193');
 
   site_set_map_filters('point',site_default_point_layers);
-  points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,7,32,'point');
-  contacts_layer=map_add_vector_layer("Contacts", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "contacts",site_contacts_style,false,1,32);
+  points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,7,32,'point', 'EPSG:2193');
+  contacts_layer=map_add_vector_layer("Contacts", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "contacts",site_contacts_style,false,1,32, 'EPSG:2193');
 
   map_map.addLayer(district_layer);
   map_map.addLayer(district_simple_layer);
@@ -347,9 +358,11 @@ function site_set_map_filters(filter, list) {
 }
 
 function site_add_layers() {
-        map_add_raster_layer('OpenTopoMap', 'https://a.tile.opentopomap.org/{z}/{x}/{y}.png', 'osm', 0, 17);
-        map_add_raster_layer('NZTM Topo 2019', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
-        map_add_raster_layer('Public Access Land', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/pal-2193/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
+        map_add_raster_layer('OpenTopoMap', 'https://a.tile.opentopomap.org/{z}/{x}/{y}.png', 'osm', 0, 23);
+        //map_add_raster_layer('NZTM Topo 2019', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
+        map_add_raster_layer('NZTM Topo 2019', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
+        //map_add_raster_layer('Public Access Land', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/pal-2193/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
+        map_add_raster_layer('Public Access Land', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/pal-2193/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
         map_add_raster_layer('(LINZ) Topo50 latest','http://tiles-a.data-cdn.linz.govt.nz/services;key=d8c83efc690a4de4ab067eadb6ae95e4/tiles/v4/layer=767/EPSG:2193/{z}/{x}/{y}.png','linz',8690, 17);
         map_add_raster_layer('(LINZ) Airphoto latest','https://basemaps.linz.govt.nz/v1/tiles/aerial/2193/{z}/{x}/{y}.png?api='+LINZ_API_KEY,'linz',8690, 17);
 
@@ -656,7 +669,7 @@ function site_select_point_on_click_callback(evt) {
         if(site_select_name_dest!=null) data2[site_select_row][site_select_name_dest]=feature.get('name');
         data2[site_select_row]['loc_desc2']=feature.get('name');
         if(site_select_code_dest!=null) data2[site_select_row][site_select_code_dest]=feature.get('code');
-        if(site_select_loc_dest!=null) data2[site_select_row][site_select_loc_dest]=wktp.writeFeature(feature, { dataProjection: 'EPSG:4326', featureProjection: 'EPSG:2193'});
+        if(site_select_loc_dest!=null) data2[site_select_row][site_select_loc_dest]=wktp.writeFeature(feature, { dataProjection: 'EPSG:4326', featureProjection: site_projection});
         if(site_select_x_dest!=null) data2[site_select_row][site_select_x_dest]=feature.getGeometry().getCoordinates()[0];
         if(site_select_y_dest!=null) data2[site_select_row][site_select_y_dest]=feature.getGeometry().getCoordinates()[1];
         hot.render();
@@ -676,7 +689,7 @@ function site_select_point_on_click_callback(evt) {
           if(site_select_name_dest!=null)  document.getElementById(site_select_name_dest).value=feature.get('name');
           if(site_select_code_dest!=null)  document.getElementById(site_select_code_dest).value=feature.get('code');
         }
-        if(site_select_loc_dest!=null) document.getElementById(site_select_loc_dest).value=wktp.writeFeature(feature, { dataProjection: 'EPSG:4326', featureProjection: 'EPSG:2193'});
+        if(site_select_loc_dest!=null) document.getElementById(site_select_loc_dest).value=wktp.writeFeature(feature, { dataProjection: 'EPSG:4326', featureProjection: site_projection});
         if(site_select_x_dest!=null) document.getElementById(site_select_x_dest).value=feature.getGeometry().getCoordinates()[0];
         if(site_select_y_dest!=null) document.getElementById(site_select_y_dest).value=feature.getGeometry().getCoordinates()[1];
       }

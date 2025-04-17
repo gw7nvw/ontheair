@@ -18,6 +18,13 @@ class ApplicationController < ActionController::Base
   helper_method :retrieve_last_index_page_or_default
 
   def global_variables
+    as=AdminSettings.first
+
+    @site_title="'"+as.title+"'"
+    @site_title_unquoted=as.title
+    @site_title_image=as.imagepath
+    @site_name=as.name
+
     # parameters
     @parameters = params_to_query
 
@@ -31,7 +38,8 @@ class ApplicationController < ActionController::Base
     else
       @tz = Timezone.find_by(name: 'UTC')
     end
-
+    @map_x=as.default_x.to_d
+    @map_y=as.default_y.to_d
     x = params[:x] if params[:x]
     y = params[:y] if params[:y]
     if x and y then
@@ -47,6 +55,11 @@ class ApplicationController < ActionController::Base
       @map_y=xyarr[1]
     end
     @zoomlevel = params[:zoom] if params[:zoom]
+    @proj=as.default_projection    
+    @layer=as.default_layer    
+    @proj = 'EPSG:'+params[:proj] if params[:proj]
+    @proj_srs=@proj[5..-1].to_i
+    @layer = params[:layer] if params[:layer]
   end
 
   def store_last_index_page
