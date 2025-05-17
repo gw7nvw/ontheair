@@ -9,6 +9,7 @@ sudo rm -r /var/www/html/hota/public/system
 sudo cp -r  /tmp/system /var/www/html/hota/public/
 sudo chmod a+rw /var/www/html/hota/log/*
 sudo chmod a+rwx /var/www/html/hota/public/system
+sudo chmod a+rwx /var/www/html/hota/public/assets*
 sudo chmod a+rwx /var/www/html/hota/public/system/*
 sudo chmod a+rwx /var/www/html/hota/public/system/*/*
 sudo chmod a+rw /var/www/html/hota/public/system/*/*/*

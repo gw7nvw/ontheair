@@ -164,6 +164,7 @@ class UsersController < ApplicationController
     @user.is_active = true
     @user.is_modifier = false
     @user.activated_at = Time.now
+    @user.hide_news_at = Time.now
 
     @user.read_only = true unless @user.valid_callsign?
 

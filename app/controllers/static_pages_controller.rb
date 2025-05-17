@@ -41,7 +41,10 @@ class StaticPagesController < ApplicationController
     @fulllogs = Log.find_by_sql [" select * from logs where asset_codes != '{}' order by date desc limit 20 "]
     @logs = @fulllogs.paginate(per_page: 20, page: params[:page])
 
-    @items = Item.find_by_sql ["select * from items where (topic_id = 4 or topic_id=42 )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;"]
+    @awards = AwardUserLink.find_by_sql [ "select * from award_user_links where created_at>'#{ack_time}'; "]
+    @award_users = User.find_by_sql [ "select * from users where id in (select distinct user_id from award_user_links where created_at>'#{ack_time}') order by callsign;"]
+
+    @items = Item.find_by_sql ["select * from items where (topic_id = 4 )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;"]
   end
 
   def recent

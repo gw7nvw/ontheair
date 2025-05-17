@@ -53,9 +53,6 @@
 </div>
 
 <div id="right_scroll">
-  <%= render 'flash' %>
-  <span id="spots"></span>
-  <h2>Spots</h2>
   <% as=AdminSettings.first %>
   <% if as and as.last_spot_read then 
        last_spot_read=as.last_spot_read.in_time_zone(@tz.name).strftime("%H:%M:%S") 
@@ -64,6 +61,28 @@
        last_spot_read="Unknown" 
        stale=true
      end %>
+  <% if stale==true
+      #Should really do this in controller ...
+      sch_running=system('ps -ef | grep ota_schedule | grep resqu | grep -v grep')
+      puts "Scheduler running: "+sch_running.to_s
+      if sch_running==false then
+         success=system('RAILS_ENV=production nohup bundle exec rake environment resque:work QUEUE=ota_scheduled > log/redisch.log & echo $! > /tmp/schedule.pid')
+         if !success then 
+           flashlocal="Error: process to retrieve remote spotsfailed and we could not restart it"
+           flashlocaltype='error' 
+         else
+           flashlocal="Success: process to retrieve remote spots failed but we successfully restarted it. Remote spots will show on the next refresh"
+           flashlocaltype='success'
+         end
+      end
+     end
+  %>
+  <%= render 'flash' %>
+  <% if flashlocal then %>
+    <div class="alert alert-<%= flashlocaltype %>"><%= flashlocal %></div>
+  <% end%>
+  <span id="spots"></span>
+  <h2>Spots</h2>
      <p><span <%=if stale then raw("style='color: #900'") end%> >Last updated: <%=last_spot_read%> (<%=@tz.name%>)</span> - <span id="retrieved">Retrieved at <%=Time.now.in_time_zone(@tz.name).strftime("%H:%M:%S")%> (<%=@tz.name%>)</span><i>&nbsp;<%=  link_to "Refresh Now", '/spots?'+raw(@parameters), remote: true,  :onclick => "linkHandler('refresh_link')"%> </i></p>
   <p>
   <% new_parameters=@parameters.gsub(/zone=[A-Za-z]+/,'') %>

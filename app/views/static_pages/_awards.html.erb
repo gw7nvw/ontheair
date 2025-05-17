@@ -1,0 +1,37 @@
+<div class="bordered_box">
+   <div class="box_header">
+      <div class="sectiontitle">New Awards</div>
+      <div class="sectiontext">&nbsp;</div>
+   </div>
+   <div class="box_contents">
+      <div class="sectiontext">
+<% @award_users.each do |user| %>
+  <p><%= link_to user.callsign.upcase, '/users/'+user.callsign+"/awards", remote: true, :id => 'user_link_'+user.id.to_s, :style => (if not user.activated then 'color:grey' else '' end), :onclick => "linkHandler('user_link_"+user.id.to_s+"')" %>:
+  <% awards = @awards.select{|a| a.user_id==user.id} %>
+  <% first=true %>
+  <% awards.each do |a| %>
+    <% if first==false %>
+     |
+    <% end %>
+    <% first=false %>
+    <%= a.award.name %>
+    <% if a.award_type=='threshold' %>
+     <%= " ("+a.threshold.to_s+")" %>
+    <% end %>
+    <% if a.award_type=='district' %>
+     <% district = District.find_by(id: a.linked_id) %>
+     <%= " - "+district.name %>
+    <% end %>
+    <% if a.award_type=='region' %>
+     <% region = Region.find_by(id: a.linked_id) %>
+     <%= " - "+region.name %>
+    <% end %>
+  <% end %>
+</p>
+<% end %>
+</div>
+
+   </div>
+</div>
+
+

@@ -34,11 +34,15 @@
     </tr>
   </table>
 
-<% if signed_in? and @items and @items.count>0 then %>
+<% if signed_in? and ((@items and @items.count>0) or (@awards and @awards.count>0)) then %>
   <h2>
     <span class="heading2"><%=link_to "What's New", '/topics/4',  remote: true,:onclick => "linkHandler('more')"%></span>
     <%=link_to "Hide", 'ack_news', remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler('acklink')"%>
   </h2>
+
+  <% if @awards and @awards.count>0 %>
+    <%=render :partial => 'awards' %>
+  <% end %>
 
   <% @items.each do |item| %>
      <%=render :partial => 'item_details',  :locals => {:item => item} %>

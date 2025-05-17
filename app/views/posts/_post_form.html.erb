@@ -55,7 +55,7 @@
       <% if @topic.is_spot or @topic.is_alert then %>
         <b><%=@topic.name%></b><br>
         <table id="main_table">
-          <% if @topic.is_spot then %>
+          <% if @topic.is_spot or @topic.is_alert then %>
             <tr>
               <td>Operating callsign:</td>
               <td style="padding:0px; margin:0px;" colspan=3><%=f.text_field :callsign, :style =>"padding:0px; margin:0px;" %></td>
