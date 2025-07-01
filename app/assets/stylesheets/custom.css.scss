@@ -135,10 +135,13 @@ th {
     padding-bottom: 11px;
     //background-color: #4CAF50;
     background-color: #4C8F50;
-    color: white !important;
+    color: white;
     a {
       color: white !important;
     }
+}
+.handsontable th {
+    color: 444 !important;
 }
 
 html {
@@ -172,10 +175,10 @@ textarea {
     -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
     -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
     box-shadow: 0 5px 10px rgba(0,0,0,.2);
-    z-index: 10000 !important;
+    z-index: 30000 !important;
 }
 .tt-input {
-    z-index: 9999 !important;
+    z-index: 39999 !important;
 }
 .non_member {
    color: #440000;
@@ -233,6 +236,7 @@ textarea {
     width: 98%;
     font-size: .8em;
     margin: 1em 0;
+    z-index: 999;
 }
 
 .box_header {
@@ -395,7 +399,7 @@ p {
 
 #tooltip{
         position:absolute;
-        z-index:9999;
+        z-index:39999;
         background-color: rgba(0,0,0,.5);
         color: #ffffff;
         width:auto;
@@ -430,6 +434,7 @@ p {
         margin-bottom: 10px;
         margin-top: 24px;
         margin-left: 0px;
+        z-index: 1000;
 }
 
 .qsl_table {
@@ -601,7 +606,6 @@ html, body {
         margin: 0px;
         padding: 0px;
         float: left;
-        z-index: 20000;
 }
 
 ul {
@@ -639,6 +643,7 @@ ul {
      padding-left: 8px;
      padding-right: 6px;
      margin-top: -8px;
+     z-index: 1000;
      
 }
 #actionbar
@@ -650,6 +655,7 @@ ul {
      margin-left: 0px;
      padding-left: 8px;
      padding-right: 6px;
+     z-index: 1000;
 }
 
 #actionbar-form
@@ -817,9 +823,12 @@ input {
   border: 2px solid #ffff00;
 }
   .open > .dropdown-menu {
-   z-index: 9999 !important;
+   z-index: 10010 !important;
 }
 
+  .dropdown-menu {
+   z-index: 10010 !important;
+}
 
   .ildd-menu > li {
     display: block;
@@ -944,37 +953,9 @@ input {
     margin-right:10px;
   }
 
-#controls
-{
-//     float: none;
-}
 #crumbs
 {
   margin-top: 1px !important;
- //    float: none;
-}
-#right_scroll
-{
-//     margin-top: 54px;
-}
-#header
-{
-//	height: 20px !important;
-}
-.navbar-inner 
-{
-//   min-height: 20px !important;
-}
-.navbar .nav li {
-//   line-height: 12px !important;
-}
-#left_panel {
-//  margin-top: 24px !important;
-//  margin-left: 0px;
-}
-#right_panel {
-//  margin-top: 4px !important;
-//  margin-left: 0px;
 }
 #our_logo {
   width: 0px;

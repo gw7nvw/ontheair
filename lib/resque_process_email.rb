@@ -230,19 +230,18 @@ class EmailReceive
                      end
           @post.title = 'ALERT: ' + callsign + ' going portable to ' + a_name + '[' + a_code + '] on ' + freq + '/' + mode + ' at ' + al_date + ' ' + al_time + ' UTC'
         end
-        if a_ext == false
-          res = @post.save
-          if res
+        res = @post.save
+        if res
+          if a_ext == false
             @post.add_map_image
             res = @post.save
-
-            item = Item.new
-            item.topic_id = topic_id
-            item.item_type = 'post'
-            item.item_id = @post.id
-            item.save
-            item.send_emails
           end
+          item = Item.new
+          item.topic_id = topic_id
+          item.item_type = 'post'
+          item.item_id = @post.id
+          item.save
+          item.send_emails
         end
         @topic = Topic.find_by_id(topic_id)
         @post.asset_codes.each do |ac|

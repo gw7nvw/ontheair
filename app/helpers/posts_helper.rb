@@ -36,9 +36,12 @@ module PostsHelper
     assets.each do |a|
       next unless a.location
       wpt = gpx.add_element 'wpt'
-      wpt.add_element('url').add REXML::Text.new('https://ontheair.nz/' + a.url)
+      #don;t include URL - mapsource doesn't like it!
+      #wpt.add_element('url').add REXML::Text.new('https://ontheair.nz/' + a.url)
       wpt.add_attributes('lat' => a.location.y.to_s, 'lon' => a.location.x.to_s)
-      wpt.add_element('ele').add(REXML::Text.new(a.altitude.to_s))
+      #put in dummy elevation of -1 where non exists as mapsouurce errors out
+      #if no value present
+      wpt.add_element('ele').add(REXML::Text.new((if a.altitude.to_s.length>0 then a.altitude.to_s else "-1" end)))
       wpt.add_element('name').add(REXML::Text.new(a.name + ' (' + a.code + ')' + (a.r_field('points') ? ' [' + a.r_field('points').to_s + ']' : '')))
       next unless a.r_field('points')
       number = a.r_field('points')
@@ -54,7 +57,9 @@ module PostsHelper
       wpt.add_element('sym').add REXML::Text.new("Number #{number}, #{colour}")
     end
 
-    xml
+    #add newlines between each tag to keep mapsource happy
+    xml.to_s.gsub(/></, '>
+<')
   end
 
   # Convert html to formatted ascii text

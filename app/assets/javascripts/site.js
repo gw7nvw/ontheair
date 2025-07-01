@@ -38,10 +38,10 @@ var polygon_layer;
 var polygon_simple_layer;
 var polygon_detail_layer;
 var points_layer;
-var site_map_layers={}
-var site_default_point_layers=['lake','lighthouse','summit','hump','volcano']
-var site_all_point_layers=['park', 'hut','island','summit','lake']
-var site_default_polygon_layers=[]
+var site_map_layers={};
+var site_default_point_layers=['lake','lighthouse','summit','hump','volcano'];
+var site_all_point_layers=['park', 'hut','island','summit','lake'];
+var site_default_polygon_layers=[];
 
 //styles
 var site_docland_style;
@@ -177,6 +177,7 @@ function park_init(plloc,keep,cntloc) {
 function site_smaller_map() {
 //  document.getElementById('map_map').style.display="none";
   if (site_map_size==1) {
+    document.getElementById('right_panel').style.display="block";
     $('#left_panel').toggleClass('span5 span0');
     $('#right_panel').toggleClass('span7 span12');
     $('#actionbar').toggleClass('span7 span12');
@@ -186,8 +187,18 @@ function site_smaller_map() {
       document.getElementById('larger_map').style.display="contents";
       document.getElementById('smaller_map').style.display="none";
     }
-  }
-  if (site_map_size==2) {
+  } else if (site_map_size==2 && $(window).width() < 960) {
+    document.getElementById('right_panel').style.display="block";
+    $('#left_panel').toggleClass('span12 span0');
+    $('#right_panel').toggleClass('span0 span12');
+    $('#actionbar').toggleClass('span0 span12');
+    document.getElementById('left_panel').style.display="none";
+    site_map_size=0;
+    if (document.getElementById('larger_map')) {
+      document.getElementById('larger_map').style.display="contents";
+      document.getElementById('smaller_map').style.display="none";
+    }
+  } else if (site_map_size==2) {
     document.getElementById('right_panel').style.display="block";
     $('#left_panel').toggleClass('span12 span5');
     $('#right_panel').toggleClass('span0 span7');
@@ -222,7 +233,9 @@ function toggle_map() {
 }
 
 function site_bigger_map() {
-  if (site_map_size==1) {
+  if (site_map_size==1) 
+  {
+    document.getElementById('left_panel').style.display="block";
     $('#left_panel').toggleClass('span5 span12');
     $('#right_panel').toggleClass('span7 span0');
     $('#actionbar').toggleClass('span7 span0');
@@ -230,9 +243,16 @@ function site_bigger_map() {
     site_map_size=2;
     document.getElementById('larger_map').style.display="none";
     document.getElementById('smaller_map').style.display="contents";
-  }
-
-  if (site_map_size==0) {
+  } else if (site_map_size==0 && $(window).width() < 960) {
+    document.getElementById('left_panel').style.display="block";
+    $('#left_panel').toggleClass('span0 span12');
+    $('#right_panel').toggleClass('span12 span0');
+    $('#actionbar').toggleClass('span12 span0');
+  setTimeout( function() {document.getElementById('right_panel').style.display="none";}, 100);
+    site_map_size=2;
+    document.getElementById('larger_map').style.display="none";
+    document.getElementById('smaller_map').style.display="contents";
+  } else if (site_map_size==0) {
    // document.getElementById('map_map').style.display="none";
     $('#left_panel').toggleClass('span0 span5');
     $('#right_panel').toggleClass('span12 span7');
@@ -313,6 +333,8 @@ function site_points_style_function(feature, resoluton) {
 
 
 function site_add_vector_layers() {
+  if(typeof(user_point_layers)!== "undefined" && user_point_layers!=='' && user_point_layers[0]!=="undefined") site_default_point_layers=user_point_layers;
+  if(typeof(user_polygon_layers)!== "undefined" && user_polygon_layers!=='' && user_polygon_layers[0]!=="undefined") site_default_polygon_layers=user_polygon_layers;
   site_set_map_filters('polygon',site_default_polygon_layers);
   polygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon",site_polygon_style_function,true,12,15,'polygon', 'EPSG:2193');
   polygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_simple",site_polygon_style_function,true,9,12,'polygon', 'EPSG:2193');
@@ -1025,12 +1047,14 @@ function search_summits(field) {
      document.contactform.contact_y1.value=y;
    }
 
-function site_mapLayers() {
-        BootstrapDialog.show({
+function site_mapLayers(shownew) {
+        if (shownew || typeof(shownew)=='undefined') {
+          BootstrapDialog.show({
             title: "Select layers",
             message: $('<div id="info_details2">Retrieving ...</div>'),
             size: "size-small"
-        });
+          });
+        };
 
         $.ajax({
           beforeSend: function (xhr){

@@ -17,8 +17,8 @@ module MapHelper
     c_x = ((gridx + 20037508) / (4891.97 * 2**(13 - z))).to_i
     c_y = ((gridy + 20037508) / (4891.97 * 2**(13 - z))).to_i
     system("mkdir /tmp/#{id}")
-    tile_server = 'http://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{y}.png'
-
+#    tile_server = 'http://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{y}.png'
+    tile_server='https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{y}.png'
     # 9 tiles, one in each direction around centre
     minx = c_x - (xsize - 1) / 2
     maxx = c_x + (xsize - 1) / 2
@@ -55,7 +55,8 @@ module MapHelper
   # not used
   def get_map_zoomed(gridx, gridy, min_zoom, max_zoom, id)
     system("mkdir /tmp/#{id}")
-    tile_server = 'http://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{y}.png'
+    #tile_server = 'http://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{y}.png'
+    tile_server='https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{y}.png'
     (min_zoom..max_zoom).step(2).each do |z|
       x = ((gridx + 19740000) / (2.356 * 2**(24 - z)))
       y = ((gridy + 19680000) / (2.356 * 2**(24 - z)))

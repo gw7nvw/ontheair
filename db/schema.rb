@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20250308003311) do
+ActiveRecord::Schema.define(version: 20250627183501) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -308,6 +308,7 @@ ActiveRecord::Schema.define(version: 20250308003311) do
     t.string "itu_zone"
     t.string "cq_zone"
     t.string "continent_code"
+    t.string "dxcc_enum"
   end
 
   create_table "email_blacklists", force: true do |t|
@@ -848,6 +849,8 @@ ActiveRecord::Schema.define(version: 20250308003311) do
     t.string   "qualified_count_total"
     t.string   "confirmed_activated_count"
     t.string   "confirmed_activated_count_total"
+    t.string   "polygonlayers"
+    t.string   "pointlayers"
   end
 
   add_index "users", ["callsign"], :name => "index_users_on_callsign"

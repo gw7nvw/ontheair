@@ -43,7 +43,7 @@
       <% end %>
     <% end %>
   </ul>
-  <%=  link_to "Apply", '#', class: "btn btn-small btn-primary", :onclick => "site_refresh_layer('point');return(false);" %>
+  <%=  link_to "Apply", '#', class: "btn btn-small btn-primary", :onclick => "site_refresh_layer('point');site_mapLayers(false);return(false);" %>
 </div>
 
 
@@ -60,6 +60,6 @@
       <% end %>
     <% end %>
   </ul>
-  <%=  link_to "Apply", '#', class: "btn btn-small btn-primary", :onclick => "site_refresh_layer('polygon');return(false);" %>
+  <%=  link_to "Apply", '#', class: "btn btn-small btn-primary", :onclick => "site_refresh_layer('polygon');site_mapLayers(false);return(false);" %>
 </div>
 

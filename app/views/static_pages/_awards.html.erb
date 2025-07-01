@@ -1,7 +1,9 @@
 <div class="bordered_box">
    <div class="box_header">
-      <div class="sectiontitle">New Awards</div>
-      <div class="sectiontext">&nbsp;</div>
+     <h2>
+        <span class="heading2"><%= link_to 'New Awards', '/topics/'+AWARDS_TOPIC.to_s, remote: true, :onclick => "linkHandler('results')"%></span>
+        <i style="font-weight:normal"><%=  link_to "More ...", '/topics/'+AWARDS_TOPIC.to_s, remote: true, :onclick => "linkHandler('refresh_link')"%></i>
+     </h2>
    </div>
    <div class="box_contents">
       <div class="sectiontext">

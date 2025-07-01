@@ -54,14 +54,20 @@ class Item < ActiveRecord::Base
     enditem
   end
 
-  # Sends email
+  #Schedule delayed sending of emails
   def send_emails
-    if topic_id
+    Resque.enqueue(SendEmails, self.id)
+  end
+
+  # Sends email
+  def self.send_emails_now(itemid)
+    item=Item.find(itemid)
+    if item and item.topic_id
       if ENV['RAILS_ENV'] == 'production'
-        subs = UserTopicLink.where(topic_id: topic_id)
+        subs = UserTopicLink.where(topic_id: item.topic_id)
         subs.each do |sub|
           @user = User.find_by_id(sub.user_id)
-          UserMailer.subscriber_mail(self, @user).deliver
+          UserMailer.subscriber_mail(item, @user).deliver
         end
       end
     end

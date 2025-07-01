@@ -36,6 +36,8 @@ if( /Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent))
       <% if @map_y %> var def_y=<%=@map_y%> <% end %>
       <% if @proj %> var def_proj=<%=raw("'"+@proj+"'")%> <% end %>
       <% if @layer %> var def_layer=<%=raw("'"+@layer+"'")%> <% end %>
+      <% if @default_pointlayers %> var user_point_layers=[<%=raw(@default_pointlayers||"")%>] <% end %>
+      <% if @default_polygonlayers %> var user_polygon_layers=[<%=raw(@default_polygonlayers||"")%>] <% end %>
     </script>
     <%  @init_name = "site_init()" %>
 

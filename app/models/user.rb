@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-# frozen_string_literal: true
 
 # typed: false
 class User < ActiveRecord::Base

@@ -60,6 +60,8 @@ class ApplicationController < ActionController::Base
     @proj = 'EPSG:'+params[:proj] if params[:proj]
     @proj_srs=@proj[5..-1].to_i
     @layer = params[:layer] if params[:layer]
+    @default_pointlayers = current_user.pointlayers if current_user
+    @default_polygonlayers = current_user.polygonlayers if current_user
   end
 
   def store_last_index_page

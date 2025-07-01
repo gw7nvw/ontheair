@@ -57,6 +57,7 @@ match "/logs/:id/load", :to => "logs#load", :as => "log_load_data", :via => "get
 
 #maps
 match 'layerswitcher', to: "maps#layerswitcher", via: 'get'
+match 'updatelayers', to: "maps#updatelayers", via: 'get'
 match '/legend', to: "maps#legend", via: 'get'
 
 #asset class redirects
@@ -104,6 +105,8 @@ match '/api/assets', to: 'api#asset',    via:'get'
 match '/api/assettypes', to: 'api#assettype',    via:'get'
 match '/api/assetlinks', to: 'api#assetlink',    via:'get'
 match '/api/logs', to: 'api#logs_post',    via:'post'
+match '/api/spots', to: 'api#spot_post',    via:'post'
+match '/api/spots', to: 'api#spot',    via:'get'
 
 resources :sota_logs
 

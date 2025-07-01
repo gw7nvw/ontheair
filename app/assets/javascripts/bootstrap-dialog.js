@@ -290,7 +290,7 @@
          */
         updateZIndex: function() {
             var zIndexBackdrop = 1040;
-            var zIndexModal = 1050;
+            var zIndexModal = 40000;
             var dialogCount = 0;
             $.each(BootstrapDialog.dialogs, function(dialogId, dialogInstance) {
                 dialogCount++;

@@ -177,7 +177,7 @@
   </tr>
   <tr>
     <td><i>userID</i></td>
-    <td>string: callsign of the user (as used to register/login to ontheair.nz</td>
+    <td>string: callsign of the user (as used to register/login to ontheair.nz)</td>
   </tr>
   <tr>
     <td><i>APIKey</i></td>
@@ -213,4 +213,142 @@
     <td>Error or Warning messages resulting from log or contact creation</td>
   </tr>
 </table>
-      
+
+<h2>spots</h2>      
+<p><a href="/api/spots">/api/spots</a> (GET)</p>
+
+<table>
+  <tr>
+    <th colspan=2>Request</th>
+  </tr>
+  <tr>
+    <th>field</th>
+    <th>description</th>
+  </tr>
+  <tr>
+    <td><i>start_time</i></td>
+    <td>optional: Retrieve only spots &gt; this time (format: 'YYYY-MM-DD HH:MM:SS' UTC). Default is 2 hours ago</td>
+  </tr>
+  <tr>
+    <td><i>zlota_only</i></td>
+    <td>optional: Include this parameter with any value to retrieve only spots for assets in the ZLOTA scheme (default is all locally created spots from ontheair)</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th colspan=2>Response</th>
+  </tr>
+  <tr>
+    <th>field</th>
+    <th>description</th>
+  </tr>
+  <tr>
+    <td><i>activator</i></td>
+    <td>string: callsign of the activator</td>
+  </tr>
+  <tr>
+    <td><i>spotter</i></td>
+    <td>string: callsign of the spotter</td>
+  </tr>
+  <tr>
+    <td><i>name</i></td>
+    <td>string: name of the place being activated</td>
+  </tr>
+  <tr>
+    <td><i>reference</i></td>
+    <td>string: reference of the place being activated (or name if free activation)</td>
+  </tr>
+  <tr>
+    <td><i>frequency</i></td>
+    <td>string: frequency in kHz (note the unit)</td>
+  </tr>
+  <tr>
+    <td><i>mode</i></td>
+    <td>string: transmission mode (e.g. SSB, CW, ...)</td>
+  </tr>
+  <tr>
+    <td><i>referenced_time</i></td>
+    <td>time: time of spot</td>
+  </tr>
+  <tr>
+    <td><i>comments</i></td>
+    <td>string: comments</td>
+  </tr>
+  <tr>
+</table>
+
+<h2>spots</h2>      
+<p><a href="/api/assetlinks">/api/spots</a> (POST)</p>
+
+<table>
+  <tr>
+    <th colspan=2>Request</th>
+  </tr>
+  <tr>
+    <th>field</th>
+    <th>description</th>
+  </tr>
+  <tr>
+    <td><i>userID</i></td>
+    <td>string: callsign of the user (as used to register/login to ontheair.nz or ParksNPeaks)</td>
+  </tr>
+  <tr>
+    <td><i>APIKey</i></td>
+    <td>string: PIN for the user (see user profile to view/set) or ParksNPeaks key for users with a ParksNPeaks account. Note pin and key are not same as password</td>
+  </tr>
+  <tr>
+    <td><i>activator</i></td>
+    <td>string: callsign of the activator</td>
+  </tr>
+  <tr>
+    <td><i>spotter</i></td>
+    <td>string: callsign of the spotter</td>
+  </tr>
+  <tr>
+    <td><i>reference</i></td>
+    <td>string: reference of the place being activated (or name if free activation)</td>
+  </tr>
+  <tr>
+    <td><i>frequency</i></td>
+    <td>string: frequency in kHz (note the unit)</td>
+  </tr>
+  <tr>
+    <td><i>mode</i></td>
+    <td>string: transmission mode (e.g. SSB, CW, ...)</td>
+  </tr>
+  <tr>
+    <td><i>comments</i></td>
+    <td>string: comments. Note incuding the word 'DEBUG' will post in the test spots topic (found in the Info menu) and will not appear it the main spots list, and will not be sent out to other users.</td>
+  </tr>
+  <tr>
+    <td><i>do_not_lookup</i></td>
+    <td>optional: including this parameter with any value will disable lookup of containing assets (e.g. if you post a spot for a summit <b>only</b> the summit will appear in the spot, rather than the summit and any park it lies within)</td>
+  </tr>
+
+  <tr>
+  <tr>
+    <td><i>(Example)</i></td>
+    <td>curl -F "userID=ZL4TEST" -F "APIKey=XXXX" -F "do_not_lookup=true" -F "activator=ZL2TEST" -F "spotter=ZL3TEST" -F "reference=ZLL/0002" -F "frequency=7090" -F "mode=SSB" -F "comments=DEBUG testing spotting API" https://ontheair.nz/api/spots</td>
+  </tr>
+</table>
+
+
+<table>
+  <tr>
+    <th colspan=2>Response</th>
+  </tr>
+
+  <tr>
+    <th>field</th>
+    <th>description</th>
+  </tr>
+  <tr>
+    <td>success</td>
+    <td>true (spot created) or false (spot creation failed)</td>
+  </tr>
+  <tr>
+    <td>message</td>
+    <td>Error or Warning messages resulting from spot creation</td>
+  </tr>
+</table>
