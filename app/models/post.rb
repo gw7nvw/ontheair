@@ -192,6 +192,13 @@ class Post < ActiveRecord::Base
           result = (result && pota_response[:result])
           messages += pota_response[:messages]
           matched = true
+        elsif (asset_type == 'WWFF') || (asset_type == 'wwff park')
+          puts 'DEBUG: send ' + ac + ' to WWFF'
+          wwff_response = send_to_wwff(debug, from.callsign, callsign, ac, freq, mode, description)
+ # for now, send WWFF to PnP as well
+          result = (result && wwff_response[:result])
+          messages += wwff_response[:messages]
+          matched = false
         elsif (asset_type == 'SOTA') || (asset_type == 'summit')
           puts 'DEBUG: send ' + ac + ' to SOTA'
           sota_response = send_to_sota(debug, from.acctnumber, callsign, ac, freq, mode, description)
@@ -218,6 +225,83 @@ class Post < ActiveRecord::Base
         messages += pnp_response[:messages]
       end
     end
+    { result: result, messages: messages }
+  end
+
+  def send_to_wwff(debug, from, callsign, a_code, freq, mode, description)
+    result = true
+    messages = ''
+
+    # is this a valid WWFF reference?
+    asset_type = Asset.get_asset_type_from_code(a_code)
+    asset = Asset.find_by(code: a_code)
+    lat=""
+    long=""
+    if asset then
+      long=asset.location.x.to_s
+      lat=asset.location.y.to_s
+    end
+
+    if (asset_type == 'wwff park') || (asset_type == 'WWFF')
+   
+      if debug then
+        url = URI.parse('https://spots-dev.cuf.fi/api/spots/add')
+      else
+        url = URI.parse('https://spots.wwff.co/api/spots/add')
+      end
+
+      http = Net::HTTP.new(url.host, url.port)
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+      req = Net::HTTP::Post.new("#{url.path}?", 'Content-Type' => 'application/json', 'connection' => 'keep-alive', 'X-API-Key' => "#{WWFF_API_KEY}")
+
+      payloadspot = {
+        'activator': callsign.upcase,
+        'spotter': from.upcase,
+        'frequency_khz': (freq.to_f * 1000).to_s,
+        'reference': a_code.upcase,
+        'mode': mode.upcase,
+        'remarks': description,
+        'latitude': lat,
+        'longitude': long
+      }
+
+      #        if debug then
+        puts 'Sending SPOT to WWFF'
+        puts payloadspot
+      #        end
+
+        req.body = payloadspot.to_json
+        begin
+          res = http.request(req)
+          puts 'DEBUG: WWFF response'
+          puts res.body.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
+          wspots = JSON.parse(res.body)
+          
+        rescue StandardError
+          puts 'Send to WWFF failed'
+          result = false
+          messages = 'Failed to contact WWFF server'
+        else
+          puts wspots
+          success = wspots["success"]
+          errormsg = wspots["error"]
+          if !success
+            if wspots["message"] then messages = "WWFF "+wspots["message"] end
+            result = false
+          end 
+          if errormsg
+            messages = "WWFF "+errormsg
+            if wspots["errors"] then messages += "("+wspots["errors"].to_s+")" end
+            result = false
+          end 
+        end
+      else
+        puts 'Invalid WWFF code: ' + a_code
+        messages = 'Invalid WWFF code: ' + a_code + '; '
+        result = false
+      end
     { result: result, messages: messages }
   end
 

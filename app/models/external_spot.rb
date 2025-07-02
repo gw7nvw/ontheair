@@ -77,6 +77,21 @@ class ExternalSpot < ActiveRecord::Base
 
       zlvk_pota_spots = spots || []
 
+      #WWFF
+      spots=[]
+      begin
+        Timeout.timeout(30) do
+          url = 'https://spots.wwff.co/static/spots.json'
+          spots = JSON.parse(open(url).read)
+          puts "GOT WWFF: "+spots.to_json
+        end
+      rescue Timeout::Error
+        puts 'ERROR: WWFF Timeout'
+      else
+      end
+
+      wwff_spots = spots || []
+
       #Parks N Peaks
       spots=[]
       begin
@@ -159,6 +174,20 @@ class ExternalSpot < ActiveRecord::Base
           spot_type: 'PnP: ' + spot['actClass']
         )
       end
+      wwff_spots.each do |spot|
+        ExternalSpot.create(
+          time: spot['spot_time_formatted'].to_datetime ? spot['spot_time_formatted'].to_datetime.in_time_zone('UTC') : nil,
+          callsign: spot['spotter'].strip,
+          activatorCallsign: spot['activator'].strip,
+          code: spot['reference'] && !spot['reference'].empty? ? spot['reference'] : 'UNKNOWN',
+          name: spot['reference_name'] && !spot['reference_name'].empty? ? spot['reference_name'] : 'UNKNOWN',
+          frequency: (if spot['frequency_khz'].to_f then (spot['frequency_khz'].to_f/1000).to_s else "" end),
+          mode: spot['mode'],
+          comments: spot['remarks'],
+          spot_type: 'WWFF'
+        )
+      end
+
 
       hemaspots.each do |spot|
         ExternalSpot.create(spot)

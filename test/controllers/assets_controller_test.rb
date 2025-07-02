@@ -110,6 +110,7 @@ class AssetsControllerTest < ActionController::TestCase
     table=get_table_test(@response.body, 'place_table')
     assert_equal 2, get_row_count_test(table), "2 rows"
     row=get_row_test(table,2)
+    puts row.to_json
     assert_match /Hut/, get_col_test(row,1), "Correct programme"
     assert_match /#{asset1.code}/, get_col_test(row,2), "Correct code"
     assert_match /#{asset1.name}/, get_col_test(row,3), "Correct name"

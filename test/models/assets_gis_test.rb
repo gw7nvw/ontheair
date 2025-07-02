@@ -26,7 +26,7 @@ class AssetSaveTest < ActiveSupport::TestCase
     asset1=create_test_asset(asset_type: 'lighthouse', location: create_point(168.163650908159, -46.8955991917859), az_radius: 10)
     asset1.reload
     result=Asset.find_by_sql [" select ST_Area(ST_Transform(az_boundary,2193)) as az_area from assets where id=#{asset1.id}; "]
-    assert_in_delta 312144515, result.first.az_area, 300000, "AZ added of size expected +/- 1%"
+    assert_in_delta 312828515, result.first.az_area, 300000, "AZ added of size expected +/- 1%"
   end
 
   #no roads, DOC tracks, legal road data in test env, so just test with parks

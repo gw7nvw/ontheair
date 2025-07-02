@@ -109,7 +109,7 @@ module AssetGisTools
     if type.has_boundary
       asset_test = Asset.find_by_sql [" select (boundary is not null) as has_boundary from assets where id=#{id}"]
       if asset_test.first.has_boundary == true
-        ActiveRecord::Base.connection.execute(' update assets set area=ST_Area(ST_Transform(boundary,3857)) where id=' + id.to_s)
+        ActiveRecord::Base.connection.execute(' update assets set area=ST_Area(geography(boundary)) where id=' + id.to_s)
       end
     end
   end
@@ -119,7 +119,7 @@ module AssetGisTools
   def add_az_area
     asset_test = Asset.find_by_sql [" select (az_boundary is not null) as has_boundary from assets where id=#{id}"]
     if asset_test.first.has_boundary == true
-      ActiveRecord::Base.connection.execute(' update assets set az_area=ST_Area(ST_Transform(az_boundary,3857)) where id=' + id.to_s)
+      ActiveRecord::Base.connection.execute(' update assets set az_area=ST_Area(geography(az_boundary)) where id=' + id.to_s)
     end
   end
 
@@ -154,11 +154,11 @@ module AssetGisTools
       if calc_az_radius==0
         ActiveRecord::Base.connection.execute("update assets a set az_boundary=boundary where a.id=#{id}")
       else
-        ActiveRecord::Base.connection.execute("update assets a set az_boundary=ST_Multi(ST_Transform(ST_Buffer(ST_Transform(a.boundary,3857),#{calc_az_radius * 1000}),4326)) where a.id=#{id}")
+        ActiveRecord::Base.connection.execute("update assets a set az_boundary=ST_Multi(ST_Transform(ST_Buffer(ST_Transform(a.boundary,utmzone(a.location)),#{calc_az_radius * 1000}),4326)) where a.id=#{id}")
       end
     else
       if calc_az_radius>0 then
-        ActiveRecord::Base.connection.execute("update assets a set az_boundary=ST_Multi(ST_Transform(ST_Buffer(ST_Transform(a.location,3857),#{calc_az_radius * 1000}),4326)) where a.id=#{id}")
+        ActiveRecord::Base.connection.execute("update assets a set az_boundary=ST_Multi(ST_Transform(ST_Buffer(ST_Transform(a.location,utmzone(a.location)),#{calc_az_radius * 1000}),4326)) where a.id=#{id}")
       end
     end
   end

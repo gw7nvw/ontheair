@@ -29,10 +29,10 @@ class Asset < ActiveRecord::Base
     # do this here rather then before save to keep it pure PostGIS: no slow RGeo
     add_area
     add_altitude
-    add_links
     add_simple_boundary
     self.reload
     add_activation_zone(true)
+    add_links
   end
 
   # After validation but before save
