@@ -139,65 +139,23 @@ class StaticPagesController < ApplicationController
   end
 
   def alerts
-    zlvk_sota_alerts = []
-    zlvk_pota_alerts = []
+    @zone = 'OC'
+    @zone = params[:zone] if params[:zone]
 
-    items = Item.where(topic_id: 1, item_type: 'post').order(:created_at).reverse
-    @hota_alerts = []
-    items.each do |i|
-      p = Post.find(i.item_id)
-      if p && p.referenced_date && (p.referenced_date > Time.now - (p.duration || 1).days) then @hota_alerts.push(p) end
-    end
-    if @hota_alerts && (@hota_alerts.count > 0) then @hota_alerts = @hota_alerts.sort_by { |h| if h.referenced_date then h.referenced_date.strftime('%Y-%m-%d')+' '+if h.referenced_time then h.referenced_time.strftime('%H:%M') else '' end else '' end }.reverse end
+    hota_alerts = Post.find_by_sql [ " select p.* from posts p inner join items i on i.item_id=p.id and i.topic_id=1 and i.item_type='post' and p.referenced_date > '#{(Time.now - 7.days).strftime("%Y-%m-%d %H:%M")}' " ]
 
-    begin
-      url = 'http://parksnpeaks.org/api/ALERTS/'
-      pnp_alerts = JSON.parse(open(url).read)
-    rescue StandardError
-      flash[:error] = "Received invalid alert data from Parks'n'Peaks. Showing only local alerts"
-      pnp_alerts = []
+    @all_alerts = ExternalAlert.find_by_sql [ " select * from external_alerts where starttime>'#{Time.now - 1.days}' order by starttime desc " ] 
+    @all_alerts += ExternalAlert.import_hota_alerts(hota_alerts)
+
+    if @all_alerts then @all_alerts = @all_alerts.sort_by { |hsh| hsh[:starttime].to_s }.reverse! end
+
+    if @zone && (@zone != 'all')
+      @all_alerts = @all_alerts.select { |alert| DxccPrefix.continent_from_call(alert[:activatingCallsign]) == @zone }
     end
 
-    @all_alerts = []
-    zlvk_sota_alerts.each do |alert|
-      @all_alerts.push(
-           starttime: if alert["dateActivated"].to_datetime then alert["dateActivated"].to_datetime.in_time_zone(@tz.name).strftime("%Y-%m-%d %H:%M") else "" end,
-           activatingCallsign: alert['activatingCallsign'].strip,
-           code: alert['associationCode'] + '/' + alert['summitCode'],
-           name: alert['summitDetails'],
-           frequency: alert['frequency'],
-           mode: alert['mode'],
-           comments: alert['comments'],
-           type: 'SOTA'
-         )
+    if params[:class]
+      @class = params[:class]
+      @all_alerts = @all_alerts.select { |alert| alert[:programme].include? @class }
     end
-
-    zlvk_pota_alerts.each do |alert|
-      @all_alerts.push(
-          starttime: if alert['Start Date'].to_datetime then alert['Start Date'].to_datetime.in_time_zone(@tz.name).strftime('%Y-%m-%d %H:%M') + (if alert['End Date'].to_datetime then ' to ' + alert['End Date'].to_datetime.in_time_zone(@tz.name).strftime('%Y-%m-%d %H:%M') else '' end) else '' end,
-          activatingCallsign: alert['Activator'].strip,
-          code: alert['Reference'],
-          name: alert['Park Name'],
-          frequency: alert['Frequecies'],
-          mode: '',
-          comments: alert['Comments'],
-          type: 'POTA'
-        )
-    end
-
-    pnp_alerts.each do |alert|
-      @all_alerts.push(
-           starttime: if alert['alTime'].to_datetime then alert['alTime'].to_datetime.in_time_zone(@tz.name).strftime('%Y-%m-%d %H:%M') + ( if alert['alDay'] == '1' then ' (Day)' elsif alert['alDay'] == '2' then ' (Morning)' elsif alert['alDay'] == '3' then ' (Afternoon)' elsif alert['alDay'] == '4' then ' (Evening)' elsif alert['alDay'] == '5' then ' (Overnight)' else '' end) else '' end,
-           activatingCallsign: alert['CallSign'].strip,
-           code: alert['WWFFID'] && !alert['WWFFID'].empty? ? alert['WWFFID'] : alert['Location'],
-           name: alert['Location'],
-           frequency: alert['Freq'],
-           mode: alert['MODE'],
-           comments: alert['Comments'],
-           type: 'PnP: ' + alert['Class']
-         )
-    end
-
-    @all_alerts.sort_by! { |hsh| hsh[:starttime] }.reverse! if @all_alerts
   end
 end

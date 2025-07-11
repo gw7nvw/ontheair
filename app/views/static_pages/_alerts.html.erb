@@ -21,83 +21,64 @@
 </div>
 
 <div id="right_scroll">
-  <%= render 'flash' %>
-  <h2>Going portable alerts</h2>
-  <table class="users" id="zlota_alert_table">
-    <tr>
-      <th>Date</th>
-      <th>Time (<%=@tz.name%>)</th>
-      <th>For (days)</th>
-      <th>Callsign</th>
-      <th>Location</th>
-      <th>Freq</th>
-      <th>Comments</th>
-    </tr>
-    <% @hota_alerts.each do |post| %>
-    <tr>
-      <% us=User.find_by(id: post.created_by_id) %>
-        <% if us then u=us.callsign else u="" end %>
-        <td><%=if post.referenced_date then link_to post.referenced_date.in_time_zone(@tz.name).strftime("%Y-%m-%d"),'/posts/'+post.id.to_s, remote: true,  :id => 'home', :onclick => "linkHandler('home')"  end%></td>
-        <td><%=if post.referenced_time then post.referenced_time.in_time_zone(@tz.name).strftime("%H:%M") end%></td>
-        <td><%=if post.duration then post.duration.to_s end%></td>
-        <td><%=render :partial => 'callsign',  :locals => {:this_callsign => u} %></td>
-        <td>
-          <% if post.asset_codes and post.asset_codes.count>0 %>
-              <% post.asset_codes.each do |code| %>
-                <% asset=Asset.assets_from_code(code) %>
-                <% if asset and asset.count>0 and asset.first[:code]!=nil then %>
-                  <% if asset.first[:external] then %>
-                    <%=link_to "["+asset.first[:code]+"] ",asset.first[:url], target: "_blank"%><img src="/assets/external-link-symbol-12.png">&nbsp
-                  <% else %>
-                   <%=link_to "["+asset.first[:code]+"} "+asset.first[:name],asset.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>&nbsp;
-                  <% end %>
-                <% end %>
-              <% end %>
-          <% elsif post.site and post.site.length>0 %>
-              <%=post.site%>
-          <% end %>
-        </td>
-        <td><%=post.freq%><%=if post.mode and post.mode.length>0 then " - "+post.mode end%></td>
-        <td><b><%=post.title%></b><br/><%=raw (post.description).gsub(/(?<=<style type=\"text\/css\">).+(?=<\/style>)/m,'')%></td>
-      </tr>
-    <% end %>
-  </table>
+  <% as=AdminSettings.first %>
+  <% if as and as.last_spot_read then
+       last_spot_read=as.last_spot_read.in_time_zone(@tz.name).strftime("%H:%M:%S")
+       if as.last_spot_read<5.minutes.ago then stale=true end
+     else
+       last_spot_read="Unknown"
+       stale=true
+     end %>
+  <% if stale==true
+      #Should really do this in controller ...
+      sch_running=system('ps -ef | grep ota_schedule | grep resqu | grep -v grep')
+      puts "Scheduler running: "+sch_running.to_s
+      if sch_running==false then
+         success=system('RAILS_ENV=production nohup bundle exec rake environment resque:work QUEUE=ota_scheduled > log/redisch.log & echo $! > /tmp/schedule.pid')
+         if !success then
+           flashlocal="Error: process to retrieve remote alerts failed and we could not restart it"
+           flashlocaltype='error'
+         else
+           flashlocal="Success: process to retrieve remote alerts failed but we successfully restarted it. Remote alerts will show on the next refresh"
+           flashlocaltype='success'
+         end
+      end
+     end
+  %>
 
-  <h2>Other alerts</h2>
-  <table class="users" id="external_alert_table">
-    <tr>
-      <th>Type</th>
-      <th>Time (<%=@tz.name%>)</th>
-      <th>Callsign</th>
-      <th>Code</th>
-      <th>Name</th>
-      <th>Freq</th>
-      <th>Mode</th>
-      <th>Comments</th>
-    </tr>
-    <% @all_alerts.each do |alert| %>
-      <tr>
-        <td><%=alert[:type]%>
-        <td><%=alert[:starttime]%></td>
-        <td><%=render :partial => 'callsign',  :locals => {this_callsign: alert[:activatingCallsign]} %></td>
-        <td><%link=Asset.assets_from_code(alert[:code]) %>
-          <% if link and link.first then %>
-            <% if link.first[:external] then %>
-             <%=link_to alert[:code],link.first[:url], target: "_blank"%><img src="/assets/external-link-symbol-12.png"> 
-            <% else %>
-             <%=link_to alert[:code],link.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
-            <% end %> 
-          <% else %>
-            <i><%= alert[:code]%></i>
-          <% end %>
-        </td>
-        <td><%=alert[:name]%></td>
-        <td><%=alert[:frequency]%></td>
-        <td><%=alert[:mode]%></td>
-        <td><%=alert[:comments]%></td>
-      </tr>
-    <% end %>
-  </table>
+  <%= render 'flash' %>
+  <% if flashlocal then %>
+    <div class="alert alert-<%= flashlocaltype %>"><%= flashlocal %></div>
+  <% end%>
+
+  <h2>Going portable - Alerts</h2>
+     <p><span <%=if stale then raw("style='color: #900'") end%> >Last updated: <%=last_spot_read%> (<%=@tz.name%>)</span> - <span id="retrieved">Retrieved at <%=Time.now.in_time_zone(@tz.name).strftime("%H:%M:%S")%> (<%=@tz.name%>)</span><i>&nbsp;<%=  link_to "Refresh Now", '/alerts?'+raw(@parameters), remote: true,  :onclick => "linkHandler('refresh_link')"%> </i></p>
+  <p>
+  <% new_parameters=@parameters.gsub(/zone=[A-Za-z]+/,'') %>
+  <% if @zone=='all' then %>
+    <b>Showing all DXCCs</b>.  <i>Show only: 
+      <% Continent.all.each do |cont| %>
+        <%=link_to cont.name, "/alerts?#{raw(new_parameters)}&zone=#{cont.code}", remote: true, id: "add",   :onclick => "linkHandler('add')"%>,
+      <% end %>
+    </i>
+  <% else %>
+    <b>Showing <%=Continent.name_from_code(@zone)%></b> alerts.  <i><%=link_to "Show All DXCC", "/alerts?#{raw(new_parameters)}&zone=all", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+  <% end %>
+  ||
+  <% new_class_parameters=@parameters.gsub(/class=[A-Za-z]+/,'')%>
+  <% if @class and @class.length>0 then %>
+    <b>Showing class <%=@class%></b> only.  <i><%=link_to "Show All Classes", "/alerts?#{raw(new_class_parameters)}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+  <% else %>
+    <b>Showing all classes</b>. <i>Show only 
+       <%=link_to  @site_name, "/alerts?#{new_class_parameters}&class=ZLOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "SOTA", "/alerts?#{new_class_parameters}&class=SOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "POTA", "/alerts?#{new_class_parameters}&class=POTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "WWFF", "/alerts?#{new_class_parameters}&class=WWFF", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+    </i>
+  <% end %>
+  </i></p>
+  <%= render 'alert_list' %>
+
 </div>
 <script>
 document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;

@@ -213,14 +213,14 @@ class Post < ActiveRecord::Base
         end
         next unless (result == false) || (matched == false)
         puts 'DEBUG: send ' + ac + ' to PnP'
-        pnp_response = send_to_pnp(debug, ac, topic, idate, itime, tzname)
+        pnp_response = Post.send_to_pnp(debug, ac, callsign, freq, mode, description, topic, idate, itime, tzname, self.updated_by_name)
         result = (result && pnp_response[:result])
         messages += pnp_response[:messages]
       end
     else
       # ALERT so only send to PNP
       assets.each do |ac|
-        pnp_response = send_to_pnp(debug, ac, topic, idate, itime, tzname)
+        pnp_response = Post.send_to_pnp(debug, ac, callsign, freq, mode, description, topic, idate, itime, tzname, self.updated_by_name)
         result = (result && pnp_response[:result])
         messages += pnp_response[:messages]
       end
@@ -238,8 +238,8 @@ class Post < ActiveRecord::Base
     lat=""
     long=""
     if asset then
-      long=asset.location.x.to_s
-      lat=asset.location.y.to_s
+      long=asset.location.x
+      lat=asset.location.y
     end
 
     if (asset_type == 'wwff park') || (asset_type == 'WWFF')
@@ -262,9 +262,9 @@ class Post < ActiveRecord::Base
         'frequency_khz': (freq.to_f * 1000).to_s,
         'reference': a_code.upcase,
         'mode': mode.upcase,
-        'remarks': description,
-        'latitude': lat,
-        'longitude': long
+        'remarks': (description || "") + " (ontheair.nz)",
+        'latitude': lat.to_s,
+        'longitude': long.to_s
       }
 
       #        if debug then
@@ -295,7 +295,10 @@ class Post < ActiveRecord::Base
             messages = "WWFF "+errormsg
             if wspots["errors"] then messages += "("+wspots["errors"].to_s+")" end
             result = false
-          end 
+          end
+          if result==true 
+           messages = "Sent spot to WWFF; "
+          end
         end
       else
         puts 'Invalid WWFF code: ' + a_code
@@ -481,7 +484,8 @@ class Post < ActiveRecord::Base
     { result: result, messages: messages }
   end
 
-  def send_to_pnp(debug, ac, topic, idate, itime, tzname)
+  def Post.send_to_pnp(debug, ac, callsign, freq, mode, description, topic, idate, itime, tzname, updated_by_name)
+    description = (description || "")+" (de #{updated_by_name})"
     result = false
     messages = ''
     dbtext = debug ? '/DEBUG' : ''
@@ -507,7 +511,7 @@ class Post < ActiveRecord::Base
       pnp_class = Asset.get_pnp_class_from_code(code)
       if pnp_class && (pnp_class != '')
         puts 'sending alert to PnP'
-        params = { 'actClass' => pnp_class, 'actCallsign' => updated_by_name, 'actSite' => code, 'actMode' => mode.strip, 'actFreq' => freq.strip, 'actComments' => convert_to_text(description), 'userID' => 'ZLOTA', 'APIKey' => '4DDA205E08D2', 'alDate' => tt ? tt.strftime('%Y-%m-%d') : '', 'alTime' => tt ? tt.strftime('%H:%M') : '', 'optDay' => dayflag ? '1' : '0' }
+        params = { 'actClass' => pnp_class, 'actCallsign' => callsign, 'actSite' => code, 'actMode' => mode.strip, 'actFreq' => freq.strip, 'actComments' => PostsHelper.convert_to_text(description.to_s), 'userID' => 'ZLOTA', 'APIKey' => '4DDA205E08D2', 'alDate' => tt ? tt.strftime('%Y-%m-%d') : '', 'alTime' => tt ? tt.strftime('%H:%M') : '', 'optDay' => dayflag ? '1' : '0' }
         uri = URI('http://parksnpeaks.org/api/ALERT' + dbtext)
         http = Net::HTTP.new(uri.host, uri.port)
         req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
@@ -528,7 +532,8 @@ class Post < ActiveRecord::Base
       code = code.delete('[')
       pnp_class = Asset.get_pnp_class_from_code(code)
       if pnp_class && (pnp_class != '')
-        params = { 'actClass' => pnp_class, 'actCallsign' => (callsign || updated_by_name), 'actSite' => code, 'mode' => mode.strip, 'freq' => freq.strip, 'comments' => convert_to_text(description), 'userID' => 'ZLOTA', 'APIKey' => '4DDA205E08D2' }
+        puts description
+        params = { 'actClass' => pnp_class, 'actCallsign' => (callsign || updated_by_name), 'actSite' => code, 'mode' => mode.strip, 'freq' => freq.strip, 'comments' => PostsHelper.convert_to_text(description.to_s), 'userID' => 'ZLOTA', 'APIKey' => '4DDA205E08D2' }
         puts 'sending spot to PnP'
         uri = URI('http://parksnpeaks.org/api/SPOT' + dbtext)
         puts 'DEBUG: http://parksnpeaks.org/api/SPOT' + dbtext

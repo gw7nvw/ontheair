@@ -7,5 +7,6 @@ module GetSpots
     # Do anything here, like access models, etc
     puts Time.now.to_s + ' DEBUG: checking for new spots'
     ExternalSpot.fetch
+    ExternalAlert.fetch
   end
 end

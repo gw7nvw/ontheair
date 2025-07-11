@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20250627183501) do
+ActiveRecord::Schema.define(version: 20250711095801) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -326,6 +326,20 @@ ActiveRecord::Schema.define(version: 20250627183501) do
     t.integer  "user_id"
     t.integer  "external_activation_id"
     t.string   "asset_type"
+  end
+
+  create_table "external_alerts", force: true do |t|
+    t.datetime "starttime"
+    t.string   "activatingCallsign"
+    t.string   "code"
+    t.string   "name"
+    t.string   "frequency"
+    t.string   "comments"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "mode"
+    t.string   "programme"
+    t.string   "duration"
   end
 
   create_table "external_chases", force: true do |t|

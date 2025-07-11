@@ -15,7 +15,7 @@ Posted by: <%=@item.end_item.updated_by_name.upcase%>
 <% if @item.item_type=="post" and @item.end_item.callsign and @item.end_item.callsign.length>0 then%><%=@item.end_item.callsign.upcase%> <%else%><%=@item.end_item.updated_by_name.upcase%> <%end%>alerted: going portable
 
 <% if @item.item_type=="post" and @item.end_item.referenced_date then %> UTC: <%=@item.end_item.referenced_date.strftime("%Y-%m-%d")%> <%=if @item.end_item.referenced_time then @item.end_item.referenced_time.strftime("%H:%M") end%><%end%>
-<%if @item.end_item.referenced_date then %>NZT: <%=@item.end_item.referenced_date.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d")%> <%=if @item.end_item.referenced_time then @item.end_item.referenced_time.in_time_zone('Pacific/Auckland').strftime("%H:%M") end%><%if @item.end_item.duration then%> for <%=(@item.end_item.duration||1).to_s%> day(s)<%end%><%end%>
+<%if @item.end_item.referenced_date then %>NZT: <%=@item.end_item.referenced_date.in_time_zone('Pacific/Auckland').strftime("%Y-%m-%d")%> <%=if @item.end_item.referenced_time then @item.end_item.referenced_time.in_time_zone('Pacific/Auckland').strftime("%H:%M") end%><%if @item.end_item.duration then%> for <%=(@item.end_item.duration||1).to_s%> hour(s)<%end%><%end%>
 <% if @item.item_type=="post" and @item.end_item.site then%><%sites=@item.end_item.site.split('; ')%><%sites.each do |site|%>Location: <%=site%>
 <%end%><%end%><%if (@item.end_item.freq and @item.end_item.freq.length>0) or (@item.end_item.mode and @item.end_item.mode.length>0) then%>Frequency: <%= @item.end_item.freq%> - <%= @item.end_item.mode%><%end%>
 

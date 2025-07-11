@@ -17,7 +17,7 @@
 
       <% if @post.referenced_date then %>
         <p>
-          <b><%=if @post.callsign then @post.callsign.upcase+" " end%><%=@post.topic.name%><%if @post.referenced_date then %> on/from <%=@post.referenced_date.in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <%=if @post.referenced_time then @post.referenced_time.in_time_zone(@tz.name).strftime("%H:%M") end%> (<%=@tz.name%>)<%end%><% if @post.duration then%> for <%=(@post.duration||1).to_s%> day(s)<%end%></b>
+          <b><%=if @post.callsign then @post.callsign.upcase+" " end%><%=@post.topic.name%><%if @post.referenced_date then %> on/from <%=@post.referenced_date.in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <%=if @post.referenced_time then @post.referenced_time.in_time_zone(@tz.name).strftime("%H:%M") end%> (<%=@tz.name%>)<%end%><% if @post.duration then%> for <%=(@post.duration||1).to_s%> hour(s)<%end%></b>
 
         </p>
       <% end %>

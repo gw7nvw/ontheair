@@ -175,7 +175,7 @@ class ExternalSpot < ActiveRecord::Base
         )
       end
       wwff_spots.each do |spot|
-        ExternalSpot.create(
+        result=ExternalSpot.create(
           time: spot['spot_time_formatted'].to_datetime ? spot['spot_time_formatted'].to_datetime.in_time_zone('UTC') : nil,
           callsign: spot['spotter'].strip,
           activatorCallsign: spot['activator'].strip,
@@ -186,6 +186,15 @@ class ExternalSpot < ActiveRecord::Base
           comments: spot['remarks'],
           spot_type: 'WWFF'
         )
+        # temporary cludge to get WWFF spots into PnP - 
+        # remove once PnP has native support
+        #if result and result.id then
+        #  if ENV['RAILS_ENV'] == 'production'          
+        #    Resque.enqueue(SendWwffSpot, result.id)
+        #  else
+        #    send_wwff_spot_now(result.id)
+        #  end
+        #end
       end
 
 
@@ -194,4 +203,23 @@ class ExternalSpot < ActiveRecord::Base
       end
     end
   end
+
+  private
+
+  def self.send_wwff_spot_now(spotid)
+    # Do anything here, like access models, etc
+    puts Time.now.to_s + ' DEBUG: sending wwff spot'
+    es=ExternalSpot.find_by(id: spotid)
+    if (Time.now-es.time) <180 
+      puts es.to_json
+      topic=Topic.find(SPOT_TOPIC)
+      if es and es.time then
+        pnp_response = Post.send_to_pnp(true, "[#{es.code}]", es.activatorCallsign, es.frequency, es.mode, es.comments, topic, es.time.strftime('%Y-%m-%d'), es.time.strftime('%H:%M'), 'UTC', callsign)
+        puts pnp_response.to_json
+      end
+    else
+      puts "Too old: "+es.time.to_s
+    end
+  end
+
 end

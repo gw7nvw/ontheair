@@ -1,0 +1,39 @@
+<table class="cleanskin" id="alert_table">
+  <% @all_alerts.each do |alert| %>
+    <tr>
+      <td><%if alert[:programme]=="ZLOTA" then %><b><%=alert[:programme]%></b><% else %><%=alert[:programme]%> <% end %></td>
+        <td><%if alert[:starttime] then %><%=alert[:starttime].in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=alert[:starttime].in_time_zone(@tz.name).strftime("%H:%M")%></b> <%if alert[:duration] then %> - <%=(alert[:starttime]+alert[:duration].to_f*3600).in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=(alert[:starttime]+alert[:duration].to_f*3600).in_time_zone(@tz.name).strftime("%H:%M")%></b> <% end %> (<%=@tz.name%>)<% end %></td>
+        <td><b><%=render :partial => 'callsign',  :locals => {:this_callsign => alert[:activatingCallsign]} %></b></td>
+        <td>@ 
+          <% codes=alert[:code] %>
+          <% if codes.kind_of?(Array)==false then codes=[codes] end %>
+          <% validlink=false %>
+          <% codes.each do |code| %>
+            <% link=Asset.assets_from_code(code)%>
+            <% if link and link.count>0 then %>
+              <% validlink=true %>
+              <% if link.first[:external] then %>
+                <%=link_to code.upcase,link.first[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
+              <% else %>
+               <%=link_to code.upcase,link.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+              <% end %>
+            <% else %>
+              <%=if code then code.upcase else "" end %>
+            <% end %>
+          <% end %>
+        </td>
+        <td><%=if alert[:frequency] and alert[:frequency]!="" then alert[:frequency].to_f.round(5) else "" end%>-<%=alert[:mode]%></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td colspan=7>
+          <%=alert[:name]%> -
+          <%=alert[:comments]%>
+          <i><small><%if signed_in? and validlink  %> 
+            <%#=link_to '(spot)','/posts/new?topic_id='+SPOT_TOPIC.to_s+'&alert='+alert[:id].to_s, remote: true,  :id => 'spot', :onclick => "linkHandler('spot')" %>
+          <% end%></small></i>
+        </td>
+      </tr>
+  <% end %>
+</table>
+

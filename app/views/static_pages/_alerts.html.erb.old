@@ -1,0 +1,108 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+   document.title = '... On The Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Alerts</b>
+</div>
+   <div id="controls">   
+     <% if write_access?  %>
+       <%=  link_to "Add Alert", "/posts/new?topic_id="+ALERT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+     <% end %>
+     <%=render 'map_controls'%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <h2>Going portable alerts</h2>
+  <table class="users" id="zlota_alert_table">
+    <tr>
+      <th>Date</th>
+      <th>Time (<%=@tz.name%>)</th>
+      <th>For (hours)</th>
+      <th>Callsign</th>
+      <th>Location</th>
+      <th>Freq</th>
+      <th>Comments</th>
+    </tr>
+    <% @hota_alerts.each do |post| %>
+    <tr>
+      <% us=User.find_by(id: post.created_by_id) %>
+        <% if us then u=us.callsign else u="" end %>
+        <td><%=if post.referenced_date then link_to post.referenced_date.in_time_zone(@tz.name).strftime("%Y-%m-%d"),'/posts/'+post.id.to_s, remote: true,  :id => 'home', :onclick => "linkHandler('home')"  end%></td>
+        <td><%=if post.referenced_time then post.referenced_time.in_time_zone(@tz.name).strftime("%H:%M") end%></td>
+        <td><%=if post.duration then post.duration.to_s end%></td>
+        <td><%=render :partial => 'callsign',  :locals => {:this_callsign => u} %></td>
+        <td>
+          <% if post.asset_codes and post.asset_codes.count>0 %>
+              <% post.asset_codes.each do |code| %>
+                <% asset=Asset.assets_from_code(code) %>
+                <% if asset and asset.count>0 and asset.first[:code]!=nil then %>
+                  <% if asset.first[:external] then %>
+                    <%=link_to "["+asset.first[:code]+"] ",asset.first[:url], target: "_blank"%><img src="/assets/external-link-symbol-12.png">&nbsp
+                  <% else %>
+                   <%=link_to "["+asset.first[:code]+"} "+asset.first[:name],asset.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>&nbsp;
+                  <% end %>
+                <% end %>
+              <% end %>
+          <% elsif post.site and post.site.length>0 %>
+              <%=post.site%>
+          <% end %>
+        </td>
+        <td><%=post.freq%><%=if post.mode and post.mode.length>0 then " - "+post.mode end%></td>
+        <td><b><%=post.title%></b><br/><%=raw (post.description).gsub(/(?<=<style type=\"text\/css\">).+(?=<\/style>)/m,'')%></td>
+      </tr>
+    <% end %>
+  </table>
+
+  <h2>Other alerts</h2>
+  <table class="users" id="external_alert_table">
+    <tr>
+      <th>Type</th>
+      <th>Time (<%=@tz.name%>)</th>
+      <th>Callsign</th>
+      <th>Code</th>
+      <th>Name</th>
+      <th>Freq</th>
+      <th>Mode</th>
+      <th>Comments</th>
+    </tr>
+    <% @all_alerts.each do |alert| %>
+      <tr>
+        <td><%=alert[:type]%>
+        <td><%=alert[:starttime]%></td>
+        <td><%=render :partial => 'callsign',  :locals => {this_callsign: alert[:activatingCallsign]} %></td>
+        <td><%link=Asset.assets_from_code(alert[:code]) %>
+          <% if link and link.first then %>
+            <% if link.first[:external] then %>
+             <%=link_to alert[:code],link.first[:url], target: "_blank"%><img src="/assets/external-link-symbol-12.png"> 
+            <% else %>
+             <%=link_to alert[:code],link.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+            <% end %> 
+          <% else %>
+            <i><%= alert[:code]%></i>
+          <% end %>
+        </td>
+        <td><%=alert[:name]%></td>
+        <td><%=alert[:frequency]%></td>
+        <td><%=alert[:mode]%></td>
+        <td><%=alert[:comments]%></td>
+      </tr>
+    <% end %>
+  </table>
+</div>
+<script>
+document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+if ($(window).width() < 960) {
+        site_smaller_map();
+      }
+</script>
+

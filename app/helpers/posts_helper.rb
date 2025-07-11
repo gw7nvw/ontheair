@@ -63,7 +63,7 @@ module PostsHelper
   end
 
   # Convert html to formatted ascii text
-  def convert_to_text(html)
+  def self.convert_to_text(html)
     html ||= ''
 
     line_length = 80
