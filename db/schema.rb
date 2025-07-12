@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20250711095801) do
+ActiveRecord::Schema.define(version: 20250712084140) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -37,6 +37,7 @@ ActiveRecord::Schema.define(version: 20250711095801) do
     t.text     "title"
     t.text     "name"
     t.text     "imagepath"
+    t.string   "sota_alert_epoch"
   end
 
   create_table "ak_maps", force: true do |t|

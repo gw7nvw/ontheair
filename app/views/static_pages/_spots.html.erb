@@ -82,7 +82,6 @@
     <div class="alert alert-<%= flashlocaltype %>"><%= flashlocal %></div>
   <% end%>
   <span id="spots"></span>
-  <h2>Spots</h2>
      <p><span <%=if stale then raw("style='color: #900'") end%> >Last updated: <%=last_spot_read%> (<%=@tz.name%>)</span> - <span id="retrieved">Retrieved at <%=Time.now.in_time_zone(@tz.name).strftime("%H:%M:%S")%> (<%=@tz.name%>)</span><i>&nbsp;<%=  link_to "Refresh Now", '/spots?'+raw(@parameters), remote: true,  :onclick => "linkHandler('refresh_link')"%> </i></p>
   <p>
   <% new_parameters=@parameters.gsub(/zone=[A-Za-z]+/,'') %>
@@ -121,6 +120,8 @@
        <%=link_to "SSB", "/spots?#{raw(new_mode_parameters)}&mode=SSB", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
   <% end %> 
   </i></p>
+  <%= render 'alert_summary' %>
+  <h2>Spots</h2>
   <%= render 'spot_list' %>
 
 </div>

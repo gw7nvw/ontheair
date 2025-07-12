@@ -29,6 +29,7 @@ class PostsController < ApplicationController
     d = Time.now.in_time_zone(@tz.name).strftime('%Y-%m-%d 00:00 UTC').to_time
     @post.referenced_date = d.to_time if @topic.is_spot
     @post.referenced_time = t.to_time if @topic.is_spot
+    @post.duration = 1 if @topic.is_alert
     @post.title = params[:title] if params[:title]
     redirect_to '/' unless @topic
     if params[:op_id]

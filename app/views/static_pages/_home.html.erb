@@ -75,6 +75,7 @@
      </div>
   </div>
 
+  <%=render 'alert_summary'%>
   <div>
     <span class="heading2"><%= link_to 'Latest Oceania Spots', '/spots', remote: true, :onclick => "linkHandler('results')"%></span>
     <i><%=  link_to "More (with auto-refresh)...", '/spots', remote: true, :onclick => "linkHandler('refresh_link')"%></i>

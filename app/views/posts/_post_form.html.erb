@@ -55,13 +55,17 @@
       <% if @topic.is_spot or @topic.is_alert then %>
         <b><%=@topic.name%></b><br>
         <table id="main_table">
-          <% if @topic.is_spot or @topic.is_alert then %>
+          <% if @topic.is_spot then %>
             <tr>
               <td>Operating callsign:</td>
               <td style="padding:0px; margin:0px;" colspan=3><%=f.text_field :callsign, :style =>"padding:0px; margin:0px;" %></td>
             </tr>
           <% end %>
           <% if @topic.is_alert then %>
+            <tr>
+              <td>Operating callsign:</td>
+              <td style="padding:0px; margin:0px;" colspan=4><%=f.text_field :callsign, :style =>"padding:0px; margin:0px;" %></td>
+            </tr>
             <tr>
               <td>On air from: (<%=@tz.name%>)</td>
               <td style="padding:0px; margin:0px;"><%=   f.date_field :referenced_date, :style =>"padding:0px; margin:0px;" %></td>
@@ -125,10 +129,12 @@
         </span>
       </div>      
 
-      <div class="erow">
-        <%=f.label "I will specify parks manually - do not add automatically" %>
-        <%= f.check_box :do_not_lookup %>
-      </div>
+      <% if @topic.is_spot or @topic.is_alert then %>
+        <div class="erow">
+          <%=f.label "I will specify parks manually - do not add automatically" %>
+          <%= f.check_box :do_not_lookup %>
+        </div>
+      <% end %>
 
       <div class="erow">   
         <%= f.submit @submit_button, id: "submit", class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Posting ...');" %>
