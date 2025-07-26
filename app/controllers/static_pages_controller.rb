@@ -144,7 +144,7 @@ class StaticPagesController < ApplicationController
     @zone = 'OC'
     @zone = params[:zone] if params[:zone]
 
-    hota_alerts = Post.find_by_sql [ " select p.* from posts p inner join items i on i.item_id=p.id and i.topic_id=1 and i.item_type='post' and ((p.referenced_date + interval '1 hours' * duration::numeric) > '#{(Time.now - 1.days).strftime("%Y-%m-%d %H:%M")}' or p.referenced_date > '#{(Time.now - 1.days).strftime("%Y-%m-%d %H:%M")}')" ]
+    hota_alerts = Post.find_by_sql [ " select p.*, i.id as item_id from posts p inner join items i on i.item_id=p.id and i.topic_id=1 and i.item_type='post' and ((p.referenced_date + interval '1 hours' * duration::numeric) > '#{(Time.now - 1.days).strftime("%Y-%m-%d %H:%M")}' or p.referenced_date > '#{(Time.now - 1.days).strftime("%Y-%m-%d %H:%M")}')" ]
 
     @all_alerts = ExternalAlert.find_by_sql [ " select * from external_alerts where starttime >'#{Time.now - 1.days}' or (starttime + interval '1 hours' * duration::numeric) >'#{Time.now - 1.days}' order by starttime desc " ] 
     @all_alerts += ExternalAlert.import_hota_alerts(hota_alerts)

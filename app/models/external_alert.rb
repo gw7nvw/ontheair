@@ -157,7 +157,7 @@ end
 def self.import_hota_alerts(alerts)
   all_alerts=[]
   alerts.each do |alert|
-    ext_alert=ExternalAlert.new(starttime: alert.referenced_date, duration: alert.duration, activatingCallsign: alert.callsign, code: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: 'ZLOTA')
+    ext_alert=ExternalAlert.new(id: -alert.item_id, starttime: alert.referenced_date, duration: alert.duration, activatingCallsign: alert.callsign, code: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: 'ZLOTA')
     all_alerts+=[ext_alert] 
   end 
   all_alerts

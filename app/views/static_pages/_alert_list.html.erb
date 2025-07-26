@@ -1,7 +1,8 @@
 <table class="cleanskin" id="alert_table">
   <% @all_alerts.each do |alert| %>
-    <tr>
-      <td><%if alert[:programme]=="ZLOTA" then %><b><%=alert[:programme]%></b><% else %><%=alert[:programme]%> <% end %></td>
+  <% if Time.now > alert[:starttime].to_time and Time.now < alert[:starttime].to_time + alert[:duration].to_f*3600 then stylestr="style='background: #befabe'" else stylestr=''  end %>
+    <tr <%=raw(stylestr) %> >
+      <td><%if alert[:programme]=="ZLOTA" then %><b><%=alert[:programme]%></b><% else %><%=alert[:programme]%> <% end %><br><%if alert[:id] and alert[:id].to_i<0 then %><%=link_to 'View','/topics/1?post='+(-alert[:id]).to_s,remote: true,  :id => 'view', :onclick => "linkHandler('view')"%><% end %> </td>
         <td><%if alert[:starttime] then %><%=alert[:starttime].in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=alert[:starttime].in_time_zone(@tz.name).strftime("%H:%M")%></b> <%if alert[:duration] then %> - <%=(alert[:starttime]+alert[:duration].to_f*3600).in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=(alert[:starttime]+alert[:duration].to_f*3600).in_time_zone(@tz.name).strftime("%H:%M")%></b> <% end %> (<%=@tz.name%>)<% end %></td>
         <td><b><%=render :partial => 'callsign',  :locals => {:this_callsign => alert[:activatingCallsign]} %></b></td>
         <td>@ 
@@ -24,7 +25,7 @@
         </td>
         <td><%=if alert[:frequency] and alert[:frequency]!="" then alert[:frequency].to_f.round(5) else "" end%>-<%=alert[:mode]%></td>
       </tr>
-      <tr>
+      <tr <%= raw(stylestr) %>>
         <td></td>
         <td colspan=7>
           <%=alert[:name]%> -

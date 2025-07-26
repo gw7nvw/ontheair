@@ -1,2 +1,5 @@
 if ((window.history.pushState!=null) && (site_back!=true)) window.history.pushState(null, '', "/topics/<%=@topic.id%>?<%=raw(@parameters)%>");
 $('#right_panel').html("<%= escape_javascript(render(:partial => 'topics/show')).html_safe %>");
+<% if params[:post] %>
+  window.location.hash="post<%=params[:post]%>"; 
+<% end %>
