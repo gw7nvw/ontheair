@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20250712084140) do
+ActiveRecord::Schema.define(version: 20250805030920) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -208,7 +208,7 @@ ActiveRecord::Schema.define(version: 20250712084140) do
     t.string   "transceiver1"
     t.string   "antenna1"
     t.string   "comments1"
-    t.boolean  "first_contact1",                                          default: true
+    t.boolean  "first_contact1",                                                 default: true
     t.string   "loc_desc1"
     t.float    "x1"
     t.float    "y1"
@@ -220,7 +220,7 @@ ActiveRecord::Schema.define(version: 20250712084140) do
     t.string   "transceiver2"
     t.string   "antenna2"
     t.string   "comments2"
-    t.boolean  "first_contact2",                                          default: true
+    t.boolean  "first_contact2",                                                 default: true
     t.string   "loc_desc2"
     t.float    "x2"
     t.float    "y2"
@@ -230,12 +230,12 @@ ActiveRecord::Schema.define(version: 20250712084140) do
     t.string   "timezone"
     t.float    "frequency"
     t.string   "mode"
-    t.boolean  "is_active",                                               default: true
+    t.boolean  "is_active",                                                      default: true
     t.integer  "createdBy_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.spatial  "location1",         limit: {:srid=>4326, :type=>"point"}
-    t.spatial  "location2",         limit: {:srid=>4326, :type=>"point"}
+    t.spatial  "location1",                limit: {:srid=>4326, :type=>"point"}
+    t.spatial  "location2",                limit: {:srid=>4326, :type=>"point"}
     t.boolean  "is_qrp1"
     t.boolean  "is_portable1"
     t.boolean  "is_qrp2"
@@ -244,16 +244,17 @@ ActiveRecord::Schema.define(version: 20250712084140) do
     t.boolean  "submitted_to_wwff"
     t.boolean  "submitted_to_sota"
     t.integer  "log_id"
-    t.string   "asset1_codes",                                            default: [],   array: true
-    t.string   "asset2_codes",                                            default: [],   array: true
+    t.string   "asset1_codes",                                                   default: [],   array: true
+    t.string   "asset2_codes",                                                   default: [],   array: true
     t.string   "name1"
     t.string   "name2"
-    t.string   "asset1_classes",                                          default: [],   array: true
-    t.string   "asset2_classes",                                          default: [],   array: true
+    t.string   "asset1_classes",                                                 default: [],   array: true
+    t.string   "asset2_classes",                                                 default: [],   array: true
     t.boolean  "submitted_to_hema"
     t.string   "band"
     t.string   "loc_source2"
     t.boolean  "do_not_lookup"
+    t.boolean  "submitted_to_hema_chaser"
   end
 
   add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"

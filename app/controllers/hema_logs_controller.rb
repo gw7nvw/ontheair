@@ -22,6 +22,8 @@ class HemaLogsController < ApplicationController
     all_ids = contacts.map(&:log_id)
     log_ids = all_ids.uniq
     logs = Log.find_by_sql [' select  * from logs where id in (?) order by date desc', log_ids]
+ 
+    @chaser_contacts = Contact.where('user1_id=' + @user.id.to_s + " and 'hump'=ANY(asset2_classes) and submitted_to_hema_chaser is not true")
 
     # get submitted status for log
     @logs = []
@@ -40,12 +42,88 @@ class HemaLogsController < ApplicationController
   end
 
   def show
+    callsign = current_user ? current_user.callsign : ''
+    callsign = params[:user].upcase if params[:user]
+    @resubmit = params[:resubmit] ? true : false
+    users = User.where(callsign: callsign)
+    @user = users.first if users
+    unless @user
+      flash[:error] = 'User ' + callsign + ' does not exist'
+      redirect_to '/'
+    end
+
+    @id = params[:id]
     @log = Log.find(params[:id])
     unless @log.user1_id==current_user.id or current_user.is_admin
       flash[:error] = "You do not have permissions to view HEMA logs for this user"
       redirect_to '/'
       return
     end
+  end
+
+  def chaser
+    callsign = current_user ? current_user.callsign : ''
+    callsign = params[:user].upcase if params[:user]
+    @resubmit = params[:resubmit] ? true : false
+    users = User.where(callsign: callsign)
+    @user = users.first if users
+    unless @user
+      flash[:error] = 'User ' + callsign + ' does not exist'
+      redirect_to '/'
+    end
+
+    if @resubmit
+      @chaser_contacts = Contact.where('user1_id=' + @user.id.to_s + " and 'hump'=ANY(asset2_classes)")
+    else
+      @chaser_contacts = Contact.where('user1_id=' + @user.id.to_s + " and 'hump'=ANY(asset2_classes) and submitted_to_hema_chaser is not true")
+    end
+    unless @user.id==current_user.id or current_user.is_admin
+      flash[:error] = "You do not have permissions to view HEMA logs for this user"
+      redirect_to '/'
+      return
+    end
+  end
+
+  def submit_chaser
+    callsign = current_user ? current_user.callsign : ''
+    callsign = params[:user].upcase if params[:user]
+    @resubmit = params[:resubmit] ? true : false
+    users = User.where(callsign: callsign)
+    @user = users.first if users
+    unless @user
+      flash[:error] = 'User ' + callsign + ' does not exist'
+      redirect_to '/'
+    end
+
+    if @resubmit
+      @chaser_contacts = Contact.where('user1_id=' + @user.id.to_s + " and 'hump'=ANY(asset2_classes)")
+    else
+      @chaser_contacts = Contact.where('user1_id=' + @user.id.to_s + " and 'hump'=ANY(asset2_classes) and submitted_to_hema_chaser is not true")
+    end
+    unless @user.id==current_user.id or current_user.is_admin
+      flash[:error] = "You do not have permissions to view HEMA logs for this user"
+      redirect_to '/'
+      return
+    end
+
+    cookie = login_to_hema(params[:hema_user], params[:hema_pass])
+
+    count = 0
+    @chaser_contacts.each do |contact|
+      puts "Sending contact: #{contact.id.to_s}"
+      response = send_chase_to_hema(cookie, contact)
+      if response[:result] == 'error'
+        flash[:error] += response[:message]+"; "
+        render 'chaser'
+        break
+      else
+        contact.update_column :submitted_to_hema_chaser, true
+      end
+      count += 1
+    end
+    puts "DONE"
+    flash[:success] = "#{count.to_s} chaser contacts submitted to HEMA" 
+    redirect_to '/hema_logs'    
   end
 
   def submit
@@ -157,6 +235,60 @@ class HemaLogsController < ApplicationController
     end
 
     creds
+  end
+
+  def send_chase_to_hema(cookie, contact)
+    summitcode = nil
+    contact.asset2_codes.each do |code|
+      summitcode = code if Asset.get_asset_type_from_code(code) == 'hump'
+    end
+
+    return { result: "error", message: "Unknown HEMA summit: "+code } unless summitcode
+
+    dxcc = summitcode[0..2]
+    region = summitcode[4..6]
+    summit = Asset.find_by(code: summitcode)
+
+    return { result: "error", message: "Unknown HEMA summit: "+code } unless summit
+   
+    summitkey = summit.old_code
+
+    modes = { 'AM' => 1, 'FM' => 2, 'CW' => 3, 'SSB' => 4, 'USB' => 4, 'LSB' => 4, 'DATA' => 7, 'OTHER' => 9 }
+    mode = contact.mode.upcase
+    modekey = modes[mode]
+    modekey ||= 7
+
+    bands = {"472khz" => '2', "1.8MHz" => '3' , "3.6MHz"  => '4', "5MHz"  => '5', "7MHz"  => '6', "10MHz"  => '7', "14MHz"  => '8', "18MHz"  => '30', "21MHz"  => '9', "24MHz"  => '10', "28MHz"  => '11', "50MHz"  => '12', "70MHz"  => '13', "144MHz"  => '14', "220MHz"  => '15', "430MHz"  => '16', "900MHz"  => '17', "1.24GHz"  => '18', "2.3GHz"  => '19', "3.4GHz"  => '20', "5.7GHz"  => '21', "10GHz"  => '22', "24GHz"  => '23', "47GHz"  => '24', "76GHz"  => '25', "122GHz"  => '26', "134GHz"  => '27', "136GHz"  => '28', "248GHz"   => '29'}
+    bandname = Contact.hema_band_from_frequency(contact.frequency)
+    bandkey = bands[bandname]
+    bandkey ||= 1
+
+    # create chase
+    uri = URI('http://www.hema.org.uk/chaseNew2.jsp?chaseDate=05%2F08%2F2025&timeKey=45&callsignLocal=ZL4NVW&callsignForeign=zl4test&bandKey=1&modeKey=2&summitKey=65700&action=saveNew&comments=test+log')
+
+    http = Net::HTTP.new(uri.host, uri.port)
+    req = Net::HTTP::Get.new(
+      uri.path + '?chaseDate=' + contact.date.strftime('%d%%2f%m%%2f%Y') + '&timeKey=9999&callsignLocal=' + contact.callsign1 + '&callsignForeign=' + contact.callsign2 + '&summitKey=' + summitkey + '&bandKey=' + bandkey.to_s + '&modeKey=' + modekey.to_s + '&action=saveNew&comments=',
+      'Cookie' => cookie,
+      'Host' => 'www.hema.org.uk',
+      'Origin' => 'http://www.hema.org.uk'
+    )
+
+    response = http.request(req)
+    # expect 302 redirect
+    if response.code != '302'
+      puts 'Unexpected reponse'
+      return { result: "error", message: "Bad response code from HEMA", response: response }
+    end
+
+    #check for error code
+    location = response ['location']
+    if location['errorMessage']
+      error_message = location.split("errorMessage=")[1]
+      return { result: "error", message: error_message, response: response }
+    end
+
+    return { result: "success" }
   end
 
   def send_to_hema(cookie, log)

@@ -1243,11 +1243,20 @@ class User < ActiveRecord::Base
     user = self
     awards = Award.where(is_active: true)
     awards.each do |award|
+      multiplier = 1
+      #TODO this should be a per-award database field
+      multiplier = 1000 if award.programme == 'elevation'
+
       next unless award.count_based == true
       if (award.activated == true) && (award.chased == true)
       # this is where completed awards would go, when the code supports them!
       elsif award.activated == true
-        score = user.qualified_count_total[award.programme]
+        #hack
+        if award.programme.in?(['elevation']) then
+          score = user.activated_count_total[award.programme]
+        else
+          score = user.qualified_count_total[award.programme]
+        end
       elsif award.chased == true
         score = user.chased_count_total[award.programme]
       else
@@ -1255,7 +1264,7 @@ class User < ActiveRecord::Base
       end
       next unless score
       AwardThreshold.all.each do |threshold|
-        if score >= threshold.threshold
+        if score >= threshold.threshold * multiplier
           user.issue_award(award.id, threshold.threshold)
         end
       end

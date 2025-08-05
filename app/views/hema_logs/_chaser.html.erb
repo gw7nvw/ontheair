@@ -5,7 +5,7 @@
        &nbsp;--&gt;&nbsp;
        <%=link_to "HEMA Logs", '/hema_logs/?'+@parameters, remote: true,  :id => 'index', :onclick => "linkHandler('home')" %>
        &nbsp;--&gt;&nbsp;
-       <b><%= @log.id %></b>
+       <b>CHASER</b>
      </div>
   
      <div id="controls">
@@ -26,7 +26,7 @@
       <br/>
     </div>
   
-    <%= form_tag '/hema_logs/'+@log.id.to_s+'/submit', :name => 'sendlog', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+    <%= form_tag '/hema_logs/chaser/submit'+if @resubmit then "?resubmit=true" else "" end, :name => 'sendlog', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
       <div class="erow">
         <div class="rowtitle">HEMA Username:</div>
         <div class="rowtext">
@@ -45,35 +45,6 @@
       <%= link_to "Cancel", '/hema_logs?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
     </form>
   
-    <div class='erow'>
-      <br/>
-      <table style="table-layout: fixed" id="log_table">
-        <tr>
-          <td class="td-l">Callsign</td>
-          <td colspan=2 class="td-d"> <%=@log.callsign1 %></td>
-          <td class="td-l">Date:</td>
-          <td colspan=2 class="td-d">
-             <% if signed_in? then %><%= @log.localdate(current_user)%> <% else %> <%= @log.localdate(nil)%><% end %>
-          </td>
-  
-          <td class="td-l">QRP?</td>
-          <td class="td-d"> <%= if @log.is_qrp1 then "Yes" else "No" end%></td>
-        </tr>
-        <tr>
-          <td class="td-l">Location</td>
-          <td colspan=2 class="td-d"> <%= @log.loc_desc1%></td>
-          <td> </td>
-          <td colspan=4 class="td-d">
-            <% if @log.asset_codes.count>0 then %>
-              <% @log.asset_codes.each do |cal|%>
-                <%=cal+" "%>
-              <% end %>
-            <% end %>
-          </td>
-        </tr>
-      </table>
-    </div>
-  
     <div class="erow">
       <div class="hrline">
         <hr noshade size="4">
@@ -84,6 +55,7 @@
       <table id="contacts_table">
         <tr>
           <th>Time</th>
+          <th>Date</th>
           <th>Callsign</th>
           <th>Mode</th>
           <th>Freq</th>
@@ -91,15 +63,11 @@
           <th>RST Sent</th>
           <th>RST Rec'd</th>
         </tr>
-        <% if @chaser_contacts then 
-             contacts=@chaser_contacts 
-           else
-             contacts = Contact.find_by_sql [ " select * from contacts where log_id = "+@log.id.to_s+" order by time asc ;" ] 
-           end %>
 
-        <% contacts.each do |contact| %>
+        <% @chaser_contacts.each do |contact| %>
           <tr>
             <td> <%= if contact.time then contact.localtime(current_user) else '' end %> <%=contact.localtimezone(current_user) %> </td>
+            <td> <%= if contact.time then contact.localdate(current_user) else '' end %> </td>
             <td> <span title="<%= DxccPrefix.name_from_call(contact.callsign2) %>"> <%= contact.callsign2 %> </span> </td>
             <td> <%= contact.mode %> </td>
             <td> <%= if contact.frequency then '%.3f' % contact.frequency else '' end%> </td>

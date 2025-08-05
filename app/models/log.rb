@@ -55,16 +55,20 @@ class Log < ActiveRecord::Base
   # uses contact time by preference as log date will be fore 00:00UTC which may be
   # in a different local day
   def localdate(currentuser)
-    t = nil
-    tz = currentuser ? Timezone.find_by_id(currentuser.timezone) : Timezone.find_by(name: 'UTC')
-    cs = Contact.find_by_sql [' select * from contacts where log_id =' + id.to_s + ' order by time desc limit 1 ']
-    c1 = cs.first
-    if c1 && c1.time
-      thetime = c1.time
-      t = thetime.in_time_zone(tz.name).strftime('%Y-%m-%d')
-    elsif date
-      t = date.strftime('%Y-%m-%d')
-    else
+    if id
+      t = nil
+      tz = currentuser ? Timezone.find_by_id(currentuser.timezone) : Timezone.find_by(name: 'UTC')
+      cs = Contact.find_by_sql [' select * from contacts where log_id =' + id.to_s + ' order by time desc limit 1 ']
+      c1 = cs.first
+      if c1 && c1.time
+        thetime = c1.time
+        t = thetime.in_time_zone(tz.name).strftime('%Y-%m-%d')
+      elsif date
+        t = date.strftime('%Y-%m-%d')
+      else
+        t = ''
+      end
+    else 
       t = ''
     end
     t

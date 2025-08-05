@@ -26,7 +26,7 @@ class UsersController < ApplicationController
 
   def awards
     @user = User.find_by(callsign: params[:id].upcase)
-    @awards = Award.where(count_based: true).sort_by &:name
+    @awards = Award.where(count_based: true, is_active: true).sort_by &:name
     @district_awards = AwardUserLink.where(award_type: 'district', user_id: @user.id).sort_by { |a| a.district.name }
     @region_awards = AwardUserLink.where(award_type: 'region', user_id: @user.id).sort_by { |a| a.region.name }
     @districts = District.get_assets_with_type

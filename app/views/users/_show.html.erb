@@ -27,7 +27,7 @@
   <%= render 'flash' %>
 
   <div class="sectiontitle" id="page_title">
-    <b><%=link_to @user.callsign.upcase, 'https://qrz.com/db/'+@user.callsign.upcase, target: "_blank", class: "non_member" %></b> <img src="/assets/external-link-symbol.png"><br/>
+    <b> <%=@user.callsign.upcase %> </b> <a href="https://qrz.com/db/<%=@user.callsign.upcase %>" target="_blank"> <img src="https://static.qrz.com/static/qrz/qrz_com.svgz" border="1" height="25" width="25" alt="QRZ"> </a> <a href="https://www.hamqth.com/<%=@user.callsign.upcase %>" target="_blank"> <img src="https://www.hamqth.com/images/hamqth_125x125.png" border="1" height="25" width="25" alt="HamQTH"> </a>  <img src="/assets/external-link-symbol.png"><br/>
     <br/>
   </div>
 

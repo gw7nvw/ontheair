@@ -40,6 +40,8 @@ match "/contacts/:id/refute", :to => "contacts#refute", :via => "get"
 
 resources :districts, only: [:index, :show]
 
+match "/hema_logs/chaser/submit", :to => "hema_logs#submit_chaser", :as => "hema_submit_chaser_log", :via => "get"
+match "/hema_logs/chaser", :to => "hema_logs#chaser", :as => "hema_chaser_log", :via => "get"
 resources :hema_logs, only: [:index, :show]
 match "/hema_logs/:id/submit", :to => "hema_logs#submit", :as => "hema_send_log", :via => "get"
 match "/hema_logs/:id/delete", :to => "hema_logs#delete", :as => "hema_delete_log", :via => "get"

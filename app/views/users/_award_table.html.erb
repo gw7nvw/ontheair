@@ -18,9 +18,17 @@
           <% if a.chased==true and a.activated==true then %>
             <%# need completed score %>
           <% elsif a.chased==true then %>
-            <% score=@user.chased_count_total[a.programme] %>
+            <% if a.programme.in?(['elevation']) then %>
+              <% score=1.0*@user.chased_count_total[a.programme]/1000 %>
+            <% else %>
+              <% score=@user.chased_count_total[a.programme] %>
+            <% end %>
           <% elsif a.activated==true then %>
-            <% score=@user.qualified_count_total[a.programme] %>
+            <% if a.programme.in?(['elevation']) then %>
+              <% score=1.0*@user.activated_count_total[a.programme]/1000 %>
+            <% else %>
+              <% score=@user.qualified_count_total[a.programme] %>
+            <% end %>
           <% else %>
             <% score=@user.score[a.programme] %>
           <% end%>
