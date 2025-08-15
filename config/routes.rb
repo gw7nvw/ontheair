@@ -11,6 +11,7 @@ match '/results',   to: 'static_pages#results',   via: 'get'
 match '/recent',   to: 'static_pages#recent',   via: 'get'
 match '/spots',   to: 'static_pages#spots',   via: 'get'
 match '/alerts',   to: 'static_pages#alerts',   via: 'get'
+match '/admin_stats',   to: 'static_pages#admin_stats',   via: 'get'
 match '/ack_news',   to: 'static_pages#ack_news',   via: 'get'
 
 resources :asset_links, only: [:create]

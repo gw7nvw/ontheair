@@ -30,12 +30,13 @@ class Hump < ActiveRecord::Base
     end
   end
 
-  def self.get_keys(user, pass)
+  def self.get_keys(user, pass, 
     regions = [
       { d: 'ZL1', r: 'HAK' },
       { d: 'ZL1', r: 'HNL' },
       { d: 'ZL1', r: 'HWK' },
       { d: 'ZL1', r: 'HBP' },
+      { d: 'ZL1', r: 'HGI' },
       { d: 'ZL1', r: 'HTN' },
       { d: 'ZL1', r: 'HHB' },
       { d: 'ZL1', r: 'HWL' },
@@ -44,7 +45,7 @@ class Hump < ActiveRecord::Base
       { d: 'ZL3', r: 'HCB' },
       { d: 'ZL3', r: 'HOT' },
       { d: 'ZL3', r: 'HSL' }
-    ]
+    ])
     # d: 'ZL1', r: 'HMW'
     # d: 'ZL3', r: 'HWC'
 

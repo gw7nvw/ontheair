@@ -26,7 +26,7 @@
       <br/>
     </div>
   
-    <%= form_tag '/hema_logs/chaser/submit'+if @resubmit then "?resubmit=true" else "" end, :name => 'sendlog', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+    <%= form_tag '/hema_logs/chaser/submit?' + if @user then "user="+@user.callsign+"&" else "" end + if @resubmit then "resubmit=true" else "" end, :name => 'sendlog', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
       <div class="erow">
         <div class="rowtitle">HEMA Username:</div>
         <div class="rowtext">

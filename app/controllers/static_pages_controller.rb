@@ -12,6 +12,19 @@ class StaticPagesController < ApplicationController
     redirect_to '/'
   end
 
+  def admin_stats
+    if current_user.is_web_admin then
+      @memstats=`top -b -o %MEM -n 1 | head -n 5`
+      @diskstats = `df -k`
+      @resque_workers = `ps -ef | grep Waiting | grep -v grep`
+      @as = AdminSettings.last
+    else
+      flash[:error]="You do not have permission to view this page"
+      redirect_to '/'
+    end
+  end
+
+
   def home
     # Hanging this here just because
     time_now = Time.now

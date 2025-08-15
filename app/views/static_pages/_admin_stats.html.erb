@@ -1,0 +1,80 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+   document.title = <%= raw(@site_title) %>
+   document.getElementById('logo').innerHTML = <%= raw(@site_title) %>
+$(function () {
+  $('#right_panel .pagination a').on('click', function () {
+    $.getScript(this.href+"&sortby=<%=@sortby%>");
+    return false;
+  });
+});
+
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Admin</b>
+   </div>
+   <div id="controls">
+     <%=render 'map_controls'%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+
+  <div class="erow">
+     <div class="hrline">
+        <hr noshade size="4">
+     </div>
+  </div>
+
+  <div class="rowtitle">Memory</div>
+  <div class='erow'>
+    <%=raw @memstats.gsub(/[\r\n]+/, '<br/>')%>
+  </div>
+
+  <div class="erow">
+     <div class="hrline">
+        <hr noshade size="4">
+     </div>
+  </div>
+
+  <div class="rowtitle">Disk</div>
+  <div class='erow'>
+    <%=raw @diskstats.gsub(/[\r\n]+/, '<br/>')%>
+  </div>
+
+  <div class="erow">
+     <div class="hrline">
+        <hr noshade size="4">
+     </div>
+  </div>
+
+  <div class="rowtitle">Background jobs</div>
+  <div class='erow'>
+    <%=raw @resque_workers.gsub(/[\r\n]+/, '<br/>')%>
+  </div>
+
+  <div class="erow">
+     <div class="hrline">
+        <hr noshade size="4">
+     </div>
+  </div>
+
+   <div class="rowtitle"><%=link_to "Resque", '/resque', target: '_blank',  :id => 'resque' %></div>
+</div>
+
+
+<script>
+document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+if ($(window).width() < 960) {
+        site_smaller_map();
+      }
+
+</script>
+

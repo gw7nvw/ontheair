@@ -107,28 +107,45 @@ class HemaLogsController < ApplicationController
     end
 
     cookie = login_to_hema(params[:hema_user], params[:hema_pass])
-
-    count = 0
-    @chaser_contacts.each do |contact|
-      puts "Sending contact: #{contact.id.to_s}"
-      response = send_chase_to_hema(cookie, contact)
-      if response[:result] == 'error'
-        flash[:error] += response[:message]+"; "
-        render 'chaser'
-        break
-      else
-        contact.update_column :submitted_to_hema_chaser, true
+    unless cookie 
+      flash[:error] =  "HEMA Login failed" unless flash[:error]
+    else
+      count = 0
+      @chaser_contacts.each do |contact|
+        puts "Sending contact: #{contact.id.to_s}"
+        response = send_chase_to_hema(cookie, contact)
+        if response[:result] == 'error'
+          flash[:error] = "" unless flash[:error]
+          flash[:error] += response[:message]+"; "
+        else
+          contact.update_column :submitted_to_hema_chaser, true
+        end
+        count += 1
       end
-      count += 1
+      puts "DONE"
     end
-    puts "DONE"
-    flash[:success] = "#{count.to_s} chaser contacts submitted to HEMA" 
-    redirect_to '/hema_logs'    
+    if !flash[:error] or flash[:error]=="" then
+      flash[:success] = "#{count.to_s} chaser contacts submitted to HEMA" 
+      redirect_to '/hema_logs'    
+    else
+      chaser
+      render 'chaser'
+    end
   end
 
   def submit
+    callsign = current_user ? current_user.callsign : ''
+    callsign = params[:user].upcase if params[:user]
+    @resubmit = params[:resubmit] ? true : false
+    users = User.where(callsign: callsign)
+    @user = users.first if users
+    unless @user
+      flash[:error] = 'User ' + callsign + ' does not exist'
+      redirect_to '/'
+    end
+
     @log = Log.find(params[:id])
-    unless @log.user_id==current_user.id or current_user.is_admin
+    unless @log.user1_id==current_user.id or current_user.is_admin
       flash[:error] = "You do not have permissions to view HEMA logs for this user"
       redirect_to '/'
       return
@@ -144,6 +161,7 @@ class HemaLogsController < ApplicationController
         @response[:body] = body
       else
         flash[:error] = 'Error sending to HEMA'
+        show()
         render 'show'
       end
     else
@@ -153,7 +171,7 @@ class HemaLogsController < ApplicationController
 
   def delete
     @log = Log.find(params[:id])
-    unless @log.user_id==current_user.id or current_user.is_admin
+    unless @log.user1_id==current_user.id or current_user.is_admin
       flash[:error] = "You do not have permissions to view HEMA logs for this user"
       redirect_to '/'
       return
@@ -178,7 +196,7 @@ class HemaLogsController < ApplicationController
 
   def finalise
     @log = Log.find(params[:id])
-    unless @log.user_id==current_user.id or current_user.is_admin
+    unless @log.user1_id==current_user.id or current_user.is_admin
       flash[:error] = "You do not have permissions to view HEMA logs for this user"
       redirect_to '/'
       return
@@ -205,7 +223,6 @@ class HemaLogsController < ApplicationController
 
   def login_to_hema(user, pass)
     creds = nil
-
     uri = URI('http://www.hema.org.uk/indexDatabase.jsp')
     http = Net::HTTP.new(uri.host, uri.port)
     req = Net::HTTP::Get.new(uri.path)
@@ -213,9 +230,8 @@ class HemaLogsController < ApplicationController
 
     # POST request -> logging in
     cookie = response.get_fields('set-cookie')[0].split('; ')[0] + ';'
-
-    params = 'userID=' + user + '&password=' + pass
-
+    
+    params = {userID: user, password: pass}.to_query
     uri = URI('http://www.hema.org.uk/indexDatabase.jsp?logonAction=logon&action=')
     http = Net::HTTP.new(uri.host, uri.port)
     req = Net::HTTP::Post.new(
@@ -243,15 +259,16 @@ class HemaLogsController < ApplicationController
       summitcode = code if Asset.get_asset_type_from_code(code) == 'hump'
     end
 
-    return { result: "error", message: "Unknown HEMA summit: "+code } unless summitcode
+    return { result: "error", message: "Unknown HEMA summit: "+contact.asset2_codes.to_s } unless summitcode
 
     dxcc = summitcode[0..2]
     region = summitcode[4..6]
     summit = Asset.find_by(code: summitcode)
 
-    return { result: "error", message: "Unknown HEMA summit: "+code } unless summit
+    return { result: "error", message: "Unknown HEMA summit: "+summitcode } unless summit
    
     summitkey = summit.old_code
+    return { result: "error", message: "HEMA summit missing from official HEMA database: "+summitcode } unless summitkey
 
     modes = { 'AM' => 1, 'FM' => 2, 'CW' => 3, 'SSB' => 4, 'USB' => 4, 'LSB' => 4, 'DATA' => 7, 'OTHER' => 9 }
     mode = contact.mode.upcase

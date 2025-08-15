@@ -68,6 +68,10 @@
                    <b><%=current_user.callsign.upcase+mail%></b> <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
+                  <% if current_user.is_web_admin %>
+                    <li><%= link_to "Admin", '/admin_stats', remote: true, :id => 'adminst_link', :onclick => "linkHandler('adminst_link')" %></li>
+                    <li class="divider"></li>
+                 <% end %>
                   <li><%= link_to "Profile", '/users/'+current_user.callsign, remote: true, :id => 'profile_link', :onclick => "linkHandler('profile_link')" %></li>
                   <li class="divider"></li>
                   <li><%= link_to "My Awards (beta)", '/users/'+current_user.callsign+"/awards",  remote: true,  :id => 'awards_link', :onclick => "linkHandler('awards_link')"  %></li>
