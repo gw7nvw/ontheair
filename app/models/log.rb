@@ -92,7 +92,11 @@ class Log < ActiveRecord::Base
     asset_classes = []
     asset_codes.each do |code|
       asset = Asset.assets_from_code(code)
-      asset_classes.push(asset.first[:type]) if asset && asset.count.positive?
+      if asset && asset.count.positive?
+        asset_classes.push(asset.first[:type]) 
+      else
+        asset_classes.push('unknown')
+      end
     end
     self.asset_classes = asset_classes
   end
@@ -376,14 +380,18 @@ class Log < ActiveRecord::Base
   def update_qualified
     qualified = []
     asset_classes.each do |ac|
-      at = AssetType.find_by(name: ac)
-      unique_contacts = Contact.find_by_sql [" select distinct callsign2, mode, band from contacts where log_id=#{id};"]
-      asset_qualified = if at && (unique_contacts.count >= at.min_qso)
-                          true
-                        else
-                          false
-                        end
-      qualified.push(asset_qualified)
+      if ac!='unknown' then
+        at = AssetType.find_by(name: ac)
+        unique_contacts = Contact.find_by_sql [" select distinct callsign2, mode, band from contacts where log_id=#{id};"]
+        asset_qualified = if at && (unique_contacts.count >= at.min_qso)
+                            true
+                          else
+                            false
+                          end
+        qualified.push(asset_qualified)
+      else
+        qualified.push(false)
+      end
     end
 
     self.qualified = qualified
