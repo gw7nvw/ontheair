@@ -7,6 +7,7 @@ class DxccPrefix < ActiveRecord::Base
   end
 
   def self.from_call(callsign)
+    callsign=callsign.gsub(/[^a-zA-Z0-9\/]/, '')
     p = DxccPrefix.find_by_sql ["select * from dxcc_prefixes where '#{callsign}' like CONCAT(prefix,'%%') order by length(prefix) desc limit 1;"]
     p ? p.first : nil
   end
