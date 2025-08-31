@@ -131,7 +131,7 @@ class EmailReceive
           puts 'PIN does not match'
           return(false)
         end
-      elsif subject['SMSForwarder']
+      elsif subject && subject['SMSForwarder']
         via = 'SMS'
         puts 'DEBUG SMS'
         msg = 'SMS ' + body
@@ -145,117 +145,124 @@ class EmailReceive
         user = User.find_by(acctnumber: acctnumber)
       end
 
-      callsign = msgs[2].upcase
-      callsign = sub_callsign if callsign == '!'
-      asset_code = msgs[3].upcase
-      if asset_code.include?('/') || asset_code.include?('-')
-        puts 'DEBUG: asset code appears to be complete'
-      else
-        puts 'DEBUG: asset code looks like SOTA-spot format'
-        asset_suffix = msgs[4]
-        unless asset_suffix.include?('-')
-          puts "DEBUG: asset suffix with no '-'"
-          asset_suffix = asset_suffix.gsub(/([a-zA-Z])([0-9])/, '\1-\2')
-        end
-        asset_code = asset_code + '/' + asset_suffix
-        [4..msgs.length - 2].each do |cnt|
-          msgs[cnt] = msgs[cnt + 1]
-        end
-        msgs.delete_at(msgs.length - 1)
-        puts 'DEBUG: concatenated asset code = ' + asset_code
-      end
-      freq = msgs[4]
-      mode = msgs[5].upcase
-      if posttype == 'spot'
-        comments = msgs[6..-1].join(' ')
-        al_date = Time.now.in_time_zone('UTC').strftime('%Y-%m-%d')
-        al_time = Time.now.in_time_zone('UTC').strftime('%H:%M')
-      else
-        al_date = msgs[6]
-        al_time = msgs[7]
-        comments = msgs[8..-1].join(' ')
-      end
-
-      @post = Post.new
-      debug = comments.upcase['DEBUG'] ? true : false
-
-      # check asset
-      assets = Asset.assets_from_code(asset_code)
-      # if !assets or assets.count==0 or assets.first[:code]==nil then puts "Asset not known:"+asset_code ;return(false) end
-      if !assets || assets.count.zero? || assets.first[:code].nil?
-        puts 'Asset not known:' + asset_code + ' ... trying to continue'
-        a_code = ''
-        a_name = 'Unrecognised location: ' + asset_code
-        a_ext = false
-      else
-        a_code = assets.first[:code]
-        a_name = assets.first[:name]
-        a_ext = assets.first[:external]
-      end
-
-      asset_type = Asset.get_asset_type_from_code(a_code)
-      if (posttype == 'spot') && ((asset_type == 'SOTA') || (asset_type == 'summit'))
-        puts 'DEBUG: sending to SOTA'
-        result = @post.send_to_sota(debug, acctnumber, callsign, a_code, freq, mode, comments + ' (ontheair.nz)')
-        puts 'DEBUG: ' + result.to_s
-      end
-
-      if user
-
-        # fill in details
-        @post.mode = mode.upcase
-        @post.callsign = callsign
-        @post.freq = freq
-        @post.asset_codes = a_code != '' ? [a_code] : []
-        @post.created_by_id = user.id
-        @post.updated_by_id = user.id
-        @post.description = comments + ' (via ' + via + ')'
-
-        @post.referenced_time = (al_date + ' ' + al_time + ' UTC').to_time
-        @post.referenced_date = (al_date + ' 00:00:00 UTC').to_time
-        @post.updated_at = Time.now
-        puts 'DEBUG: assets - ' + a_name
-        if posttype == 'spot'
-          topic_id = if debug
-                       TEST_SPOT_TOPIC_ID
-                     else
-                       SPOT_TOPIC_ID
-                     end
-          @post.title = 'SPOT: ' + callsign + ' spotted portable at ' + a_name + '[' + a_code + '] on ' + freq + '/' + mode + ' at ' + Time.now.in_time_zone('Pacific/Auckland').strftime('%Y-%m-%d %H:%M') + 'NZ'
+      if msgs then
+        callsign = msgs[2].upcase
+        callsign = sub_callsign if callsign == '!'
+        asset_code = msgs[3].upcase
+        if asset_code.include?('/') || asset_code.include?('-')
+          puts 'DEBUG: asset code appears to be complete'
         else
-          topic_id = if debug
-                       TEST_ALERT_TOPIC_ID
-                     else
-                       ALERT_TOPIC_ID
-                     end
-          @post.title = 'ALERT: ' + callsign + ' going portable to ' + a_name + '[' + a_code + '] on ' + freq + '/' + mode + ' at ' + al_date + ' ' + al_time + ' UTC'
-        end
-        res = @post.save
-        if res
-          if a_ext == false
-            @post.add_map_image
-            res = @post.save
+          puts 'DEBUG: asset code looks like SOTA-spot format'
+          asset_suffix = msgs[4]
+          unless asset_suffix.include?('-')
+            puts "DEBUG: asset suffix with no '-'"
+            asset_suffix = asset_suffix.gsub(/([a-zA-Z])([0-9])/, '\1-\2')
           end
-          item = Item.new
-          item.topic_id = topic_id
-          item.item_type = 'post'
-          item.item_id = @post.id
-          item.save
-          item.send_emails
+          asset_code = asset_code + '/' + asset_suffix
+          [4..msgs.length - 2].each do |cnt|
+            msgs[cnt] = msgs[cnt + 1]
+          end
+          msgs.delete_at(msgs.length - 1)
+          puts 'DEBUG: concatenated asset code = ' + asset_code
         end
-        @topic = Topic.find_by_id(topic_id)
-        @post.asset_codes.each do |ac|
-          asset_type = Asset.get_asset_type_from_code(ac)
-          if (posttype == 'spot') && (asset_type == 'pota park') || (asset_type == 'POTA')
-            puts 'DEBUG: sending to POTA'
-            success = @post.send_to_pota(debug, user.callsign, @post.callsign, ac, @post.freq, @post.mode, @post.description)
-            puts 'DEBUG: success = ' + success.to_s
-          elsif !((asset_type == 'SOTA') || (asset_type == 'summit'))
-            puts 'DEBUG: sending to PnP'
-            res = @post.send_to_pnp(debug, ac, @topic, al_date, al_time, 'UTC')
-            puts 'DEBUG: success = ' + res.to_s
+        freq = msgs[4]
+        mode = msgs[5].upcase
+        if posttype == 'spot'
+          comments = msgs[6..-1].join(' ')
+          al_date = Time.now.in_time_zone('UTC').strftime('%Y-%m-%d')
+          al_time = Time.now.in_time_zone('UTC').strftime('%H:%M')
+        else
+          al_date = msgs[6]
+          al_time = msgs[7]
+          comments = msgs[8..-1].join(' ')
+        end
+  
+        @post = Post.new
+        debug = comments.upcase['DEBUG'] ? true : false
+  
+        # check asset
+        assets = Asset.assets_from_code(asset_code)
+        # if !assets or assets.count==0 or assets.first[:code]==nil then puts "Asset not known:"+asset_code ;return(false) end
+        if !assets || assets.count.zero? || assets.first[:code].nil?
+          puts 'Asset not known:' + asset_code + ' ... trying to continue'
+          a_code = ''
+          a_name = 'Unrecognised location: ' + asset_code
+          a_ext = false
+        else
+          a_code = assets.first[:code]
+          a_name = assets.first[:name]
+          a_ext = assets.first[:external]
+        end
+  
+        asset_type = Asset.get_asset_type_from_code(a_code)
+        if (posttype == 'spot') && ((asset_type == 'SOTA') || (asset_type == 'summit'))
+          puts 'DEBUG: sending to SOTA'
+          result = @post.send_to_sota(debug, acctnumber, callsign, a_code, freq, mode, comments + ' (ontheair.nz)')
+          puts 'DEBUG: ' + result.to_s
+        end
+  
+        if user
+  
+          # fill in details
+          @post.mode = mode.upcase
+          @post.callsign = callsign
+          @post.freq = freq
+          @post.asset_codes = a_code != '' ? [a_code] : []
+          @post.created_by_id = user.id
+          @post.updated_by_id = user.id
+          @post.description = comments + ' (via ' + via + ')'
+
+          @post.referenced_time = (al_date + ' ' + al_time + ' UTC').to_time
+          @post.referenced_date = (al_date + ' 00:00:00 UTC').to_time
+          @post.updated_at = Time.now
+          puts 'DEBUG: assets - ' + a_name
+          if posttype == 'spot'
+            topic_id = if debug
+                         TEST_SPOT_TOPIC_ID
+                       else
+                         SPOT_TOPIC_ID
+                       end
+            @post.title = 'SPOT: ' + callsign + ' spotted portable at ' + a_name + '[' + a_code + '] on ' + freq + '/' + mode + ' at ' + Time.now.in_time_zone('Pacific/Auckland').strftime('%Y-%m-%d %H:%M') + 'NZ'
+          else
+            topic_id = if debug
+                         TEST_ALERT_TOPIC_ID
+                       else
+                         ALERT_TOPIC_ID
+                       end
+            @post.title = 'ALERT: ' + callsign + ' going portable to ' + a_name + '[' + a_code + '] on ' + freq + '/' + mode + ' at ' + al_date + ' ' + al_time + ' UTC'
+          end
+          res = @post.save
+          if res
+            if a_ext == false
+              @post.add_map_image
+              res = @post.save
+            end
+            item = Item.new
+            item.topic_id = topic_id
+            item.item_type = 'post'
+            item.item_id = @post.id
+            item.save
+            item.send_emails
+          end
+          @topic = Topic.find_by_id(topic_id)
+          @post.asset_codes.each do |ac|
+            asset_type = Asset.get_asset_type_from_code(ac)
+            if (posttype == 'spot') && (asset_type == 'pota park') || (asset_type == 'POTA')
+              puts 'DEBUG: sending to POTA'
+              success = @post.send_to_pota(debug, user.callsign, @post.callsign, ac, @post.freq, @post.mode, @post.description)
+              puts 'DEBUG: success = ' + success.to_s
+            elsif !((asset_type == 'SOTA') || (asset_type == 'summit'))
+              puts 'DEBUG: sending to PnP'
+              res = @post.send_to_pnp(debug, ac, @topic, al_date, al_time, 'UTC')
+              puts 'DEBUG: success = ' + res.to_s
+            end
           end
         end
+      else
+        puts "DEBUG: Invalid spot / alert message"
+        puts "====START===="
+        puts body
+        puts "=====END====="
       end
     end
   end

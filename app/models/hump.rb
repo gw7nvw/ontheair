@@ -4,6 +4,26 @@
 class Hump < ActiveRecord::Base
   require 'csv'
 
+  def self.clean
+    #remove deleted assets from humps
+    hs=Hump.all
+    hs.each do |h|
+      puts h.code
+
+      a=Asset.find_by(code: h.code)
+      if !a then
+        puts "DELETING"
+        h.destroy
+      end
+
+      if h and a and a.location != h.location
+        puts "LOCATION"
+        h.location = a.location
+        h.save
+      end
+    end
+  end
+
   def self.import(filename)
     CSV.foreach(filename, headers: true) do |row|
       place = row.to_hash

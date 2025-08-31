@@ -176,29 +176,40 @@ module AssetImportTools
     a
   end
 
-  def Asset.add_humps
+  def Asset.add_humps(valid_from=Time.now)
     ps = Hump.where('code is not null')
     ps.each do |p|
-      Asset.add_hump(p, nil)
+      Asset.add_hump(p, nil, valid_from)
     end
   end
 
-  def Asset.add_hump(p, _existing_asset)
+  def Asset.add_hump(p, _existing_asset, valid_from)
+    puts p.code
     a = Asset.find_by(asset_type: 'hump', code: p.code)
+    is_new = false
     unless a
       a = Asset.new
       logger.debug 'Adding new hump'
+      is_new = true
     end
     a.asset_type = 'hump'
     a.code = p.code
-    a.is_active = true
-    a.name = p.name
+    #use reference instead of NoName
+    if p.name == 'NoName' then
+      a.name = p.code
+    else
+      a.name = p.name
+    end
     a.name = a.code if a.name.nil? || (a.name == '')
     a.location = p.location
     a.region = p.region
     a.altitude = p.elevation
-    a.is_active = (a.name && !a.name.empty? ? true : false)
-    a.save
+    #don't reactivate deactivated humps
+    if a.is_active != false then
+      a.is_active = (a.name && !a.name.empty? ? true : false)
+    end
+    if is_new then a.valid_from = valid_from end
+    a.save if a.changed?
     logger.debug a.code
     logger.debug a.name
     a

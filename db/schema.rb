@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20250813052045) do
+ActiveRecord::Schema.define(version: 20250831181243) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -811,6 +811,13 @@ ActiveRecord::Schema.define(version: 20250813052045) do
     t.string   "callsign"
     t.datetime "from_date"
     t.datetime "to_date"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "user_tokens", force: true do |t|
+    t.string   "remember_token"
+    t.integer  "user_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
