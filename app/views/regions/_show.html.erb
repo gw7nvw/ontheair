@@ -33,13 +33,17 @@
      </div>
   </div>
   <div class="erow" id="callsign_div">
-    <div class="rowtitle"><%= "Stats for callsign" %></div>
-    <div class="rowtext"> 
-      <form action="/regions/<%=@region.sota_code%>" method="get" accept-charset="UTF-8"  data-remote="true">
-        <input id="callsign" name="callsign" type="text" value=<%=@callsign%> />
-        <input name="commit" id="submit" value="Show" type="submit" onclick="linkHandler(&#39;clear&#39;)">
-      </form>
-    </div>
+    <% if current_user then %>
+      <div class="rowtitle"><%= "Stats for callsign" %></div>
+      <div class="rowtext"> 
+        <form action="/regions/<%=@region.sota_code%>" method="get" accept-charset="UTF-8"  data-remote="true">
+          <input id="callsign" name="callsign" type="text" value=<%=@callsign%> />
+          <input name="commit" id="submit" value="Show" type="submit" onclick="linkHandler(&#39;clear&#39;)">
+        </form>
+      </div>
+    <% else %>
+      <i> Sign in to see which sites have been activated </i>
+    <% end %>
   </div>
 
   <div class="erow">
@@ -67,8 +71,10 @@
       <tr>
         <th>Place</th>
         <th>Code</th>
-        <th>Activated</th>
-        <th>Chased</th>
+        <% if current_user then %>
+          <th>Activated</th>
+          <th>Chased</th>
+        <% end %>
       </tr>
     </table>
     <% @assets_by_class.each do |assets| %>
@@ -85,10 +91,14 @@
            chased=0 %>
       
         <% assets.each do |asset| %>
-          <% #act_true=asset.activated_by?(@callsign)
-             #cha_true=asset.chased_by?(@callsign)
-             act_true=@activations.include?(asset.code)
-             cha_true=@chased.include?(asset.code)
+          <% 
+             if current_user
+               act_true=@activations.include?(asset.code)
+               cha_true=@chased.include?(asset.code)
+             else
+               act_true=false
+               cha_true=false
+             end
              if cha_true then chased+=1  end
              if act_true then activated+=1 end
              count+=1 
@@ -101,19 +111,23 @@
             <td>
               <%=asset.code%>
             </td>
-            <td>
-              <%=if act_true then "YES" end%>    
-            </td>
-            <td>    
-              <%=if cha_true then "YES" end%>    
-            </td>
+            <% if current_user %>
+              <td>
+                <%=if act_true then "YES" end%>    
+              </td>
+              <td>    
+                <%=if cha_true then "YES" end%>    
+              </td>
+            <% end %>
           </tr>
         <% end %>
         <tr>
           <td><b>Total <%=classname.pluralize%>:</b></td>
           <td><b><%=count %></b></td>
-          <td><b><%=activated.to_s%></b> </td>
-          <td><b><%=chased.to_s%></b> </td>
+          <% if current_user %>
+            <td><b><%=activated.to_s%></b> </td>
+            <td><b><%=chased.to_s%></b> </td>
+          <% end %>
         </tr>
       </table>
     <%end%>

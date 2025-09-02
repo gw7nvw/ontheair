@@ -4,7 +4,7 @@
 class UsersController < ApplicationController
   include ApplicationHelper
 
-  before_action :signed_in_user, only: %i[edit update editgrid]
+  before_action :signed_in_user, only: %i[edit update editgrid district_progress region_progress awards assets p2p]
 
   def district_progress
     @user = User.find_by(callsign: params[:id].upcase)

@@ -30,7 +30,12 @@ class VkAsset < ActiveRecord::Base
     if data
       data.each do |site|
         next unless site && site['ID'] && ((site['ID'][0..1] == 'VK') || (site['ID'][0..1] == 'AU')) && (site['ID'].length > 4)
-        p = VkAsset.new
+        p = VkAsset.find_by(code: site['ID'])
+        method = "Updating "
+        if !p then
+          p = VkAsset.new
+          method = "Adding "
+        end
         p.award = site['Award']
         p.wwff_code = site['Location']
         p.shire_code = site['ShireID']
@@ -41,10 +46,18 @@ class VkAsset < ActiveRecord::Base
         p.latitude = site['Latitude']
         p.longitude = site['Longitude']
         p.location = 'POINT(' + p.longitude.to_s + ' ' + p.latitude.to_s + ')'
-        puts 'Adding: ' + p.code + ' [' + p.name + ']'
+        puts method + ' ' + p.code + ' [' + p.name + ']'
         if p.wwff_code
           detailurl = 'http://parksnpeaks.org/api/PARK/WWFF/' + p.wwff_code
           ddraw = open(detailurl).read
+          if ddraw["Failed to connect"] then
+            puts "Error connecting to PnP"
+            ddraw = open(detailurl).read
+            if ddraw["Failed to connect"] then
+              puts "Feiled 2nd try, aborting"
+              ddraw = nil
+            end
+          end 
           detaildata = ddraw && (ddraw.length > 2) ? JSON.parse(ddraw) : nil
           if detaildata
             p.pota_code = detaildata[0]['POTAID']
@@ -63,6 +76,7 @@ class VkAsset < ActiveRecord::Base
     assets.each do |asset|
       va = asset.dup
       va.code = va.pota_code
+      puts va.code
       va.award = 'POTA'
       va.save
     end

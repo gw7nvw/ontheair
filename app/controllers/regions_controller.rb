@@ -26,14 +26,16 @@ class RegionsController < ApplicationController
     @callsign = safe_param(params[:callsign])
     @callsign = current_user.callsign if !@callsign && signed_in?
 
-    if !@callsign || (@callsign == '/') || (@callsign == '*')
-      @callsign = '*'
-      @activations = User.all_activations
-      @chased = User.all_chases
-    else
-      user = User.find_by(callsign: @callsign)
-      @activations = user.activations(asset_type: 'everything', include_external: true)
-      @chased = user.chased(asset_type: 'everything', include_external: true)
+    if current_user
+      if !@callsign || (@callsign == '/') || (@callsign == '*')
+        @callsign = '*'
+        @activations = User.all_activations
+        @chased = User.all_chases
+      else
+        user = User.find_by(callsign: @callsign)
+        @activations = user.activations(asset_type: 'everything', include_external: true)
+        @chased = user.chased(asset_type: 'everything', include_external: true)
+      end
     end
-    end
+  end
 end
