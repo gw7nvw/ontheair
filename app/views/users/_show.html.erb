@@ -61,6 +61,15 @@
       Mobile no.**: <%= @user.acctnumber %>
     </div>
     
+    <div class="erow" id="notif_app">
+      Pushover App token ***: <%= @user.push_app_token %>
+    </div>
+
+    <div class="erow" id="notif_user">
+      Pushover User token ***: <%= @user.push_user_token %>
+    </div>
+    <%=  link_to "Test Notifications", '/users/'+@user.callsign+"/test_notification", class: "btn btn-small btn-primary", remote: true,  :id => 'test_noti', :onclick => "linkHandler('test_noti')"  %>
+ 
     <% provider = @user.email.split('@')[1] if @user.email %>
     <% providers = EmailBlacklist.all.map{|eb| eb.email_provider} %>
 
@@ -90,7 +99,8 @@
 
   <% if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
     <p><i><br/>* PIN is used for access to the Inreach/Email SPOT / ALERT gateway.</i></p>
-    <p><i><br/>** Mobile number is required if you wish to access SMS gateway or post spots to SOTAiwatch.</i></p>
+    <p><i><br/>** Mobile number is required if you wish to access SMS gateway or post spots to SOTAwatch.</i></p>
+    <p><i><br/>*** Pushover credentials are required if you wish to receive instant spot/alert push notifications to your mobile device.</i></p>
   <% end %>
 
   <div class="erow">
@@ -157,7 +167,7 @@
       <tr>
         <th>Topic</th>
         <th>Email</th>
-        <th>Notifcation</th>
+        <th>Notification</th>
         <th>&nbsp;</th>
       </tr>
       <tr>

@@ -6,6 +6,17 @@ class UsersController < ApplicationController
 
   before_action :signed_in_user, only: %i[edit update editgrid district_progress region_progress awards assets p2p]
 
+  def test_notification
+    @user = User.find_by(callsign: params[:id].upcase)
+    if @user.push_app_token and @user.push_app_token.length>0 and @user.push_user_token and @user.push_user_token.length>0 then 
+      @user.send_notification("Test message from ontheair.nz", nil)
+      flash[:success] = "Notification sent"
+    else
+      flash[:error] = "You need to enter your pushover credentials to use this service"
+    end
+    redirect_to "/users/#{@user.callsign}"
+  end
+
   def district_progress
     @user = User.find_by(callsign: params[:id].upcase)
     @activations = @user.area_activations('district')

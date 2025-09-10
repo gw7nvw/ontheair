@@ -83,6 +83,7 @@ resources :sessions, only: [:new, :create, :destroy]
 
 resources :users
 get 'users/:id/assets', to: 'users#assets'
+get 'users/:id/test_notification', to: 'users#test_notification'
 get 'users/:id/awards', to: 'users#awards'
 get 'users/:id/region_progress', to: 'users#region_progress'
 get 'users/:id/district_progress', to: 'users#district_progress'
