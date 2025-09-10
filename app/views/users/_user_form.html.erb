@@ -73,6 +73,15 @@
       <div class="erow"><i><small>PIN is for access to the SPOT/ALERT gateway from inreach/email only. PIN rules: any 4-character combination of letters and numbers. No spaces or extended characters. InReach may send messages containing your PIN across the internet as unencrypted plain-text or display them to others with access to your InReach web portal. Do not reuse PINs you use elsewhere.<br/></small></i></div> 
 
 
+      <%= f.label :push_app_token, "PushOver App ID" %>
+      <%= f.text_field :push_app_token %>
+      <div class="erow"><i><small>This is the App ID or App token you have created in pushover for ontheair (only used for receiving notifications)<br/></small></i></div> 
+
+      <%= f.label :push_user_token, "PushOver User Token" %>
+      <%= f.text_field :push_user_token %>
+      <div class="erow"><i><small>This is the user token associated with your account at pushover (only used for receiving notifications)<br/></small></i></div> 
+
+
       <%= f.label :acctnuyber, "Mobile phone (for SMS gateway)" %>
       <%= f.text_field :acctnumber %>
       <div class="erow"><i><small>E.164 (International) format, no spaces. e.g: +64271234567<br/></small></i></div>

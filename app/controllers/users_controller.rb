@@ -267,7 +267,8 @@ class UsersController < ApplicationController
       utl = UserTopicLink.new
       utl.user_id = @user.id
       utl.topic_id = @topic.id
-      utl.mail = true
+      utl.mail = true if params[:method] == 'mail'
+      utl.notification = true if params[:method] == 'notification'
       utl.save
     else
       flash[:error] = 'Error locating user or topic specified'
@@ -284,7 +285,7 @@ class UsersController < ApplicationController
     @topic = Topic.find_by_id(params[:topic_id])
 
     if @user && @topic
-      utls = UserTopicLink.find_by_sql ['select * from user_topic_links where user_id=' + @user.id.to_s + ' and topic_id=' + @topic.id.to_s]
+      utls = UserTopicLink.find_by_sql ['select * from user_topic_links where user_id=' + @user.id.to_s + ' and topic_id=' + @topic.id.to_s + " and #{params[:method]} = true"]
       utls.each(&:destroy)
     else
       flash[:error] = 'Error locating user or topic specified'
@@ -313,6 +314,6 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin, :acctnumber, :logs_pota, :logs_wwff)
+    params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin, :acctnumber, :logs_pota, :logs_wwff, :push_app_token, :push_user_token)
   end
 end

@@ -12,6 +12,25 @@ class Item < ActiveRecord::Base
     end
   end
 
+  def summary
+      callsign = self.end_item.callsign && !self.end_item.callsign.empty? ? self.end_item.callsign.upcase : self.end_item.updated_by_name
+      if self.topic.is_spot
+        sites = self.end_item.site.split('; ')
+        summary = callsign + ' spotted on ' + ((self.end_item.freq && !self.end_item.freq.empty?) || (self.end_item.mode && !self.end_item.mode.empty?) ? self.end_item.freq + ' - ' + self.end_item.mode : 'UNKNOWN') + ' at ' + (sites && sites.count.positive? ? sites.first + (if sites && (sites.count > 1) then ' et al.' else '' end) : 'UNKNOWN')
+
+      elsif self.topic.is_alert
+        sites = self.end_item.site.split('; ')
+        summary = callsign + ' alerted for ' + (self.end_item.referenced_date ? self.end_item.referenced_date.strftime('%Y-%m-%d') : '') + ' ' + (self.end_item.referenced_time ? self.end_item.referenced_time.strftime('%H:%M (UTC)') : '') + ' at ' + (sites && sites.count.positive? ? sites.first + (if sites && (sites.count > 1) then ' et al.' else '' end) : 'UNKNOWN')
+      else
+        summary = 'ontheair.nz: New post from ' + self.end_item.updated_by_name + ' in ' + self.topic.name
+      end
+
+  end
+
+  def url
+    "https://ontheair.nz/topics/#{self.topic_id}#post#{self.id}"
+  end
+
   def subtopic
     topic = (Topic.find_by_id(item_id) if item_type == 'topic')
     topic
@@ -63,13 +82,14 @@ class Item < ActiveRecord::Base
   def self.send_emails_now(itemid)
     item=Item.find(itemid)
     if item and item.topic_id
-      if ENV['RAILS_ENV'] == 'production'
+     # if ENV['RAILS_ENV'] == 'production'
         subs = UserTopicLink.where(topic_id: item.topic_id)
         subs.each do |sub|
           @user = User.find_by_id(sub.user_id)
-          UserMailer.subscriber_mail(item, @user).deliver
+          UserMailer.subscriber_mail(item, @user).deliver if sub.mail
+          @user.send_notification(item.summary, item.url) if sub.notification
         end
       end
-    end
+    #end
   end
 end

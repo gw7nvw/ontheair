@@ -22,8 +22,13 @@ class Topic < ActiveRecord::Base
     callsign
   end
 
+  def subscribed_notification(user)
+    subs = UserTopicLink.find_by_sql ['select * from user_topic_links where user_id = ' + user.id.to_s + ' and notification = true and topic_id = ' + id.to_s]
+    subs && subs.count.positive? ? true : false
+  end
+
   def subscribed(user)
-    subs = UserTopicLink.find_by_sql ['select * from user_topic_links where user_id = ' + user.id.to_s + ' and topic_id = ' + id.to_s]
+    subs = UserTopicLink.find_by_sql ['select * from user_topic_links where user_id = ' + user.id.to_s + ' and mail = true and topic_id = ' + id.to_s]
     subs && subs.count.positive? ? true : false
   end
 

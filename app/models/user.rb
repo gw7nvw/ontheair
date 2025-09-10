@@ -1375,6 +1375,28 @@ class User < ActiveRecord::Base
   end
 
   ##########################################################################
+  # NOTIFICSTIONS
+  ##########################################################################
+
+  def send_notification(notification, message_url)
+    puts "got into send notification"
+    url = URI.parse("https://api.pushover.net/1/messages.json")
+    req = Net::HTTP::Post.new(url.path)
+    req.set_form_data({
+#      :token => "am6ehj5zdr3yx2wythmfj6fpqy9vm1",
+#      :user => "ubf2719u7iex47k65uaxya4mahiuvx",
+      :token => self.push_app_token,
+      :user => self.push_user_token,
+      :message => notification,
+      :url => message_url
+    })
+    res = Net::HTTP.new(url.host, url.port)
+    res.use_ssl = true
+    res.verify_mode = OpenSSL::SSL::VERIFY_PEER
+    res.start {|http| http.request(req) }
+  end
+
+  ##########################################################################
   # ADMIN TOOLS - COMMAND-LINE USE ONLY
   ##########################################################################
 

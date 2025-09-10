@@ -253,7 +253,7 @@ class EmailReceive
               puts 'DEBUG: success = ' + success.to_s
             elsif !((asset_type == 'SOTA') || (asset_type == 'summit'))
               puts 'DEBUG: sending to PnP'
-              res = @post.send_to_pnp(debug, ac, @topic, al_date, al_time, 'UTC')
+              res = Post.send_to_pnp(debug, ac, @post.callsign, @post.freq, @post.mode, @post.description, @topic, al_date, al_time, 'UTC', user.callsign)
               puts 'DEBUG: success = ' + res.to_s
             end
           end
