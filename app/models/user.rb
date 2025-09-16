@@ -1378,14 +1378,17 @@ class User < ActiveRecord::Base
   # NOTIFICSTIONS
   ##########################################################################
 
-  def send_notification(notification, message_url)
+  def send_notification(notification, message_url, comments, image)
     puts "got into send notification"
+    if comments then notification += ": "+comments end
     url = URI.parse("https://api.pushover.net/1/messages.json")
     req = Net::HTTP::Post.new(url.path)
     req.set_form_data({
       :token => self.push_app_token,
       :user => self.push_user_token,
       :message => notification,
+      :attachment_base64 => image,
+      :attachment_type => "image/jpeg",
       :url => message_url
     })
     res = Net::HTTP.new(url.host, url.port)

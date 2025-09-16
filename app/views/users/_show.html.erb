@@ -68,6 +68,15 @@
     <div class="erow" id="notif_user">
       Pushover User token ***: <%= @user.push_user_token %>
     </div>
+
+    <div class="erow" id="push_comments">
+      Notifications include comments: <%= if @user.push_include_comments==true then "Yes" else "No" end %>
+    </div>
+
+    <div class="erow" id="push_map">
+      Notifications include map: <%= if @user.push_include_map==true then "Yes" else "No" end %>
+    </div>
+
     <%=  link_to "Test Notifications", '/users/'+@user.callsign+"/test_notification", class: "btn btn-small btn-primary", remote: true,  :id => 'test_noti', :onclick => "linkHandler('test_noti')"  %>
  
     <% provider = @user.email.split('@')[1] if @user.email %>

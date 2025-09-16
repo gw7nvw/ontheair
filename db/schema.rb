@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20250910050052) do
+ActiveRecord::Schema.define(version: 20250915040625) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -878,6 +878,8 @@ ActiveRecord::Schema.define(version: 20250910050052) do
     t.boolean  "is_web_admin"
     t.string   "push_app_token"
     t.string   "push_user_token"
+    t.boolean  "push_include_comments"
+    t.boolean  "push_include_map"
   end
 
   add_index "users", ["callsign"], :name => "index_users_on_callsign"

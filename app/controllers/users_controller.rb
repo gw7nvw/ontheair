@@ -9,7 +9,7 @@ class UsersController < ApplicationController
   def test_notification
     @user = User.find_by(callsign: params[:id].upcase)
     if @user.push_app_token and @user.push_app_token.length>0 and @user.push_user_token and @user.push_user_token.length>0 then 
-      @user.send_notification("Test message from ontheair.nz", nil)
+      @user.send_notification("Test message from ontheair.nz", nil, nil, nil)
       flash[:success] = "Notification sent"
     else
       flash[:error] = "You need to enter your pushover credentials to use this service"
@@ -254,6 +254,7 @@ class UsersController < ApplicationController
               index_prep
               render 'index'
             else
+              params[:id] = @user.callsign
               show
               render 'show'
             end
@@ -325,6 +326,6 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin, :acctnumber, :logs_pota, :logs_wwff, :push_app_token, :push_user_token)
+    params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin, :acctnumber, :logs_pota, :logs_wwff, :push_app_token, :push_user_token, :push_include_comments, :push_include_map)
   end
 end
