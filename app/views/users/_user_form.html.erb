@@ -40,7 +40,11 @@
       <%= render 'flash' %>
       <%= render 'shared/error_messages' %>
 
-      <%= f.label :callsigm %>
+      <div class="sectiontitle">
+        Personal Details
+      </div>
+
+      <%= f.label :callsign %>
       <%= f.text_field :callsign %>
 
       <%= f.label :firstname, "First name" %>
@@ -68,40 +72,88 @@
       <%= f.password_field :password_confirmation %>
       <div class="erow"><small><i>Password rules: any combination of letters and numbers. No spaces or extended characters<br/></i></small></div>
 
+      <div class="erow">
+        <div class="hrline">
+          <hr noshade size="4">
+        </div>
+      </div>
+
+      <div class="erow"><div class="sectiontitle">
+        Remote account access (loggging apps, InReach, etc)
+      </div></div>
+      <div class="erow"><i><small>PIN is for access to the SPOT/ALERT gateway from inreach/email, and for access to your account from logging and spotting apps. . PIN rules: any 4-character combination of letters and numbers. No spaces or extended characters. InReach may send messages containing your PIN across the internet as unencrypted plain-text or display them to others with access to your InReach web portal. Do not reuse PINs you use elsewhere.<br/></small></i></div> 
+
       <%= f.label :pin, "PIN" %>
       <%= f.text_field :pin %>
-      <div class="erow"><i><small>PIN is for access to the SPOT/ALERT gateway from inreach/email only. PIN rules: any 4-character combination of letters and numbers. No spaces or extended characters. InReach may send messages containing your PIN across the internet as unencrypted plain-text or display them to others with access to your InReach web portal. Do not reuse PINs you use elsewhere.<br/></small></i></div> 
 
+      <div class="erow">
+        <div class="hrline">
+          <hr noshade size="4">
+        </div>
+      </div>
 
-      <%= f.label :push_app_token, "PushOver App token" %>
+      <div class="erow"><div class="sectiontitle">
+        Pushover Config (spot / alert notifications to your mobile device)
+      </div></div>
+
+      <div class="erow"><i><small>Use of our Notifications service requires you to install the pushover app on your mobile device, to hold a pushover account, and to have added an application for 'ontheair' to your pushover account. See User's Guide (under the Info menu) for details of how to set this up.  Pushover will charge a 1-off fee for this service after the initial free trial period.<br/></small></i></div> 
+
+      <%= f.label :push_app_token, "PushOver API Key" %>
       <%= f.text_field :push_app_token %>
-      <div class="erow"><i><small>This is the App ID or App token you have created in pushover for ontheair (only used for receiving notifications)<br/></small></i></div> 
+      <div class="erow"><i><small>This is the API ID or App token you have created in pushover for ontheair (only used for receiving notifications)<br/></small></i></div> 
 
-      <%= f.label :push_user_token, "PushOver User Token" %>
+      <%= f.label :push_user_token, "PushOver User Key" %>
       <%= f.text_field :push_user_token %>
-      <div class="erow"><i><small>This is the user token associated with your account at pushover (only used for receiving notifications)<br/></small></i></div> 
+      <div class="erow"><i><small>This is the user key / token associated with your account at pushover (only used for receiving notifications)<br/></small></i></div> 
       <span><%= "Include spot/alert comments in pushover notifications"%></span><br/>
       <%= f.check_box :push_include_comments%><br/><br/>
 
       <span><%= "Include spot/alert map in pushover notifications (will use more mobile data)"%></span><br/>
       <%= f.check_box :push_include_map%><br/><br/>
 
-      <%= f.label :acctnuyber, "Mobile phone (for SMS gateway)" %>
+      <div class="erow">
+        <div class="hrline">
+          <hr noshade size="4">
+        </div>
+      </div>
+
+      <div class="sectiontitle">
+        SMS gateway and SOTAwatch spotting
+      </div>
+
+      <div class="erow"><i><small>If you wish to use a mobile phone for spotting / alerting (useful in limited coverage where data service is unreliable), you need to register your mobile phone number here.  If you wish your SOTA spots to be forwarded to SOTAwatch, then this must be the same mobile phone number that you have registered with SOTAwatch<br/></small></i></div>
+      <%= f.label :acctnuyber, "Mobile phone no." %>
       <%= f.text_field :acctnumber %>
       <div class="erow"><i><small>E.164 (International) format, no spaces. e.g: +64271234567<br/></small></i></div>
 
+      <div class="erow">
+        <div class="hrline">
+          <hr noshade size="4">
+        </div>
+      </div>
+
+      <div class="sectiontitle">
+        Forwarding spots to international spotting sites
+      </div>
+      <div class="erow"><i><small>All activations falling in a POTA/WWFF park will be sent to the POTA/WWFF spotting cluster. By selecting these options you commit to submit logs to POTA/WWFF for all activations that fall in parks. <br/></small></i></div> 
       <span title="All activations falling in a POTA park will be sent to the POTA spotting cluster. By selecting this option you commit to submit logs to POTA for all activations that fall in parks. "><%= "Also publish my SPOTs on POTA when in a park" %></span><br/>
       <%= f.check_box :logs_pota%><br/><br/>
 
       <span title="All activations falling in a WWFF park will be sent to the WWFF spotting cluster. By selecting this option you commit to submit logs to WWFF for all activations that fall in parks. "><%= "Also publish my SPOTs on WWFF when in a park" %></span><br/>
       <%= f.check_box :logs_wwff%><br/><br/>
 
+      <div class="erow">
+        <div class="hrline">
+          <hr noshade size="4">
+        </div>
+      </div>
+
       <%= f.submit @submit_button, id: "submit", onclick: "signupHandler();", class: "btn btn-small btn-primary btn-highlight" %>
       <%  if(@submit_button == "Save Changes" and current_user and current_user.is_admin) %>
         <%= f.submit "Delete", confirm: "Delete user: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>
       <% end %>
 
-      <div class="erow"><small><i>By registering to this site you are agreeing to our privacy and security policy. Details are available on the <%=link_to 'About', '/about', target: '_blank'%> page</i></small></div>
+      <div class="erow"><small><i>By registering to this site you are agreeing to our privacy and security policy. Details are available on the <%=link_to 'Pricacy and Security Policy', '/topics/46', target: '_blank'%> page</i></small></div>
     </div>
   <% end %>
 </div>
