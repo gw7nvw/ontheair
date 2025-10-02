@@ -653,8 +653,9 @@ ul {
 
 #right_scroll
 {
-     margin-top: 32px;
+     margin-top: 8px;
      padding-bottom: 64px;
+     width: 100%;
 }
 
 #grid_scroll
@@ -667,21 +668,21 @@ ul {
 #actionbar-full
 {
      background-color: #4B0082;
-     height: 32px;
-     position: fixed;
+//     height: 32px;
+//     position: fixed;
      margin-left: 0px;
      padding-left: 8px;
      padding-right: 6px;
      margin-top: -8px;
      z-index: 1000;
-     
+     width: 100%;
 }
 #actionbar
 {
      display: none !important;
      background-color: #4B0082;
-     height: 32px;
-     position: fixed;
+ //    height: 32px;
+ //    position: fixed;
      margin-left: 0px;
      padding-left: 8px;
      padding-right: 6px;
@@ -691,8 +692,8 @@ ul {
 #actionbar-form
 {
      background-color: #4B0082;
-     height: 32px;
-     position: fixed;
+ //    height: 32px;
+ //    position: fixed;
      margin-left: 0px;
      padding-left: 8px;
      padding-right: 6px;
@@ -959,12 +960,15 @@ input {
   }
   #actionbar
   {
-       height: 54px !important;
+ //      height: 54px !important;
+  }
+
+  #right_scroll {
   }
   #actionbar-form
   {
-       height: 54px !important;
-       margin-top: -54px !important;
+  //     height: 54px !important;
+  //     margin-top: -54px !important;
   }
   
   .photo-bar {

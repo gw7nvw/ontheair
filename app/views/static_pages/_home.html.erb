@@ -22,14 +22,14 @@
 
 <div id="right_scroll">
   <%= render 'flash' %>
-  <div style="background-image: url(<%=@site_title_image%>); background-size: cover;padding-bottom: 10px">
+  <div style="background-image: url(<%=@site_title_image%>); background-size: cover;padding-bottom: 10px; margin-top: -2px;">
     <h1> <%= raw(@site_title_unquoted) %> </h1>
   </div>
 
   <table style='table-layout:fixed'>
     <tr>
       <% AssetType.where("name != 'all'").order(:name).each do |at| %>
-        <th><%=link_to at.display_name.pluralize, '/assets/?asset_type[name]='+at.name,remote: true,:onclick => "linkHandler('"+at.name+"')", :style=>'color:#fff' %></th>
+        <th style='font-size: 1.1vw; text-align: center'><%=link_to at.display_name.pluralize, '/assets/?asset_type[name]='+at.name,remote: true,:onclick => "linkHandler('"+at.name+"')", :style=>'color:#fff' %></th>
       <% end %>
     </tr>
   </table>

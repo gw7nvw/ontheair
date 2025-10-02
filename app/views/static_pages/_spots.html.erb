@@ -81,6 +81,7 @@
   <% if flashlocal then %>
     <div class="alert alert-<%= flashlocaltype %>"><%= flashlocal %></div>
   <% end%>
+  <h2>Spotted portable - Spots</h2>
   <span id="spots"></span>
      <p><span <%=if stale then raw("style='color: #900'") end%> >Last updated: <%=last_spot_read%> (<%=@tz.name%>)</span> - <span id="retrieved">Retrieved at <%=Time.now.in_time_zone(@tz.name).strftime("%H:%M:%S")%> (<%=@tz.name%>)</span><i>&nbsp;<%=  link_to "Refresh Now", '/spots?'+raw(@parameters), remote: true,  :onclick => "linkHandler('refresh_link')"%> </i></p>
   <p>

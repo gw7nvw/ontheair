@@ -28,12 +28,12 @@ $(function () {
 
 <div id="right_scroll">
   <%= render 'flash' %>
-  <div style="background-image: url(<%=@site_title_image%>); background-size: cover;padding-bottom: 10px">
+  <div style="background-image: url(<%=@site_title_image%>); background-size: cover;padding-bottom: 10px; margin-top: -2px;">
     <h1><%= raw(@site_title_unquoted) %></h1>
   </div>
 
 
-<div class="sectiontitle"><br/><br/>Recent actvity<br/><br/></div>
+<div class="sectiontitle">Recent actvity<br/><br/></div>
 
 <%=render 'logs/list' %>
 <script>
