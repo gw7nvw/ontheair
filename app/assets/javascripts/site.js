@@ -87,6 +87,9 @@ Array.prototype.remove = function() {
 
 function site_init() {
  try {
+  $(document).ready(site_resizeHeader);
+  $(window).resize(site_resizeHeader);
+
   if(typeof(map_map)=='undefined') {
     site_init_styles();
     if(typeof(def_proj)!='undefined') {
@@ -791,6 +794,7 @@ function linkHandler(entity_name) {
            //if(site_map_size==0) site_bigger_map();
            document.getElementById("page_status").innerHTML = ''
            document.body.classList.remove("loading");
+           site_resizeHeader()
          }
          lastUrl=document.URL;
        }
@@ -1179,4 +1183,8 @@ function show_div(div) {
 function hide_div(div) {
    document.getElementById(div).style.display="none";
 }
+
+function site_resizeHeader() {
+document.getElementById("actionbar-push").style.height=document.getElementById("actionbar-full").offsetHeight-8+"px"; 
+  }
 
