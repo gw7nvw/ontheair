@@ -38,9 +38,9 @@
       <% else %>
         <i>Registered user  </i>
         <% if @user.is_modifier then %>
-           <i> - authorised to edit hut and park data </i>
+           <i> - authorised to edit location data </i>
         <% else %>
-           <i> - not authorised to edit hut and park data </i>
+           <i> - not authorised to edit location data </i>
         <% end %>
       <% end %>
     <% else %>
@@ -51,44 +51,6 @@
   <div class="erow" id="realname">
     <%= if @user.firstname then @user.firstname.capitalize else "" end+" "+if @user.lastname then @user.lastname.capitalize else "" end %><br/>
   </div>
-
-  <% if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
-    <div class="erow" id="PIN">
-      PIN*: <%= @user.pin %>
-    </div>
-
-    <div class="erow" id="acctnumber">
-      Mobile no.**: <%= @user.acctnumber %>
-    </div>
-    
-    <div class="erow" id="notif_app">
-      Pushover App token ***: <%= @user.push_app_token %>
-    </div>
-
-    <div class="erow" id="notif_user">
-      Pushover User token ***: <%= @user.push_user_token %>
-    </div>
-
-    <div class="erow" id="push_comments">
-      Notifications include comments: <%= if @user.push_include_comments==true then "Yes" else "No" end %>
-    </div>
-
-    <div class="erow" id="push_map">
-      Notifications include map: <%= if @user.push_include_map==true then "Yes" else "No" end %>
-    </div>
-
-    <%=  link_to "Test Notifications", '/users/'+@user.callsign+"/test_notification", class: "btn btn-small btn-primary", remote: true,  :id => 'test_noti', :onclick => "linkHandler('test_noti')"  %>
- 
-    <% provider = @user.email.split('@')[1] if @user.email %>
-    <% providers = EmailBlacklist.all.map{|eb| eb.email_provider} %>
-
-    <div class="erow" id="email">
-      Email: <%= @user.email %>
-    </div>
-    <% if providers.include?(provider) %>
-      <p style="color:red"><i>Due to their email rejection policies, we are unable to accept accounts with this email provider.  Please enter another email provider, or remove this email address</i></p>
-    <% end %>
-  <%end%>
 
   <div class="erow" id="home_qth">
     Home QTH: <%= @user.home_qth %>
@@ -107,10 +69,78 @@
   </div>
 
   <% if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
-    <p><i><br/>* PIN is used for access to the Inreach/Email SPOT / ALERT gateway.</i></p>
-    <p><i><br/>** Mobile number is required if you wish to access SMS gateway or post spots to SOTAwatch.</i></p>
-    <p><i><br/>*** Pushover credentials are required if you wish to receive instant spot/alert push notifications to your mobile device.</i></p>
-  <% end %>
+    <% provider = @user.email.split('@')[1] if @user.email %>
+    <% providers = EmailBlacklist.all.map{|eb| eb.email_provider} %>
+
+    <div class="erow" id="email">
+      Email: <%= @user.email %>
+    </div>
+    <% if providers.include?(provider) %>
+      <p style="color:red"><i>Due to their email rejection policies, we are unable to accept accounts with this email provider.  Please enter another email provider, or remove this email address</i></p>
+    <% end %>
+    <div class="erow">
+      <div class="hrline">
+        <hr noshade size="4">
+      </div>
+    </div>
+
+    <div class="erow"><div class="sectiontitle">
+      Remote account access (logging apps, InReach, etc)
+    </div></div>
+    <div class="erow"><i><small>PIN is for access to the SPOT/ALERT gateway from inreach/email, and for access to your account from logging and spotting apps. . PIN rules: any 4-character combination of letters and numbers. No spaces or extended characters. InReach may send messages containing your PIN across the internet as unencrypted plain-text or display them to others with access to your InReach web portal. Do not reuse PINs you use elsewhere.<br/></small></i></div>
+
+    <div class="erow" id="PIN">
+      PIN: <%= @user.pin %>
+    </div>
+
+    <div class="erow">
+      <div class="hrline">
+        <hr noshade size="4">
+      </div>
+    </div>
+
+    <div class="sectiontitle">
+      SMS gateway and SOTAwatch spotting
+    </div>
+
+    <div class="erow"><i><small>If you wish to use a mobile phone for spotting / alerting (useful in limited coverage where data service is unreliable), you need to register your mobile phone number here.  If you wish your SOTA spots to be forwarded to SOTAwatch, then this must be the same mobile phone number that you have registered with SOTAwatch<br/></small></i></div>
+
+
+    <div class="erow" id="acctnumber">
+      Mobile no.: <%= @user.acctnumber %>
+    </div>
+
+    <div class="erow">
+      <div class="hrline">
+        <hr noshade size="4">
+      </div>
+    </div>
+
+    <div class="erow"><div class="sectiontitle">
+      Pushover Config (spot / alert notifications to your mobile device)
+    </div></div>
+
+    <div class="erow"><i><small>Use of our Notifications service requires you to install the pushover app on your mobile device, to hold a pushover account, and to have added an application for 'ontheair' to your pushover account. See User's Guide (under the Info menu) for details of how to set this up.  Pushover will charge a 1-off fee for this service after the initial free trial period.<br/></small></i></div>
+    
+    <div class="erow" id="notif_app">
+      Pushover App token : <%= @user.push_app_token %>
+    </div>
+
+    <div class="erow" id="notif_user">
+      Pushover User token : <%= @user.push_user_token %>
+    </div>
+
+    <div class="erow" id="push_comments">
+      Notifications include comments: <%= if @user.push_include_comments==true then "Yes" else "No" end %>
+    </div>
+
+    <div class="erow" id="push_map">
+      Notifications include map: <%= if @user.push_include_map==true then "Yes" else "No" end %>
+    </div>
+
+    <%=  link_to "Test Notifications", '/users/'+@user.callsign+"/test_notification", class: "btn btn-small btn-primary", remote: true,  :id => 'test_noti', :onclick => "linkHandler('test_noti')"  %>
+ 
+  <%end%>
 
   <div class="erow">
     <div class="hrline">
