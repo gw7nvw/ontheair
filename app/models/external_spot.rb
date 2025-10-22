@@ -138,7 +138,7 @@ class ExternalSpot < ActiveRecord::Base
           code: spot['summitCode'],
           name: spot['summitDetails'],
           frequency: spot['frequency'].to_s,
-          mode: spot['mode'],
+          mode: (if spot['type']=='QRT' then 'QRT' else spot['mode'] end),
           comments: spot['comments'],
           epoch: spot['epoch'] || "",
           points: spot['points'].to_s || "",

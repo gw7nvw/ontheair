@@ -548,7 +548,7 @@ class Contact < ActiveRecord::Base
       band = '7MHz' if (frequency >= 7) && (frequency <= 7.3)
       band = '10MHz' if (frequency >= 10.1) && (frequency <= 10.15)
       band = '14MHz' if (frequency >= 14.0) && (frequency <= 14.35)
-      band = '18Mhz' if (frequency >= 18.068) && (frequency <= 18.168)
+      band = '18MHz' if (frequency >= 18.068) && (frequency <= 18.168)
       band = '21MHz' if (frequency >= 21.0) && (frequency <= 21.45)
       band = '24MHz' if (frequency >= 24.89) && (frequency <= 24.99)
       band = '28MHz' if (frequency >= 28.0) && (frequency <= 29.7)
