@@ -97,12 +97,11 @@ class PotaLogsController < ApplicationController
     show
     if @contacts 
       @contacts.each do |contact|
-        contact.submitted_to_pota = true
-        contact.save
+        contact.update_column(:submitted_to_pota, true)
+
       end
       @duplicate_contacts.each do |contact|
-        contact.submitted_to_pota = true
-        contact.save
+        contact.update_column(:submitted_to_pota, true)
       end
 
       respond_to do |format|

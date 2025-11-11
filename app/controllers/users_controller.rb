@@ -76,7 +76,7 @@ class UsersController < ApplicationController
                      end
     end
 
-    @assets = Asset.find_by_sql [' select asset_type, minor, is_active, id, name, code, altitude from assets where code in (?) ', @asset_codes]
+    @assets = Asset.find_by_sql [' select location, asset_type, minor, is_active, id, name, code, altitude from assets where code in (?) ', @asset_codes]
   end
 
   def p2p

@@ -64,5 +64,10 @@
 <script>
   document.getElementById('valid_count').innerHTML=`<%=valid_count.to_s%>`
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+
+  <% if @assets then @assets.each do |asset| %>
+      <% if asset.location then %> map_add_feature_from_wkt('<%=asset.location%>', 'EPSG:4326',site_green_circle); <% end %>
+  <% end end %>
+
 </script>
 

@@ -89,7 +89,7 @@ class WwffLogsController < ApplicationController
         @address = 'simmopa@iprimus.com.au'
         # @address="mattbriggs@yahoo.com"
       end
-      @logdate = params[:date]
+      @logdate = Time.now.in_time_zone('UTC').strftime("%Y-%m-%d")
       @park = park
     else
       flash[:error] = 'You must log in to submit logs'
@@ -126,5 +126,30 @@ class WwffLogsController < ApplicationController
       flash[:error] = 'You must log in to submit logs'
       redirect_to '/'
       end
+  end
+
+  def download
+    callsign = current_user ? current_user.callsign : ''
+    callsign = params[:user].upcase if params[:user]
+    show
+
+    @contacts.each do |contact|
+#      contact.submitted_to_wwff = true
+      contact.update_column(:submitted_to_wwff, true)
+    end
+    # also mark duplicates and invalds as sent so as not to retry them next time
+    @dups.each do |contact|
+      contact.update_column(:submitted_to_wwff, true)
+    end
+    @invalid_contacts.each do |ic|
+      contact = ic[:contact]
+      contact.update_column(:submitted_to_wwff, true)
+    end
+
+    respond_to do |format|
+      format.adi { send_data @wwff_log, filename: @filename }
+    end
+
+
   end
 end

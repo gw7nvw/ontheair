@@ -8,8 +8,11 @@
      <%=render 'map_controls'%>
    </div>
 </div>
+<div id="right_scroll">
+
 <div class="erow">
-Please check that the following log is correct, and click the <b>Send Log</b> button to submit it to WWFF.
+Please check that the following log is correct, and click the <b>Download</b> button to download the log. You can then upload the log to WWFF at <%=link_to "http://www.wwffnewzealand.com/log-upload.html", "http://www.wwffnewzealand.com/log-upload.html", target: "_blank" %> <img src="/assets/external-link-symbol.png">
+
 <br/>
 <br/>
 Filename: <%=@filename%><br/>
@@ -27,9 +30,10 @@ Duplicate contacts rejected: <%=@dups.count%><br/>
   <%=link_to "Contact: "+contact.id.to_s, '/contacts/'+contact.id.to_s ,remote: true, :onclick => "linkHandler('submit')"%> <%=contact.callsign1%>&lt=&gt<%=contact.callsign2%><br/>
 <% end %>
 
-<%=link_to "Send Log", '/wwff_logs/'+@park.code+"/send?user="+@user.callsign+"&resubmit="+@resubmit.to_s, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
+<%=link_to "Download Log", '/wwff_logs/'+@park.code+"/download.adi?user="+@user.callsign+"&resubmit="+@resubmit.to_s, class: "btn btn-small btn-primary" %>
 <%=link_to "Cancel", '/wwff_logs?user='+@user.callsign+"&resubmit="+@resubmit.to_s, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
-
+</div>
+</div>
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>
