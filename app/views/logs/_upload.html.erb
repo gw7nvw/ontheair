@@ -79,6 +79,16 @@
       </div>
 
       <div class="erow">
+        <div class="sectiontitle25">Do not trust chaser location data in this log:
+          <span title="Some logging apps automatically include the gridsquare or lat/long of the chaser's home QTH in a contact. This can lead to incorrect locations (if the chaser is portable) and the chaser wrongly being credited with activations if their home QTH gridsquare centre lies within an activation zone. Check this box to treat the chaser's supplied gridsquare location as unreliable"><%= image_tag("/assets/info.png", alt: "Info")  %></span>
+        </div>
+
+      </div>
+      <div class="erow">
+        <%= f.check_box :doc_unreliable_chaser_loc%><br/><br/>
+      </div>
+
+      <div class="erow">
         <div class="sectiontitle25">Filename:</div>
         <%= f.file_field :doc %>
       </div>

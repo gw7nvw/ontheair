@@ -170,7 +170,7 @@ class UsersControllerTest < ActionController::TestCase
 
     assert_select '#page_title', /ZL4NVW/
     assert_select '#user_status', /Registered user/
-    assert_select '#user_status', /authorised to edit hut and park data/
+    assert_select '#user_status', /authorised to edit location data/
     assert_select '#realname', /Matt Briggs/
     assert_select '#PIN', {count: 0, text: /1234/}
     assert_select '#acctnumber', {count: 0, text: /\+64271234567/}
@@ -257,7 +257,7 @@ class UsersControllerTest < ActionController::TestCase
 
     assert_select '#page_title', /ZL4NVW/
     assert_select '#user_status', /Registered user/
-    assert_select '#user_status', /authorised to edit hut and park data/
+    assert_select '#user_status', /authorised to edit location data/
     assert_select '#realname', /Matt Briggs/
     assert_select '#PIN', {count: 0, text: /1234/}
     assert_select '#acctnumber', {count: 0, text: /\+64271234567/}
@@ -351,7 +351,7 @@ class UsersControllerTest < ActionController::TestCase
 
     assert_select '#page_title', /ZL3CC/
     assert_select '#user_status', /Registered user/
-    assert_select '#user_status', /not authorised to edit hut and park data/
+    assert_select '#user_status', /not authorised to edit location data/
     assert_select '#realname', /Bob/
     assert_select '#PIN', /1234/
     assert_select '#acctnumber', /\+64271234567/
@@ -480,7 +480,7 @@ class UsersControllerTest < ActionController::TestCase
 
     assert_select '#page_title', /ZL3CC/
     assert_select '#user_status', /Registered user/
-    assert_select '#user_status', /not authorised to edit hut and park data/
+    assert_select '#user_status', /not authorised to edit location data/
     assert_select '#realname', /Bob/
     assert_select '#PIN', /1234/
     assert_select '#acctnumber', /\+64271234567/

@@ -171,7 +171,7 @@ class Log < ActiveRecord::Base
   # LOG FILE IMPORTS
   ####################################################################
 
-  def self.import(filetype, currentuser, filestr, user, default_callsign = nil, default_location = nil, no_create = false, ignore_error = false, do_not_lookup = false, force_callsign = false)
+  def self.import(filetype, currentuser, filestr, user, default_callsign = nil, default_location = nil, no_create = false, ignore_error = false, do_not_lookup = false, force_callsign = false, unreliable_chaser_loc = false)
     logs = []
     contacts = []
     errors = []
@@ -224,9 +224,9 @@ class Log < ActiveRecord::Base
 
       # parse this record
       if filetype == 'adif'
-        protolog, contact, timestring = Log.parse_adif_record(line, protolog, contact)
+        protolog, contact, timestring = Log.parse_adif_record(line, protolog, contact, unreliable_chaser_loc)
       else
-        protolog, contact, timestring = Log.parse_csv_record(line, protolog, contact)
+        protolog, contact, timestring = Log.parse_csv_record(line, protolog, contact, unreliable_chaser_loc)
       end
 
       # Override callsign if asked
@@ -427,7 +427,7 @@ class Log < ActiveRecord::Base
     lines
   end
 
-  def self.parse_csv_record(line, protolog, contact)
+  def self.parse_csv_record(line, protolog, contact, unreliable_chaser_loc = false)
     timestr = nil
     # split by ','
     # TODO: need way of doing this that respects ',' in quotes (does not split quoted text)
@@ -517,7 +517,7 @@ class Log < ActiveRecord::Base
     [protolog, contact, timestr]
   end
 
-  def self.parse_adif_record(line, protolog, contact)
+  def self.parse_adif_record(line, protolog, contact, unreliable_chaser_loc = false)
     timestr = nil
     freq_basis = ''
     my_city = ''
@@ -749,7 +749,11 @@ class Log < ActiveRecord::Base
         if value && !value.empty? && !value.strip.empty?
           pos = Asset.maidenhead_to_lat_lon(value.strip)
           contact.location2 = "POINT(#{pos[:x]} #{pos[:y]})"
-          contact.loc_source2 = 'user'
+          if unreliable_chaser_loc then
+            contact.loc_source2 = 'unreliable'
+          else
+            contact.loc_source2 = 'user'
+          end
         end
       when 'mode'
         if value && !value.empty? && !value.strip.empty?

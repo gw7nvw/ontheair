@@ -12,4 +12,5 @@ class Upload < ActiveRecord::Base
                                           message: ', Only ADIF files are permitted '
 
   attr_accessor :doc_do_not_lookup
+  attr_accessor :doc_unreliable_chaser_loc
 end

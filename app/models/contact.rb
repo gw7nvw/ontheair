@@ -211,7 +211,7 @@ class Contact < ActiveRecord::Base
   def get_all_asset2_codes(asset)
     codes = asset2_codes
     newcodes = codes
-    if location2 then newcodes += Asset.containing_codes_from_location(location2, asset) end
+    if location2 and loc_source2!="unreliable" then newcodes += Asset.containing_codes_from_location(location2, asset) end
     codes.each do |code|
       newcodes += VkAsset.containing_codes_from_parent(code)
     end
@@ -243,6 +243,7 @@ class Contact < ActiveRecord::Base
     # then lookup codes for assets2
     # replace supplied replaced codes with new master codes
     self.asset2_codes = Asset.find_master_codes(asset2_codes)
+  
     # look up contained_by_assets
     self.asset2_codes = get_all_asset2_codes(asset)
   end
@@ -268,7 +269,7 @@ class Contact < ActiveRecord::Base
       end
 
       # lookup location for asset2 by finding most accurate asset2 location
-      location = Asset.get_most_accurate_location(asset2_codes, loc_source2)
+      location = Asset.get_most_accurate_location(asset2_codes, location[:source], location[:location])
       self.loc_source2 = location[:source]
       self.location2 = location[:location]
     end

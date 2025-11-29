@@ -200,6 +200,7 @@ class LogsController < ApplicationController
   def savefile
     @upload = Upload.new(upload_params)
     do_not_lookup = false
+    unreliable_chaser_loc = false
 
     # get callsign from form
     location = params[:upload][:doc_location]
@@ -219,14 +220,17 @@ class LogsController < ApplicationController
     if params[:upload][:doc_do_not_lookup] && (params[:upload][:doc_do_not_lookup] == '1' or params[:upload][:doc_do_not_lookup] == true)
       do_not_lookup = true
     end
+    if params[:upload][:doc_unreliable_chaser_loc] && (params[:upload][:doc_unreliable_chaser_loc] == '1' or params[:upload][:doc_unreliable_chaser_loc] == true)
+      unreliable_chaser_loc = true
+    end
     success = @upload.save
 
     if success
       logfile = File.read(@upload.doc.path)
       results = if @upload.doc.path.match('.csv')
-                  Log.import('csv', current_user, logfile, user, callsign, location, params[:upload][:doc_no_create] == '1', params[:upload][:doc_ignore_error] == '1', do_not_lookup, force_callsign)
+                  Log.import('csv', current_user, logfile, user, callsign, location, params[:upload][:doc_no_create] == '1', params[:upload][:doc_ignore_error] == '1', do_not_lookup, force_callsign, unreliable_chaser_loc)
                 else
-                  Log.import('adif', current_user, logfile, user, callsign, location, params[:upload][:doc_no_create] == '1', params[:upload][:doc_ignore_error] == '1', do_not_lookup, force_callsign)
+                  Log.import('adif', current_user, logfile, user, callsign, location, params[:upload][:doc_no_create] == '1', params[:upload][:doc_ignore_error] == '1', do_not_lookup, force_callsign, unreliable_chaser_loc)
                 end
 
       logs = results[:logs]

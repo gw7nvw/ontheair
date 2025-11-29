@@ -796,7 +796,7 @@ class Asset < ActiveRecord::Base
 
   # Find most accurate location (lat/long) from a list of codes
   # if loc_source is provided then act as if we already have a location of
-  # that type (area||point||user) and only find things more accurate
+  # that type (unreliable||area||point||user) and only find things more accurate
   # Input: [codes], 'area' or 'point' or nil
   # Returns: {location: Point, loc_source: 'point'||'area'||'user', asset: Asset
   def self.get_most_accurate_location(codes, loc_source = '', location = nil)
@@ -835,8 +835,8 @@ class Asset < ActiveRecord::Base
         end
       end
     end
-    # single asset or nothing found from search, just use the first location
-    if !location && (codes.count > 0)
+    # single asset, unreliable locn or nothing found from search, just use the first location
+    if (!location && (codes.count > 0)) or loc_source == 'unreliable'
       assets = Asset.find_by_sql [" select id, code, safecode, asset_type, location, az_area, area from assets where code='#{codes.first}' limit 1"]
       if assets && (assets.count > 0)
         loc_asset = assets.first
