@@ -8,31 +8,34 @@ class ExternalSpot < ActiveRecord::Base
   after_save :create_consolidated_spot
 
   def create_consolidated_spot
-    round_freq = frequency.to_d.round(3).to_s
-    dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where updated_at > '#{MAX_SPOT_CONSOLIDATION_TIME.minutes.ago.to_s}' and \"activatorCallsign\" = '#{activatorCallsign}' and frequency = '#{round_freq}' and (mode = '#{mode}' or mode is null or mode = '' or '#{mode}'='') order by created_at desc limit 1" ]
-
-    if dups and dups.count>0 then
-      cs=dups.first
-    else
-      cs=ConsolidatedSpot.new
-      cs.activatorCallsign = activatorCallsign
-      cs.frequency = round_freq
-      cs.points = points if points and points>"0"
-      cs.altM = altM if altM and altM>"0"
-      cs.mode = mode
+    if time.to_time > 1.day.ago
+      round_freq = frequency.to_d.round(3).to_s
+      dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where updated_at > '#{MAX_SPOT_CONSOLIDATION_TIME.minutes.ago.to_s}' and \"activatorCallsign\" = '#{activatorCallsign}' and frequency = '#{round_freq}' and (mode = '#{mode}' or mode is null or mode = '' or '#{mode}'='') order by created_at desc limit 1" ]
+  
+      if dups and dups.count>0 then
+        cs=dups.first
+      else
+        cs=ConsolidatedSpot.new
+        cs.activatorCallsign = activatorCallsign
+        cs.frequency = round_freq
+        cs.points = points if points and points>"0"
+        cs.altM = altM if altM and altM>"0"
+        cs.mode = mode
+      end
+      cs.mode = mode if mode and mode != ''
+      cs.time += [time]
+      cs.callsign += [callsign]
+      cs.code += [code]
+      cs.code = cs.code.uniq
+      cs.name += [(name||"")+"; "]
+      cs.name = cs.name.uniq
+      cs.comments += [(callsign||"")+": "+(comments||"") + " ("+(time.strftime("%H:%M:%S")||"")+")"]
+      cs.comments = cs.comments.uniq  
+  
+      cs.spot_type += [spot_type]
+      cs.spot_type = cs.spot_type.uniq  
+      cs.save 
     end
-    cs.mode = mode if mode and mode != ''
-    cs.time += [time]
-    cs.callsign += [callsign]
-    cs.code += [code]
-    cs.code = cs.code.uniq
-    cs.name += [(name||"")+"; "]
-    cs.name = cs.name.uniq
-    cs.comments += [(callsign||"")+": "+(comments||"") + " ("+(time.strftime("%H:%M:%S")||"")+")"]
-
-    cs.spot_type += [spot_type]
-    cs.spot_type = cs.spot_type.uniq  
-    cs.save 
   end
 
   def record_is_unique
