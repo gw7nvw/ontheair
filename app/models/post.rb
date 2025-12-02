@@ -4,14 +4,20 @@
 class Post < ActiveRecord::Base
   include PostsHelper
   include MapHelper
+  MAX_SPOT_CONSOLIDATION_TIME = 15
+
   has_attached_file :image,
                     path: ':rails_root/public/system/:attachment/:id/:basename_:style.:extension',
                     url: '/system/:attachment/:id/:basename_:style.:extension'
 
   do_not_validate_attachment_file_type :image
 
-  after_save :update_item
   before_save { before_save_actions }
+  after_save { after_save_actions }
+
+  def after_save_actions
+    update_item
+  end
 
   def before_save_actions
     check_codes

@@ -1035,10 +1035,22 @@ function search_summits(field) {
      document.getElementById(divname+"minus").style.display="block";
    }
 
+   function clickilplus(divname) {
+     document.getElementById(divname).style.display = 'inline';
+     document.getElementById(divname+"plus").style.display="none";
+     document.getElementById(divname+"minus").style.display="inline";
+   }
+
 
    function clickminus(divname) {
      document.getElementById(divname).style.display = 'none';
      document.getElementById(divname+"plus").style.display="block";
+     document.getElementById(divname+"minus").style.display="none";
+   }
+
+   function clickilminus(divname) {
+     document.getElementById(divname).style.display = 'none';
+     document.getElementById(divname+"plus").style.display="inline";
      document.getElementById(divname+"minus").style.display="none";
    }
 

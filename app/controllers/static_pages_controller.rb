@@ -109,34 +109,34 @@ class StaticPagesController < ApplicationController
     @zone = params[:zone] if params[:zone]
 
     # read spots from db
-    @all_spots = ExternalSpot.where("time>'" + onehourago + "'")
+    @all_spots = ConsolidatedSpot.where("created_at>'" + onehourago + "'")
 
-    @hota_spots = Post.find_by_sql ["
-            select p.* from posts p
-            inner join items i on i.item_id=p.id and i.item_type='post'
-            where
-              i.topic_id=#{SPOT_TOPIC} and p.referenced_date>'#{Time.now.to_date - 1.days}'
-              and (p.referenced_time>'#{Time.now - 1.hours}' or p.referenced_time is null)
-            order by p.created_at desc;
-      "]
-    @hota_spots.each do |post|
-      created_by = User.find_by(id: post.created_by_id)
-      created_by_callsign = created_by ? created_by.callsign : ''
-      @all_spots.push(ExternalSpot.new(
-                        spot_type: 'ZLOTA',
-                        time: post.referenced_time ? post.referenced_time.in_time_zone('UTC') : '',
-                        activatorCallsign: post.callsign,
-                        callsign: created_by_callsign,
-                        code: post.asset_codes,
-                        frequency: post.freq,
-                        mode: post.mode,
-                        name: post.site,
-                        comments: (post.title || '') + ' - ' + (post.description || ''),
-                        id: -post.id
-                      ))
-    end
+#    @hota_spots = Post.find_by_sql ["
+#            select p.* from posts p
+#            inner join items i on i.item_id=p.id and i.item_type='post'
+#            where
+#              i.topic_id=#{SPOT_TOPIC} and p.referenced_date>'#{Time.now.to_date - 1.days}'
+#              and (p.referenced_time>'#{Time.now - 1.hours}' or p.referenced_time is null)
+#            order by p.created_at desc;
+#      "]
+#    @hota_spots.each do |post|
+#      created_by = User.find_by(id: post.created_by_id)
+#      created_by_callsign = created_by ? created_by.callsign : ''
+#      @all_spots.push(ExternalSpot.new(
+#                        spot_type: 'ZLOTA',
+#                        time: post.referenced_time ? post.referenced_time.in_time_zone('UTC') : '',
+#                        activatorCallsign: post.callsign,
+#                        callsign: created_by_callsign,
+#                        code: post.asset_codes,
+#                        frequency: post.freq,
+#                        mode: post.mode,
+#                        name: post.site,
+#                        comments: (post.title || '') + ' - ' + (post.description || ''),
+#                        id: -post.id
+#                      ))
+#    end
 
-    if @all_spots then @all_spots = @all_spots.sort_by { |hsh| hsh[:date].to_s + hsh[:time].to_s }.reverse! end
+    if @all_spots then @all_spots = @all_spots.sort_by { |hsh| hsh[:date].to_s + hsh[:time].last.to_s }.reverse! end
 
     if @zone && (@zone != 'all')
       @all_spots = @all_spots.select { |spot| DxccPrefix.continent_from_call(spot[:activatorCallsign]) == @zone }

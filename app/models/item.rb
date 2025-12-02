@@ -4,7 +4,13 @@ require "base64"
 
 # typed: false
 class Item < ActiveRecord::Base
-  after_save :update_topic_timestamp
+  MAX_SPOT_CONSOLIDATION_TIME = 15
+  after_save :after_save_actions
+
+  def after_save_actions
+    update_topic_timestamp
+    create_consolidated_spot if self.post and self.topic.is_spot
+  end
 
   def update_topic_timestamp
     if topic_id
@@ -94,6 +100,31 @@ class Item < ActiveRecord::Base
       enditem = Topic.find_by_id(item_id)
     end
     enditem
+  end
+
+  def create_consolidated_spot
+    dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where updated_at > '#{MAX_SPOT_CONSOLIDATION_TIME.minutes.ago.to_s}' and \"activatorCallsign\" = '#{post.callsign}' and frequency = '#{post.freq.to_s}' and mode = '#{post.mode}' order by created_at desc limit 1" ]
+
+    if dups and dups.count>0 then
+      cs=dups.first
+    else
+      cs=ConsolidatedSpot.new
+      cs.activatorCallsign = post.callsign
+      cs.frequency = post.freq
+      cs.mode = post.mode
+    end
+    cs.time += [self.created_at]
+    cs.callsign += [post.updated_by_name]
+    cs.code += post.asset_codes
+    cs.code = cs.code.uniq
+    cs.name += [post.site]
+    cs.name = cs.name.uniq
+    cs.comments += [post.updated_by_name+": "+post.description + " ("+post.created_at.strftime("%H:%M:%S")+")"]
+    cs.spot_type += ["ZLOTA"]
+    cs.spot_type = cs.spot_type.uniq
+    cs.post_id += [id.to_s]
+
+    cs.save
   end
 
   #Schedule delayed sending of emails

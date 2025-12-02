@@ -1,8 +1,10 @@
 <table class="cleanskin" id="spot_table">
+  <% count = 0 %>
   <% @all_spots.each do |spot| %>
-    <tr>
-      <td><%if spot[:spot_type]=="ZLOTA" then %><b><%=spot[:spot_type]%></b><% else %><%=spot[:spot_type]%> <% end %></td>
-        <td><%if spot[:time] then %><%=spot[:time].in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=spot[:time].in_time_zone(@tz.name).strftime("%H:%M:%S")%></b> (<%=@tz.name%>)<% end %></td>
+    <% count += 1 %>
+      <tr>
+      <td rowspan=2><% spot[:spot_type].uniq.each do |st| %><%if st=="ZLOTA" then %><b><%=st%></b><% else %><%=st%> <% end %> <br/> <% end %> <%if spot[:post_id] and spot[:post_id].count>0 then %><%=link_to 'View','/topics/35?post='+(-spot[:post_id].last).to_s,remote: true,  :id => 'view', :onclick => "linkHandler('view')"%><% end %></td>
+        <td><%if spot[:time] and spot[:time].last then %><%=spot[:time].last.to_time.in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=spot[:time].last.to_time.in_time_zone(@tz.name).strftime("%H:%M:%S")%></b> (<%=@tz.name%>)<% end %></td>
         <td><b><%=render :partial => 'callsign',  :locals => {:this_callsign => spot[:activatorCallsign]} %></b></td>
         <td>@ 
           <% codes=spot[:code] %>
@@ -22,20 +24,28 @@
             <% end %>
           <% end %>
         </td>
-        <td><i>de: <%=render :partial => 'callsign',  :locals => {:this_callsign => spot[:callsign]} %></i></td>
+        <td><i>de: <%=render :partial => 'callsign',  :locals => {:this_callsign => spot[:callsign].last} %></i></td>
 
         <td><%=if spot[:frequency] and spot[:frequency]!="" then spot[:frequency].to_f.round(5) else "" end%>-<%=spot[:mode]%></td>
       </tr>
       <tr>
         <td></td>
         <td colspan=7>
-          <%=spot[:name]%> -
-          <%=spot[:comments]%>
+          <%=spot[:name].join("")%> -
           <i><small><%if signed_in? and validlink  %> 
             <%=link_to '(respot)','/posts/new?topic_id='+SPOT_TOPIC.to_s+'&spot='+spot[:id].to_s, remote: true,  :id => 'respot', :onclick => "linkHandler('respot')" %>
             <%=link_to '(log chase)','/contacts/new?spot='+spot[:id].to_s, remote: true,  :id => 'chase', :onclick => "linkHandler('chase')" %>
           <% end%></small></i>
-        </td>
+          <br/>&rarr;<%=spot[:comments].last%>
+          <% if spot[:comments].count>1 %>
+            <%=render :partial => 'inline_expand_buttons',  :locals => {:expName => "item"+count.to_s, :initialSt => 0, :inline => true} %>
+            <div id="item<%=count.to_s%>" style="display: none">
+              <% spot[:comments][0..-2].reverse.each do |c| %>
+                <br/>&rarr;<%=c%>
+              <% end %>
+            </div>
+          <% end %>
+          </td>
       </tr>
   <% end %>
 </table>

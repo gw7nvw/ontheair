@@ -93,7 +93,7 @@ class UsersController < ApplicationController
 
     @searchtext = safe_param(params[:searchtext] || '')
     if params[:searchtext] && (params[:searchtext] != '')
-      whereclause = whereclause + " and (lower(callsign) like '%%" + @searchtext.downcase + "%%' )"
+      whereclause = whereclause + " and ((lower(callsign) like '%%" + @searchtext.downcase + "%%'  or lower(email) like '%%" + @searchtext.downcase + "%%'))"
     end
 
     @fullusers = User.find_by_sql ['select * from users where ' + whereclause + ' order by callsign']

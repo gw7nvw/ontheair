@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20250915040625) do
+ActiveRecord::Schema.define(version: 20251202013926) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -196,6 +196,23 @@ ActiveRecord::Schema.define(version: 20250915040625) do
     t.text     "comment"
     t.string   "code"
     t.integer  "updated_by_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "consolidated_spots", force: true do |t|
+    t.string   "time",              default: [], array: true
+    t.string   "callsign",          default: [], array: true
+    t.string   "activatorCallsign"
+    t.string   "code",              default: [], array: true
+    t.string   "name",              default: [], array: true
+    t.string   "frequency"
+    t.string   "mode"
+    t.string   "comments",          default: [], array: true
+    t.string   "spot_type",         default: [], array: true
+    t.string   "post_id",           default: [], array: true
+    t.string   "points"
+    t.string   "altM"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
