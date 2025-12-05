@@ -103,16 +103,21 @@ class Item < ActiveRecord::Base
   end
 
   def create_consolidated_spot
-    dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where updated_at > '#{MAX_SPOT_CONSOLIDATION_TIME.minutes.ago.to_s}' and \"activatorCallsign\" = '#{post.callsign}' and frequency = '#{post.freq.to_s}' and mode = '#{post.mode}' order by created_at desc limit 1" ]
+     round_freq = post.freq.to_d.round(3).to_s
+
+#    dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where updated_at > '#{MAX_SPOT_CONSOLIDATION_TIME.minutes.ago.to_s}' and \"activatorCallsign\" = '#{post.callsign}' and frequency = '#{post.freq.to_s}' and mode = '#{post.mode}' order by created_at desc limit 1" ]
+    dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where (updated_at > '#{MAX_SPOT_CONSOLIDATION_TIME.minutes.ago.to_s}' or '#{post.asset_codes.first}' = ANY(code)) and \"activatorCallsign\" = '#{post.callsign}' and (frequency = '#{round_freq}' or frequency is null or frequency = '' or frequency = '0.0' or '#{round_freq}' = '' or '#{round_freq}' = '0.0') and (mode = '#{post.mode}' or mode is null or mode = '' or '#{post.mode}'='') order by created_at desc limit 1" ]
 
     if dups and dups.count>0 then
       cs=dups.first
     else
       cs=ConsolidatedSpot.new
       cs.activatorCallsign = post.callsign
-      cs.frequency = post.freq
+      cs.frequency = round_freq
       cs.mode = post.mode
     end
+    cs.frequency = round_freq if round_freq and round_freq != '' and round_freq.to_d != 0
+    cs.mode = post.mode if post.mode and post.mode != ''
     cs.time += [self.created_at]
     cs.callsign += [post.updated_by_name]
     cs.code += post.asset_codes

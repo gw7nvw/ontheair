@@ -29,7 +29,6 @@
         <td><%=if spot[:frequency] and spot[:frequency]!="" then spot[:frequency].to_f.round(5) else "" end%>-<%=spot[:mode]%></td>
       </tr>
       <tr>
-        <td></td>
         <td colspan=7>
           <%=spot[:name].join("")%> -
           <i><small><%if signed_in? and validlink  %> 

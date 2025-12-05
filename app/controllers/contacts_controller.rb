@@ -90,7 +90,7 @@ class ContactsController < ApplicationController
     if params[:spot]
       spotid = params[:spot].to_i
       if spotid > 0
-        spot = ExternalSpot.find(spotid)
+        spot = ConsolidatedSpot.find(spotid)
         if spot
           @contact.callsign2 = spot.activatorCallsign
           @contact.date = Time.now.in_time_zone('UTC').at_beginning_of_minute

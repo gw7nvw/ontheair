@@ -46,12 +46,12 @@ class PostsController < ApplicationController
       @post.referenced_time = Time.now.in_time_zone('UTC').at_beginning_of_minute
       @post.referenced_date = Time.now.in_time_zone('UTC').at_beginning_of_minute
       if params[:spot].to_i > 0
-        spot = ExternalSpot.find_by(id: params[:spot].to_i)
+        spot = ConsolidatedSpot.find_by(id: params[:spot].to_i)
         if spot
           @post.callsign = spot.activatorCallsign
           @post.freq = spot.frequency
           @post.mode = spot.mode
-          @post.asset_codes = [spot.code.tr('_', '/')] if spot.code
+          @post.asset_codes = spot.code if spot.code
         end
       else
         spot = Post.find_by(id: -params[:spot].to_i)
