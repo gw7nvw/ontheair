@@ -619,6 +619,7 @@ class Asset < ActiveRecord::Base
             asset[:external] = false
             asset[:code] = a.code
             asset[:type] = a.asset_type
+            asset[:pnp_class] = a.type.pnp_class
             asset[:external_url] = a.external_url unless code =~ /ZL^[a-zA-Z]-./
             a.type ? (asset[:title] = a.type.display_name) : (logger.error 'ERROR: cannot find type ' + a.asset_type)
             asset[:url] = '/' + asset[:url] if asset[:url][0] != '/'
@@ -631,6 +632,7 @@ class Asset < ActiveRecord::Base
             asset[:codename] = va.codename
             asset[:external] = false
             asset[:code] = va.code
+            asset[:pnp_class] = asset[:type]
             asset[:type] = va.award
             asset[:type] = 'summit' if asset[:type] == 'SOTA'
             asset[:type] = 'pota park' if asset[:type] == 'POTA'
@@ -649,6 +651,7 @@ class Asset < ActiveRecord::Base
             asset[:code] = thecode.to_s
             asset[:type] = 'hump'
             asset[:title] = 'HEMA'
+            asset[:pnp_class] = 'HEMA'
   
           elsif (thecode = code.match(SIOTA_REGEX))
             # SiOTA
@@ -659,6 +662,7 @@ class Asset < ActiveRecord::Base
             asset[:code] = thecode.to_s
             asset[:type] = 'silo'
             asset[:title] = 'SiOTA'
+            asset[:pnp_class] = 'SiOTA'
   
           elsif (thecode = code.match(POTA_REGEX))
             # POTA
@@ -669,6 +673,7 @@ class Asset < ActiveRecord::Base
             asset[:external] = true
             asset[:code] = thecode.to_s
             asset[:type] = 'pota park'
+            asset[:pnp_class] = 'POTA'
   
           elsif (thecode = code.match(WWFF_REGEX))
             # WWFF
@@ -680,6 +685,7 @@ class Asset < ActiveRecord::Base
             asset[:code] = thecode.to_s
             asset[:type] = 'wwff park'
             asset[:title] = 'WWFF'
+            asset[:pnp_class] = 'WWFF'
   
           elsif (thecode = code.match(SOTA_REGEX))
             # SOTA
@@ -690,6 +696,7 @@ class Asset < ActiveRecord::Base
             asset[:code] = thecode.to_s
             asset[:type] = 'summit'
             asset[:title] = 'SOTA'
+            asset[:pnp_class] = 'SOTA'
           end
           assets.push(asset) if asset[:code]
           # if code provided

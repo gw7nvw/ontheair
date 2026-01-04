@@ -269,44 +269,82 @@ class UsersController < ApplicationController
     end
   end
 
+  #update users external spot filters
+  def update_external
+    @user = current_user
+    if current_user && current_user.is_admin || current_user.group_admin then @user = User.where(callsign: params[:id]).first end
+    @user.push_external_filter={programme: params[:programme], continent: params[:continent], mode: params[:mode], callsign: (params[:callsign]||"").gsub("*","%").gsub(" ",""), reference: (params[:reference]||"").gsub("*","%").gsub(" ","")}
+    @user.push_external_filter={continent: ['OC']} if @user.push_external_filter == "" or @user.push_external_filter==nil or @user.push_external_filter=={} or @user.push_external_filter.values.join('') == ""
+    @user.push_external_filter.delete(:reference) if @user.push_external_filter[:reference]=="" 
+    @user.push_external_filter.delete(:callsign) if @user.push_external_filter[:callsign]=="" 
+    @user.push_external_filter.delete(:mode) if @user.push_external_filter[:mode]=="" 
+    @user.push_external_filter.delete(:continent) if @user.push_external_filter[:continent]=="" 
+    @user.push_external_filter.delete(:programme) if @user.push_external_filter[:programme]=="" 
+    if @user.push_external_filter[:reference]
+      if @user.push_external_filter[:reference][0]!="%" then @user.push_external_filter[:reference]="%"+@user.push_external_filter[:reference] end
+      if @user.push_external_filter[:reference][-1]!="%" then @user.push_external_filter[:reference]=@user.push_external_filter[:reference]+"%" end
+    end
+    @user.push_external_filter.compact!
+    if !@user.save 
+      flash[:error]=@user.errors
+    end
+    show
+    render 'show'
+  end
   # Add a user-topic-link (mailer)
   def add
     @user = current_user
     if current_user && current_user.is_admin || current_user.group_admin then @user = User.where(callsign: params[:id]).first end
-    @topic = Topic.find_by_id(params[:topic_id])
 
-    if @user && @topic
-      utl = UserTopicLink.new
-      utl.user_id = @user.id
-      utl.topic_id = @topic.id
-      utl.mail = true if params[:method] == 'mail'
-      utl.notification = true if params[:method] == 'notification'
-      utl.save
+    if params[:topic_id] == "external" then
+      @user.push_include_external = true
+      @user.push_external_filter={continent: 'OC'} if @user.push_external_filter == "" or @user.push_external_filter==nil or @user.push_external_filter=={} or @user.push_external_filter.values.join('') == ""
+      @user.save
+      show
+      render 'show'
     else
-      flash[:error] = 'Error locating user or topic specified'
-    end
-    @topics = Topic.where(is_active = true)
-    show
-    render 'show'
-  end
 
+      @topic = Topic.find_by_id(params[:topic_id])
+
+      if @user && @topic
+        utl = UserTopicLink.new
+        utl.user_id = @user.id
+        utl.topic_id = @topic.id
+        utl.mail = true if params[:method] == 'mail'
+        utl.notification = true if params[:method] == 'notification'
+        utl.save
+      else
+        flash[:error] = 'Error locating user or topic specified'
+      end
+      @topics = Topic.where(is_active = true)
+      show
+      render 'show'
+    end
+  end
+ 
   # Delete a user-topic-link (mailer)
   def delete
     @user = current_user
     if current_user && current_user.is_admin then @user = User.where(callsign: params[:id]).first end
-    @topic = Topic.find_by_id(params[:topic_id])
-
-    if @user && @topic
-      utls = UserTopicLink.find_by_sql ['select * from user_topic_links where user_id=' + @user.id.to_s + ' and topic_id=' + @topic.id.to_s + " and #{params[:method]} = true"]
-      utls.each(&:destroy)
+    if params[:topic_id] == "external" then
+      @user.push_include_external = false
+      @user.save
+      show
+      render 'show'
     else
-      flash[:error] = 'Error locating user or topic specified'
-    end
-    @topics = Topic.where(is_active = true)
-    show
-    render 'show'
-  end
+      @topic = Topic.find_by_id(params[:topic_id])
 
+      if @user && @topic
+        utls = UserTopicLink.find_by_sql ['select * from user_topic_links where user_id=' + @user.id.to_s + ' and topic_id=' + @topic.id.to_s + " and #{params[:method]} = true"]
+        utls.each(&:destroy)
+      else
+        flash[:error] = 'Error locating user or topic specified'
+      end
+      @topics = Topic.where(is_active = true)
+      show
+      render 'show'
+    end
+  end
   def users_to_csv(items)
     if signed_in? && current_user.is_admin
       require 'csv'

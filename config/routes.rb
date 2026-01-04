@@ -90,6 +90,7 @@ get 'users/:id/district_progress', to: 'users#district_progress'
 get 'users/:id/p2p', to: 'users#p2p'
 get 'users/:id/add', to: 'users#add'
 get 'users/:id/delete', to: 'users#delete'
+get 'users/:id/set_external', to: 'users#update_external'
 match '/signup',  to: 'users#new',         via: 'get'
 
 resources :posts, only: [:new, :create, :show, :edit, :update]

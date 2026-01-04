@@ -194,7 +194,10 @@ class PostsController < ApplicationController
     @topic = Topic.find_by_id(params[:topic_id])
     if signed_in? && @topic && (@topic.is_public || current_user.is_admin || ((@topic.owner_id == current_user.id) && @topic.is_owners))
       @post = Post.new(post_params)
+
       if @post.callsign.nil? || (@post.callsign == '') then @post.callsign = current_user.callsign end
+      @post.callsign = @post.callsign.strip if @post.callsign
+      @post.mode = @post.mode.strip if @post.mode
       if params[:post][:asset_codes]
         #check fo X,Y
         if params[:post][:asset_codes].match(/-?([0-9\.])+,( )?-?([0-9\.])+/)

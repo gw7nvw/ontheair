@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20251202013926) do
+ActiveRecord::Schema.define(version: 20260104031252) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -215,6 +215,8 @@ ActiveRecord::Schema.define(version: 20251202013926) do
     t.string   "altM"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "old_spot_type",     default: [], array: true
+    t.string   "band"
   end
 
   create_table "contacts", force: true do |t|
@@ -897,6 +899,8 @@ ActiveRecord::Schema.define(version: 20251202013926) do
     t.string   "push_user_token"
     t.boolean  "push_include_comments"
     t.boolean  "push_include_map"
+    t.string   "push_external_filter"
+    t.boolean  "push_include_external"
   end
 
   add_index "users", ["callsign"], :name => "index_users_on_callsign"

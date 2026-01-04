@@ -207,7 +207,6 @@
         <th>Topic</th>
         <th>Email</th>
         <th>Notification</th>
-        <th>&nbsp;</th>
       </tr>
       <tr>
         <% topic=Topic.find_by_id(SPOT_TOPIC) %>
@@ -251,7 +250,60 @@
           No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'add_news', :onclick => "linkHandler('add_news')"  %>
         <% end %></td>
       </tr>
+      <tr>
+        <td> External Spots <small><span style="color:red", title="Enabling this option will cause spots received from other spotting platforms (SOTAWatch, WWFF, POTA, etc) to be forwarded to your device as notifications through pushover. It is currently under experimental testing and the service may be changed or discontinued in the future. Use at your own risk.">EXPERIMENTAL!</span></small></td>
+        <td> </td>
+        <td> <% if @user.push_include_external then  %>
+          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=external&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_external', :onclick => "linkHandler('delete_external')"  %> 
+        <% else %> 
+          No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=external&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'add_external', :onclick => "linkHandler('add_external')"  %>
+        <% end %></td>
+      </tr>
     </table>
+
+    <% if @user.push_include_external %>
+    <% 
+      @continents=Continent.where("name != 'all'")
+      @modes=[ 'AM', 'CW','DATA','FM','FT4','FT8','SSB']
+      @programmes=[ 'HEMA', 'POTA', 'SOTA', 'SiOTA', 'WWFF', 'ZLOTA']
+      %>
+    <div class="erow">
+      <div class="hrline">
+        <hr noshade size="4">
+      </div>
+    </div>
+
+    <h2>External Spot Filtering</h2>
+    <small><i>The following are the filters applied to external spots received from SOTA, POTA, WWFF, etc before they are forwarded to your mobile device via pushover notifications. This is <b>experimental</b> at this stage. Select one or more search terms in each field, or leave blank to include all.<br><b>Note</b>: we do not allow all spots from all continents to be forwarded as the overhead is too high.  At least one filter must be specified</i></small>
+    <%= form_tag "/users/#{@user.callsign}/set_external", method: "get", :remote => true, :style => 'margin-bottom: 0px' do %>
+    <% filter = @user.push_external_filter %>
+      <table id="external_table">
+        <tr>
+          <th>Programme</th>
+          <th><span title="Two-letter codes: OC, EU, NA, SA, AF, AS, AN">Continent</span></th>
+          <th>Mode</th>
+          <th>Actions</th>
+        </tr>
+        <tr>
+          <td><%=select_tag :programme, options_for_select(@programmes, filter[:programme]), {multiple: true, include_blank: "All"}%></td>
+          <td><%=select_tag :continent, options_from_collection_for_select(@continents, "code", "name", {selected: filter[:continent]}), {multiple: true, include_blank: "All"}%></td>
+          <td><%=select_tag :mode, options_for_select(@modes, filter[:mode]), {multiple: true, include_blank: "All"}%></td>
+          <td rowspan=4><%= submit_tag "Update filters", :id => "update", :onclick => "submitHandler('Updating...');", :class => "btn btn-small" %></td>
+        </tr>
+        <tr>
+          <td colspan=3> <b>AND</b> <small>Enter comma separated list of partial callsigns / references to match below, using * as a wildcard, or leave blank if additional filtering not needed</td>
+        </tr>
+        <tr>
+          <td>Activator callsign</td>
+          <td colspan=2><%= text_field_tag :callsign, (filter[:callsign]||"").gsub("%","*")%></td>
+        </tr>  
+        <tr>
+          <td>Site reference</td>
+          <td colspan=2><%= text_field_tag :reference, (filter[:reference]||"").gsub("%","*")%></td>
+        </tr>  
+      </table>
+    <% end %>
+    <% end %>
 
     <div class="erow">
       <div class="hrline">

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
   
 MAX_SPOT_CONSOLIDATION_TIME = 15
+MAX_SPOT_LIFETIME = 60
+
 # typed: false
 class ExternalSpot < ActiveRecord::Base
   validate :record_is_unique
@@ -8,13 +10,15 @@ class ExternalSpot < ActiveRecord::Base
   after_save :create_consolidated_spot
 
   def create_consolidated_spot
+    newspot = false
     if time.to_time > 1.day.ago
       round_freq = frequency.to_d.round(3).to_s
-      dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where (updated_at > '#{MAX_SPOT_CONSOLIDATION_TIME.minutes.ago.to_s}' or '#{code}' = ANY(code)) and \"activatorCallsign\" = '#{activatorCallsign}' and (frequency = '#{round_freq}' or frequency is null or frequency = '' or frequency = '0.0' or '#{round_freq}' = '' or '#{round_freq}' = '0.0') and (mode = '#{mode}' or mode is null or mode = '' or '#{mode}'='') order by created_at desc limit 1" ]
+      dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where (updated_at > '#{MAX_SPOT_CONSOLIDATION_TIME.minutes.ago.to_s}' or ('#{code}' = ANY(code) and updated_at > '#{MAX_SPOT_LIFETIME.minutes.ago.to_s}')) and \"activatorCallsign\" = '#{activatorCallsign}' and (frequency = '#{round_freq}' or frequency is null or frequency = '' or frequency = '0.0' or '#{round_freq}' = '' or '#{round_freq}' = '0.0') and (mode = '#{mode}' or mode is null or mode = '' or '#{mode}'='') order by created_at desc limit 1" ]
   
       if dups and dups.count>0 then
         cs=dups.first
       else
+        newspot = true
         cs=ConsolidatedSpot.new
         cs.activatorCallsign = activatorCallsign
         cs.frequency = round_freq
@@ -30,13 +34,14 @@ class ExternalSpot < ActiveRecord::Base
       cs.code = cs.code.uniq
       cs.name += [(name||"")+"; "]
       cs.name = cs.name.uniq
-      cs.comments += [(callsign||"")+": "+(comments||"") + " ("+(time.strftime("%H:%M:%S")||"")+")"]
+      cs.comments += [((callsign||"")+": "+(comments||"") + " ("+(time.strftime("%H:%M:%S")||"")+")")[0..254]]
       cs.comments = cs.comments.uniq  
   
       cs.spot_type += [spot_type]
       cs.spot_type = cs.spot_type.uniq  
       cs.save 
     end
+    #cs.create_notifications if newspot
   end
 
   def record_is_unique
@@ -207,7 +212,7 @@ class ExternalSpot < ActiveRecord::Base
           frequency: spot['actFreq'],
           mode: spot['actMode'],
           comments: spot['actComments'],
-          spot_type: 'PnP: ' + spot['actClass']
+          spot_type: spot['actClass']
         )
       end
       wwff_spots.each do |spot|

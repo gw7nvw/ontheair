@@ -103,13 +103,16 @@ class StaticPagesController < ApplicationController
   def spots
     alerts
 
-    onehourago = Time.at(Time.now.to_i - 60 * 60 * 1).in_time_zone('UTC').to_s
+    hoursago = 1
+    hoursago = params[:hoursago].to_i if params[:hoursago]
+
+    onehourago = Time.at(Time.now.to_i - 60 * 60 * hoursago).in_time_zone('UTC').to_s
 
     @zone = 'OC'
     @zone = params[:zone] if params[:zone]
 
     # read spots from db
-    @all_spots = ConsolidatedSpot.where("created_at>'" + onehourago + "'")
+    @all_spots = ConsolidatedSpot.where("updated_at>'" + onehourago + "'")
 
 #    @hota_spots = Post.find_by_sql ["
 #            select p.* from posts p

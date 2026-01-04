@@ -11,6 +11,8 @@ class User < ActiveRecord::Base
   serialize :qualified_count_total, Hash
   serialize :chased_count, Hash
   serialize :chased_count_total, Hash
+  serialize :push_external_filter, Hash
+
 
   attr_accessor :remeber_token, :activation_token, :reset_token
 
