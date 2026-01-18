@@ -19,7 +19,13 @@ class ApplicationController < ActionController::Base
 
   def global_variables
     as=AdminSettings.first
-
+    if current_user then
+      session[:dxcc] = current_user.dxcc
+      session[:dxcc]='ZL' if session[:dxcc] == nil or session[:dxcc] == ""  
+    end
+    @dxcc = session[:dxcc] if session[:dxcc]
+ 
+    if session[:dxcc]=='VK' then as.title = as.title.gsub('ZL','') end
     @site_title="'"+as.title+"'"
     @site_title_unquoted=as.title
     @site_title_image=as.imagepath
@@ -38,8 +44,8 @@ class ApplicationController < ActionController::Base
     else
       @tz = Timezone.find_by(name: 'UTC')
     end
-    @map_x=as.default_x.to_d
-    @map_y=as.default_y.to_d
+    #@map_x=as.default_x.to_d
+    #@map_y=as.default_y.to_d
     x = params[:x] if params[:x]
     y = params[:y] if params[:y]
     if x and y then
@@ -58,6 +64,7 @@ class ApplicationController < ActionController::Base
     @proj=as.default_projection    
     @layer=as.default_layer    
     @proj = 'EPSG:'+params[:proj] if params[:proj]
+    session[:proj] = @proj
     @proj_srs=@proj[5..-1].to_i
     @layer = params[:layer] if params[:layer]
     @default_pointlayers = current_user.pointlayers if current_user

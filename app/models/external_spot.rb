@@ -12,15 +12,16 @@ class ExternalSpot < ActiveRecord::Base
   def create_consolidated_spot
     newspot = false
     if time.to_time > 1.day.ago
-      round_freq = frequency.to_d.round(3).to_s
-      dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where (updated_at > '#{MAX_SPOT_CONSOLIDATION_TIME.minutes.ago.to_s}' or ('#{code}' = ANY(code) and updated_at > '#{MAX_SPOT_LIFETIME.minutes.ago.to_s}')) and \"activatorCallsign\" = '#{activatorCallsign}' and (frequency = '#{round_freq}' or frequency is null or frequency = '' or frequency = '0.0' or '#{round_freq}' = '' or '#{round_freq}' = '0.0') and (mode = '#{mode}' or mode is null or mode = '' or '#{mode}'='') order by created_at desc limit 1" ]
+      round_freq = frequency.to_d.round(4).to_s
+      base_call = activatorCallsign.gsub('\/P','')
+      dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where (updated_at > '#{MAX_SPOT_CONSOLIDATION_TIME.minutes.ago.to_s}' or ('#{code}' = ANY(code) and updated_at > '#{MAX_SPOT_LIFETIME.minutes.ago.to_s}')) and \"activatorCallsign\" = '#{base_call}' and (frequency = '#{round_freq}' or frequency is null or frequency = '' or frequency = '0.0' or '#{round_freq}' = '' or '#{round_freq}' = '0.0') and (mode = '#{mode}' or mode is null or mode = '' or '#{mode}'='') order by created_at desc limit 1" ]
   
       if dups and dups.count>0 then
         cs=dups.first
       else
         newspot = true
         cs=ConsolidatedSpot.new
-        cs.activatorCallsign = activatorCallsign
+        cs.activatorCallsign = base_call
         cs.frequency = round_freq
         cs.points = points if points and points>"0"
         cs.altM = altM if altM and altM>"0"
@@ -34,13 +35,14 @@ class ExternalSpot < ActiveRecord::Base
       cs.code = cs.code.uniq
       cs.name += [(name||"")+"; "]
       cs.name = cs.name.uniq
-      cs.comments += [((callsign||"")+": "+(comments||"") + " ("+(time.strftime("%H:%M:%S")||"")+")")[0..254]]
+      cs.comments += ["["+(if is_pnp then "PnP-" else "" end)+(spot_type||"")+"] "+((callsign||"")+": "+(comments||"") + " ("+(time.strftime("%H:%M:%S")||"")+")")[0..254]]
       cs.comments = cs.comments.uniq  
   
       cs.spot_type += [spot_type]
       cs.spot_type = cs.spot_type.uniq  
       cs.save 
     end
+    #we now do this on_save
     #cs.create_notifications if newspot
   end
 
@@ -212,7 +214,8 @@ class ExternalSpot < ActiveRecord::Base
           frequency: spot['actFreq'],
           mode: spot['actMode'],
           comments: spot['actComments'],
-          spot_type: spot['actClass']
+          spot_type: spot['actClass'],
+          is_pnp: true
         )
       end
       wwff_spots.each do |spot|

@@ -5,6 +5,46 @@ module MapHelper
     get_map_x_y(gridx, gridy, zoom, 3, 3, id)
   end
 
+  def get_3857_map_x_y(lng_deg, lat_deg, zoom, xsize, ysize, id)
+    system("mkdir /tmp/#{id}")
+    lat_rad = lat_deg/180 * Math::PI
+    n = 2.0 ** zoom
+    x = ((lng_deg + 180.0) / 360.0 * n)
+    y = ((1.0 - Math::log(Math::tan(lat_rad) + (1 / Math::cos(lat_rad))) / Math::PI) / 2.0 * n)
+    int_x = x.to_i
+    int_y = y.to_i
+    offset_x = 256 * (xsize - 1) / 2 + (x - int_x) * 256
+    offset_y = 256 * (ysize - 1) / 2 + (y - int_y) * 256
+  
+#    tile_server = "https://tile.tracestrack.com/topo__/{z}/{x}/{y}.png?key=874a3238a1d41a597af32a3a6fcdc74e"
+#    tile_server = "https://api.maptiler.com/maps/outdoor-v4/256/{z}/{x}/{y}.png?key=yXodNjKS8PzfQcTJ4N1G"
+    tile_server = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+    # 9 tiles, one in each direction around centre
+    minx = int_x - (xsize - 1) / 2
+    maxx = int_x + (xsize - 1) / 2
+    miny = int_y - (ysize - 1) / 2
+    maxy = int_y + (ysize - 1) / 2
+
+    puts int_x, minx, maxx
+    puts int_y, miny, maxy
+    # download all the tiles
+    for x in minx..maxx do
+      for y in miny..maxy do
+        download_tile(x, y, zoom, tile_server, id, false)
+      end
+    end
+
+    # concatenate tiles into one image
+    system("montage /tmp/#{id}/#{zoom}*.png -mode Concatenate -tile #{xsize}x#{ysize} /tmp/#{id}.jpg")
+    # add the dot, diameter 6 pixels
+    system("convert /tmp/#{id}.jpg -fill blue -stroke red -draw 'circle #{offset_x},#{offset_y} #{offset_x + 6},#{offset_y + 6}' -quality 45 /tmp/#{id}-point.jpg")
+    system("rm -r /tmp/#{id}") #remove temporary files
+    system("rm -r /tmp/#{id}.jpg") #remove temporary files
+
+    # return the filename of map image created
+    "/tmp/#{id}-point.jpg"
+  end
+
   # read map tiles from a ZXY tilestack for given location and zoom
   # concatenate them into a single jpg
   # add a 'You are here' point
@@ -68,15 +108,20 @@ module MapHelper
   end
 
   # Download an individual map tile
-  def download_tile(x, y, z, tile_server, id)
+  def download_tile(x, y, z, tile_server, id, reverse = true)
     begin
       # fill in reqired x, y, z to URL
       url = tile_server.gsub('{x}', x.to_s).gsub('{y}', y.to_s).gsub('{z}', z.to_s)
-      filename = '/tmp/' + id + '/' + z.to_s + '_' + (9999 - y).to_s + '_' + x.to_s
+      if reverse then 
+        filename = '/tmp/' + id + '/' + z.to_s + '_' + (9999 - y).to_s + '_' + x.to_s
+      else
+        filename = '/tmp/' + id + '/' + z.to_s + '_' + y.to_s + '_' + x.to_s
+      end
+      puts url, filename
 
       # download tile
       f = File.open(filename + '.png', 'wb') do |file|
-        file.write(open(url).read)
+        file.write(open(url, "Referer" => "https://ontheair.nz", "User-Agent" => "ontheair",).read)
       end
 
     # if we fail to download a tile (happens with bad grid ref or outside NZ)

@@ -104,7 +104,7 @@ def self.fetch
         duration = 1.0 * duration / 3600
       end
       @all_alerts.push(
-          starttime: if alert['startDate'].to_datetime then (alert['startDate']+' '+alert['endTime']).to_datetime.in_time_zone(@tz.name).strftime('%Y-%m-%d %H:%M') else '' end,
+          starttime: if alert['startDate'].to_datetime then (alert['startDate']+' '+alert['startTime']).to_datetime.in_time_zone(@tz.name).strftime('%Y-%m-%d %H:%M') else '' end,
           duration: duration,
           activatingCallsign: alert['activator'].strip,
           code: alert['reference'],

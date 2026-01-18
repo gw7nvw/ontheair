@@ -273,13 +273,14 @@ class UsersController < ApplicationController
   def update_external
     @user = current_user
     if current_user && current_user.is_admin || current_user.group_admin then @user = User.where(callsign: params[:id]).first end
-    @user.push_external_filter={programme: params[:programme], continent: params[:continent], mode: params[:mode], callsign: (params[:callsign]||"").gsub("*","%").gsub(" ",""), reference: (params[:reference]||"").gsub("*","%").gsub(" ","")}
+    @user.push_external_filter={programme: params[:programme], continent: params[:continent], mode: params[:mode], callsign: (params[:callsign]||"").gsub("*","%").gsub(" ",""), reference: (params[:reference]||"").gsub("*","%").gsub(" ",""), band: params[:band]}
     @user.push_external_filter={continent: ['OC']} if @user.push_external_filter == "" or @user.push_external_filter==nil or @user.push_external_filter=={} or @user.push_external_filter.values.join('') == ""
     @user.push_external_filter.delete(:reference) if @user.push_external_filter[:reference]=="" 
     @user.push_external_filter.delete(:callsign) if @user.push_external_filter[:callsign]=="" 
-    @user.push_external_filter.delete(:mode) if @user.push_external_filter[:mode]=="" 
-    @user.push_external_filter.delete(:continent) if @user.push_external_filter[:continent]=="" 
-    @user.push_external_filter.delete(:programme) if @user.push_external_filter[:programme]=="" 
+    @user.push_external_filter.delete(:mode) if @user.push_external_filter[:mode]=="" or @user.push_external_filter[:mode]==[""]
+    @user.push_external_filter.delete(:continent) if @user.push_external_filter[:continent]=="" or @user.push_external_filter[:continent]==[""]
+    @user.push_external_filter.delete(:programme) if @user.push_external_filter[:programme]=="" or @user.push_external_filter[:programme]==[""]
+    @user.push_external_filter.delete(:band) if @user.push_external_filter[:band]==""  or @user.push_external_filter[:band]==[""]
     if @user.push_external_filter[:reference]
       if @user.push_external_filter[:reference][0]!="%" then @user.push_external_filter[:reference]="%"+@user.push_external_filter[:reference] end
       if @user.push_external_filter[:reference][-1]!="%" then @user.push_external_filter[:reference]=@user.push_external_filter[:reference]+"%" end
@@ -296,25 +297,29 @@ class UsersController < ApplicationController
     @user = current_user
     if current_user && current_user.is_admin || current_user.group_admin then @user = User.where(callsign: params[:id]).first end
 
-    if params[:topic_id] == "external" then
-      @user.push_include_external = true
-      @user.push_external_filter={continent: 'OC'} if @user.push_external_filter == "" or @user.push_external_filter==nil or @user.push_external_filter=={} or @user.push_external_filter.values.join('') == ""
-      @user.save
+    if params[:method] == 'notification' and (@user.push_app_token.blank? or @user.push_user_token.blank?) then 
+      flash[:error] = "Pushover registration is required to receive instant notifications - see Pushover Config section to configure pushover or consult the user's guide for details of how to set up the pushover app"
+      @topics = Topic.where(is_active = true)
       show
       render 'show'
     else
-
-      @topic = Topic.find_by_id(params[:topic_id])
-
-      if @user && @topic
-        utl = UserTopicLink.new
-        utl.user_id = @user.id
-        utl.topic_id = @topic.id
-        utl.mail = true if params[:method] == 'mail'
-        utl.notification = true if params[:method] == 'notification'
-        utl.save
+      if params[:topic_id] == "external" then
+        @user.push_include_external = true
+        @user.push_external_filter={continent: 'OC'} if @user.push_external_filter == "" or @user.push_external_filter==nil or @user.push_external_filter=={} or @user.push_external_filter.values.join('') == ""
+        @user.save
       else
-        flash[:error] = 'Error locating user or topic specified'
+        @topic = Topic.find_by_id(params[:topic_id])
+      
+        if @user && @topic
+          utl = UserTopicLink.new
+          utl.user_id = @user.id
+          utl.topic_id = @topic.id
+          utl.mail = true if params[:method] == 'mail'
+          utl.notification = true if params[:method] == 'notification'
+          utl.save
+        else
+          flash[:error] = 'Error locating user or topic specified'
+        end
       end
       @topics = Topic.where(is_active = true)
       show

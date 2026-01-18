@@ -38,11 +38,14 @@ var polygon_layer;
 var polygon_simple_layer;
 var polygon_detail_layer;
 var points_layer;
+var vkpoints_layer;
 var site_map_layers={};
 var site_default_point_layers=['lake','lighthouse','summit','hump','volcano'];
 var site_all_point_layers=['park', 'hut','island','summit','lake'];
 var site_default_polygon_layers=[];
-
+var site_default_world_layer='OpenTopoMap';
+var site_default_world_zoom=11;
+var site_default_world_centre = [16085209, -4006631];
 //styles
 var site_docland_style;
 var site_district_style;
@@ -59,6 +62,7 @@ var site_huts_style;
 var site_humps_style;
 var site_public_humps_style;
 var site_summits_style;
+var site_silos_style;
 var site_volcano_style;
 var site_public_summits_style;
 var site_contacts_style;
@@ -91,6 +95,13 @@ function site_init() {
   $(window).resize(site_resizeHeader);
 
   if(typeof(map_map)=='undefined') {
+    if(typeof(def_dxcc)!='undefined') {
+      if(def_dxcc=='VK') {
+        def_proj="EPSG:3857"
+      } else {
+        def_proj='EPSG:2193'
+      }
+    }
     site_init_styles();
     if(typeof(def_proj)!='undefined') {
        site_projection=def_proj;
@@ -101,6 +112,21 @@ function site_init() {
     map_add_position_layer();
     
 
+    if (site_projection!='EPSG:2193') {
+       def_layer=site_default_world_layer;
+       def_zoom=site_default_world_zoom;
+       def_centre = site_default_world_centre;
+    }
+    if(typeof(def_layer)!='undefined') {
+       map_show_only_layer(def_layer);
+    }
+
+    if(typeof(def_zoom)!='undefined') {
+       map_zoom(def_zoom);
+    }
+    if(typeof(def_centre)!='undefined') {
+       map_map.getView().setCenter(def_centre);
+    }
     if(site_show_controls) {
       map_add_tooltip();
       map_on_click_activate(map_navigate_on_click_callback);
@@ -113,13 +139,6 @@ function site_init() {
       }
     }
 
-    if(typeof(def_layer)!='undefined') {
-       map_show_only_layer(def_layer);
-    }
-
-    if(typeof(def_zoom)!='undefined') {
-       map_zoom(def_zoom);
-    }
     currZoom = map_map.getView().getZoom();
     map_map.on('moveend', function(e) {
       var newZoom = map_map.getView().getZoom();
@@ -327,6 +346,7 @@ function site_points_style_function(feature, resoluton) {
   if(feature.get('asset_type')=="hump")  return site_humps_style;
   if((feature.get('asset_type')=="summit") && (feature.get('public_access')=='t')) return site_public_summits_style;
   if(feature.get('asset_type')=="summit")  return site_summits_style;
+  if(feature.get('asset_type')=="silo")  return site_silos_style;
   if(feature.get('asset_type')=="volcano")  return site_volcano_style;
   if(feature.get('asset_type')=="lighthouse")  return site_beacon_style;
   if(feature.get('asset_type')=="park")  return site_park_point_style;
@@ -353,7 +373,8 @@ function site_add_vector_layers() {
   region_detail_layer=map_add_vector_layer("Region Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_detail",site_region_style,false,15,32,null,'EPSG:2193');
 
   site_set_map_filters('point',site_default_point_layers);
-  points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,7,32,'point', 'EPSG:2193');
+  points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,5,32,'point', 'EPSG:2193');
+  vkpoints_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/vkhota2.map", "vkpoints",site_points_style_function,true,5,32,'point', 'EPSG:3857');
   contacts_layer=map_add_vector_layer("Contacts", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "contacts",site_contacts_style,false,1,32, 'EPSG:2193');
 
   map_map.addLayer(district_layer);
@@ -369,6 +390,7 @@ function site_add_vector_layers() {
   map_map.addLayer(polygon_simple_layer);
   map_map.addLayer(polygon_detail_layer);
   map_map.addLayer(points_layer);
+  map_map.addLayer(vkpoints_layer);
   map_map.addLayer(contacts_layer);
 }
 
@@ -422,9 +444,9 @@ function site_init_styles() {
   site_island_style=map_create_style("", null, 'rgba(256,256,0,0.4)', "#ff8c00", 2);
   site_lake_style=map_create_style("", null, 'rgba(0,128,255,0.4)', "#0066aa", 2);
   site_huts_style=map_create_style("circle", 3, "#2222ff", "#22ffff", 1);
-  site_park_point_style=map_create_style("x", 6, "#00aa00", "#22dd22", 1);
-  site_pota_point_style=map_create_style("x", 6, "#770077", "#770077", 1);
-  site_wwff_point_style=map_create_style("x", 6, "#994499", "#994499", 1);
+  site_park_point_style=map_create_style("x", 6, "#99ff99", "#009900", 1);
+  site_pota_point_style=map_create_style("x", 6, "#339933", "#003300", 1);
+  site_wwff_point_style=map_create_style("x", 6, "#003300", "#009900", 1);
   site_island_point_style=map_create_style("triangle", 4, "#ff8c00", "#ff8c00", 1);
   site_lake_point_style=map_create_style("x", 6, "#3366ff", "#3366ff", 1);
   site_public_lake_point_style=map_create_style("x", 6, "#0000cc", "#0000cc", 1);
@@ -432,6 +454,7 @@ function site_init_styles() {
   site_humps_style=map_create_style("triangle", 4, "#e60000", "#e60000", 1);
   site_public_humps_style=map_create_style("triangle", 4, "#800000", "#800000", 1);
   site_summits_style=map_create_style("triangle", 4, "#cc66ff", "#cc66ff", 1);
+  site_silos_style=map_create_style("cross", 4, "#ffff00", "#996600", 1);
   site_volcano_style=map_create_style("triangle", 4, "#ff1493", "#ff1493", 1);
   site_public_summits_style=map_create_style("triangle", 4, "#6600cc", "#6600cc", 1);
   site_contacts_style=map_create_style("circle", 4, "#2222ff", "#22ffff", 1);
@@ -1172,6 +1195,7 @@ function site_set_vector_layers(filter, layer, value) {
 function site_refresh_layer(filter) {
   if (filter=='point') {
     setTimeout( function() { points_layer.getSource().clear(); }, 1000);
+    setTimeout( function() { vkpoints_layer.getSource().clear(); }, 1000);
   } else {
     setTimeout( function() { polygon_layer.getSource().clear();polygon_simple_layer.getSource().clear();
       polygon_detail_layer.getSource().clear();

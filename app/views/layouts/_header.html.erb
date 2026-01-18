@@ -11,7 +11,18 @@
         </div>
           <nav>
             <ul class="nav pull-right" id="menus">
-                <li><%= link_to '...OnTheAir', '/', remote: true, :id => 'home_link', :onclick => "linkHandler('home_link')"  %></li>
+                <li id="fat-menu" class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                     <span id="VK" style="display: <%=if session[:dxcc]=='VK' then 'inline' else 'none' end %>"><img class="flag" src='/assets/australia_flag_background_20.png'></span>
+                     <span id="ZL" style="display: <%=if session[:dxcc]=='ZL' then 'inline' else 'none' end %>"><img class="flag" src='/assets/new_zealand_flag_background_20.png'></span>
+                     <b class="caret"></b>
+                  </a>
+                  <ul class="dropdown-menu">
+                    <li><%= link_to image_tag("/assets/new_zealand_flag_background_20.png") + " ZL", '/dxcc/zl', :onclick => "map_switch_proj('2193');linkHandler('home_link');", remote: true, data: {turbo_frame: "_top"} %></li>
+                    <li><%= link_to image_tag("/assets/australia_flag_background_20.png") + " VK", '/dxcc/vk', onclick: "map_show_only_layer('OpenTopoMap'); map_switch_proj('3857'); map_current_proj = '4326'; map_current_projname = 'WGS'; map_mpc.setProjection(ol.proj.get('EPSG:'+map_current_proj)); map_current_projdp = 4; map_set_coord_format(); linkHandler('home_link');", remote: true, data: {turbo_frame: "_top"} %></li>
+                  </ul>
+                </li>
+                <li id="home_link"><%= link_to '...OnTheAir', '/', remote: true, :id => 'home_link', :onclick => "linkHandler('home_link')"  %></li>
                 <li id="fat-menu" class="dropdown">
                   <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                      Info <b class="caret"></b>

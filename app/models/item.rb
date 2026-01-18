@@ -6,11 +6,12 @@ require "base64"
 class Item < ActiveRecord::Base
   MAX_SPOT_CONSOLIDATION_TIME = 15
   MAX_SPOT_LIFETIME = 60
+  SPOT_TOPIC = 35
   after_save :after_save_actions
 
   def after_save_actions
     update_topic_timestamp
-    create_consolidated_spot if self.post and self.topic.is_spot
+    create_consolidated_spot if self.post and self.topic_id==SPOT_TOPIC
   end
 
   def update_topic_timestamp

@@ -470,36 +470,38 @@ class Contact < ActiveRecord::Base
   def self.band_from_frequency(frequency)
     band = ''
     if frequency
-      band = '2190m' if (frequency >= 0.136) && (frequency <= 0.137)
-      band = '560m' if (frequency >= 0.501) && (frequency <= 0.504)
-      band = '160m' if (frequency >= 1.8) && (frequency <= 2)
-      band = '80m' if (frequency >= 3.5) && (frequency <= 4)
-      band = '60m' if (frequency >= 5.351) && (frequency <= 5.367)
-      band = '40m' if (frequency >= 7) && (frequency <= 7.3)
-      band = '30m' if (frequency >= 10.1) && (frequency <= 10.15)
-      band = '20m' if (frequency >= 14.0) && (frequency <= 14.35)
-      band = '17m' if (frequency >= 18.068) && (frequency <= 18.168)
-      band = '15m' if (frequency >= 21.0) && (frequency <= 21.45)
-      band = '12m' if (frequency >= 24.89) && (frequency <= 24.99)
-      band = '10m' if (frequency >= 28.0) && (frequency <= 29.7)
-      band = '6m' if (frequency >= 50) && (frequency <= 54)
-      band = '4m' if (frequency >= 70) && (frequency <= 71)
-      band = '2m' if (frequency >= 144) && (frequency <= 148)
-      band = '1.25m' if (frequency >= 222) && (frequency <= 225)
-      band = '70cm' if (frequency >= 420) && (frequency <= 450)
-      band = '33cm' if (frequency >= 902) && (frequency <= 928)
-      band = '23cm' if (frequency >= 1240) && (frequency <= 1300)
-      band = '13cm' if (frequency >= 2300) && (frequency <= 2450)
-      band = '9cm' if (frequency >= 3300) && (frequency <= 3500)
-      band = '6cm' if (frequency >= 5650) && (frequency <= 5925)
-      band = '3cm' if (frequency >= 10_000) && (frequency <= 10_500)
-      band = '1.25cm' if (frequency >= 24_000) && (frequency <= 24_250)
-      band = '6mm' if (frequency >= 47_000) && (frequency <= 47_200)
-      band = '4mm' if (frequency >= 75_500) && (frequency <= 81_000)
-      band = '2.5mm' if (frequency >= 119_980) && (frequency <= 120_020)
-      band = '2mm' if (frequency >= 142_000) && (frequency <= 149_000)
-      band = '1mm' if (frequency >= 241_000) && (frequency <= 250_000)
+      bandrec =  Band.find_by("min_frequency <= #{frequency} AND max_frequency >= #{frequency}")
+      band = bandrec.meter_band if bandrec
     end
+#      band = '2190m' if (frequency >= 0.136) && (frequency <= 0.137)
+#      band = '560m' if (frequency >= 0.501) && (frequency <= 0.504)
+#      band = '160m' if (frequency >= 1.8) && (frequency <= 2)
+#      band = '80m' if (frequency >= 3.5) && (frequency <= 4)
+#      band = '60m' if (frequency >= 5.351) && (frequency <= 5.367)
+#      band = '40m' if (frequency >= 7) && (frequency <= 7.3)
+#      band = '30m' if (frequency >= 10.1) && (frequency <= 10.15)
+#      band = '20m' if (frequency >= 14.0) && (frequency <= 14.35)
+#      band = '17m' if (frequency >= 18.068) && (frequency <= 18.168)
+#      band = '15m' if (frequency >= 21.0) && (frequency <= 21.45)
+#      band = '12m' if (frequency >= 24.89) && (frequency <= 24.99)
+#      band = '10m' if (frequency >= 28.0) && (frequency <= 29.7)
+#      band = '6m' if (frequency >= 50) && (frequency <= 54)
+#      band = '4m' if (frequency >= 70) && (frequency <= 71)
+#      band = '2m' if (frequency >= 144) && (frequency <= 148)
+#      band = '1.25m' if (frequency >= 222) && (frequency <= 225)
+#      band = '70cm' if (frequency >= 420) && (frequency <= 450)
+#      band = '33cm' if (frequency >= 902) && (frequency <= 928)
+#      band = '23cm' if (frequency >= 1240) && (frequency <= 1300)
+#      band = '13cm' if (frequency >= 2300) && (frequency <= 2450)
+#      band = '9cm' if (frequency >= 3300) && (frequency <= 3500)
+#      band = '6cm' if (frequency >= 5650) && (frequency <= 5925)
+#      band = '3cm' if (frequency >= 10_000) && (frequency <= 10_500)
+#      band = '1.25cm' if (frequency >= 24_000) && (frequency <= 24_250)
+#      band = '6mm' if (frequency >= 47_000) && (frequency <= 47_200)
+#      band = '4mm' if (frequency >= 75_500) && (frequency <= 81_000)
+#      band = '2.5mm' if (frequency >= 119_980) && (frequency <= 120_020)
+#      band = '2mm' if (frequency >= 142_000) && (frequency <= 149_000)
+#      band = '1mm' if (frequency >= 241_000) && (frequency <= 250_000)
     band
   end
 
@@ -507,35 +509,39 @@ class Contact < ActiveRecord::Base
   def self.frequency_from_band(band)
     band = band.downcase
     frequency = nil
-    frequency = 0.136 if band == '2190m'
-    frequency = 0.501 if band == '560m'
-    frequency = 1.8 if band == '160m'
-    frequency = 3.5 if band == '80m'
-    frequency = 5.3515 if band == '60m'
-    frequency = 7 if band == '40m'
-    frequency = 10.1 if band == '30m'
-    frequency = 14.0 if band == '20m'
-    frequency = 18.068 if band == '17m'
-    frequency = 21.0 if band == '15m'
-    frequency = 24.89 if band == '12m'
-    frequency = 28.0 if band == '10m'
-    frequency = 50 if band == '6m'
-    frequency = 70 if band == '4m'
-    frequency = 144 if band == '2m'
-    frequency = 222 if band == '1.25m'
-    frequency = 420 if band == '70cm'
-    frequency = 902 if band == '33cm'
-    frequency = 1240 if band == '23cm'
-    frequency = 2300 if band == '13cm'
-    frequency = 3300 if band == '9cm'
-    frequency = 5650 if band == '6cm'
-    frequency = 10_000 if band == '3cm'
-    frequency = 24_000 if band == '1.25cm'
-    frequency = 47_000 if band == '6mm'
-    frequency = 75_500 if band == '4mm'
-    frequency = 119_980 if band == '2.5mm'
-    frequency = 142_000 if band == '2mm'
-    frequency = 241_000 if band == '1mm'
+    if band
+      bandrec =  Band.find_by(meter_band: band)
+      frequency = bandrec.min_frequency if bandrec
+    end
+#    frequency = 0.136 if band == '2190m'
+#    frequency = 0.501 if band == '560m'
+#    frequency = 1.8 if band == '160m'
+#    frequency = 3.5 if band == '80m'
+#    frequency = 5.3515 if band == '60m'
+#    frequency = 7 if band == '40m'
+#    frequency = 10.1 if band == '30m'
+#    frequency = 14.0 if band == '20m'
+#    frequency = 18.068 if band == '17m'
+#    frequency = 21.0 if band == '15m'
+#    frequency = 24.89 if band == '12m'
+#    frequency = 28.0 if band == '10m'
+#    frequency = 50 if band == '6m'
+#    frequency = 70 if band == '4m'
+#    frequency = 144 if band == '2m'
+#    frequency = 222 if band == '1.25m'
+#    frequency = 420 if band == '70cm'
+#    frequency = 902 if band == '33cm'
+#    frequency = 1240 if band == '23cm'
+#    frequency = 2300 if band == '13cm'
+#    frequency = 3300 if band == '9cm'
+#    frequency = 5650 if band == '6cm'
+#    frequency = 10_000 if band == '3cm'
+#    frequency = 24_000 if band == '1.25cm'
+#    frequency = 47_000 if band == '6mm'
+#    frequency = 75_500 if band == '4mm'
+#    frequency = 119_980 if band == '2.5mm'
+#    frequency = 142_000 if band == '2mm'
+#    frequency = 241_000 if band == '1mm'
     frequency
   end
 
@@ -543,34 +549,36 @@ class Contact < ActiveRecord::Base
   def self.hema_band_from_frequency(frequency)
     band = ''
     if frequency
-      band = '1.8MHz' if (frequency >= 1.8) && (frequency <= 2)
-      band = '3.6MHz' if (frequency >= 3.5) && (frequency <= 4)
-      band = '5MHz' if (frequency >= 5.351) && (frequency <= 5.367)
-      band = '7MHz' if (frequency >= 7) && (frequency <= 7.3)
-      band = '10MHz' if (frequency >= 10.1) && (frequency <= 10.15)
-      band = '14MHz' if (frequency >= 14.0) && (frequency <= 14.35)
-      band = '18MHz' if (frequency >= 18.068) && (frequency <= 18.168)
-      band = '21MHz' if (frequency >= 21.0) && (frequency <= 21.45)
-      band = '24MHz' if (frequency >= 24.89) && (frequency <= 24.99)
-      band = '28MHz' if (frequency >= 28.0) && (frequency <= 29.7)
-      band = '50MHz' if (frequency >= 50) && (frequency <= 54)
-      band = '70MHz' if (frequency >= 70) && (frequency <= 71)
-      band = '144MHz' if (frequency >= 144) && (frequency <= 148)
-      band = '220MHz' if (frequency >= 222) && (frequency <= 225)
-      band = '430MHz' if (frequency >= 420) && (frequency <= 450)
-      band = '900MHz' if (frequency >= 902) && (frequency <= 928)
-      band = '1.24GHz' if (frequency >= 1240) && (frequency <= 1300)
-      band = '2.3GHz' if (frequency >= 2300) && (frequency <= 2450)
-      band = '3.4GHz' if (frequency >= 3300) && (frequency <= 3500)
-      band = '5.7GHz' if (frequency >= 5650) && (frequency <= 5925)
-      band = '10GHz' if (frequency >= 10_000) && (frequency <= 10_500)
-      band = '24GHz' if (frequency >= 24_000) && (frequency <= 24_250)
-      band = '47GHz' if (frequency >= 47_000) && (frequency <= 47_200)
-      band = '76GHz' if (frequency >= 75_500) && (frequency <= 81_000)
-      band = '122GHz' if (frequency >= 119_980) && (frequency <= 120_020)
-      band = '136GHz' if (frequency >= 142_000) && (frequency <= 149_000)
-      band = '248GHz' if (frequency >= 241_000) && (frequency <= 250_000)
+      bandrec =  Band.find_by("min_frequency <= #{frequency} AND max_frequency >= #{frequency}")
+      band = bandrec.freq_band if bandrec
     end
+#      band = '1.8MHz' if (frequency >= 1.8) && (frequency <= 2)
+#      band = '3.6MHz' if (frequency >= 3.5) && (frequency <= 4)
+#      band = '5MHz' if (frequency >= 5.351) && (frequency <= 5.367)
+#      band = '7MHz' if (frequency >= 7) && (frequency <= 7.3)
+#      band = '10MHz' if (frequency >= 10.1) && (frequency <= 10.15)
+#      band = '14MHz' if (frequency >= 14.0) && (frequency <= 14.35)
+#      band = '18MHz' if (frequency >= 18.068) && (frequency <= 18.168)
+#      band = '21MHz' if (frequency >= 21.0) && (frequency <= 21.45)
+#      band = '24MHz' if (frequency >= 24.89) && (frequency <= 24.99)
+#      band = '28MHz' if (frequency >= 28.0) && (frequency <= 29.7)
+#      band = '50MHz' if (frequency >= 50) && (frequency <= 54)
+#      band = '70MHz' if (frequency >= 70) && (frequency <= 71)
+#      band = '144MHz' if (frequency >= 144) && (frequency <= 148)
+#      band = '220MHz' if (frequency >= 222) && (frequency <= 225)
+#      band = '430MHz' if (frequency >= 420) && (frequency <= 450)
+#      band = '900MHz' if (frequency >= 902) && (frequency <= 928)
+#      band = '1.24GHz' if (frequency >= 1240) && (frequency <= 1300)
+#      band = '2.3GHz' if (frequency >= 2300) && (frequency <= 2450)
+#      band = '3.4GHz' if (frequency >= 3300) && (frequency <= 3500)
+#      band = '5.7GHz' if (frequency >= 5650) && (frequency <= 5925)
+#      band = '10GHz' if (frequency >= 10_000) && (frequency <= 10_500)
+#      band = '24GHz' if (frequency >= 24_000) && (frequency <= 24_250)
+#      band = '47GHz' if (frequency >= 47_000) && (frequency <= 47_200)
+#      band = '76GHz' if (frequency >= 75_500) && (frequency <= 81_000)
+#      band = '122GHz' if (frequency >= 119_980) && (frequency <= 120_020)
+#      band = '136GHz' if (frequency >= 142_000) && (frequency <= 149_000)
+#      band = '248GHz' if (frequency >= 241_000) && (frequency <= 250_000)
     band
   end
 end

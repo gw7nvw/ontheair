@@ -858,6 +858,7 @@ input {
 }
 
   .dropdown-menu {
+   min-width: 80px;
    z-index: 10010 !important;
 }
 
@@ -906,6 +907,10 @@ input {
 
 /* mobile specific */
 @media only screen and (max-width: 540px) {
+  .flag {
+    display: none;
+  }
+
   #menus {
     /* rules that only apply for canvases narrower than 1000px */
     font-size: 0.9em;

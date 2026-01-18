@@ -24,6 +24,18 @@ class StaticPagesController < ApplicationController
     end
   end
 
+  def dxcc
+    session[:dxcc]=params[:id].upcase
+    if current_user
+      current_user.dxcc=params[:id].upcase
+      current_user.save
+    end
+    @site_title_unquoted = "... On The Air"
+    @site_title_unquoted = "ZL "+@site_title_unquoted if session[:dxcc]=='ZL'
+    @site_title_quoted="'"+@site_title_unquoted+"'"
+    home
+    render "home"
+  end
 
   def home
     # Hanging this here just because
@@ -154,6 +166,18 @@ class StaticPagesController < ApplicationController
       @mode = params[:mode]
       @all_spots = @all_spots.select { |spot| @mode.upcase.include? spot[:mode].upcase }
     end
+  end
+
+  def delete_alert
+    alert = ExternalAlert.find_by(id: params[:id])
+    if current_user and (current_user.is_admin or current_user.is_web_admin or current_user.callsign == alert.activatingCallsign) then
+      alert.destroy
+      flash[:success] = "Alert #{params[:id]} deleted"
+    else
+      flash[:error] = "You do not have permissions to delete this alert"
+    end
+    alerts()
+    redirect_to '/alerts'
   end
 
   def alerts

@@ -70,6 +70,8 @@ var map_position_layer
 var maplayers = [];
 var map_last_centre='POINT(173 -41)';
 var map_filters={null: ""}
+var view_2193;
+var view_3857;
 
 // scratch layer behaviour
 var map_x_target=null;
@@ -561,27 +563,42 @@ function map_enable_draw(type, style, loc_dest, x_dest, y_dest, move) {
 
 
 
+function map_switch_proj(proj_name) {
+  if(proj_name == '2193') {
+    map_view_projection_name='EPSG:2193';
+    map_projection_name = '2193';
+    map_projection = epsg2193;
+    map_map.setView(view_2193);
+  } else {
+    map_view_projection_name='EPSG:3857';
+    map_projection_name = '3857';
+    map_projection = epsg3857;
+    map_map.setView(view_3857);
+  };
+}
 
 function map_init(divid, projection) {
         map_view_projection_name=projection;
         if(divid==null) divid='map';
-        if(projection=='EPSG:2193') {
-          var view = new ol.View({
+        view_2193 = new ol.View({
                      center: [1600000, 5500000],
                      zoom: 2, 
-		     projection: ol.proj.get(projection),
+		     projection: ol.proj.get('EPSG:2193'),
 //   		     maxResolution: 4891.969809375,
    		     maxResolution: 2445.9849046875,
                      numZoomLevels: 11
-          });
-        } else {
-          var view = new ol.View({
+        });
+        view_3857 = new ol.View({
                      zoom: 6,
-                     center: [0, 0],
-                     projection: ol.proj.get(projection)
-          });
-        }
+                     center: [14713610, -3304931],
+                     projection: ol.proj.get('EPSG:3857')
+        });
 
+        if(projection=='EPSG:2193') {
+          var view = view_2193
+        } else {
+          var view = view_3857
+        }
         map_mpc= new ol.control.MousePosition({
              coordinateFormat: createStringXY(map_current_projdp),
              projection: ol.proj.get('EPSG:'+map_current_proj)

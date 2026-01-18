@@ -352,25 +352,27 @@ class Post < ActiveRecord::Base
         #        end
 
         #        req = Net::HTTP::Get.new("#{url.path}?".concat(payloadspot.collect { |k,v| "#{k}=#{CGI::escape(v.to_s)}" }.join('&')), 'Content-Type' => 'application/json' )
-        req = Net::HTTP::Post.new("#{url.path}?", 'Content-Type' => 'application/json')
-        req.body = payloadspot.to_json
-        begin
-          res = http.request(req)
-          puts 'DEBUG: POTA response'
-          puts res.body.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
-          pspots = JSON.parse(res.body)
-        rescue StandardError
-          puts 'Send to POTA failed'
-          result = false
-          messages = 'Failed to contact POTA server'
-        else
-          ourspot = pspots.find { |ps| (ps['activator'] == callsign.upcase) && (ps['reference'] == region.upcase + '-' + subcode) && (ps['mode'] == mode.upcase) && ((ps['frequency']).to_i == (freq.to_f * 1000).to_i) }
-          if !ourspot
+        if !debug
+          req = Net::HTTP::Post.new("#{url.path}?", 'Content-Type' => 'application/json')
+          req.body = payloadspot.to_json
+          begin
+            res = http.request(req)
+            puts 'DEBUG: POTA response'
+            puts res.body.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
+            pspots = JSON.parse(res.body)
+          rescue StandardError
+            puts 'Send to POTA failed'
             result = false
-            puts 'DUBUG: spot not accepted by POTA'
-            messages = 'Spot not accepted by POTA for: ' + a_code + '; '
+            messages = 'Failed to contact POTA server'
           else
-            messages = 'Sent spot to POTA; '
+            ourspot = pspots.find { |ps| (ps['activator'] == callsign.upcase) && (ps['reference'] == region.upcase + '-' + subcode) && (ps['mode'] == mode.upcase) && ((ps['frequency']).to_i == (freq.to_f * 1000).to_i) }
+            if !ourspot
+              result = false
+              puts 'DUBUG: spot not accepted by POTA'
+              messages = 'Spot not accepted by POTA for: ' + a_code + '; '
+            else
+              messages = 'Sent spot to POTA; '
+            end
           end
         end
       else

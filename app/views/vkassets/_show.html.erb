@@ -114,6 +114,25 @@
 
 
 <script>
+    if(map_map) {
+      if (map_map.getView().getProjection().code_!='EPSG:3857') {
+        //Switch to web-mercator / opentopomap for overseas sites
+        map_show_only_layer('OpenTopoMap');
+        map_switch_proj('3857');
+        //switch coordinate display to WGS long/lat
+        map_current_proj = '4326';
+        map_current_projname = 'WGS';
+        map_mpc.setProjection(ol.proj.get('EPSG:'+map_current_proj));
+        map_current_projdp = 4;
+        map_set_coord_format();
+
+      }
+    }
+    place_init('<%=@asset.location%>',  0, site_purple_star);
+    <% if @asset.boundary then %>
+      place_init('<%=@asset.boundary_simple%>',  1,site_highlight_polygon);
+    <% end %>
+
     document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>
 

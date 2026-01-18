@@ -4,7 +4,11 @@
      elsif Time.now.in_time_zone(@tz.name).strftime('%Y-%m-%d') == alert[:starttime].to_time.in_time_zone(@tz.name).strftime('%Y-%m-%d') then stylestr="style='background: #f0e68c'" 
      else stylestr=''  end %>
     <tr <%=raw(stylestr) %> >
-      <td><%if alert[:programme]=="ZLOTA" then %><b><%=alert[:programme]%></b><% else %><%=alert[:programme]%> <% end %><br><%if alert[:id] and alert[:id].to_i<0 then %><%=link_to 'View','/topics/1?post='+(-alert[:id]).to_s,remote: true,  :id => 'view', :onclick => "linkHandler('view')"%><% end %> </td>
+      <td>
+         <%if alert[:programme]=="ZLOTA" then %><b><%=alert[:programme]%></b><% else %><%=alert[:programme]%> <% end %><br>
+         <%if alert[:id] and alert[:id].to_i<0 then %><%=link_to 'View','/topics/1?post='+(-alert[:id]).to_s,remote: true,  :id => 'view', :onclick => "linkHandler('view')"%><% end %> 
+         <%if alert[:id] and alert[:id].to_i>0 and current_user and (current_user.is_admin or current_user.is_web_admin or current_user.callsign == alert[:activatingCallsign]) then %> <%=link_to 'Delete','/alerts/'+(alert[:id]).to_s+"/delete",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')"%><% end %>
+      </td>
         <td><%if alert[:starttime] then %><%=alert[:starttime].in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=alert[:starttime].in_time_zone(@tz.name).strftime("%H:%M")%></b> <%if alert[:duration] then %> - <%=(alert[:starttime]+alert[:duration].to_f*3600).in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=(alert[:starttime]+alert[:duration].to_f*3600).in_time_zone(@tz.name).strftime("%H:%M")%></b> <% end %> (<%=@tz.name%>)<% end %></td>
         <td><b><%=render :partial => 'callsign',  :locals => {:this_callsign => alert[:activatingCallsign]} %></b></td>
         <td>@ 

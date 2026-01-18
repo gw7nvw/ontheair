@@ -1,5 +1,7 @@
 class ConsolidatedSpot < ActiveRecord::Base
 
+  include MapHelper
+
   before_save :add_band
   after_save :create_notifications
 
@@ -66,17 +68,33 @@ class ConsolidatedSpot < ActiveRecord::Base
         subs = new_subs - old_subs
       end 
 
-      raw_image = nil
-      if self.post_id and self.post_id.count>0 then
-        i = Item.find(post_id.first.to_i)
-        raw_image = i.raw_image if i
-      end
-      subs.each do |sub|
-        filter = sub.push_external_filter
-        puts "send notification to #{sub.callsign}"
-        sub.send_notification(summary, self.url, if sub.push_include_comments then self.comments.last else nil end, if sub.push_include_map then raw_image else nil end) 
-      end
+      if subs and subs.count>0 
+        raw_image = nil
+        if self.post_id and self.post_id.count>0 then
+          i = Item.find(post_id.first.to_i)
+          raw_image = i.raw_image if i
+        else
+          #check for coords
+          assets = Asset.assets_from_code(self.code.join(', '))
+          # should probaby use get_most_accurate ... but for simplicity
+          asset = assets.first
+          asset = asset[:asset] if asset
+          location = asset.location if asset
+  
+          filename = get_3857_map_x_y(location.x,location.y, 9, 3, 3, "cons_"+self.id.to_s) if location
+          image = File.read(filename) if filename
+          raw_image = Base64.encode64(image) if image
+        end
+  
+        
+        subs.each do |sub|
+          filter = sub.push_external_filter
+          puts "send notification to #{sub.callsign}"
+          sub.send_notification(summary, self.url, if sub.push_include_comments then self.comments.last else nil end, if sub.push_include_map then raw_image else nil end) 
+        end
+        system("rm #{filename}")
 
+      end
     end
     self.update_column :old_spot_type, self.spot_type
   true

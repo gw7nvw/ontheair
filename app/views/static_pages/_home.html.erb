@@ -4,7 +4,13 @@
    document.body.classList.remove('loading');
    document.title = <%= raw(@site_title) %>
    document.getElementById('logo').innerHTML = <%= raw(@site_title) %>
-
+   <% if session[:dxcc]=='VK' %>
+     document.getElementById('VK').style = "display:inline" 
+     document.getElementById('ZL').style = "display:none" 
+  <% else %>
+     document.getElementById('VK').style = "display:none" 
+     document.getElementById('ZL').style = "display:inline" 
+  <% end %>
 </script>
 
 <div id="actionbar" class="span7">

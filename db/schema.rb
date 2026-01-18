@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20260104031252) do
+ActiveRecord::Schema.define(version: 20260117032003) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -190,6 +190,14 @@ ActiveRecord::Schema.define(version: 20260104031252) do
     t.boolean  "all_region"
     t.boolean  "all_programme"
     t.boolean  "p2p"
+  end
+
+  create_table "bands", force: true do |t|
+    t.string "meter_band"
+    t.string "freq_band"
+    t.string "group"
+    t.float  "min_frequency"
+    t.float  "max_frequency"
   end
 
   create_table "comments", force: true do |t|
@@ -394,6 +402,7 @@ ActiveRecord::Schema.define(version: 20260104031252) do
     t.boolean  "is_test"
     t.string   "points"
     t.string   "altM"
+    t.boolean  "is_pnp"
   end
 
   create_table "geological_eons", force: true do |t|
@@ -901,6 +910,7 @@ ActiveRecord::Schema.define(version: 20260104031252) do
     t.boolean  "push_include_map"
     t.string   "push_external_filter"
     t.boolean  "push_include_external"
+    t.string   "dxcc"
   end
 
   add_index "users", ["callsign"], :name => "index_users_on_callsign"
@@ -921,7 +931,17 @@ ActiveRecord::Schema.define(version: 20260104031252) do
     t.float    "longitude"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.spatial  "location",   limit: {:srid=>4326, :type=>"point"}
+    t.spatial  "location",                  limit: {:srid=>4326, :type=>"point"}
+    t.spatial  "boundary",                  limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary_quite_simplified", limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary_simplified",       limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.integer  "caped_id"
+    t.float    "area"
+    t.boolean  "is_active"
+    t.string   "url"
+    t.string   "asset_type"
+    t.text     "description"
   end
 
   add_index "vk_assets", ["award"], :name => "vk_award_indx"
