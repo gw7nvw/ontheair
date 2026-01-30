@@ -143,6 +143,7 @@ class EmailReceive
         puts 'DEBUG subject: ' + subject
         puts 'DEBUG from number: ' + acctnumber
         user = User.find_by(acctnumber: acctnumber)
+        puts "ERROR: account not found for " + acctnumber if !user
       end
 
       if msgs then

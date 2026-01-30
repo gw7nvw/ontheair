@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+
 
 # typed: false
 class UsersController < ApplicationController
@@ -77,6 +77,12 @@ class UsersController < ApplicationController
     end
 
     @assets = Asset.find_by_sql [' select location, asset_type, minor, is_active, id, name, code, altitude from assets where code in (?) ', @asset_codes]
+    respond_to do |format|
+      format.html
+      format.js
+      format.csv { send_data assets_to_csv(@assets), filename: "#{@asset_type}s-#{@user.callsign.upcase}-#{Date.today}.csv" }
+    end
+
   end
 
   def p2p
@@ -350,6 +356,21 @@ class UsersController < ApplicationController
       render 'show'
     end
   end
+
+  def assets_to_csv(items)
+    require 'csv'
+    csvtext = ''
+    if items && items.first
+      columns = ["code", "name"]
+        csvtext << columns.to_csv
+        items.each do |item|
+          fields = [item.code, item.name]
+          csvtext << fields.to_csv
+        end
+     end
+      csvtext
+  end
+
   def users_to_csv(items)
     if signed_in? && current_user.is_admin
       require 'csv'

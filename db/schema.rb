@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20260117032003) do
+ActiveRecord::Schema.define(version: 20260129180503) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -84,6 +84,7 @@ ActiveRecord::Schema.define(version: 20260117032003) do
     t.boolean  "use_volcanic_field"
     t.boolean  "use_az"
     t.boolean  "use_within_sight"
+    t.string   "like_pattern"
   end
 
   add_index "asset_types", ["name"], :name => "index_asset_types_on_name"
@@ -942,6 +943,7 @@ ActiveRecord::Schema.define(version: 20260117032003) do
     t.string   "url"
     t.string   "asset_type"
     t.text     "description"
+    t.string   "old_code"
   end
 
   add_index "vk_assets", ["award"], :name => "vk_award_indx"

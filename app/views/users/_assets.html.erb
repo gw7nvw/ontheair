@@ -16,6 +16,9 @@
   </div>
 
   <div id="controls">
+    <% if signed_in? %>
+      <%=  link_to "Download", "/users/#{@user.callsign.upcase}/assets.csv?"+raw(@parameters), class: "btn btn-small btn-primary"%>
+    <% end %>
     <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
     <%=render 'map_controls'%>
   </div>

@@ -50,6 +50,53 @@ class Hump < ActiveRecord::Base
     end
   end
 
+  def self.get_lat_long(user, pass, regions) 
+    uri = URI('http://www.hema.org.uk/indexDatabase.jsp')
+    http = Net::HTTP.new(uri.host, uri.port)
+    req = Net::HTTP::Get.new(uri.path)
+    response = http.request(req)
+
+    cookie = response.get_fields('set-cookie')[0].split('; ')[0] + ';'
+
+    regions.each do |region|
+    
+      uri = URI("http://www.hema.org.uk/mapping.jsp")
+    
+      http = Net::HTTP.new(uri.host, uri.port)
+      req = Net::HTTP::Get.new(
+        uri.path + '?countryCode=' + region[:d] + '&regionCode=0&summitKey=0&action=&genericKey=',
+        'Cookie' => cookie,
+        'Host' => 'www.hema.org.uk',
+        'Origin' => 'http://www.hema.org.uk'
+      )
+
+      response = http.request(req)
+      body = response.body
+      rows = body.split('var Latitude=')
+      rows[1..-1].each do |row|
+        fields = row.split(';') 
+        lat = fields[0]
+        long = fields[1].split('=')[1]
+        name = fields[2].split('=')[1]
+        old_code = fields[7].split('summitKey=')[1].gsub("'","")
+        if region[:d][0..1]=='VK' then
+          asset = VkAsset.find_by(old_code: old_code) 
+        else
+          asset = Asset.find_by(old_code: old_code) 
+        end
+        if asset then
+          asset.location = "POINT (#{long} #{lat})"
+          puts "Updating asset #{asset.code} #{asset.name} = #{name}: #{asset.location.to_s}"
+          asset.save
+       else
+          puts "Not found: "+old_code
+       end
+     end
+   end
+
+  end
+
+
   def self.get_keys(user, pass, 
     regions = [
       { d: 'ZL1', r: 'HAK' },
@@ -119,13 +166,35 @@ class Hump < ActiveRecord::Base
     end
 
     summits.each do |summit|
-      asset = Asset.find_by(code: summit[:code])
-      if asset
-        puts 'found ' + asset.code
-        asset.old_code = summit[:id].to_s
-        asset.save
-      else
-        puts 'not found: ' + summit[:code]
+      if summit[:id].to_i>0 then
+        if summit[:code][0..1]=='VK'
+          asset = VkAsset.find_by(code: summit[:code])
+        else
+          asset = Asset.find_by(code: summit[:code])
+        end
+        if asset
+          puts 'found ' + asset.code
+          asset.old_code = summit[:id].to_s
+          asset.asset_type="hump"
+          asset.is_active=true
+          asset.url="vkassets/"+asset.code.gsub("/","_")
+          asset.save
+        else
+          puts 'not found: ' + summit[:code]
+          if summit[:code][0..1]=='VK'
+            asset = VkAsset.new
+          else
+            asset = Asset.new
+          end
+          asset.old_code = summit[:id].to_s
+          asset.code = summit[:code]
+          asset.name = summit[:name]
+          asset.asset_type="hump"
+          asset.is_active=true
+          asset.url="vkassets/"+asset.code.gsub("/","_")
+          asset.save
+          puts "Created: "+asset.code+", "+asset.name
+        end
       end
     end
   end

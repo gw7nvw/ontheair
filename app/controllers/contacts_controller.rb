@@ -32,14 +32,34 @@ class ContactsController < ApplicationController
     #QRP
     whereclause += ' and is_qrp1=true and is_qrp2=true' if params[:contact_qrp]
 
-    #All of class for this user's logs
-    if params[:class] && (params[:class] != 'all')
+    if params[:date] && !params[:date].empty?
+      whereclause = whereclause + " and (date = '#{params[:date]}')"
+    end
+
+    if params[:asset] && !params[:asset].empty?
+      whereclause = whereclause + " and ('" + params[:asset].tr('_', '/') + "'=ANY(asset1_codes) or '" + params[:asset].tr('_', '/') + "'=ANY(asset2_codes))"
+      @asset = Asset.find_by(safecode: params[:asset].upcase)
+      @assetcode = @asset.code if @asset
+    elsif params[:whochased] && !params[:whochased].empty?
+      @whochased=true
+      whereclause = whereclause + " and ('" + params[:whochased].tr('_', '/') + "'=ANY(asset2_codes) and (callsign2='" + @callsign + "'))"
+    elsif  params[:class] && (params[:class] != 'all')
       @class=params[:class]
+      asset_type=AssetType.find_by(name: @class)
+      if asset_type then
+        class_prefix=asset_type.like_pattern
+      else 
+        class_prefix='%'
+      end
       if params[:activator]
+        our_call_field1 = 'callsign1'
+        our_call_field2 = 'callsign2'
         whereclause = whereclause + " and ('" + @class + "'=ANY(asset1_classes)) and (callsign1='" + @callsign + "')"
         @activator = 'on'
       elsif params[:chaser]
-        whereclause = whereclause + " and ('" + @class + "'=ANY(asset2_classes)) and (callsign1='" + @callsign + "')"
+        our_call_field1 = 'callsign2'
+        our_call_field2 = 'callsign1'
+        whereclause = whereclause + " and ((('" + @class + "'=ANY(asset2_classes)) and (callsign1='" + @callsign + "')) or (('" + @class + "'=ANY(asset1_classes)) and (callsign2='" + @callsign + "')))"
         @chaser = 'on'
       else
         whereclause = whereclause + " and (callsign1='" + @callsign + "') and (('" + params[:class] + "'=ANY(asset1_classes)) or ('" + params[:class] + "'=ANY(asset2_classes)))"
@@ -48,27 +68,19 @@ class ContactsController < ApplicationController
       whereclause = whereclause + " and (callsign1='" + @callsign + "' or callsign2='" + @callsign + "')"
     end
 
-    if params[:whochased] && !params[:whochased].empty?
-      @whochased=true
-      whereclause = whereclause + " and ('" + params[:whochased].tr('_', '/') + "'=ANY(asset2_codes) and (callsign2='" + @callsign + "'))"
-    end
-
-    if params[:asset] && !params[:asset].empty?
-      whereclause = whereclause + " and ('" + params[:asset].tr('_', '/') + "'=ANY(asset1_codes) or '" + params[:asset].tr('_', '/') + "'=ANY(asset2_codes))"
-      @asset = Asset.find_by(safecode: params[:asset].upcase)
-      @assetcode = @asset.code if @asset
-    end
-
-    if params[:date] && !params[:date].empty?
-      whereclause = whereclause + " and (date = '#{params[:date]}')"
-    end
-
     if @orphans then 
       @fullcontacts = @user.orphan_activations 
     else
       @fullcontacts = Contact.find_by_sql ['select * from contacts where ' + whereclause + ' order by date desc, time desc']
     end
 
+    if params[:single_programme] and @callsign and @callsign!='ALL' and @class and (params[:chaser] or params[:activator]) then
+      #filter for only this programme
+      cs1 = Contact.find_by_sql ["select * from (select date, time, frequency, band, callsign1, callsign2, power1, signal1, comments1, loc_desc1, location1, is_qrp1, is_portable1, name1, power2, signal2, comments2, loc_desc2, location2, is_qrp2, is_portable2, name2, unnest(asset1_codes) as my_reference, asset1_codes, asset2_codes from contacts where id in (?) and #{our_call_field1} = ?) as foo where my_reference like '#{class_prefix}'",@fullcontacts.map{|c| c.id}, @callsign]
+      cs2 = Contact.find_by_sql ["select * from (select date, time, frequency, band, callsign1, callsign2, power1, signal1, comments1, loc_desc1, location1, is_qrp1, is_portable1, name1, power2, signal2, comments2, loc_desc2, location2, is_qrp2, is_portable2, name2, unnest(asset2_codes) as my_reference, asset1_codes, asset2_codes from contacts where id in (?) and #{our_call_field2} = ?) as foo where my_reference like '#{class_prefix}'",@fullcontacts.map{|c| c.id}, @callsign]
+#      cs2 = Contact.find_by_sql ["select * from (select date, time, frequency, band, callsign2 as callsign1, callsign1 as callsign2, power2 as power1, signal2 as signal1, comments2 as comments1, loc_desc2 as loc_desc1, location2 as location1, is_qrp2 as is_qrp1, is_portable2 as is_portable1, name2 as name1, power1 as power2, signal1 as signal2, comments1 as comments2, loc_desc1 as loc_desc2, location1 as location2, is_qrp1 as is_qrp2, is_portable1 as is_portable2, name1 as name2, unnest(asset2_codes) as asset1_code, asset2_codes as asset1_codes, asset1_codes as asset2_codes from contacts where id in (?) and #{our_call_field2} = ?) as foo where asset1_code like '#{class_prefix}'",@fullcontacts.map{|c| c.id}, @callsign]
+       @fullcontacts = cs1 + cs2 
+    end
     @page_len = params[:pagelen] ? params[:pagelen].to_i : 20
 
     if params[:user_qrp] && @callsign

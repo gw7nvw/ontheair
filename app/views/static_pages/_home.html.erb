@@ -60,9 +60,13 @@
   </div>
 <% end %>
 
-<%= form_tag '/assets', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+<% if session[:dxcc]=='VK' then %>
+  <%= form_tag '/vkassets', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+<% else %>
+  <%= form_tag '/assets', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+<% end %>
   <br/>
-  <div class="rowtitle">Search for place:</div>
+  <div class="rowtitle">Search for <%=session[:dxcc]%> place:</div>
   <div class="rowtext">
     <input type="text" name="searchtext" value='<%=@searchtext%>'/>
   </div>

@@ -515,6 +515,20 @@
 
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+    if(map_map) {
+      if (map_map.getView().getProjection().code_!='EPSG:2193') {
+        //Switch to web-mercator / opentopomap for overseas sites
+        map_show_only_layer('NZTM Topo 2019');
+        map_switch_proj('2193');
+        //switch coordinate display to WGS long/lat
+        map_current_proj = '2193';
+        map_current_projname = 'NZTM';
+        map_mpc.setProjection(ol.proj.get('EPSG:'+map_current_proj));
+        map_current_projdp = 0;
+        map_set_coord_format();
+      }
+    }
+
   place_init('<%=@asset.location%>',  0, site_purple_star);
   <% if @asset.boundary_simple then %>
     place_init('<%=@asset.boundary_simple%>',  1,site_highlight_polygon);
