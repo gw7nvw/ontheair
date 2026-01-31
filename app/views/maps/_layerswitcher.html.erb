@@ -3,7 +3,7 @@
   <ul style="list-style-type:none;padding:0;margin:0;">
     <% @maplayers.each do |m| %>
       <li>
-         <% if params[:baselayer] and params[:baselayer]==m.name then checked=true else checked=false end %>
+         <% if @baselayer and @baselayer==m.name then checked=true else checked=false end %>
         <%=check_box_tag m.id.to_s, "1", checked, :onclick => "map_select_maplayer('"+m.name+"', '"+m.baseurl+"', '"+m.basemap+"', "+m.minzoom.to_s+", "+m.maxzoom.to_s+")"%>
         <%=m.name%>
       </li>
@@ -14,17 +14,17 @@
 <h2>Boundaries</h2>
   <ul style="list-style-type:none;padding:0;margin:0;">
     <li>
-      <% if params[:territorylayers] and params[:territorylayers].include?("district") then checked=true else checked=false end %>
+      <% if @territorylayers and @territorylayers.include?("district") then checked=true else checked=false end %>
       <%=check_box_tag "Districts", "1", checked, :onclick => "site_toggle_district_layer()"%>
       <%="Districts"%>
     </li>
     <li>
-      <% if params[:territorylayers] and params[:territorylayers].include?("region") then checked=true else checked=false end %>
+      <% if @territorylayers and @territorylayers.include?("region") then checked=true else checked=false end %>
       <%=check_box_tag "Regions", "1", checked, :onclick => "site_toggle_region_layer()"%>
       <%="Regions"%>
     </li>
     <li>
-      <% if params[:territorylayers] and params[:territorylayers].include?("geology") then checked=true else checked=false end %>
+      <% if @territorylayers and @territorylayers.include?("geology") then checked=true else checked=false end %>
       <%=check_box_tag "Geology", "1", checked, :onclick => "site_toggle_geology_layer()"%>
       <%="Geology"%>
     </li>
@@ -36,7 +36,7 @@
     <% AssetType.where("name != 'all'").each do |a| %>
       <% if a.has_location then %>
         <li>
-          <% if params[:pointlayers] and params[:pointlayers].include?(a.name) then checked=true else checked=false end %>
+          <% if @pointlayers and @pointlayers.include?(a.name) then checked=true else checked=false end %>
           <%=check_box_tag a.id.to_s, "1", checked, :onclick => "site_toggle_vector_layers('point','"+a.name+"')"%>
           <%=a.display_name%>
         </li>
@@ -53,7 +53,7 @@
     <% AssetType.where("name != 'all'").each do |a| %>
       <% if a.has_boundary then %>
         <li>
-          <% if params[:polygonlayers] and params[:polygonlayers].include?(a.name) then checked=true else checked=false end %>
+          <% if @polygonlayers and @polygonlayers.include?(a.name) then checked=true else checked=false end %>
           <%=check_box_tag a.id.to_s, "1", checked, :onclick => "site_toggle_vector_layers('polygon','"+a.name+"')"%>
           <%=a.display_name%>
         </li>

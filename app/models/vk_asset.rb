@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # typed: false
 class VkAsset < ActiveRecord::Base
   before_validation { assign_calculated_fields }
@@ -17,13 +15,47 @@ class VkAsset < ActiveRecord::Base
     false
   end
 
+  def x
+   location.x if location
+  end
+
+  def y
+   location.y if location
+  end
+
   def maidenhead
-    ''
+    if location
+      mhl = '######'
+      abc = 'abcdefghijklmnopqrstuvwxyz'
+      lat = location.y
+      long = location.x
+      long += 180
+      lat += 90
+
+      long20 = (long / 20).to_i
+      lat10 = (lat / 10).to_i
+      long2 = ((long - (long20 * 20)) / 2).to_i
+      lat1 = (lat - (lat10 * 10)).to_i
+      longm = ((long - (long20 * 20 + long2 * 2)) * 12).to_i
+      latm = ((lat - (lat10 * 10 + lat1)) * 24).to_i
+      mhl[0] = abc[long20].upcase
+      mhl[1] = abc[lat10].upcase
+      mhl[2] = long2.to_s
+      mhl[3] = lat1.to_s
+      mhl[4] = abc[longm]
+      mhl[5] = abc[latm]
+    else
+      mhl = ''
+    end
+    mhl
   end
 
 
   def type
-    nil
+    type = AssetType.find_by(name: asset_type)
+    type ||= AssetType.find_by(name: 'all')
+    type
+
   end
 
   def self.import_siota

@@ -68,27 +68,40 @@ class Post < ActiveRecord::Base
   end
 
   def add_map_image
+    international = false
     if location == nil
       if asset_codes
         point_loc = nil
         poly_loc = nil
         asset_codes.each do |ac|
-          a = Asset.find_by(code: ac)
-          if a && a.type.has_boundary
-            poly_loc = { x: a.x, y: a.y } if a.location
-          elsif a && a.location
-            point_loc = { x: a.x, y: a.y }
+          assets = Asset.assets_from_code(ac)
+          asset = assets.first
+          a = asset[:asset] if asset
+#           a = Asset.find_by(code: ac)
+          if a then
+            international=true if a.class.to_s!='Asset' 
+            if a.type.has_boundary
+              poly_loc = { x: a.x, y: a.y } if a.location
+            elsif a.location
+              point_loc = { x: a.x, y: a.y }
+            end
           end
         end
         calc_loc = point_loc || poly_loc
       end
     else
-      xyarr = transform_geom(location.x, location.y, 4326, 2193)
-      calc_loc = { x: xyarr[0], y: xyarr[1] }
+      # user specified a location - treat all as international asor else we'd need
+      # to check where in world it was
+      international = true
+      calc_loc = { x: location.x, y: location.y }
     end
-
+  
     if calc_loc
-      filename = get_map(calc_loc[:x], calc_loc[:y], 9, 'map_' + id.to_s)
+      if international then
+        filename = get_3857_map_x_y(calc_loc[:x], calc_loc[:y], 9, 3, 3, "map_"+id.to_s) 
+      else
+        filename = get_map(calc_loc[:x], calc_loc[:y], 9, 'map_' + id.to_s)
+      end
       #    filename=get_map_zoomed(location[:x], location[:y], 7,15, "map_"+self.id.to_s)
       begin
         self.image = File.open(filename, 'rb')

@@ -160,7 +160,7 @@ class EmailReceive
             asset_suffix = asset_suffix.gsub(/([a-zA-Z])([0-9])/, '\1-\2')
           end
           asset_code = asset_code + '/' + asset_suffix
-          [4..msgs.length - 2].each do |cnt|
+          (4..msgs.length - 2).each do |cnt|
             msgs[cnt] = msgs[cnt + 1]
           end
           msgs.delete_at(msgs.length - 1)
