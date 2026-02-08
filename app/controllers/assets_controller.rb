@@ -40,6 +40,7 @@ class AssetsController < ApplicationController
     @asset_type = AssetType.find_by(name: safe_param(asset_type))
 
     @searchtext = safe_param(params[:searchtext] || '')
+puts "SEARCHTEXT"+@searchtext
     unless @limit
       if params[:searchtext] && (params[:searchtext] != '')
         @limit = 500 # 100

@@ -5,6 +5,11 @@ class ConsolidatedSpot < ActiveRecord::Base
   before_save :add_band
   after_save :create_notifications
 
+  def before_save_actions
+     add_band
+     self.comments=self.comments[0..254] if self.comments
+  end
+
   def self.delete_old_spots
     oneweekago=Time.at(Time.now.to_i - 60 * 60 * 24 * 7).in_time_zone('UTC').to_s
     ActiveRecord::Base.connection.execute("delete from consolidated_spots where updated_at < '#{oneweekago}'")

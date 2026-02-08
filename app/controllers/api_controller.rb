@@ -120,6 +120,7 @@ class ApiController < ApplicationController
     end
     respond_to do |format|
       format.js { render json: spots.to_json }
+      format.json { render json: spots.to_json }
       format.html { render json: spots.to_json }
       format.csv { send_data asset_to_csv(spots), filename: "spots-#{Time.now.strftime("%Y-%m-%dT%H:%M:%SZ")}.csv" }
     end
@@ -191,6 +192,7 @@ class ApiController < ApplicationController
     end
     respond_to do |format|
       format.js { render json: res.to_json }
+      format.json { render json: res.to_json }
       format.html { render json: res.to_json }
     end
   end

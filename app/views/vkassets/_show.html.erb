@@ -117,7 +117,7 @@
     if(map_map) {
       if (map_map.getView().getProjection().code_!='EPSG:3857') {
         //Switch to web-mercator / opentopomap for overseas sites
-        map_show_only_layer('OpenTopoMap');
+        map_show_only_layer('OpenHikingMap');
         map_switch_proj('3857');
         //switch coordinate display to WGS long/lat
         map_current_proj = '4326';

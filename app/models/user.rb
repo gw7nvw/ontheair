@@ -254,8 +254,10 @@ class User < ActiveRecord::Base
       at_list = asset_type.split(',').map { |at| "'" + at.strip + "'" }.join(',')
     end
 
-    codes1 = Contact.find_by_sql [' select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where ((user1_id=' + id.to_s + ' and ' + qrp_query1 + ') or (user2_id=' + id.to_s + ' and ' + qrp_query2 + "))) as c inner join assets a on a.code = c.asset1_codes where a.is_active=true and #{minor_query} and a.asset_type in (" + at_list + '); ']
-    codes2 = Contact.find_by_sql [' select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where ((user1_id=' + id.to_s + ' and ' + qrp_query1 + ') or (user2_id=' + id.to_s + ' and ' + qrp_query2 + "))) as c inner join assets a on a.code = c.asset2_codes where a.is_active=true and #{minor_query} and a.asset_type in (" + at_list + '); ']
+    #codes1 = Contact.find_by_sql [' select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where ((user1_id=' + id.to_s + ' and ' + qrp_query1 + ') or (user2_id=' + id.to_s + ' and ' + qrp_query2 + "))) as c inner join assets a on a.code = c.asset1_codes where a.is_active=true and #{minor_query} and a.asset_type in (" + at_list + '); ']
+    codes1 = Contact.find_by_sql [' select distinct(asset1_codes) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where ((user1_id=' + id.to_s + ' and ' + qrp_query1 + ') or (user2_id=' + id.to_s + ' and ' + qrp_query2 + "))) as c inner join assets a on a.code = c.asset1_codes where a.valid_from<c.time and (a.valid_to is null or a.valid_to>c.time) and #{minor_query} and a.asset_type in (" + at_list + '); ']
+    #codes2 = Contact.find_by_sql [' select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where ((user1_id=' + id.to_s + ' and ' + qrp_query1 + ') or (user2_id=' + id.to_s + ' and ' + qrp_query2 + "))) as c inner join assets a on a.code = c.asset2_codes where a.is_active=true and #{minor_query} and a.asset_type in (" + at_list + '); ']
+    codes2 = Contact.find_by_sql [' select distinct(asset2_codes) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where ((user1_id=' + id.to_s + ' and ' + qrp_query1 + ') or (user2_id=' + id.to_s + ' and ' + qrp_query2 + "))) as c inner join assets a on a.code = c.asset2_codes where a.valid_from<c.time and (a.valid_to is null or a.valid_to>c.time) and #{minor_query} and a.asset_type in (" + at_list + '); ']
     if include_external == true
       codes3 = ExternalChase.find_by_sql [" select concat(summit_code) as summit_code from external_chases where user_id='#{id}' and asset_type in (" + at_list + ');']
       codes4 = ExternalActivation.find_by_sql [" select concat(summit_code) as summit_code from external_activations where user_id='#{id}' and asset_type in (" + at_list + ');']
@@ -289,7 +291,7 @@ class User < ActiveRecord::Base
     date_query = ''
     date_query_ext = ''
     codes3 = []
-
+    
     asset_type = params[:asset_type] if params[:asset_type]
     include_minor = params[:include_minor] if params[:include_minor]
     include_external = params[:include_external] if params[:include_external]
@@ -319,9 +321,10 @@ class User < ActiveRecord::Base
     else
       at_list = asset_type.split(',').map { |at| "'" + at.strip + "'" }.join(',')
     end
-
-    codes1 = Contact.find_by_sql [' select distinct(asset1_codes' + date_query + ') as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id=' + id.to_s + ' and ' + qrp_query1 + ') as c inner join assets a on a.code = c.asset1_codes where a.asset_type in (' + at_list + ") and a.is_active=true and #{minor_query}; "]
-    codes2 = Contact.find_by_sql [' select distinct(asset2_codes' + date_query + ') as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id=' + id.to_s + ' and ' + qrp_query2 + ') as c inner join assets a on a.code = c.asset2_codes where a.asset_type in (' + at_list + ") and a.is_active=true and #{minor_query}; "]
+    #codes1 = Contact.find_by_sql [' select distinct(asset1_codes' + date_query + ') as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id=' + id.to_s + ' and ' + qrp_query1 + ') as c inner join assets a on a.code = c.asset1_codes where a.asset_type in (' + at_list + ") and a.is_active=true and #{minor_query}; "]
+    codes1 = Contact.find_by_sql [' select distinct(asset1_codes' + date_query + ') as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id=' + id.to_s + ' and ' + qrp_query1 + ') as c inner join assets a on a.code = c.asset1_codes where a.asset_type in (' + at_list + ") and a.valid_from<c.time and (a.valid_to is null or a.valid_to>c.time) and #{minor_query}; "]
+    #codes2 = Contact.find_by_sql [' select distinct(asset2_codes' + date_query + ') as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id=' + id.to_s + ' and ' + qrp_query2 + ') as c inner join assets a on a.code = c.asset2_codes where a.asset_type in (' + at_list + ") and a.is_active=true and #{minor_query}; "]
+    codes2 = Contact.find_by_sql [' select distinct(asset2_codes' + date_query + ') as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id=' + id.to_s + ' and ' + qrp_query2 + ') as c inner join assets a on a.code = c.asset2_codes where a.asset_type in (' + at_list + ") and a.valid_from<c.time and (a.valid_to is null or a.valid_to>c.time) and #{minor_query}; "]
     if include_external == true
       codes3 = ExternalChase.find_by_sql [' select concat(summit_code' + date_query_ext + ") as summit_code from external_chases where user_id='#{id}' and asset_type in (" + at_list + ');']
     end
@@ -390,8 +393,10 @@ class User < ActiveRecord::Base
       at_list = asset_type.split(',').map { |at| "'" + at.strip + "'" }.join(',')
     end
 
-    codes1 = Contact.find_by_sql [' select distinct(asset1_codes' + date_query + ') as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id=' + id.to_s + ' and ' + qrp_query1 + ') as c inner join assets a on a.code = c.asset1_codes where a.asset_type in (' + at_list + ") and a.is_active=true and #{minor_query}; "]
-    codes2 = Contact.find_by_sql [' select distinct(asset2_codes' + date_query + ') as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id=' + id.to_s + ' and ' + qrp_query2 + ') as c inner join assets a on a.code = c.asset2_codes where a.asset_type in (' + at_list + ") and a.is_active=true and #{minor_query}; "]
+    #codes1 = Contact.find_by_sql [' select distinct(asset1_codes' + date_query + ') as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id=' + id.to_s + ' and ' + qrp_query1 + ') as c inner join assets a on a.code = c.asset1_codes where a.asset_type in (' + at_list + ") and a.is_active=true and #{minor_query}; "]
+    codes1 = Contact.find_by_sql [' select distinct(asset1_codes' + date_query + ') as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id=' + id.to_s + ' and ' + qrp_query1 + ') as c inner join assets a on a.code = c.asset1_codes where a.asset_type in (' + at_list + ") and a.valid_from<c.time and (a.valid_to is null or a.valid_to>c.time) and #{minor_query}; "]
+    #codes2 = Contact.find_by_sql [' select distinct(asset2_codes' + date_query + ') as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id=' + id.to_s + ' and ' + qrp_query2 + ') as c inner join assets a on a.code = c.asset2_codes where a.asset_type in (' + at_list + ") and a.is_active=true and #{minor_query}; "]
+    codes2 = Contact.find_by_sql [' select distinct(asset2_codes' + date_query + ') as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id=' + id.to_s + ' and ' + qrp_query2 + ') as c inner join assets a on a.code = c.asset2_codes where a.asset_type in (' + at_list + ") and a.valid_from<c.time and (a.valid_to is null or a.valid_to>c.time) and #{minor_query}; "]
     if include_external == true
       codes3 = ExternalActivation.find_by_sql [' select concat(summit_code' + date_query_ext + ") as summit_code from external_activations where user_id='#{id}' and asset_type in (" + at_list + ');']
     end

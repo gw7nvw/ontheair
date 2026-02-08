@@ -266,7 +266,7 @@ function map_add_wmts_layer(name,url,layer,source,maxresolution,numzooms,project
 }
 
 
-function map_add_raster_layer(name,url,source,maxresolution,numzooms) {
+function map_add_raster_layer(name,url,source,maxresolution,numzooms,copyright, copyright_link) {
    if (source=="mapspast") {
            var tilegrid=mapspast_tilegrid;
            var layer_proj=epsg2193;
@@ -289,6 +289,8 @@ function map_add_raster_layer(name,url,source,maxresolution,numzooms) {
          crossOrigin: 'anonymous'
        }),
        name: name,
+       copyright: copyright,
+       copyright_link: copyright_link,
        visible: false,
        projection: epsg2193,
        maxResolution: maxresolution,
@@ -305,6 +307,8 @@ function map_add_raster_layer(name,url,source,maxresolution,numzooms) {
          crossOrigin: 'anonymous'
        }),
        name: name,
+       copyright: copyright,
+       copyright_link: copyright_link,
        visible: false,
        projection: epsg3857,
 //       maxResolution: maxresolution,
@@ -654,6 +658,7 @@ function map_show_only_layer(name, type) {
     map_map.getLayers().forEach(function (layer) {
       if (layer.get('name') != undefined && layer.get('name') === name) {
         layer.setVisible(true);
+        document.getElementById('copyright').innerHTML="<a href="+layer.values_.copyright_link+" target='_blank'>"+layer.values_.copyright+"</a>"
 //        if(type!='TILE') layer.getSource().clear(); //refresh
       } else {
         if (layer.getType()==type) {

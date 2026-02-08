@@ -8,6 +8,9 @@ class ContactsController < ApplicationController
     # orphan contacts
     @orphans = params[:orphans] ? true : false
 
+    @zlota_logs=true if params[:zlota_logs]=='true'
+    @download=true if params[:download]=='true'
+
     # everything else!
     if params[:filter]
       @filter = params[:filter]
@@ -56,11 +59,13 @@ class ContactsController < ApplicationController
         our_call_field2 = 'callsign2'
         whereclause = whereclause + " and ('" + @class + "'=ANY(asset1_classes)) and (callsign1='" + @callsign + "')"
         @activator = 'on'
+        @count_type="activator"
       elsif params[:chaser]
         our_call_field1 = 'callsign2'
         our_call_field2 = 'callsign1'
         whereclause = whereclause + " and ((('" + @class + "'=ANY(asset2_classes)) and (callsign1='" + @callsign + "')) or (('" + @class + "'=ANY(asset1_classes)) and (callsign2='" + @callsign + "')))"
         @chaser = 'on'
+        @count_type="chaser"
       else
         whereclause = whereclause + " and (callsign1='" + @callsign + "') and (('" + params[:class] + "'=ANY(asset1_classes)) or ('" + params[:class] + "'=ANY(asset2_classes)))"
       end
@@ -73,11 +78,14 @@ class ContactsController < ApplicationController
     else
       @fullcontacts = Contact.find_by_sql ['select * from contacts where ' + whereclause + ' order by date desc, time desc']
     end
-
-    if params[:single_programme] and @callsign and @callsign!='ALL' and @class and (params[:chaser] or params[:activator]) then
+    if @zlota_logs==true and ((!params[:chaser] and !params[:activator]) or (params[:chaser] and params[:activator]) or !@class) then
+      flash[:success]="Please select a class, and specify either chaser or activator logs"
+      @fullcontacts=nil
+    end
+    if @zlota_logs==true and @download==true and @callsign and @callsign!='ALL' and @class and (params[:chaser] or params[:activator]) then
       #filter for only this programme
-      cs1 = Contact.find_by_sql ["select * from (select date, time, frequency, band, callsign1, callsign2, power1, signal1, comments1, loc_desc1, location1, is_qrp1, is_portable1, name1, power2, signal2, comments2, loc_desc2, location2, is_qrp2, is_portable2, name2, unnest(asset1_codes) as my_reference, asset1_codes, asset2_codes from contacts where id in (?) and #{our_call_field1} = ?) as foo where my_reference like '#{class_prefix}'",@fullcontacts.map{|c| c.id}, @callsign]
-      cs2 = Contact.find_by_sql ["select * from (select date, time, frequency, band, callsign1, callsign2, power1, signal1, comments1, loc_desc1, location1, is_qrp1, is_portable1, name1, power2, signal2, comments2, loc_desc2, location2, is_qrp2, is_portable2, name2, unnest(asset2_codes) as my_reference, asset1_codes, asset2_codes from contacts where id in (?) and #{our_call_field2} = ?) as foo where my_reference like '#{class_prefix}'",@fullcontacts.map{|c| c.id}, @callsign]
+      cs1 = Contact.find_by_sql ["select c.*, a.name as my_ref_name from (select id, date, time, frequency, band, mode, callsign1, callsign2, power1, signal1, comments1, loc_desc1, location1, is_qrp1, is_portable1, name1, power2, signal2, comments2, loc_desc2, location2, is_qrp2, is_portable2, name2, unnest(asset1_codes) as my_reference, asset1_codes, asset2_codes from contacts where id in (?) and #{our_call_field1} = ?) as c left join assets a on a.code = c.my_reference where my_reference like '#{class_prefix}'",@fullcontacts.map{|c| c.id}, @callsign]
+      cs2 = Contact.find_by_sql ["select c.*, a.name as my_ref_name from (select id, date, time, frequency, band, mode, callsign1, callsign2, power1, signal1, comments1, loc_desc1, location1, is_qrp1, is_portable1, name1, power2, signal2, comments2, loc_desc2, location2, is_qrp2, is_portable2, name2, unnest(asset2_codes) as my_reference, asset1_codes, asset2_codes from contacts c where id in (?) and #{our_call_field2} = ?) as c left join assets a on a.code = c.my_reference where my_reference like '#{class_prefix}'",@fullcontacts.map{|c| c.id}, @callsign]
 #      cs2 = Contact.find_by_sql ["select * from (select date, time, frequency, band, callsign2 as callsign1, callsign1 as callsign2, power2 as power1, signal2 as signal1, comments2 as comments1, loc_desc2 as loc_desc1, location2 as location1, is_qrp2 as is_qrp1, is_portable2 as is_portable1, name2 as name1, power1 as power2, signal1 as signal2, comments1 as comments2, loc_desc1 as loc_desc2, location1 as location2, is_qrp1 as is_qrp2, is_portable1 as is_portable2, name1 as name2, unnest(asset2_codes) as asset1_code, asset2_codes as asset1_codes, asset1_codes as asset2_codes from contacts where id in (?) and #{our_call_field2} = ?) as foo where asset1_code like '#{class_prefix}'",@fullcontacts.map{|c| c.id}, @callsign]
        @fullcontacts = cs1 + cs2 
     end
@@ -195,12 +203,19 @@ class ContactsController < ApplicationController
   end
 
   def contacts_to_csv(items)
+    if @zlota_logs then
+      items.sort_by!{ |i| i.my_reference+i.time.to_s }
+    end
     if signed_in?
       require 'csv'
       csvtext = ''
       if items && items.first
         if params[:simple] == 'true'
-          columns = %w[id time callsign1 asset1_codes callsign2 asset2_codes frequency mode]
+          if @zlota_logs then
+            columns = %w[id time callsign1 callsign2 my_reference my_ref_name frequency mode signal1 signal2 asset1_codes asset2_codes]
+          else
+            columns = %w[id time callsign1 callsign2 frequency mode signal1 signal2 asset1_codes asset2_codes]
+          end
         else
           columns = []; items.first.attributes.each_pair { |name, _value| if !name.include?('password') && !name.include?('digest') && !name.include?('token') then columns << name end }
           columns += %w[place_codes1 place_codes2]

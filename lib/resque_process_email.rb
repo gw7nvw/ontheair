@@ -131,14 +131,28 @@ class EmailReceive
           puts 'PIN does not match'
           return(false)
         end
-      elsif subject && subject['SMSForwarder']
+      elsif subject && subject['You have a new SMS']
         via = 'SMS'
         puts 'DEBUG SMS'
         msg = 'SMS ' + body
         puts 'DEBUG body: ' + body
-        msgs = msg.split(' ')
+        lines = body.split(/\r?\n/)
+        puts "DEBUG lines "+lines.to_json
+        msgs = lines[1].split(' ')
+        msgs = msgs[1..-1] if msgs
+        puts "DEBUG msgs "+msgs.to_json
+        if msgs[0].upcase=='ALERT' then
+          posttype='alert'
+          msgs=msgs[1..-1]
+        elsif msgs[0].upcase=='SPOT' then
+          posttype='spot'
+          msgs=msgs[1..-1]
+        else
+          posttype='spot'
+        end
+    
         # passkey = nil
-        acctnumber = subject.split(':')[1]
+        acctnumber = lines[0].split(' ')[2]
         acctnumber = acctnumber.strip.delete(' ')
         puts 'DEBUG subject: ' + subject
         puts 'DEBUG from number: ' + acctnumber
@@ -147,14 +161,14 @@ class EmailReceive
       end
 
       if msgs then
-        callsign = msgs[2].upcase
+        callsign = msgs[0].upcase
         callsign = sub_callsign if callsign == '!'
-        asset_code = msgs[3].upcase
+        asset_code = msgs[1].upcase
         if asset_code.include?('/') || asset_code.include?('-')
           puts 'DEBUG: asset code appears to be complete'
         else
           puts 'DEBUG: asset code looks like SOTA-spot format'
-          asset_suffix = msgs[4]
+          asset_suffix = msgs[2]
           unless asset_suffix.include?('-')
             puts "DEBUG: asset suffix with no '-'"
             asset_suffix = asset_suffix.gsub(/([a-zA-Z])([0-9])/, '\1-\2')
@@ -166,16 +180,16 @@ class EmailReceive
           msgs.delete_at(msgs.length - 1)
           puts 'DEBUG: concatenated asset code = ' + asset_code
         end
-        freq = msgs[4]
-        mode = msgs[5].upcase
+        freq = msgs[2]
+        mode = msgs[3].upcase
         if posttype == 'spot'
-          comments = msgs[6..-1].join(' ')
+          comments = msgs[4..-1].join(' ')
           al_date = Time.now.in_time_zone('UTC').strftime('%Y-%m-%d')
           al_time = Time.now.in_time_zone('UTC').strftime('%H:%M')
         else
-          al_date = msgs[6]
-          al_time = msgs[7]
-          comments = msgs[8..-1].join(' ')
+          al_date = msgs[4]
+          al_time = msgs[5]
+          comments = msgs[6..-1].join(' ')
         end
   
         @post = Post.new

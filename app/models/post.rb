@@ -26,6 +26,7 @@ class Post < ActiveRecord::Base
     # again to vet child codes added
     check_codes
     self.callsign = callsign.upcase if callsign
+    #self.comments = self.comments[0..254] if comments
   end
 
   def update_item

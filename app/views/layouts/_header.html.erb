@@ -19,7 +19,7 @@
                   </a>
                   <ul class="dropdown-menu">
                     <li><%= link_to image_tag("/assets/new_zealand_flag_background_20.png") + " ZL", '/dxcc/zl', :onclick => "map_switch_proj('2193');linkHandler('home_link');", remote: true, data: {turbo_frame: "_top"} %></li>
-                    <li><%= link_to image_tag("/assets/australia_flag_background_20.png") + " VK", '/dxcc/vk', onclick: "map_show_only_layer('OpenTopoMap'); map_switch_proj('3857'); map_current_proj = '4326'; map_current_projname = 'WGS'; map_mpc.setProjection(ol.proj.get('EPSG:'+map_current_proj)); map_current_projdp = 4; map_set_coord_format(); linkHandler('home_link');", remote: true, data: {turbo_frame: "_top"} %></li>
+                    <li><%= link_to image_tag("/assets/australia_flag_background_20.png") + " VK", '/dxcc/vk', onclick: "map_show_only_layer('OpenHikingMap'); map_switch_proj('3857'); map_current_proj = '4326'; map_current_projname = 'WGS'; map_mpc.setProjection(ol.proj.get('EPSG:'+map_current_proj)); map_current_projdp = 4; map_set_coord_format(); linkHandler('home_link');", remote: true, data: {turbo_frame: "_top"} %></li>
                   </ul>
                 </li>
                 <li id="home_link"><%= link_to '...OnTheAir', '/', remote: true, :id => 'home_link', :onclick => "linkHandler('home_link')"  %></li>
@@ -94,8 +94,9 @@
                     <li><%= link_to "My Contacts", '/contacts',  remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')"  %></li>
                     <li><%= link_to "Unmatched contacts with Me", '/contacts?orphans=true',  remote: true,  :id => 'orphans_link', :onclick => "linkHandler('orphans_link')"  %></li>
                     <li class="divider"></li>
-                    <li><%= link_to "SOTA Logs", '/sota_logs', remote: true, :id => 'sota_link', :onclick => "linkHandler('sota_link')" %></li>
+                    <li><%= link_to "ZLOTA Logs", '/contacts?zlota_logs=true',  remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')"  %></li>
                     <li class="divider"></li>
+                    <li><%= link_to "SOTA Logs", '/sota_logs', remote: true, :id => 'sota_link', :onclick => "linkHandler('sota_link')" %></li>
                     <li><%= link_to "HEMA Logs", '/hema_logs', remote: true, :id => 'pota_link', :onclick => "linkHandler('hema_link')" %></li>
                     <li><%= link_to "POTA Logs", '/pota_logs', remote: true, :id => 'pota_link', :onclick => "linkHandler('pota_link')" %></li>
                     <li><%= link_to "WWFF Logs", '/wwff_logs', remote: true, :id => 'wwff_link', :onclick => "linkHandler('wwff_link')" %></li>

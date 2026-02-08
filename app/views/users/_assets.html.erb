@@ -43,13 +43,14 @@
       <% count=0; valid_count=0; invalid_count=0; @assets.uniq.sort_by { |asset| asset[:name] }.each do |a|; count+=1 %>
         <tr>
           <td>
-            <%if a.minor==true or a.is_active==false or a.type.keep_score==false or not @valid_codes.include?(a.code) %>
+            <%if a.minor==true or a.type.keep_score==false or not @valid_codes.include?(a.code) %>
               <%=link_to a.codename, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :class => "link_to", :onclick => "linkHandler('asset')" %>
               <% invalid_count+=1 %>
-              <%if a.minor==true or a.is_active==false or a.type.keep_score==false%> - site does not qualify<%end%>
+              <%if a.minor==true or a.type.keep_score==false or (a.is_active!=true and a.valid_to==nil)%> - site does not qualify<%end%>
               <%if not @valid_codes.include?(a.code)%> - insufficient contacts<%end%>
             <%else%>
               <%=link_to a.codename, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+              <%if a.is_active!=true and a.valid_to != nil %> - note: site was retired <%=a.valid_to.strftime('%Y-%m-%d')%><%end%>
               <% valid_count+=1 %>
             <%end%>
           </td>

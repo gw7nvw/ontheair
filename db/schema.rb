@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20260129180503) do
+ActiveRecord::Schema.define(version: 20260201050445) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -658,6 +658,8 @@ ActiveRecord::Schema.define(version: 20260129180503) do
     t.string   "imagetype"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "copyright_text"
+    t.string   "copyright_link"
   end
 
   create_table "nz_tribal_lands", primary_key: "ogc_fid", force: true do |t|

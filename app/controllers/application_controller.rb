@@ -23,7 +23,13 @@ class ApplicationController < ActionController::Base
       session[:dxcc] = current_user.dxcc
       session[:dxcc]='ZL' if session[:dxcc] == nil or session[:dxcc] == ""  
     end
-    @dxcc = session[:dxcc] if session[:dxcc]
+    if request.fullpath.include?('/vkassets') then
+      @dxcc = 'VK'
+    elsif request.fullpath.include?('/assets') then
+      @dxcc = 'ZL'
+    else
+      @dxcc = session[:dxcc] if session[:dxcc]
+    end
  
     if session[:dxcc]=='VK' then as.title = as.title.gsub('ZL','') end
     @site_title="'"+as.title+"'"

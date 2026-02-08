@@ -6,8 +6,12 @@ MAX_SPOT_LIFETIME = 60
 # typed: false
 class ExternalSpot < ActiveRecord::Base
   validate :record_is_unique
-
+  before_save :before_save_actions
   after_save :create_consolidated_spot
+
+  def before_save_actions
+     self.comments=self.comments[0..254] if self.comments
+  end
 
   def create_consolidated_spot
     newspot = false

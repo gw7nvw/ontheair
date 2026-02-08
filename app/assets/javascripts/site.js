@@ -43,7 +43,7 @@ var site_map_layers={};
 var site_default_point_layers=['lake','lighthouse','summit','hump','volcano'];
 var site_all_point_layers=['park', 'hut','island','summit','lake'];
 var site_default_polygon_layers=[];
-var site_default_world_layer='OpenTopoMap';
+var site_default_world_layer='OpenHikingMap';
 var site_default_world_zoom=11;
 var site_default_world_centre = [16085209, -4006631];
 //styles
@@ -405,13 +405,13 @@ function site_set_map_filters(filter, list) {
 }
 
 function site_add_layers() {
-        map_add_raster_layer('OpenTopoMap', 'https://a.tile.opentopomap.org/{z}/{x}/{y}.png', 'osm', 0, 23);
+        map_add_raster_layer('OpenHikingMap', 'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png', 'osm', 0, 23, "CC OpenHikingMap, OpenStreetMap", "https://wiki.openstreetmap.org/wiki/OpenHikingMap");
         //map_add_raster_layer('NZTM Topo 2019', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
-        map_add_raster_layer('NZTM Topo 2019', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
+        map_add_raster_layer('NZTM Topo 2019', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11, "CC LINZ", "https://www.linz.govt.nz/copyright");
         //map_add_raster_layer('Public Access Land', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/pal-2193/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
-        map_add_raster_layer('Public Access Land', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/pal-2193/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
-        map_add_raster_layer('(LINZ) Topo50 latest','http://tiles-a.data-cdn.linz.govt.nz/services;key=d8c83efc690a4de4ab067eadb6ae95e4/tiles/v4/layer=767/EPSG:2193/{z}/{x}/{y}.png','linz',8690, 17);
-        map_add_raster_layer('(LINZ) Airphoto latest','https://basemaps.linz.govt.nz/v1/tiles/aerial/2193/{z}/{x}/{y}.png?api='+LINZ_API_KEY,'linz',8690, 17);
+        map_add_raster_layer('Public Access Land', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/pal-2193/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11, "CC LINZ", "https://www.linz.govt.nz/copyright");
+        map_add_raster_layer('(LINZ) Topo50 latest','http://tiles-a.data-cdn.linz.govt.nz/services;key=d8c83efc690a4de4ab067eadb6ae95e4/tiles/v4/layer=767/EPSG:2193/{z}/{x}/{y}.png','linz',8690, 17, "CC LINZ", "https://www.linz.govt.nz/copyright");
+        map_add_raster_layer('(LINZ) Airphoto latest','https://basemaps.linz.govt.nz/v1/tiles/aerial/2193/{z}/{x}/{y}.png?api='+LINZ_API_KEY,'linz',8690, 17, "CC LINZ", "https://www.linz.govt.nz/copyright");
 
 
 
