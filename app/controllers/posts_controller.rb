@@ -214,11 +214,11 @@ class PostsController < ApplicationController
         end
       end
 
-      @post.site = ''
-      @post.asset_codes.each do |ac|
-        assets = Asset.assets_from_code(ac)
-        @post.site += (assets && (assets.count > 0) ? (assets.first[:name] || '') : '') + ' [' + ac + '] ' + (assets && (assets.count > 0) && assets.first[:asset] ? '{' + assets.first[:asset].maidenhead + '}; ' : '')
-      end
+#      @post.site = ''
+#      @post.asset_codes.each do |ac|
+#        assets = Asset.assets_from_code(ac)
+#        @post.site += (assets && (assets.count > 0) ? (assets.first[:name] || '') : '') + ' [' + ac + '] ' + (assets && (assets.count > 0) && assets.first[:asset] ? '{' + assets.first[:asset].maidenhead + '}; ' : '')
+#      end
       @post.created_by_id = current_user.id # current_user.id
       @post.updated_by_id = current_user.id # current_user.id
       if @topic.is_alert

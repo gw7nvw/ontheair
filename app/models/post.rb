@@ -26,7 +26,17 @@ class Post < ActiveRecord::Base
     # again to vet child codes added
     check_codes
     self.callsign = callsign.upcase if callsign
+    update_site
     #self.comments = self.comments[0..254] if comments
+  end
+
+  def update_site
+    self.site = ''
+    self.asset_codes.each do |ac|
+      assets = Asset.assets_from_code(ac)
+      self.site += (assets && (assets.count > 0) ? (assets.first[:name] || '') : '') + ' [' + ac + '] ' + (assets && (assets.count > 0) && assets.first[:asset] ? '{' + assets.first[:asset].maidenhead + '}; ' : '')
+    end
+    puts "SITE: "+self.site
   end
 
   def update_item

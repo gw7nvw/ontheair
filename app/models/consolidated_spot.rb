@@ -2,12 +2,13 @@ class ConsolidatedSpot < ActiveRecord::Base
 
   include MapHelper
 
-  before_save :add_band
+  before_save {before_save_actions}
   after_save :create_notifications
 
   def before_save_actions
      add_band
      self.comments=self.comments[0..254] if self.comments
+     self.spot_type = self.spot_type.compact if self.spot_type
   end
 
   def self.delete_old_spots
@@ -62,8 +63,8 @@ class ConsolidatedSpot < ActiveRecord::Base
   def create_notifications
     is_new = true if !self.old_spot_type
 
-    programme_array = self.spot_type.map { |a| "'%%:programme:%%"+a+"%%'"}.join(", ")
-    old_programme_array = self.old_spot_type.map { |a| "'%%:programme:%%"+a+"%%'"}.join(", ")
+    programme_array = self.spot_type.map { |a| "'%%:programme:%%"+a.to_s+"%%'"}.join(", ")
+    old_programme_array = self.old_spot_type.map { |a| "'%%:programme:%%"+a.to_s+"%%'"}.join(", ")
     if is_new or programme_array != old_programme_array then
       if is_new then
         subs = self.get_subs(programme_array)

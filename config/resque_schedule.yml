@@ -3,3 +3,15 @@ do_get_spots:
   class: GetSpots
   args:
   description: Runs the perform method in GetSpots
+
+do_get_external_activation:
+  every: 300s
+  class: UpdateExternalActivations
+  args:
+  description: Runs the perform method in UpdateExternalActivations
+
+do_export_assets:
+  every: 2592000s
+  class: ExportAssets
+  args:
+  description: Runs the perform method in ExportAssets monthly

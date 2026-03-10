@@ -4,6 +4,8 @@
 class StaticPagesController < ApplicationController
   include ApplicationHelper
 
+  before_action :signed_in_user, only: %i[ack_news admin_stats dxcc recent results]
+
   def ack_news
     if current_user
       current_user.hide_news_at = Time.now
@@ -38,21 +40,6 @@ class StaticPagesController < ApplicationController
   end
 
   def home
-    # Hanging this here just because
-    time_now = Time.now
-    as = AdminSettings.last
-    if !as.last_sota_activation_update_at || ((as.last_sota_activation_update_at + 30.days) < time_now)
-      if ENV['RAILS_ENV'] == 'production'
-        Resque.enqueue(UpdateExternalActivations)
-        Resque.enqueue(ExportAssets)
-      elsif ENV['RAILS_ENV'] == 'development'
-        as.last_sota_activation_update_at = Time.now
-        as.save
-        ExternalActivation.import_sota
-        ExternalActivation.import_pota
-      end
-    end
-
     spots
     ack_time = current_user.hide_news_at if current_user
     ack_time ||= '1900-01-01'

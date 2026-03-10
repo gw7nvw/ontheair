@@ -8,6 +8,7 @@ class ApplicationController < ActionController::Base
   before_filter :set_cache_headers
   before_filter :log_visit
   before_action :store_last_index_page
+#  before_action :trigger_scheduled_jobs
   before_action :global_variables
   #  before_action :check_resque_workers
 
@@ -75,6 +76,30 @@ class ApplicationController < ActionController::Base
     @layer = params[:layer] if params[:layer]
     @default_pointlayers = current_user.pointlayers if current_user
     @default_polygonlayers = current_user.polygonlayers if current_user
+  end
+
+  def trigger_scheduled_jobs
+    time_now = Time.now
+    as = AdminSettings.last
+    if !as.last_monthly_sched_at || ((as.last_monthly_sched_at + 30.days) < time_now)
+      if ENV['RAILS_ENV'] == 'production'
+        Resque.enqueue(ExportAssets)
+        as.update_attribute(:last_monthly_sched_at, Time.now)
+      elsif ENV['RAILS_ENV'] == 'development'
+        as.update_attribute(:last_monthly_sched_at, Time.now)
+      end
+    end
+
+    if !as.last_minute_sched_at || ((as.last_minute_sched_at + 1.minute) < time_now)
+      if ENV['RAILS_ENV'] == 'production'
+        Resque.enqueue(UpdateExternalActivations)
+      elsif ENV['RAILS_ENV'] == 'development'
+        ExternalActivation.import_next_sota
+        ExternalActivation.import_next_pota
+        as.update_attribute(:last_minute_sched_at, Time.now)
+      end
+    end
+ 
   end
 
   def store_last_index_page

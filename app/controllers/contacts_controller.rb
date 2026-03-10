@@ -1,7 +1,7 @@
 
 # typed: false
 class ContactsController < ApplicationController
-  before_action :signed_in_user, only: %i[edit update create new refute confirm]
+  before_action :signed_in_user, only: %i[index show edit update create new refute confirm]
 
   def index_prep
     whereclause = 'true'
@@ -59,13 +59,15 @@ class ContactsController < ApplicationController
         our_call_field2 = 'callsign2'
         whereclause = whereclause + " and ('" + @class + "'=ANY(asset1_classes)) and (callsign1='" + @callsign + "')"
         @activator = 'on'
-        @count_type="activator"
+        @count_type = "activator"
+        @asset_count_type = 'activated'
       elsif params[:chaser]
         our_call_field1 = 'callsign2'
         our_call_field2 = 'callsign1'
         whereclause = whereclause + " and ((('" + @class + "'=ANY(asset2_classes)) and (callsign1='" + @callsign + "')) or (('" + @class + "'=ANY(asset1_classes)) and (callsign2='" + @callsign + "')))"
         @chaser = 'on'
         @count_type="chaser"
+        @asset_count_type = 'chased'
       else
         whereclause = whereclause + " and (callsign1='" + @callsign + "') and (('" + params[:class] + "'=ANY(asset1_classes)) or ('" + params[:class] + "'=ANY(asset2_classes)))"
       end

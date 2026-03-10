@@ -100,7 +100,11 @@
   </div>
 
   <span class="heading2"><%=link_to "Top Ten", '/results',  remote: true, :onclick => "linkHandler('results')"%></span>
-  <i><%=link_to "More ...", '/results',  remote: true, :onclick => "linkHandler('results')"%></i>
+  <% if signed_in? %>
+    <i><%=link_to "More ...", '/results',  remote: true, :onclick => "linkHandler('results')"%></i>
+  <% else %>
+    <i>Sign in to see full honour rolls</i>
+  <% end %>
 
   <div class="erow">
      <div class="hrline">
@@ -118,7 +122,12 @@
   </div>
 
   <span class="heading2"><%=link_to "Recent Activity", '/recent', remote: true,:onclick => "linkHandler('recent')"%></span>
-  <i><%=link_to "More ...", '/recent', remote: true,:onclick => "linkHandler('recent')"%></i>
+  <% if signed_in? %>
+    <i><%=link_to "More ...", '/recent', remote: true,:onclick => "linkHandler('recent')"%></i>
+  <% else %>
+    <i>Sign in to see full activity history</i>
+  <% end %>
+
 
 
   <%=render 'logs/list' %>

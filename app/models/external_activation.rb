@@ -19,6 +19,40 @@ class ExternalActivation < ActiveRecord::Base
     self.callsign = User.remove_call_suffix(callsign) if callsign['/']
   end
 
+  def self.import_next_sota
+    last_code=""
+    as = AdminSettings.first
+    last_code = as.last_sota_update_id if as 
+    summits = Asset.find_by_sql [ "select * from assets where asset_type='summit' and code > '#{last_code}' order by code limit 1" ]
+    if summits and summits.count>0
+      summit = summits.first 
+      puts "DEBUG:  Update #{summit.code} from SOTA"
+      update_sota_activation(summit)
+      as.update_attribute(:last_sota_update_id, summit.code)
+    else
+      #end of list, trigger restart and mark pass as done
+      as.update_attribute(:last_sota_update_id, "")
+      as.update_attribute(:last_sota_activation_update_at, Time.now)
+    end
+  end
+
+  def self.import_next_pota
+    last_code=""
+    as = AdminSettings.first
+    last_code = as.last_pota_update_id if as 
+    summits = Asset.find_by_sql [ "select * from assets where asset_type='pota park' and code > '#{last_code}' order by code limit 1" ]
+    if summits and summits.count>0
+      summit = summits.first 
+      update_pota_activation(summit)
+      puts "DEBUG:  Update #{summit.code} from POTA"
+      as.update_attribute(:last_pota_update_id, summit.code)
+    else
+      #end of list, trigger restart and mark pass as done
+      as.update_attribute(:last_pota_update_id, "")
+      as.update_attribute(:last_pota_update_at, Time.now)
+    end
+  end
+
   def self.import_sota
     summits = Asset.where(asset_type: 'summit')
     summits.each do |summit|

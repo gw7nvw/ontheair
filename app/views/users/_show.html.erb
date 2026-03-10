@@ -310,7 +310,11 @@ Please note that spot <b>emails</b> are limited to only spots posted at ontheair
 
   <div class="erow" id="awards_box">
     <h2>Awards</h2>
-    <%=link_to "Show awards", '/users/'+@user.callsign+'/awards', remote: true,  :id => 'awards_link', :onclick => "linkHandler('awards_link')"  %> 
+    <% if signed_in? %>
+      <%=link_to "Show awards", '/users/'+@user.callsign+'/awards', remote: true,  :id => 'awards_link', :onclick => "linkHandler('awards_link')"  %> 
+    <% else %>
+      <i>Sign in to see awards</i>
+    <% end %>
   </div>
 
   <div class="erow">
@@ -319,41 +323,13 @@ Please note that spot <b>emails</b> are limited to only spots posted at ontheair
     </div>
   </div>
 
-  <% 
-    ats=AssetType.where(keep_score: true)
-    qrp=AssetType.new
-    qrp.name='qrp'
-    ats << qrp  
-  %>
-
-  <% ats.each do |at| %>
-    <div class="erow" id="<%=at.name.pluralize%>">
-      <div class="sectiontitle" style="margin-top: 12px;"><%=if at.name == 'qrp' then "QRP" else at.name.capitalize.pluralize end%>:</div>
-      <ul>
-        <li><%=link_to "Bagged: "+(@user.score[at.name]||0).to_s+" unique", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=bagged", remote: true,  :id => "#{at.name.pluralize}_bagged", :onclick => "linkHandler('bagged')"%></li>
-        <li><%=link_to "Activated: "+(@user.activated_count[at.name]||0).to_s+" unique ("+(@user.activated_count_total[at.name]||0).to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=activated", remote: true,  :id => "#{at.name.pluralize}_activated", :onclick => "linkHandler('activated')"%></li>
-        <li><%=link_to "Qualified: "+(@user.qualified_count[at.name]||0).to_s+" unique ("+(@user.qualified_count_total[at.name]||0).to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=activated", remote: true,  :id => "#{at.name.pluralize}_qualified", :onclick => "linkHandler('qualified')"%></li>
-        <li><%=link_to "Chased: "+(@user.chased_count[at.name]||0).to_s+" unique ("+(@user.chased_count_total[at.name]||0).to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=chased", remote: true,  :id => "#{at.name.pluralize}_chased", :onclick => "linkHandler('chased')"%></li>
-      </ul>
-    </div>
-  <% end %>
-
-  <div class="erow" id="NZ Summit elevations">
-    <div class="sectiontitle" style="margin-top: 12px;">NZ Summit elevations:</div>
-    <ul>
-      <li><%=link_to "Bagged: "+number_with_precision((@user.score["elevation"]||0).to_f/1000,:precision => 1, :delimiter => ',').to_s+" km unique", '/users/'+@user.callsign+"/assets?asset_type=summit&count_type=bagged", remote: true,  :id => "summits_bagged", :onclick => "linkHandler('bagged')"%></li>
-      <li><%=link_to "Activated: "+number_with_precision((@user.activated_count["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km ("+number_with_precision((@user.activated_count_total["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km total)", '/users/'+@user.callsign+"/assets?asset_type=summit&count_type=activated", remote: true,  :id => "summits_activated", :onclick => "linkHandler('activated')"%></li>
-      <li><%=link_to "Chased: "+number_with_precision((@user.chased_count["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km ("+number_with_precision((@user.chased_count_total["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km total)", '/users/'+@user.callsign+"/assets?asset_type=summit&count_type=chased", remote: true,  :id => "summits_chased", :onclick => "linkHandler('chased')"%></li>
-    </ul>
-  </div>
-
-  <% assets=@user.get_p2p_all %>
-
-  <div class="erow">
-    <div class="sectiontitle" style="margin-top: 12px;">P2P:</div>
-    <ul>
-      <li><%=link_to "Contacts: "+assets.count.to_s, '/users/'+@user.callsign+"/p2p", remote: true,  :id => 'p2p_count', :onclick => "linkHandler('users')"%></li>
-    </ul>
+  <div class="erow" id="stats_box">
+    <h2>Statistics and mapping</h2>
+    <% if signed_in? %>
+      <%=link_to "Show statistics and mapping", '/users/'+@user.callsign+'/stats', remote: true,  :id => 'stats_link', :onclick => "linkHandler('stats_link')"  %> 
+    <% else %>
+      <i>Sign in to see statistics and mapping</i>
+    <% end %>
   </div>
 
   <div class="erow">
@@ -362,10 +338,13 @@ Please note that spot <b>emails</b> are limited to only spots posted at ontheair
     </div>
   </div>
 
-
-  <div class="erow">
-    <div class="sectiontitle">Contacts: <%=link_to @user.contacts.count.to_s+" (view)", '/contacts?user='+@user.callsign, remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %></div>
-    <div class="sectiontitle">Logs: <%=link_to @user.logs.count.to_s+" (view)", '/logs?user='+@user.callsign, remote: true,  :id => 'logs', :onclick => "linkHandler('logs')" %></div>
+  <div class="erow" id="logs_box">
+    <h2>Logs</h2>
+    <% if signed_in? %>
+      <%=link_to "Show "+@user.logs.count.to_s+" logs", '/logs?user='+@user.callsign, remote: true,  :id => 'logs_link', :onclick => "linkHandler('logs_link')"  %> 
+    <% else %>
+      <i>Sign in to see <%=@user.logs.count.to_s%> logs</i>
+    <% end %>
   </div>
 
   <div class="erow">
@@ -373,17 +352,24 @@ Please note that spot <b>emails</b> are limited to only spots posted at ontheair
       <hr noshade size="4">
     </div>
   </div>
+
+  <div class="erow" id="contacts_box">
+    <h2>Contacts</h2>
+    <% if signed_in? %>
+      <%=link_to "Show "+@user.contacts.count.to_s+" contacts", '/contacts?user='+@user.callsign, remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')"  %> 
+    <% else %>
+      <i>Sign in to see <%=@user.contacts.count.to_s%> contacts</i>
+    <% end %>
+  </div>
+
+  <div class="erow">
+    <div class="hrline">
+      <hr noshade size="4">
+    </div>
+  </div>
+
 </div>
 
 <script>
-  <% if @chaseSites then @chaseSites.each do |chaseSite| %>
-      <% if chaseSite.location then %> map_add_feature_from_wkt('<%=chaseSite.location%>', 'EPSG:4326',site_red_circle); <% end %>
-  <% end end %>
-  <% if @qualifySites then @qualifySites.each do |qualifySite| %>
-      <% if qualifySite.location then %> map_add_feature_from_wkt('<%=qualifySite.location%>', 'EPSG:4326',site_green_circle); <% end %>
-  <% end end %>
-  <% if @activationSites then @activationSites.each do |activationSite| %>
-      <% if activationSite.location then %> map_add_feature_from_wkt('<%=activationSite.location%>', 'EPSG:4326',site_yellow_circle); <% end %>
-  <% end end %>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>

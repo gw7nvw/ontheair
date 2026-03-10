@@ -4,7 +4,7 @@
 class UsersController < ApplicationController
   include ApplicationHelper
 
-  before_action :signed_in_user, only: %i[edit update editgrid district_progress region_progress awards assets p2p]
+  before_action :signed_in_user, only: %i[edit update editgrid district_progress region_progress awards stats assets p2p]
 
   def test_notification
     @user = User.find_by(callsign: params[:id].upcase)
@@ -115,7 +115,7 @@ class UsersController < ApplicationController
     end
   end
 
-  def show
+  def stats
     users = User.find_by_sql ["select * from users where callsign='#{params[:id]}' or id=#{params[:id].to_i}"]
     if !users || (users.count < 1)
       users = UserCallsign.where(callsign: params[:id])
@@ -146,6 +146,27 @@ class UsersController < ApplicationController
       @chaseSites = Asset.find_by_sql [' select location from assets where code in (?); ', chaseSites]
       @activationSites = Asset.find_by_sql [' select location from assets where code in (?);', activationSites]
       @qualifySites = Asset.find_by_sql [' select location from assets where code in (?);', qualifySites]
+    end
+  end
+
+  def show
+    users = User.find_by_sql ["select * from users where callsign='#{params[:id]}' or id=#{params[:id].to_i}"]
+    if !users || (users.count < 1)
+      users = UserCallsign.where(callsign: params[:id])
+      if users && (users.count > 0)
+        user = users.first.user
+        if user
+          redirect_to '/users/' + user.callsign
+        else
+          flash[:error] = 'Callsign ' + params[:id] + ' not found'
+          redirect_to '/'
+        end
+      else
+        flash[:error] = 'Callsign ' + params[:id] + ' not found'
+        redirect_to '/'
+      end
+    elsif users && (users.count > 0)
+      @user = users.first
       @callsign = UserCallsign.new
       @callsign.user_id = @user.id
     end

@@ -2,7 +2,7 @@
 
 # typed: false
 class AwardsController < ApplicationController
-  before_action :signed_in_user, only: %i[edit update new create]
+  before_action :signed_in_user, only: %i[index show edit update new create]
 
   def index_prep
     @awards = Award.all.order(:name)

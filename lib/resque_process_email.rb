@@ -136,6 +136,9 @@ class EmailReceive
         puts 'DEBUG SMS'
         msg = 'SMS ' + body
         puts 'DEBUG body: ' + body
+        #remove timestamp
+        body=body.gsub(/\((0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0,1,2])\/\d{2} \d{2}:\d{2} [AP]M\)/,'')
+        puts 'DEBUG body: ' + body
         lines = body.split(/\r?\n/)
         puts "DEBUG lines "+lines.to_json
         msgs = lines[1].split(' ')
@@ -174,9 +177,7 @@ class EmailReceive
             asset_suffix = asset_suffix.gsub(/([a-zA-Z])([0-9])/, '\1-\2')
           end
           asset_code = asset_code + '/' + asset_suffix
-          (4..msgs.length - 2).each do |cnt|
-            msgs[cnt] = msgs[cnt + 1]
-          end
+          msgs=[msgs[0],asset_code]+msgs[3..-1]
           msgs.delete_at(msgs.length - 1)
           puts 'DEBUG: concatenated asset code = ' + asset_code
         end
@@ -210,6 +211,10 @@ class EmailReceive
         end
   
         asset_type = Asset.get_asset_type_from_code(a_code)
+        if comments.downcase.include?("/dnl")
+          comments=comments.gsub("/dnl","").gsub("/DNL","")
+          @post.do_not_lookup = true
+        end
         if (posttype == 'spot') && ((asset_type == 'SOTA') || (asset_type == 'summit'))
           puts 'DEBUG: sending to SOTA'
           result = @post.send_to_sota(debug, acctnumber, callsign, a_code, freq, mode, comments + ' (ontheair.nz)')
