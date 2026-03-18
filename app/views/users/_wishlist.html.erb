@@ -16,10 +16,10 @@
   </div>
 
   <div id="controls">
-    <% if signed_in? %>
-      <%=  link_to "Download", "/users/#{@user.callsign.upcase}/assets.csv?"+raw(@parameters), class: "btn btn-small btn-primary"%>
-    <% end %>
     <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <span id="layers_off"><%=  link_to "Hide layers", "#", class: "btn btn-small btn-primary",   :onclick => "site_set_map_filters('point',[]);site_refresh_layer('point');return false;"%></span>
+    <span id="layers_on"><%=  link_to "Show layers", "#", class: "btn btn-small btn-primary",   :onclick => "site_set_map_filters('point',site_all_point_layers);site_refresh_layer('point');return false;"%></span>
+
     <%=render 'map_controls'%>
   </div>
 </div>

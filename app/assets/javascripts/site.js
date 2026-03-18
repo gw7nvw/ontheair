@@ -41,7 +41,7 @@ var points_layer;
 var vkpoints_layer;
 var site_map_layers={};
 var site_default_point_layers=['lake','lighthouse','summit','hump','volcano'];
-var site_all_point_layers=['park', 'hut','island','summit','lake'];
+var site_all_point_layers=['park','hut','island','summit','hump','lake','lighthouse','volcano'];
 var site_default_polygon_layers=[];
 var site_default_world_layer='OpenHikingMap';
 var site_default_world_zoom=11;
