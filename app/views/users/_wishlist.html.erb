@@ -1,0 +1,57 @@
+<script> 
+  reset_map_controllers();
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
+</script>
+
+<div id="actionbar" class="span7">
+  <div id="crumbs">
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    &nbsp;--&gt;&nbsp;
+    <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    &nbsp;--&gt;&nbsp;
+    <b>Wishlist</b>
+  </div>
+
+  <div id="controls">
+    <% if signed_in? %>
+      <%=  link_to "Download", "/users/#{@user.callsign.upcase}/assets.csv?"+raw(@parameters), class: "btn btn-small btn-primary"%>
+    <% end %>
+    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%=render 'map_controls'%>
+  </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <div class="erow">
+    <div class="sectiontitle" style="margin-top: 12px;">Wishlist</div>
+
+    <table id="place_table">
+      <% if @assets and @assets.count>0 %>
+        <% @assets.each do |a| %>
+          <tr>
+            <td>
+              <%=link_to a.codename, '/assets/'+a.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+               <%=  link_to "Remove", '/assets/'+a.safecode+'/remove_wish?referring=wishlist', class: "link_to", remote: true, :onclick => "linkHandler('dewish')" %>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    <% else %>
+      <i> Your wishlist is empty.  Try adding some places to it!</i>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+
+  <% if @assets then @assets.each do |asset| %>
+      <% if asset.location then %> map_add_feature_from_wkt('<%=asset.location%>', 'EPSG:4326',site_green_circle); <% end %>
+  <% end end %>
+
+</script>
+

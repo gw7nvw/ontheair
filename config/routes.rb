@@ -24,6 +24,12 @@ get 'asset_web_links/:id/delete', to: 'asset_web_links#delete'
 
 resources :assets, only: [:index, :show, :edit, :new, :create, :update]
 match "/assets/:id/associations", :to => "assets#associations", :via => "get"
+match "/assets/:id/rate", to: "assets#rate", via: "post"
+match "/assets/:id/derate", to: "assets#derate", via: "get"
+match "/assets/:id/rate", to: "assets#rate", via: "patch"
+match "/assets/:id/add_wish", to: "assets#add_wish", via: "get"
+match "/assets/:id/remove_wish", to: "assets#remove_wish", via: "get"
+
 get 'assets/:id/refresh_sota', to: 'assets#refresh_sota'
 get 'assets/:id/refresh_pota', to: 'assets#refresh_pota'
 
@@ -85,6 +91,7 @@ resources :sessions, only: [:new, :create, :destroy]
 
 resources :users
 get 'users/:id/assets', to: 'users#assets'
+get 'users/:id/wishlist', to: 'users#wishlist'
 get 'users/:id/test_notification', to: 'users#test_notification'
 get 'users/:id/awards', to: 'users#awards'
 get 'users/:id/stats', to: 'users#stats'

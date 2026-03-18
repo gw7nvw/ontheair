@@ -35,11 +35,14 @@
   <div class="erow" id="id">
     <div class="rowtitle"><%= "Id:" %></div>
     <% url=@asset.external_url %>
-    <% if url then %> 
-      <div class="rowtext"><%= link_to @asset.code, url, target: "_blank" %><img src="/assets/external-link-symbol.png"></div>
-    <% else %>
-      <div class="rowtext"><%= @asset.code %></div>
-    <% end %>
+    <div class="rowtext">
+      <% if url then %> 
+        <%= link_to @asset.code, url, target: "_blank" %><img src="/assets/external-link-symbol.png">
+      <% else %>
+        <%=@asset.code%>
+      <% end %>
+      <% if @wishlist%> <span style="color:#00bb00"><i>On your wishlist</i><span> <% end %>
+    </div>
   </div>
 
   <div class="erow" id="name">
@@ -329,6 +332,57 @@
     </div>
   </div>
 
+  <%= form_for @myrating, remote: true, url: '/assets/'+@asset.safecode+'/rate', :html => {:name => 'ratingform'} do |f| %>  
+
+    <div class="erow"><div class="sectiontitle_bold"><%=if @rating_count>0 then @rating_count.to_s+" " else "" end %>Ratings:</div>&nbsp;
+    <% if signed_in? %>
+      <%=  link_to "("+(if @myrating.id then "Edit" else "Add" end)+" yours)", '#', class: 'link_to', :id => 'edit', :onclick => "showratings(); return(false)"%>
+    <%end%>
+     
+    <% if @rating_count == 0 %>
+      <i>No-one has rated this location - be the first!</i>
+    <% end %>
+    <div class="erow">
+      <div class="rowtitle"><%= "Nice Location:" %></div>
+        <div class="rowtext"> 
+          <% @nice_score.times do %> <img src="/assets/gold-star.png"> <% end %><% (9-@nice_score).times do %> <img src="/assets/grey-star.png"> <% end %>
+        </div>
+      </div>
+      <% if signed_in? %>
+        <div class="erow" id="showratings1" style="display:none">
+          <div class="rowtitle"></div>
+          <div class="rowtext" style="width:242px"><%= f.text_field :nice_score, id: 'nice_score', type: 'range', min: "1", max: "9", value: @myrating.nice_score %></div>
+        </div>
+      <% end %>
+      <div class="erow">
+        <div class="rowtitle"><%= "Easy Access:" %></div>
+        <div class="rowtext"> 
+          <% @accessibility_score.times do %> <img src="/assets/gold-star.png"> <% end %><% (9-@accessibility_score).times do %> <img src="/assets/grey-star.png"> <% end %>
+      </div>
+      <% if signed_in? %>
+        <div class="erow" id="showratings2" style="display:none">
+        <div class="rowtitle"></div>
+          <div class="rowtext" style="width:242px"><%= f.text_field :accessibility_score, id: 'accessibility_score', type: 'range', min: "1", max: "9", value: @myrating.accessibility_score %></div>
+        </div>
+      <% end %>
+  
+      <% if signed_in? %>
+        <div class="erow" id="showratings3" style="display:none">
+          <%= f.submit 'Rate', class: "btn btn-small btn-primary btn-hightlight" %> 
+          <% if @myrating and @myrating.id %>
+            <%=  link_to "Delete", '/assets/'+@asset.safecode+'/derate', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('derate')" %>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="erow">
+    <div class="hrline">
+      <hr noshade size="4">
+    </div>
+  </div>
+
   <div class="erow"><div class="sectiontitle_bold">Links:</div>&nbsp;        
     <% if write_access? %>
       <%=  link_to "(Edit)", '#', class: 'link_to', :id => 'edit', :onclick => "editlinks(); return(false)"%>
@@ -432,6 +486,11 @@
     <%=  link_to "Add Contacts", '/logs/new?asset1='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
     <%=  link_to "Add Spot", '/posts/new?topic_id='+SPOT_TOPIC.to_s+'&code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
     <%=  link_to "Add Alert", '/posts/new?topic_id='+ALERT_TOPIC.to_s+'&code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+    <% if @wishlist %>
+      <%=  link_to "Remove from wishlist", '/assets/'+@asset.safecode+'/remove_wish', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('dewish')" %>
+    <% else %>
+      <%=  link_to "Add to wishlist", '/assets/'+@asset.safecode+'/add_wish', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('wish')" %>
+    <% end %>
   <% end %>
 
   <div class="erow">
@@ -554,6 +613,17 @@
     } else {
       document.getElementById('showlinks').style.display="none";
       document.getElementById('editlinks').style.display="block";
+    }
+  }
+  function showratings() {
+    if (document.getElementById('showratings1').style.display=="none") {
+      document.getElementById('showratings1').style.display="block";
+      document.getElementById('showratings2').style.display="block";
+      document.getElementById('showratings3').style.display="block";
+    } else {
+      document.getElementById('showratings1').style.display="none";
+      document.getElementById('showratings2').style.display="none";
+      document.getElementById('showratings3').style.display="none";
     }
   }
 </script>

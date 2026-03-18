@@ -92,6 +92,7 @@
                     <li class="divider"></li>
                  <% end %>
                   <li><%= link_to "Profile", '/users/'+current_user.callsign, remote: true, :id => 'profile_link', :onclick => "linkHandler('profile_link')" %></li>
+                  <li><%= link_to "Wishlist", '/users/'+current_user.callsign+'/wishlist', remote: true, :id => 'wishlist_link', :onclick => "linkHandler('wishlist_link')" %></li>
                   <li class="divider"></li>
                   <li><%= link_to "My Awards (beta)", '/users/'+current_user.callsign+"/awards",  remote: true,  :id => 'awards_link', :onclick => "linkHandler('awards_link')"  %></li>
                   <% if write_access? then %>

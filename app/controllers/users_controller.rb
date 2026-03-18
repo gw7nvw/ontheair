@@ -35,6 +35,12 @@ class UsersController < ApplicationController
     @regions = Region.all.order(:name)
   end
 
+  def wishlist
+    @user = User.find_by(callsign: params[:id].upcase)
+    wishlist = Wishlist.where(user_id: @user.id)
+    @assets = Asset.where("code in (#{wishlist.map{ |w| "'"+w.asset_code+"'"}.join(',')})").order(:name) if wishlist and wishlist.count>0
+  end
+
   def awards
     @user = User.find_by(callsign: params[:id].upcase)
     @awards = Award.where(count_based: true, is_active: true).sort_by &:name

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20260310035800) do
+ActiveRecord::Schema.define(version: 20260318003045) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -751,6 +751,20 @@ ActiveRecord::Schema.define(version: 20260310035800) do
     t.datetime "updated_at"
   end
 
+  create_table "ratings", force: true do |t|
+    t.boolean  "drive_up_access"
+    t.boolean  "track_access"
+    t.integer  "accessibility_score"
+    t.integer  "nice_score"
+    t.integer  "user_id"
+    t.string   "asset_code"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "ratings", ["asset_code"], :name => "index_ratings_on_asset_code"
+  add_index "ratings", ["user_id"], :name => "index_ratings_on_user_id"
+
   create_table "regions", force: true do |t|
     t.string   "regc_code"
     t.string   "sota_code"
@@ -1037,6 +1051,16 @@ ActiveRecord::Schema.define(version: 20260310035800) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  create_table "wishlists", force: true do |t|
+    t.string   "asset_code"
+    t.integer  "user_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "wishlists", ["asset_code"], :name => "index_wishlists_on_asset_code"
+  add_index "wishlists", ["user_id"], :name => "index_wishlists_on_user_id"
 
   create_table "wwff_parks", force: true do |t|
     t.string   "code"

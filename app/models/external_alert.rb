@@ -137,7 +137,8 @@ def self.fetch
         dups = ExternalAlert.where(starttime: alert[:starttime].tr('A-Z,a-z,[()]','').strip, activatingCallsign: alert[:activatingCallsign], code: alert[:code], frequency: alert[:frequency], mode: alert[:mode], programme: alert[:programme])
         if !(dups && dups.count.positive?)
            puts "Creating alert: "+alert.to_json.to_s
-           ExternalAlert.create(alert) 
+           result=ExternalAlert.create(alert) 
+           puts "ERROR: Create alert failed" if !result 
         end
       rescue StandardError
         puts "Failed to add an external alert with invalid formatting"

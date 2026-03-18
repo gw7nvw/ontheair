@@ -6,7 +6,7 @@ class AssetsController < ApplicationController
   include ApplicationHelper
   include AssetGisTools
 
-  before_action :signed_in_user, only: %i[edit update create new associations]
+  before_action :signed_in_user, only: %i[edit update create new associations add_wish remove_wish rate]
 
   def associations
     @asset=Asset.find_by(code: params[:id].gsub('_','/'))
@@ -19,6 +19,100 @@ class AssetsController < ApplicationController
       @newchild.contained_code=@asset.code
       @newparent=AssetLink.new
       @newparent.containing_code=@asset.code
+    end
+  end
+
+  def rate
+    show
+
+    user = current_user
+    if user 
+      if @asset
+        rating = Rating.find_by(user_id: current_user.id, asset_code: @asset.code)
+        if rating
+          rating.assign_attributes(rating_params) 
+        else
+          rating = Rating.new(rating_params) if !rating
+        end
+ 
+        rating.user_id = current_user.id
+        rating.asset_code = @asset.code
+     
+        if rating.save
+          flash[:success] = "Rated"
+        else
+          flash[:error] = "Could not add your rating"
+        end
+      else
+        flash[:error] = "Could not find the specified location"
+      end
+    end
+    show
+    render 'show'    
+  end
+
+
+  def derate
+    show
+
+    user = current_user
+    if user 
+      if @asset
+        ratings = Rating.where(user_id: current_user.id, asset_code: @asset.code)
+        if ratings
+          success = ratings.destroy_all
+          if success then 
+            flash[:success] = "Rating removed"
+          else
+            flash[:error] = "Could not delete your rating"
+          end
+        else
+          flash[:error] = "Failed to find your rating"
+        end
+      else
+        flash[:error] = "Could not find the specified location"
+      end
+    end
+    show
+    render 'show'    
+  end
+
+
+  def add_wish
+    show
+
+    user = current_user
+    if user 
+      if @asset
+        wish = Wishlist.create(user_id: user.id, asset_code: @asset.code)
+        if wish then
+          flash[:success] = "Added to your wishlist"
+        else
+          flash[:error] = "Failed to add to your wishlist"
+        end
+      end
+    end
+    show
+    render 'show'    
+  end
+
+  def remove_wish
+    show
+
+    user = current_user
+    if user and @asset 
+      wishes = Wishlist.where(user_id: user.id, asset_code: @asset.code)
+      if wishes.destroy_all
+        flash[:success] = "Removed from your wishlist"
+      else
+        flash[:error] = "Failed to remove from your wishlist"
+      end
+    end
+    if params[:referring] == "wishlist" then
+      redirect_to '/users/'+user.callsign+"/wishlist"
+    else
+      show
+      render 'show'    
     end
   end
 
@@ -113,6 +207,24 @@ puts "SEARCHTEXT"+@searchtext
     end
     @newlink.asset_code = @asset.safecode
     @comments = Comment.for_asset(code)
+    ratings = Rating.where(asset_code: @asset.code)
+    @rating_count = ratings.count
+    nice_scores = ratings.map{|r| r.nice_score}
+    accessibility_scores = ratings.map{|r| r.accessibility_score}
+    if @rating_count>0 then
+      @nice_score = nice_scores.sum(0.0)/nice_scores.size
+      @accessibility_score = accessibility_scores.sum(0.0)/accessibility_scores.size
+    else
+      @nice_score = 0
+      @accessibility_score = 0
+    end
+    if current_user
+      @myrating = Rating.find_by(user_id: current_user.id, asset_code: @asset.code) 
+      @myrating = Rating.new(user_id: current_user.id, asset_code: @asset.code) if !@myrating
+    else
+      @myrating = Rating.new
+    end
+    @wishlist = Wishlist.find_by(user_id: current_user.id, asset_code: @asset.code) if current_user
   end
 
   def edit
@@ -225,6 +337,10 @@ puts "SEARCHTEXT"+@searchtext
 
   def asset_params
     params.require(:asset).permit(:id, :name, :description, :altitude, :is_active, :is_nzart, :minor, :is_doc, :park_id, :asset_type, :code, :valid_from, :valid_to, :az_radius, :points, :public_access, :region, :district, :field_code)
+  end
+
+  def rating_params
+    params.require(:rating).permit(:asset_code, :drive_up_access, :track_access, :accessibility_score, :nice_score)
   end
 
   def convert_location_params(x, y)
