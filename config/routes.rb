@@ -122,6 +122,7 @@ match '/api/assetlinks', to: 'api#assetlink',    via:'get'
 match '/api/logs', to: 'api#logs_post',    via:'post'
 match '/api/spots', to: 'api#spot_post',    via:'post'
 match '/api/spots', to: 'api#spot',    via:'get'
+match '/api/alerts', to: 'api#alert',    via:'get'
 
 resources :sota_logs
 

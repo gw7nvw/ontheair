@@ -99,6 +99,33 @@ class ApiController < ApplicationController
     end
   end
 
+  def alert
+    start_time = 1.year.ago
+    if params[:start_time] then 
+      start_time=params[:start_time].to_time
+    end
+    
+    alerts=Post.find_by_sql [ "select p.id, p.description as comments, p.referenced_time, p.duration, rtrim(p.site,'; ') as name, UNNEST(p.asset_codes) as reference, CAST(substring(coalesce(freq, '0') from '[0-9.]+') AS NUMERIC)*1000 as frequency, p.mode, p.callsign as activator, p.updated_at as created_time from posts p inner join items i on i.item_type='post' and i.item_id=p.id inner join users u on u.id = p.updated_by_id where i.topic_id=#{ALERT_TOPIC} and p.updated_at>'#{start_time.strftime("%Y-%m-%d %H:%M:%S")}' and ((p.referenced_date + interval '1 hours' * duration::numeric) > '#{(Time.now - 1.days).strftime("%Y-%m-%d %H:%M")}') limit 200;" ]
+
+    if params[:zlota_only] then
+     orig_alerts=alerts
+     alerts=[]
+     orig_alerts.each do |spot|
+       a=Asset.find_by(code: alerts[:reference])
+       if a and a.type.is_zlota then
+         alerts+=[alerts]
+       end
+     end
+  
+    end
+    respond_to do |format|
+      format.js { render json: alerts.to_json }
+      format.json { render json: alerts.to_json }
+      format.html { render json: alerts.to_json }
+      format.csv { send_data asset_to_csv(alerts), filename: "alerts-#{Time.now.strftime("%Y-%m-%dT%H:%M:%SZ")}.csv" }
+    end
+  end
+
   def spot
     start_time = 2.hours.ago
     if params[:start_time] then 

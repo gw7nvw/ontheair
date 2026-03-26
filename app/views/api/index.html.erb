@@ -214,6 +214,73 @@
   </tr>
 </table>
 
+<h2>alerts</h2>      
+<p><a href="/api/alerts">/api/alerts</a> (GET)</p>
+
+<table>
+  <tr>
+    <th colspan=2>Request</th>
+  </tr>
+  <tr>
+    <th>field</th>
+    <th>description</th>
+  </tr>
+  <tr>
+    <td><i>start_time</i></td>
+    <td>optional: Retrieve only alerts with created_time &gt; this time (format: 'YYYY-MM-DD HH:MM:SS' UTC). Default is 1 year ago</td>
+  </tr>
+  <tr>
+    <td><i>zlota_only</i></td>
+    <td>optional: Include this parameter with any value to retrieve only spots for assets in the ZLOTA scheme (default is all locally created alerts from ontheair)</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th colspan=2>Response</th>
+  </tr>
+  <tr>
+    <th>field</th>
+    <th>description</th>
+  </tr>
+  <tr>
+    <td><i>activator</i></td>
+    <td>string: callsign of the activator</td>
+  </tr>
+  <tr>
+    <td><i>name</i></td>
+    <td>string: name of the place being activated</td>
+  </tr>
+  <tr>
+    <td><i>reference</i></td>
+    <td>string: reference of the place being activated (or name if free activation)</td>
+  </tr>
+  <tr>
+    <td><i>frequency</i></td>
+    <td>string: frequency in kHz (note the unit)</td>
+  </tr>
+  <tr>
+    <td><i>mode</i></td>
+    <td>string: transmission mode (e.g. SSB, CW, ...)</td>
+  </tr>
+  <tr>
+    <td><i>referenced_time</i></td>
+    <td>time: date/time of alert</td>
+  </tr>
+  <tr>
+    <td><i>duration</i></td>
+    <td>integer: duration of activation (hours)</td>
+  </tr>
+  <tr>
+    <td><i>comments</i></td>
+    <td>string: comments</td>
+  </tr>
+  <tr>
+    <td><i>created_time</i></td>
+    <td>time: date/time alert was posted</td>
+  </tr>
+</table>
+
 <h2>spots</h2>      
 <p><a href="/api/spots">/api/spots</a> (GET)</p>
 
@@ -275,7 +342,6 @@
     <td><i>comments</i></td>
     <td>string: comments</td>
   </tr>
-  <tr>
 </table>
 
 <h2>spots</h2>      

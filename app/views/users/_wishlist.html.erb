@@ -35,7 +35,9 @@
           <tr>
             <td>
               <%=link_to a.codename, '/assets/'+a.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
-               <%=  link_to "Remove", '/assets/'+a.safecode+'/remove_wish?referring=wishlist', class: "link_to", remote: true, :onclick => "linkHandler('dewish')" %>
+               <% if current_user and (current_user.is_admin or current_user.id == @user.id) %>
+                 <%=  link_to "Remove", '/assets/'+a.safecode+'/remove_wish?referring=wishlist', class: "link_to", remote: true, :onclick => "linkHandler('dewish')" %>
+               <% end %>
             </td>
           </tr>
         <% end %>

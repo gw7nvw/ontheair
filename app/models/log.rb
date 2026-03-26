@@ -455,6 +455,7 @@ class Log < ActiveRecord::Base
                         end
         contact.date = protolog.date
       else # assume yyyy-mm-dd as per SOTA
+puts value
         protolog.date = value.strip.to_date
         contact.date = value.strip.to_date
       end

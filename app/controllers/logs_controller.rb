@@ -23,6 +23,9 @@ class LogsController < ApplicationController
     end
 
     whereclause = 'true'
+    if params[:asset_type] && !params[:asset_type].empty?
+      whereclause = "('#{params[:asset_type]}' = ANY(asset_classes))"
+    end
     if params[:asset] && !params[:asset].empty?
       whereclause = "('#{params[:asset].upcase.tr('_', '/')}' = ANY(asset_codes))"
       @asset = Asset.find_by(code: params[:asset].tr('_', '/').upcase)
