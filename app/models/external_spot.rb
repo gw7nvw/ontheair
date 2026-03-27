@@ -124,6 +124,23 @@ class ExternalSpot < ActiveRecord::Base
 
       zlvk_pota_spots = spots || []
 
+      #LLOTA
+      spots=[]
+      begin
+        Timeout.timeout(30) do
+          url = 'https://llota.app/api/spots'
+          spots = JSON.parse(open(url).read)
+          puts "GOT LLOTA: "+spots.to_json
+        end
+      rescue Timeout::Error
+        puts 'ERROR: LLOTA Timeout'
+      else
+      end
+
+      #spots = [{"id"=>1134, "callsign"=>"W4GOG", "frequency"=>"21320.000", "mode"=>"SSB", "reference"=>"US-0483", "spotted_by_app"=>"HAM2K", "created_at"=>"2026-03-27T04:56:59.000Z", "updated_at"=>"2026-03-27T04:09:43.000Z", "reference_name"=>"Lake Issaqueena", "country_name"=>"Estados Unidos", "history"=>[{"comment"=>"Calling CQ 20w ", "timestamp"=>"2026-03-27 04:56:59.000000", "spotter_callsign"=>nil, "spotter_display_name"=>nil}, {"comment"=>"Calling CQ 20w, 15m", "timestamp"=>"2026-03-27 04:06:35.000000", "spotter_callsign"=>nil, "spotter_display_name"=>nil}, {"comment"=>"Qsy", "timestamp"=>"2026-03-27 04:16:39.000000", "spotter_callsign"=>nil, "spotter_display_name"=>nil}, {"comment"=>"Calling CQ 20w, 20m", "timestamp"=>"2026-03-27 04:18:31.000000", "spotter_callsign"=>nil, "spotter_display_name"=>nil}, {"comment"=>"Still here ", "timestamp"=>"2026-03-27 04:28:28.000000", "spotter_callsign"=>nil, "spotter_display_name"=>nil}, {"comment"=>"54 in EN98hl 73s VE3RPY via POTACAT", "timestamp"=>"2026-03-27 04:32:51.000000", "spotter_callsign"=>nil, "spotter_display_name"=>nil}, {"comment"=>"Still here. Need 1 more for 10. ", "timestamp"=>"2026-03-27 04:42:56.000000", "spotter_callsign"=>nil, "spotter_display_name"=>nil}, {"comment"=>"Still here. Awesome QSO", "timestamp"=>"2026-03-27 04:57:07.000000", "spotter_callsign"=>nil, "spotter_display_name"=>nil}, {"comment"=>"Qsy", "timestamp"=>"2026-03-27 04:06:05.000000", "spotter_callsign"=>nil, "spotter_display_name"=>nil}, {"comment"=>"Calling CQ 20w, 15m", "timestamp"=>"2026-03-27 04:09:43.000000", "spotter_callsign"=>nil, "spotter_display_name"=>nil}]}]
+      zlvk_llota_spots = spots || []
+
+
       #WWFF
       spots=[]
       begin
@@ -195,6 +212,19 @@ class ExternalSpot < ActiveRecord::Base
         )
       end
      
+      zlvk_llota_spots.each do |spot|
+        ExternalSpot.create(
+          time: spot['updated_at'].to_datetime ? spot['updated_at'].to_datetime.in_time_zone('UTC') : nil,
+          callsign: spot['history'][-1]['spotter_callsign'] ? spot['history'][-1]['spotter_callsign'] : spot['callsign'].strip,
+          activatorCallsign: spot['callsign'].strip,
+          code: spot['reference'].gsub('-','LL-'),
+          name: spot['reference_name'],
+          frequency: (spot['frequency'].to_f / 1000).to_s,
+          mode: spot['mode'],
+          comments: spot['history'][-1]['comment'],
+          spot_type: 'LLOTA'
+        )
+      end
       zlvk_pota_spots.each do |spot|
         ExternalSpot.create(
           time: spot['spotTime'].to_datetime ? spot['spotTime'].to_datetime.in_time_zone('UTC') : nil,
