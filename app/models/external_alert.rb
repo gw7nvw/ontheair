@@ -73,7 +73,7 @@ def self.fetch
       @all_alerts.push(
            starttime: if alert["dateActivated"].to_time then alert["dateActivated"].to_time.in_time_zone(@tz.name).strftime("%Y-%m-%d %H:%M") else "" end,
            activatingCallsign: alert['activatingCallsign'].strip,
-           code: alert['associationCode'] + '/' + alert['summitCode'],
+           code: (alert['associationCode'] + '/' + alert['summitCode']).gsub('?','X'),
            name: alert['summitDetails'],
            frequency: alert['frequency'],
            mode: alert['mode'],

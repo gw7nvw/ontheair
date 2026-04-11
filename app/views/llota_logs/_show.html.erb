@@ -1,0 +1,47 @@
+<div id="actionbar" class="span7">
+  <div id="crumbs">
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <%=link_to "LLOTA Logs", '/llota_logs/?'+@parameters, remote: true,  :id => 'index', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <b><%=@user.callsign+" / "+@park.code+" / "+@logdate%></b>
+  </div>
+  <div id="controls">
+    <%=link_to "Index", '/llota_logs/?'+@parameters, class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%=render 'map_controls'%>
+  </div>
+</div>
+
+<div class="erow">
+  <br/>
+  <br/>
+  <p>Please check that the following log is correct, and click the <b>Download Log</b> button to save the log so that you can upload it to the LLOTA website.</p>
+  <br/>
+  <br/>
+  Filename: <%=@filename%><br/>
+  <br/>
+  <% @llota_log.split('<eor>').each do |llota_log| %>
+    <%=if llota_log and llota_log.length>1 then llota_log+"<eor>" end%><br/>
+  <% end %>
+  <br/>
+  <br/>
+  Contacts accepted: <%=@contacts.count-@duplicate_contacts.count-@invalid_contacts.count%>
+  Duplicate contacts rejected: <%=@duplicate_contacts.count%><br/>
+  <% @duplicate_contacts.each do |contact| %>
+    <%=link_to "Contact: "+contact.id.to_s, '/contacts/'+contact.id.to_s ,remote: true, :onclick => "linkHandler('submit')"%> <%=contact.callsign1%>&lt;=&gt;<%=contact.callsign2%><br/>
+  <% end %>
+  Invalid contacts rejected: <%=@invalid_contacts.count%><br/>
+  <% @invalid_contacts.each do |contact| %>
+    <%=link_to "Contact: "+contact[:contact].id.to_s, '/contacts/'+contact[:contact].id.to_s ,remote: true, :onclick => "linkHandler('submit')"%> <%=contact[:contact].callsign1%>&lt;=&gt;<%=contact[:contact].callsign2%> -- <%=contact[:message]%><br/>
+  <% end %>
+  <% if @contacts.count-@duplicate_contacts.count-@invalid_contacts.count > 0 %>
+    <%=link_to "Download Log", '/llota_logs/'+@park.safecode+"/download.adi?date="+@logdate+"&user="+@user.callsign, class: "btn btn-small btn-primary" %>
+  <% else %>
+    <p><b>There are no valid contacts in this log.  Please correct any errors and try again</b></p>
+  <% end %>
+  <%=link_to "Cancel", '/llota_logs?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
+</div>
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>
+

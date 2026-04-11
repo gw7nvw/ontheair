@@ -327,6 +327,7 @@ function deactivate_all_click() {
 function site_polygon_style_function(feature, resoluton) {
   if(feature.get('asset_type')=="island")  return site_island_style;
   if(feature.get('asset_type')=="lake")  return site_lake_style;
+  if(feature.get('asset_type')=="llota lake")  return site_lake_style;
   if(feature.get('asset_type')=="park")  return site_docland_style_function(feature, resoluton);
   if(feature.get('asset_type')=="pota park")  return site_pota_style;
   if(feature.get('asset_type')=="wwff park")  return site_wwff_style;
@@ -341,6 +342,7 @@ function site_points_style_function(feature, resoluton) {
   if(feature.get('asset_type')=="hut")  return site_huts_style;
   if((feature.get('asset_type')=="lake") && (feature.get('public_access')=='t')) return site_public_lake_point_style;
   if(feature.get('asset_type')=="lake")  return site_lake_point_style;
+  if(feature.get('asset_type')=="llota lake")  return site_lake_point_style;
   if(feature.get('asset_type')=="island")  return site_island_point_style;
   if((feature.get('asset_type')=="hump") && (feature.get('public_access')=='t')) return site_public_humps_style;
   if(feature.get('asset_type')=="hump")  return site_humps_style;

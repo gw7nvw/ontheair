@@ -376,4 +376,33 @@ class VkAsset < ActiveRecord::Base
     end
   end
 
+  def self.import_llota
+    url = 'https://llota.app/api/public/references?version=lite'
+    data = JSON.parse(open(url).read)
+    if data
+      puts 'Found ' + data.count.to_s + ' lakes'
+      count = 0
+      data.each do |l|
+        if l["reference_code"][0..2]=='AU-' then
+          count += 1
+          a = VkAsset.find_by(code: l["reference_code"].gsub('AU-','AULL-'))
+          if !a
+            puts "Creating #{l["reference_code"].gsub('AU-','AULL-')}"
+            a = VkAsset.new
+          else
+            puts "Updating #{a.code}"
+          end
+          a.asset_type="llota lake"
+          a.code = l["reference_code"].gsub('AU-','AULL-')
+          a.is_active = true
+          a.name = l["name"]
+          a.location = "POINT(#{l["longitude"]} #{l["latitude"]})"
+          a.url = a.get_url
+          a.award = 'LLOTA'
+          a.save
+        end
+      end
+    end
+  end
+
 end

@@ -900,6 +900,48 @@ class User < ActiveRecord::Base
   end
 
   #################################################################################
+  # Return array of LLOTA logs for current user
+  # Returns:
+  #  llota_logs: Array of logs per lake per day:
+  #    [
+  #       code: Asset.code for the lake
+  #       name: Asset.name for the lake
+  #       date: date for the activation
+  #       safecode: Asset.safecode for the lake
+  #       count: integer - count of valid contacts in this log
+  #       submitted: integer - count of contacts in this log alrady submitted
+  #    ]
+  ###############################################################################
+  def llota_logs(lake_code = nil)
+    if lake_code.nil?
+      lake_query1 = "'llota lake'=ANY(asset1_classes)"
+      lake_query2 = "c1.asset1_classes='llota lake'"
+    else
+      lake_query1 = "'#{lake_code}'=ANY(asset1_codes)"
+      lake_query2 = "c1.asset1_codes='#{lake_code}'"
+    end
+
+    llota_logs = Contact.find_by_sql ["
+        select a.name, a.safecode, c3.* from
+          (select asset1_codes as code, date,
+            count(case submitted_to_llota when true then 1 else null end) as submitted,
+            count(date) as count
+            from
+              (select callsign1, callsign2, date::date as date, asset1_codes, submitted_to_llota from
+                 (select callsign1, callsign2, date,
+                    unnest(asset1_classes) as asset1_classes,
+                    unnest(asset1_codes) as asset1_codes,
+                    submitted_to_llota
+                    from contacts
+                    where user1_id=#{id} and #{lake_query1}) as c1
+                 where #{lake_query2}) as c2
+              group by asset1_codes, date) as c3
+          inner join assets a on a.code=c3.code;
+      "]
+    llota_logs
+  end
+
+  #################################################################################
   # Return array of POTA logs for current user
   # Returns:
   #  pota_logs: Array of logs per park per day:
@@ -939,6 +981,30 @@ class User < ActiveRecord::Base
           inner join assets a on a.code=c3.code;
       "]
     pota_logs
+  end
+
+  #################################################################################
+  # Return array of llota_logs, including contacts for all or specified lake
+  # for this user
+  # Returns:
+  #  llota_contacts: Array containing one log and multiple contacts
+  #    [
+  #       code: Asset.code for this lake
+  #       date: date for the activation
+  #       count: integer - count of valid contacts in this log
+  #       contacts: Array of [Contact]
+  #    ]
+  ###############################################################################
+  def llota_contacts(lake_code = nil)
+    llota_contacts = []
+    llota_logs = self.llota_logs(lake_code)
+
+    llota_logs.each do |llota_log|
+      contacts = Contact.where('user1_id = ? and ? = ANY(asset1_codes) and date::date= ?', id, llota_log[:code], llota_log[:date].strftime('%Y-%m-%d'))
+      contact_count = contacts.count
+      llota_contacts.push(code: llota_log[:code], date: llota_log[:date], count: contact_count, contacts: contacts.sort_by(&:date))
+    end
+    llota_contacts
   end
 
   #################################################################################

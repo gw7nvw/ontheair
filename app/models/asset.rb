@@ -13,11 +13,13 @@ class Asset < ActiveRecord::Base
   WWFF_REGEX = /^\d{0,1}[a-zA-Z]{1,2}[fF]{2}-\d{4}/
   SOTA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/[a-zA-Z]{2}-\d{3}/
   HEMA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/H[a-zA-Z]{2}-\d{3}/
+  LLOTA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}[lL]{2}-\d{4}/
 
   SOTA_ASSET_URL = 'https://www.sotadata.org.uk/en/summit/'
   WWFF_ASSET_URL = 'https://wwff.co/directory/?showRef='
   POTA_ASSET_URL = 'https://pota.app/#/park/'
   HEMA_ASSET_URL = 'http://www.hema.org.uk/fullSummit.jsp?summitKey='
+  LLOTA_ASSET_URL = 'https://llota.app/list/ref/'
   SIOTA_ASSET_URL = 'https://www.silosontheair.com/silos/#'
 
   ################################################################
@@ -642,6 +644,16 @@ class Asset < ActiveRecord::Base
             asset[:title] = va.site_type
   
           # Otherwise - we guess based on the reference
+          elsif (thecode = code.match(LLOTA_REGEX))
+            # HEMA
+            logger.debug 'LLOTA'
+            asset[:name] = code
+            asset[:url] = LLOTA_ASSET_URL+thecode.to_s.gsub('LL-','-')
+            asset[:external] = true
+            asset[:code] = thecode.to_s
+            asset[:type] = 'LLOTA lake'
+            asset[:title] = 'LLOTA'
+            asset[:pnp_class] = 'LLOTA'
           elsif (thecode = code.match(HEMA_REGEX))
             # HEMA
             logger.debug 'HEMA'
@@ -727,6 +739,12 @@ class Asset < ActiveRecord::Base
     elsif asset_type == 'wwff park'
       # WWFF
       url = WWFF_ASSET_URL + code
+    elsif asset_type == 'llota lake'
+      # LLOTA
+      url = LLOTA_ASSET_URL + code.gsub('LL-','-')
+    elsif asset_type == 'silo'
+      # SiOTA
+      url = SIOTA_ASSET_URL + code
     elsif asset_type == 'summit'
       # SOTA
       url = SOTA_ASSET_URL + code

@@ -126,6 +126,9 @@ match '/api/alerts', to: 'api#alert',    via:'get'
 
 resources :sota_logs
 
+resources :llota_logs
+match "/llota_logs/:id/download", :to => "llota_logs#download", :as => "download_llota", :via => "get"
+
 resources :pota_logs
 match "/pota_logs/:id/send", :to => "pota_logs#send_email", :as => "send_log", :via => "get"
 match "/pota_logs/:id/download", :to => "pota_logs#download", :as => "download_log", :via => "get"

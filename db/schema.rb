@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20260318003045) do
+ActiveRecord::Schema.define(version: 20260409022344) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -287,6 +287,7 @@ ActiveRecord::Schema.define(version: 20260318003045) do
     t.string   "loc_source2"
     t.boolean  "do_not_lookup"
     t.boolean  "submitted_to_hema_chaser"
+    t.boolean  "submitted_to_llota"
   end
 
   add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"

@@ -101,7 +101,7 @@ class ExternalSpot < ActiveRecord::Base
             spots = JSON.parse(open(url).read)
             puts "GOT SOTA: "+spots.to_json
           end
-        rescue Timeout::Error
+        rescue 
           puts 'ERROR: SOTA Timeout'
         else
         end
@@ -117,7 +117,7 @@ class ExternalSpot < ActiveRecord::Base
           spots = JSON.parse(open(url).read)
           puts "GOT POTA: "+spots.to_json
         end
-      rescue Timeout::Error
+      rescue 
         puts 'ERROR: POTA Timeout'
       else
       end
@@ -132,7 +132,7 @@ class ExternalSpot < ActiveRecord::Base
           spots = JSON.parse(open(url).read)
           puts "GOT LLOTA: "+spots.to_json
         end
-      rescue Timeout::Error
+      rescue 
         puts 'ERROR: LLOTA Timeout'
       else
       end
@@ -149,7 +149,7 @@ class ExternalSpot < ActiveRecord::Base
           spots = JSON.parse(open(url).read)
           puts "GOT WWFF: "+spots.to_json
         end
-      rescue Timeout::Error
+      rescue 
         puts 'ERROR: WWFF Timeout'
       else
       end
@@ -164,7 +164,7 @@ class ExternalSpot < ActiveRecord::Base
           spots = JSON.parse(open(url).read)
           puts "GOT PnP: "+spots.to_json
         end
-      rescue Timeout::Error
+      rescue 
         puts 'ERROR: PnP Timeout'
       else
       end
@@ -188,7 +188,7 @@ class ExternalSpot < ActiveRecord::Base
             puts 'done'
           end
         end
-      rescue Timeout::Error
+      rescue
         puts 'ERROR: HEMA Timeout'
       else
       end
@@ -199,7 +199,7 @@ class ExternalSpot < ActiveRecord::Base
           time: spot['timeStamp'].to_datetime ? spot['timeStamp'].to_datetime.in_time_zone('UTC') : nil,
           callsign: spot['callsign'].strip,
           activatorCallsign: spot['activatorCallsign'].strip,
-          code: spot['summitCode'],
+          code: spot['summitCode'].gsub('?','X'),
           name: spot['summitName'],
           frequency: spot['frequency'].to_s,
           mode: (if spot['type']=='QRT' then 'QRT' else spot['mode'] end),

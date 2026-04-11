@@ -2,6 +2,40 @@
 
 # typed: false
 module AssetImportTools
+  def Asset.import_llota
+    url = 'https://llota.app/api/public/references?version=lite'
+    data = JSON.parse(open(url).read)
+    if data
+      puts 'Found ' + data.count.to_s + ' lakes'
+      count = 0
+      data.each do |l|
+        if l["reference_code"][0..2]=='NZ-' then
+          count += 1
+          a = Asset.find_by(code: l["reference_code"].gsub('NZ-','NZLL-'))
+          if !a  
+            puts "Creating #{l["reference_code"].gsub('NZ-','NZLL-')}"
+            a = Asset.new 
+          else
+            puts "Updating #{a.code}"
+          end
+          a.asset_type="llota lake"
+          a.code = l["reference_code"].gsub('NZ-','NZLL-')
+          a2 = Asset.find_by(code: a.code.gsub('NZLL-','ZLL/'))
+          if a2 then
+            puts "Found matching lake #{a2.code}"
+            a.description = a2.description
+            a.boundary = a2.boundary
+            a.is_active = a2.is_active
+          end
+          a.name = l["name"]
+          a.location = "POINT(#{l["longitude"]} #{l["latitude"]})"
+          a.save 
+        end
+      end
+    end
+  end
+        
+
   def Asset.add_parks
     ps = Park.find_by_sql ['select id from parks;']
     ps.each do |pid|

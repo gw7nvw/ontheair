@@ -240,6 +240,12 @@ class Post < ActiveRecord::Base
           hema_response = Post.send_to_hema(debug, from.acctnumber, callsign, ac, freq, mode, description)
           result = (result && hema_response[:result])
           messages += hema_response[:messages]
+        elsif (asset_type == 'llota lake')
+          puts 'DEBUG: send ' + ac + ' to LLOTA'
+          llota_response = Post.send_to_llota(debug, from.callsign, callsign, ac, freq, mode, description)
+          result = (result && llota_response[:result])
+          messages += llota_response[:messages]
+          matched = true
         end
         next unless (result == false) || (matched == false)
         puts 'DEBUG: send ' + ac + ' to PnP'
@@ -408,6 +414,57 @@ class Post < ActiveRecord::Base
       puts 'Not a POTA asset: ' + a_code
       messages = 'Not a POTA asset: ' + a_code + '; '
       result = false
+    end
+    { result: result, messages: messages }
+  end
+
+  def self.send_to_llota(debug, from, callsign, a_code, freq, mode, description)
+    result = false
+    messages = ''
+    url = URI.parse('https://llota.app/api/public/spots/spot')
+    http = Net::HTTP.new(url.host, url.port)
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+    asset = Asset.find_by(code: a_code)
+    asset_type = Asset.get_asset_type_from_code(a_code)
+    if asset && (asset_type == 'llota lake')
+      payloadspot = {
+        'callsign': callsign.upcase,
+        'frequency': (freq.to_f * 1000).to_s,
+        'reference': a_code.gsub('LL-','-'),
+        'mode': mode.upcase,
+        'source': 'ontheair.nz',
+        'comments': description
+      }
+
+      #        if debug then
+      puts 'Sending SPOT to LLOTA'
+      puts payloadspot
+      #        end
+
+      if !debug
+        req = Net::HTTP::Post.new("#{url.path}?", 'Content-Type' => 'application/json', 'User-Agent' => 'ontheair.nz', 'X-API-Key' => LLOTA_API_KEY)
+        req.body = payloadspot.to_json
+        begin
+          res = http.request(req)
+          puts 'DEBUG: LLOTA response'
+          puts res.body.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
+          response = JSON.parse(res.body)
+        rescue StandardError
+          puts 'Send to LLOTA failed'
+          result = false
+          messages = 'Failed to contact LLOTA server'
+        else
+          if response['spot_id'] and response['spot_id'].to_i > 0 then
+            messages = 'Sent spot to LLOTA; '
+            result = true
+          else
+            result = false
+            messages = 'Spot not accepted by LLOTA server'
+          end
+        end
+      end
     end
     { result: result, messages: messages }
   end
