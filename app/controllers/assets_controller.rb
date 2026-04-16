@@ -117,11 +117,16 @@ class AssetsController < ApplicationController
   end
 
   def index_prep
+    dxcc = params[:dxcc][:prefix] if params[:dxcc]
+    dxcc = session[:dxcc] if !dxcc
+    dxcc = 'ZL' if !dxcc
+
     whereclause = 'true'
 
     whereclause = 'is_active is true' unless params[:active]
 
     whereclause += ' and minor is not true' if params[:minor]
+    whereclause += " and country = '#{dxcc}'" if dxcc
     asset_type = params[:type]
 
     if params[:asset_type] && params[:asset_type][:name] && (params[:asset_type][:name] != '') && (params[:asset_type][:name] != 'all')
@@ -336,7 +341,7 @@ puts "SEARCHTEXT"+@searchtext
   private
 
   def asset_params
-    params.require(:asset).permit(:id, :name, :description, :altitude, :is_active, :is_nzart, :minor, :is_doc, :park_id, :asset_type, :code, :valid_from, :valid_to, :az_radius, :points, :public_access, :region, :district, :field_code)
+    params.require(:asset).permit(:id, :name, :description, :altitude, :is_active, :is_nzart, :minor, :is_doc, :park_id, :asset_type, :code, :valid_from, :valid_to, :az_radius, :points, :public_access, :region, :district, :field_code, :country)
   end
 
   def rating_params

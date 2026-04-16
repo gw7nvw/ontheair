@@ -141,10 +141,6 @@ class Log < ActiveRecord::Base
     newcodes = codes
     # Add ZL child codes by lcoation
     if location1 then newcodes += Asset.containing_codes_from_location(location1, asset) end
-    # Add VK child codes using lookup table
-    codes.each do |code|
-      newcodes += VkAsset.containing_codes_from_parent(code)
-    end
     newcodes.uniq
   end
 

@@ -106,18 +106,21 @@ class WwffLogsController < ApplicationController
       # UserMailer.wwff_log_submission(@user,@park,@filename,@wwff_log,@address).deliver
       UserMailer.wwff_log_submission(@user, @park, @filename, @wwff_log, @address).deliver
       @contacts.each do |contact|
-        contact.submitted_to_wwff = true
-        contact.save
+        contact.update_column(:submitted_to, contact.submitted_to+['WWFF'])
+#        contact.submitted_to_wwff = true
+#        contact.save
       end
       # also mark duplicates and invalds as sent so as not to retry them next time
       @dups.each do |contact|
-        contact.submitted_to_wwff = true
-        contact.save
+        contact.update_column(:submitted_to, contact.submitted_to+['WWFF'])
+#        contact.submitted_to_wwff = true
+#        contact.save
       end
       @invalid_contacts.each do |ic|
         contact = ic[:contact]
-        contact.submitted_to_wwff = true
-        contact.save
+        contact.update_column(:submitted_to, contact.submitted_to+['WWFF'])
+#        contact.submitted_to_wwff = true
+#        contact.save
       end
 
       flash[:success] = 'Your log has been sent'
@@ -135,15 +138,18 @@ class WwffLogsController < ApplicationController
 
     @contacts.each do |contact|
 #      contact.submitted_to_wwff = true
-      contact.update_column(:submitted_to_wwff, true)
+#      contact.update_column(:submitted_to_wwff, true)
+       contact.update_column(:submitted_to, contact.submitted_to+['WWFF'])
     end
     # also mark duplicates and invalds as sent so as not to retry them next time
     @dups.each do |contact|
-      contact.update_column(:submitted_to_wwff, true)
+#      contact.update_column(:submitted_to_wwff, true)
+      contact.update_column(:submitted_to, contact.submitted_to+['WWFF'])
     end
     @invalid_contacts.each do |ic|
       contact = ic[:contact]
-      contact.update_column(:submitted_to_wwff, true)
+      contact.update_column(:submitted_to, contact.submitted_to+['WWFF'])
+#      contact.update_column(:submitted_to_wwff, true)
     end
 
     respond_to do |format|

@@ -4,7 +4,7 @@
     <% @maplayers.each do |m| %>
       <li>
          <% if @baselayer and @baselayer==m.name then checked=true else checked=false end %>
-        <%=check_box_tag m.id.to_s, "1", checked, :onclick => "map_select_maplayer('"+m.name+"', '"+m.baseurl+"', '"+m.basemap+"', "+m.minzoom.to_s+", "+m.maxzoom.to_s+")"%>
+        <%=check_box_tag m.id.to_s, "1", checked, :onclick => "BootstrapDialog.closeAll();site_select_maplayer('"+m.name+"', '"+m.baseurl+"', '"+m.basemap+"', "+m.minzoom.to_s+", "+m.maxzoom.to_s+", ["+m.extent.to_s+"]);setTimeout(() => {site_mapLayers(true); }, 1000);"%>
         <%=m.name%>
       </li>
     <% end %>

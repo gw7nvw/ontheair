@@ -38,6 +38,11 @@
       <%= f.label :asset_type, "Asset Type" %>
       <%= f.collection_select( :asset_type, AssetType.where("name != 'all'").order(:name), :name, :display_name) %>
 
+      <%= f.label :country %>
+      <% dxcc = @asset.country %>
+      <% if dxcc == nil or dxcc =='' and session[:dxcc] then dxcc = session[:dxcc] end %>
+      <%= f.collection_select(:country, DxccPrefix.where(is_active: true).order(:name), :prefix, :code_name,{selected: dxcc, include_blank: 'None'}, style: "margin-bottom: 0px;height: 24px;") %>
+
       <%= f.label :region %>
       <%= f.collection_select( :region, Region.all.order(:name), :sota_code, :name,{selected: @asset.region, include_blank: 'None'}, style: "margin-bottom: 0px;height: 24px;") %>
 

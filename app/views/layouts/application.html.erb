@@ -33,10 +33,11 @@ if( /Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent))
     <script>
       <% if @zoomlevel and @zoomlevel.to_i>=5 and @zoomlevel.to_i<=15%> var def_zoom=<%=@zoomlevel%> <% end %>
       <% if @dxcc %> var def_dxcc='<%=@dxcc%>' <% end %>
-      <% if @map_x %> var def_x=<%=@map_x%> <% end %>
-      <% if @map_y %> var def_y=<%=@map_y%> <% end %>
+      <% if @map_x %> var def_x=<%=@map_x%> <% else %> var def_x=<%=@default_x%> <% end %>
+      <% if @map_y %> var def_y=<%=@map_y%> <% else %> var def_y=<%=@default_y%> <% end %>
       <% if @proj %> var def_proj=<%=raw("'"+@proj+"'")%> <% end %>
-      <% if @layer %> var def_layer=<%=raw("'"+@layer+"'")%> <% end %>
+      <% if @layer %> var def_layer=<%=raw("'"+@layer+"'")%> <% elsif @default_layer %> var def_layer=<%=raw("'"+@default_layer+"'")%> <% end %>
+      <% if @preferred_layer %> var site_pref_layer=<%=raw("'"+@preferred_layer+"'")%>; var site_pref_extent=<%=raw("["+@preferred_extent+"]")%> <% end %>
       <% if @default_pointlayers %> var user_point_layers=[<%=raw(@default_pointlayers||"")%>] <% end %>
       <% if @default_polygonlayers %> var user_polygon_layers=[<%=raw(@default_polygonlayers||"")%>] <% end %>
     </script>

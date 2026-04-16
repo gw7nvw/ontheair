@@ -34,7 +34,7 @@
 
   <table style='table-layout:fixed'>
     <tr>
-      <% AssetType.where("name != 'all'").order(:name).each do |at| %>
+      <% AssetType.where("name not in #{@asset_type_filter}").order(:name).each do |at| %>
         <th style='font-size: 1.1vw; text-align: center'><%=link_to at.display_name.pluralize, '/assets/?asset_type[name]='+at.name,remote: true,:onclick => "linkHandler('"+at.name+"')", :style=>'color:#fff' %></th>
       <% end %>
     </tr>
@@ -60,11 +60,7 @@
   </div>
 <% end %>
 
-<% if session[:dxcc]=='VK' then %>
-  <%= form_tag '/vkassets', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
-<% else %>
   <%= form_tag '/assets', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
-<% end %>
   <br/>
   <div class="rowtitle">Search for <%=session[:dxcc]%> place:</div>
   <div class="rowtext">

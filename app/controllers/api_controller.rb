@@ -13,23 +13,36 @@ class ApiController < ApplicationController
   def assettype
     respond_to do |format|
       format.js { render json: AssetType.all.to_json }
+      format.json { render json: AssetType.all.to_json }
       format.html { render json: AssetType.all.to_json }
       format.csv { send_data asset_to_csv(AssetType.all), filename: "assettypes-#{Date.today}.csv" }
     end
   end
 
   def assetlink
-    if params[:id]
+
+    if params[:equivalents_only] then
+      al=AssetLink.find_by_sql [ " select al.id, al.contained_code, al.containing_code, 1 as overlap from asset_links al inner join asset_links al2 on al.contained_code = al2.containing_code and al.containing_code = al2.contained_code inner join assets a1 on a1.code = al.contained_code inner join assets a2 on a2.code = al.containing_code where a1.is_active = true and a2.is_active = true"]
+
+      respond_to do |format|
+        format.js { render json: al.to_json }
+        format.json { render json: al.to_json }
+        format.html { render json: al.to_json }
+        format.csv { send_data asset_to_csv(al), filename: "assetlinks-#{Date.today}.csv" }
+      end
+    elsif params[:id]
       id = params[:id].upcase.tr('_', '/')
       if params[:contained_by_assets]
         respond_to do |format|
           format.js { render json: AssetLink.where(containing_code: id).to_json }
+          format.json { render json: AssetLink.where(containing_code: id).to_json }
           format.html { render json: AssetLink.where(containing_code: id).to_json }
           format.csv { send_data asset_to_csv(AssetLink.where(containing_code: id)), filename: "assetlinks-#{Date.today}.csv" }
         end
       else
         respond_to do |format|
           format.js { render json: AssetLink.where(contained_code: id).to_json }
+          format.json { render json: AssetLink.where(contained_code: id).to_json }
           format.html { render json: AssetLink.where(contained_code: id).to_json }
           format.csv { send_data asset_to_csv(AssetLink.where(contained_code: id)), filename: "assetlinks-#{Date.today}.csv" }
         end
@@ -39,6 +52,7 @@ class ApiController < ApplicationController
       assetLinks = AssetLink.find_by_sql [" select al.* from asset_links al inner join assets a on a.code = al.containing_code where a.asset_type='#{params[:asset_type]}'; "]
       respond_to do |format|
         format.js { render json: assetLinks.to_json }
+        format.json { render json: assetLinks.to_json }
         format.html { render json: assetLinks.to_json }
         format.csv { send_data asset_to_csv(assetLinks), filename: "assetlinks-#{Date.today}.csv" }
       end
@@ -47,6 +61,7 @@ class ApiController < ApplicationController
       assetLinks = AssetLink.find_by_sql [" select al.* from asset_links al inner join assets a on a.code = al.contained_code where a.asset_type='#{params[:asset_type]}'; "]
       respond_to do |format|
         format.js { render json: assetLinks.to_json }
+        format.json { render json: assetLinks.to_json }
         format.html { render json: assetLinks.to_json }
         format.csv { send_data asset_to_csv(assetLinks), filename: "assetlinks-#{Date.today}.csv" }
       end
@@ -54,6 +69,7 @@ class ApiController < ApplicationController
     else
       respond_to do |format|
         format.js { render json: AssetLink.all.to_json }
+        format.json { render json: AssetLink.all.to_json }
         format.html { render json: AssetLink.all.to_json }
         format.csv { send_data asset_to_csv(AssetLink.all), filename: "assetlinks-#{Date.today}.csv" }
       end
@@ -93,6 +109,7 @@ class ApiController < ApplicationController
 
     respond_to do |format|
       format.js { render json: @assets.to_json }
+      format.json { render json: @assets.to_json }
       format.html { render json: @assets.to_json }
       format.csv { send_data asset_to_csv(@assets), filename: "#{base_filename}-#{Date.today}.csv" }
       format.gpx { send_data asset_to_gpx(@assets), filename: "#{base_filename}-#{Date.today}.gpx" }
@@ -247,6 +264,7 @@ class ApiController < ApplicationController
 
     respond_to do |format|
       format.js { render json: res.to_json }
+      format.json { render json: res.to_json }
       format.html { render json: res.to_json }
     end
   end

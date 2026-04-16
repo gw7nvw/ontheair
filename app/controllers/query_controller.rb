@@ -9,6 +9,7 @@ class QueryController < ApplicationController
   # Inputs:
   #    params: 
   #       ["asset_type"]["name"]: string (AssetType.name)
+  #       ["dxcc"]["prefix"]: string (AssetType.name)
   #       ["searchtext"]: string - text to match in Asset.name or Asset.code
   #       ["minor"]: boolean - EXCLUDE minor assets
   #       ["is_active"]: boolean - INCLUDE inactive assets
@@ -21,7 +22,11 @@ class QueryController < ApplicationController
   #
   # Note: results limited to first 40 matches
   def index
-   
+  
+    dxcc = params[:dxcc][:prefix] if params[:dxcc]
+    dxcc = session[:dxcc] if !dxcc
+    dxcc = 'ZL' if !dxcc
+ 
     #take search params after makeing sql-injection safe 
     @searchtext = safe_param(params[:searchtext] || '')
 
@@ -37,6 +42,7 @@ class QueryController < ApplicationController
     #build the query based on parameters passed
     whereclause = 'true'
     whereclause = 'is_active is true' unless params[:active]
+    whereclause += " and country = '#{dxcc}'" if dxcc
     whereclause += ' and minor is not true' if @minor
     if params[:asset_type] && params[:asset_type][:name] && (params[:asset_type][:name] != '') && (params[:asset_type][:name] != 'all')
       whereclause += " and asset_type = '" + params[:asset_type][:name] + "'"

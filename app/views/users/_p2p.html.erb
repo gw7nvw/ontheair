@@ -37,9 +37,7 @@
         <tr>
           <% contact = c.split(" ") %>
           <% asset1 = Asset.find_by(code: contact[1]) %>
-          <% if !asset1 then asset1=VkAsset.find_by(code: contact[1]) end %>
           <% asset2 = Asset.find_by(code: contact[2]) %>
-          <% if !asset2 then asset2=VkAsset.find_by(code: contact[2]) end %>
           <td>
             <%=link_to contact[0], '/contacts?user='+@user.callsign+'&asset='+contact[1], remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
           </td>

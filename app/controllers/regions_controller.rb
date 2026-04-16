@@ -5,7 +5,10 @@ class RegionsController < ApplicationController
   include ApplicationHelper
 
   def index
-    @regions = Region.find_by_sql [' select id, name, sota_code from regions order by sota_code; ']
+    dxcc = 'ZL'
+    dxcc = session[:dxcc] if session[:dxcc]
+
+    @regions = Region.find_by_sql [" select id, name, sota_code from regions where dxcc='#{dxcc}' order by sota_code; "]
   end
 
   def show

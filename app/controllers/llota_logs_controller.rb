@@ -98,11 +98,14 @@ class LlotaLogsController < ApplicationController
     show
     if @contacts 
       @contacts.each do |contact|
-        contact.update_column(:submitted_to_llota, true)
+#        contact.update_column(:submitted_to_llota, true)
+        contact.update_column(:submitted_to, contact.submitted_to+['LLOTA'])
+
 
       end
       @duplicate_contacts.each do |contact|
-        contact.update_column(:submitted_to_llota, true)
+        contact.update_column(:submitted_to, contact.submitted_to+['LLOTA'])
+#        contact.update_column(:submitted_to_llota, true)
       end
 
       respond_to do |format|

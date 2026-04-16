@@ -94,94 +94,96 @@
     </div>
   <% end %>
 
-  <% if @asset.public_access==false %>
-    <div class="erow" id="publicaccess" style='color:#bb0000'>
-      <div class="rowtitle" style='color:#bb0000'><%= "Public access to AZ" %></div>
-      <div class="rowtext" >
-        No <%= link_to image_tag("/assets/info.png"), ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
-        <small><i><%= link_to '(what does this mean?)', ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></i></small>
+  <% if @asset.country == 'ZL' %>
+    <% if @asset.public_access==false %>
+      <div class="erow" id="publicaccess" style='color:#bb0000'>
+        <div class="rowtitle" style='color:#bb0000'><%= "Public access to AZ" %></div>
+        <div class="rowtext" >
+          No <%= link_to image_tag("/assets/info.png"), ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
+          <small><i><%= link_to '(what does this mean?)', ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></i></small>
+        </div>
       </div>
-    </div>
-  <% end %>
-
-  <% if @asset.public_access==true %>
-    <div class="erow" id="publicaccess" style="color:#00bb00">
-      <div class="rowtitle" style="color:#00bb00"><%= "Public access to AZ" %></div>
-      <div class="rowtext">
-        Yes <%= link_to image_tag("/assets/info.png"), ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
-        <small><i><%= link_to '(what does this mean?)', ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></i></small>
-      </div>
-    </div>
-  <% end %>
-
-  <% if @asset.public_access==true %>
-    <% if @asset.access_road_ids !=nil then %>
-      <div class="erow" id="roadids">
-        <div class="rowtitle"></div>
-        <div class="rowtext" style="color:#00bb00"> 
-          Via public road(s): 
-          <span style="color:#333">
-            <% unnamed_road=0 %>
-            <% road_names=[] %>
-            <% @asset.access_road_ids.each do |rid| %>
-              <% r=Road.find_by(id: rid) %>
-              <% if r and r.name and r.name.length>0 %>
-                <% road_names+=[r.name.downcase.titlecase]%>
-              <% else unnamed_road+=1 end %>
-            <% end %>
-            <% if unnamed_road>0 then road_names+=[unnamed_road.to_s+" unnamed road(s)"] end%>
-            <%= road_names.uniq.join('; ') %>
-          </span>
+    <% end %>
+  
+    <% if @asset.public_access==true %>
+      <div class="erow" id="publicaccess" style="color:#00bb00">
+        <div class="rowtitle" style="color:#00bb00"><%= "Public access to AZ" %></div>
+        <div class="rowtext">
+          Yes <%= link_to image_tag("/assets/info.png"), ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
+          <small><i><%= link_to '(what does this mean?)', ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></i></small>
         </div>
       </div>
     <% end %>
 
-    <% if @asset.access_track_ids != nil then %>
-      <div class="erow" id="trackids">
-        <div class="rowtitle"></div>
-        <div class="rowtext" style="color:#00bb00"> 
-          Via DOC track(s): 
-          <span style="color:#333">
-            <% unnamed_track=0 %>
-            <% track_names=[] %>
-            <% @asset.access_track_ids.each do |rid| %>
-              <% r=DocTrack.find_by(id: rid) %>
-              <% if r and r.name and r.name.length>0 %>
-                <% track_names+=[r.name.downcase.titlecase]%>
-              <% else unnamed_track+=1 %>
+    <% if @asset.public_access==true %>
+      <% if @asset.access_road_ids !=nil then %>
+        <div class="erow" id="roadids">
+          <div class="rowtitle"></div>
+          <div class="rowtext" style="color:#00bb00"> 
+            Via public road(s): 
+            <span style="color:#333">
+              <% unnamed_road=0 %>
+              <% road_names=[] %>
+              <% @asset.access_road_ids.each do |rid| %>
+                <% r=Road.find_by(id: rid) %>
+                <% if r and r.name and r.name.length>0 %>
+                  <% road_names+=[r.name.downcase.titlecase]%>
+                <% else unnamed_road+=1 end %>
               <% end %>
-            <% end %>
-            <% if unnamed_track>0 then track_names+=[unnamed_track.to_s+" unnamed track(s)"] end %>
-            <%= track_names.uniq.join('; ') %>
-          </span>
+              <% if unnamed_road>0 then road_names+=[unnamed_road.to_s+" unnamed road(s)"] end%>
+              <%= road_names.uniq.join('; ') %>
+            </span>
+          </div>
         </div>
-      </div>
-    <% end %>
+      <% end %>
+  
+      <% if @asset.access_track_ids != nil then %>
+        <div class="erow" id="trackids">
+          <div class="rowtitle"></div>
+          <div class="rowtext" style="color:#00bb00"> 
+            Via DOC track(s): 
+            <span style="color:#333">
+              <% unnamed_track=0 %>
+              <% track_names=[] %>
+              <% @asset.access_track_ids.each do |rid| %>
+                <% r=DocTrack.find_by(id: rid) %>
+                <% if r and r.name and r.name.length>0 %>
+                  <% track_names+=[r.name.downcase.titlecase]%>
+                <% else unnamed_track+=1 %>
+                <% end %>
+              <% end %>
+              <% if unnamed_track>0 then track_names+=[unnamed_track.to_s+" unnamed track(s)"] end %>
+              <%= track_names.uniq.join('; ') %>
+            </span>
+          </div>
+        </div>
+      <% end %>
 
-    <% if @asset.access_park_ids != nil then %>
-      <div class="erow" id="parkids">
-        <div class="rowtitle"></div>
-        <div class="rowtext" style="color:#00bb00"> 
-          Via park(s): 
-          <span style="color:#333">
-            <% park_names=[] %>
-            <% @asset.access_park_ids.each do |rid| %>
-              <% r=Asset.find_by(id: rid) %>
-              <% park_names+=[r.name] %>
-            <% end %>
-            <%= park_names.uniq.join('; ') %>
-          </span>
+      <% if @asset.access_park_ids != nil then %>
+        <div class="erow" id="parkids">
+          <div class="rowtitle"></div>
+          <div class="rowtext" style="color:#00bb00"> 
+            Via park(s): 
+            <span style="color:#333">
+              <% park_names=[] %>
+              <% @asset.access_park_ids.each do |rid| %>
+                <% r=Asset.find_by(id: rid) %>
+                <% park_names+=[r.name] %>
+              <% end %>
+              <%= park_names.uniq.join('; ') %>
+            </span>
+          </div>
         </div>
-      </div>
-    <% end %>
+      <% end %>
 
-    <% if @asset.access_road_ids == nil and @asset.access_legal_road_ids != nil then %>
-      <div class="erow" id="legalrods">
-        <div class="rowtitle"></div>
-        <div class="rowtext" style="color:#00bb00"> 
-          Via unformed legal road(s) 
+      <% if @asset.access_road_ids == nil and @asset.access_legal_road_ids != nil then %>
+        <div class="erow" id="legalrods">
+          <div class="rowtitle"></div>
+          <div class="rowtext" style="color:#00bb00"> 
+            Via unformed legal road(s) 
+          </div>
         </div>
-      </div>
+      <% end %>
     <% end %>
   <% end %>
 
@@ -214,6 +216,15 @@
     </div>
   </div>
 
+  <% if @asset.country %>
+    <div class="erow" id="dxcc">
+      <div class="rowtitle">DXCC</div>
+      <div class="rowtext"> 
+        <%=@asset.country%>
+      </div>
+    </div>
+  <% end %>
+
   <% if @asset.region %>
     <div class="erow" id="region">
       <div class="rowtitle">Region</div>
@@ -243,7 +254,7 @@
 
   <% if @asset.traditional_owners %>
     <div class="erow" id="trad_owner">
-      <div class="rowtitle">Iwi</div>
+      <div class="rowtitle">Traditional owners</div>
       <div class="rowtext"> 
         <%=@asset.traditional_owners %>
       </div>
@@ -253,9 +264,18 @@
   <div class="erow" id="location">
     <div class="rowtitle"><%= "Location" %></div>
     <% if @proj_srs==2193 then proj="NZTM2000"; round=0 else proj="WGS";round=4 end%>
-    <% if @asset.x and @asset.y %>
-      <div class="rowtext"> <%= proj+": "+@asset.x.round(round).to_s+", "+@asset.y.round(round).to_s %><% if @asset.altitude %><%=" (alt: "+@asset.altitude.to_s+"m)"%> <% end %> </div>
-    <% end %>
+    <% if @asset.country == 'ZL'  %>
+      <% if @asset.x and @asset.y %>
+        <div class="rowtext"> <%= proj+": "+@asset.x.round(round).to_s+", "+@asset.y.round(round).to_s %><% if @asset.altitude and @asset.altitude>0 %><%=" (alt: "+@asset.altitude.to_s+"m)"%> <% end %> </div>
+      <% end %>
+   <% else %>
+     <% round = 4 %>
+     <% proj = 'WGS' %>
+     <% if @asset.location.x and @asset.location.y %>
+        <div class="rowtext"> <%= proj+": "+@asset.location.x.round(round).to_s+", "+@asset.location.y.round(round).to_s %><% if @asset.altitude and @asset.altitude>0 %><%=" (alt: "+@asset.altitude.to_s+"m)"%> <% end %> </div>
+      <% end %>
+   <% end %>
+
   </div>
 
   <div class="erow" id="maidenhead">
@@ -284,7 +304,7 @@
     <div class="textext"><%= if @asset.is_active then "Yes" else "No" end %></div>
   </div>
 
-  <% if @asset.is_nzart==true or @asset.is_nzart==false then %>
+  <% if @asset.country == 'ZL' and (@asset.is_nzart==true or @asset.is_nzart==false) then %>
     <div class="erow" id="email" <%= if @asset.is_nzart then "" else "style='color:#bb0000'" end%>>
       <div class="rowtitle" <%= if @asset.is_nzart then "" else "style='color:#bb0000'" end%>><%= "Valid for NZART awards?" %></div>
       <div class="textext"><%= if @asset.is_nzart then "Yes" else "No" end %></div>
@@ -584,20 +604,6 @@
 
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
-    if(map_map) {
-      if (map_map.getView().getProjection().code_!='EPSG:2193') {
-        //Switch to web-mercator / opentopomap for overseas sites
-        map_show_only_layer('NZTM Topo 2019');
-        map_switch_proj('2193');
-        //switch coordinate display to WGS long/lat
-        map_current_proj = '2193';
-        map_current_projname = 'NZTM';
-        map_mpc.setProjection(ol.proj.get('EPSG:'+map_current_proj));
-        map_current_projdp = 0;
-        map_set_coord_format();
-      }
-    }
-
   place_init('<%=@asset.location%>',  0, site_purple_star);
   <% if @asset.boundary_simple then %>
     place_init('<%=@asset.boundary_simple%>',  1,site_highlight_polygon);

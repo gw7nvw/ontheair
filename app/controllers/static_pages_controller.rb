@@ -4,7 +4,7 @@
 class StaticPagesController < ApplicationController
   include ApplicationHelper
 
-  before_action :signed_in_user, only: %i[ack_news admin_stats dxcc recent results]
+  before_action :signed_in_user, only: %i[ack_news admin_stats  recent results]
 
   def ack_news
     if current_user
@@ -43,6 +43,8 @@ class StaticPagesController < ApplicationController
     spots
     ack_time = current_user.hide_news_at if current_user
     ack_time ||= '1900-01-01'
+    @dxcc = session[:dxcc]
+    @dxcc='ZL' if !@dxcc
 
     @max_rows = 30
     results
@@ -57,6 +59,8 @@ class StaticPagesController < ApplicationController
     @award_users = User.find_by_sql [ "select * from users where id in (select distinct user_id from award_user_links where created_at>'#{ack_time}') order by callsign;"]
 
     @items = Item.find_by_sql ["select * from items where (topic_id = 4 )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;"]
+    @asset_type_filter = "('all', 'silo')" if @dxcc=='ZL'
+    @asset_type_filter = "('park', 'lake', 'lighthouse', 'island', 'hut', 'volcano', 'all')" if @dxcc=="VK"
   end
 
   def recent

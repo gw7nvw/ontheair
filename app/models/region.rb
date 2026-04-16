@@ -13,7 +13,14 @@ class Region < ActiveRecord::Base
   def self.import(filename)
     CSV.foreach(filename, headers: true) do |row|
       place = row.to_hash
-      ActiveRecord::Base.connection.execute("insert into regions (regc_code, name, boundary) values ('" + place['REGC_code'] + "','" + place['REGC_name'].gsub("'", "''") + "',ST_GeomFromText('" + place['WKT'] + "',4326));")
+      ActiveRecord::Base.connection.execute("insert into regions (dxcc, regc_code, name, boundary) values ('ZL, '" + place['REGC_code'] + "','" + place['REGC_name'].gsub("'", "''") + "',ST_GeomFromText('" + place['WKT'] + "',4326));")
+    end; true
+  end
+
+  def self.import_vk(filename)
+    CSV.foreach(filename, headers: true) do |row|
+      place = row.to_hash
+      ActiveRecord::Base.connection.execute("insert into regions (dxcc, sota_code, regc_code, name, boundary) values ('VK', '" + place['STE_CODE'] + "','" + place['STE_CODE'] + "','" + place['STE_NAME'].gsub("'", "''") + "',ST_GeomFromText('" + place['WKT'] + "',4326));")
     end; true
   end
 
@@ -56,21 +63,21 @@ class Region < ActiveRecord::Base
     end; true
   end
 
-  def assets(at_date = Time.now)
+  def assets(dxcc='ZL', at_date = Time.now)
     #  as=Asset.where(region: self.sota_code)
-    Asset.find_by_sql [" select * from assets where region='#{sota_code}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') "]
+    Asset.find_by_sql [" select * from assets where country='#{dxcc}' and region='#{sota_code}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') "]
   end
 
-  def assets_by_type(type, at_date = Time.now)
+  def assets_by_type(type, dxcc='ZL', at_date = Time.now)
     #  as=Asset.where(region: self.sota_code, asset_type: type)
-    Asset.find_by_sql [" select * from assets where region='#{sota_code}' and asset_type='#{type}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') "]
+    Asset.find_by_sql [" select * from assets where country='#{dxcc}' and region='#{sota_code}' and asset_type='#{type}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') "]
   end
 
   def districts
-    District.where(region_code: sota_code)
+    District.where(dxcc: dxcc, region_code: sota_code)
   end
 
-  def self.get_assets_with_type(at_date = Time.now)
-    Contact.find_by_sql [" select name, type, code_count, site_list from (select a.is_active as is_active, d.sota_code as name, a.asset_type as type, count(distinct(a.code)) as code_count, array_agg(a.code) as site_list from regions d inner join assets a on a.region=d.sota_code where a.minor is not true and (a.valid_from is null or a.valid_from<='#{at_date}') and ((a.valid_to is null and a.is_active=true) or a.valid_to>='#{at_date}') group by d.sota_code, a.asset_type, a.is_active, a.minor) as foo; "]
+  def self.get_assets_with_type(dxcc='ZL', at_date = Time.now)
+    Contact.find_by_sql [" select name, type, code_count, site_list from (select a.is_active as is_active, d.sota_code as name, a.asset_type as type, count(distinct(a.code)) as code_count, array_agg(a.code) as site_list from regions d inner join assets a on a.region=d.sota_code where a.minor is not true and (a.valid_from is null or a.valid_from<='#{at_date}') and ((a.valid_to is null and a.is_active=true) or a.valid_to>='#{at_date}') and  d.dxcc='#{dxcc}' group by d.sota_code, a.asset_type, a.is_active, a.minor) as foo; "]
   end
 end

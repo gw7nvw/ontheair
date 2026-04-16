@@ -79,11 +79,7 @@ class Hump < ActiveRecord::Base
         long = fields[1].split('=')[1]
         name = fields[2].split('=')[1]
         old_code = fields[7].split('summitKey=')[1].gsub("'","")
-        if region[:d][0..1]=='VK' then
-          asset = VkAsset.find_by(old_code: old_code) 
-        else
-          asset = Asset.find_by(old_code: old_code) 
-        end
+        asset = Asset.find_by(old_code: old_code) 
         if asset then
           asset.location = "POINT (#{long} #{lat})"
           puts "Updating asset #{asset.code} #{asset.name} = #{name}: #{asset.location.to_s}"
@@ -167,11 +163,7 @@ class Hump < ActiveRecord::Base
 
     summits.each do |summit|
       if summit[:id].to_i>0 then
-        if summit[:code][0..1]=='VK'
-          asset = VkAsset.find_by(code: summit[:code])
-        else
-          asset = Asset.find_by(code: summit[:code])
-        end
+        asset = Asset.find_by(code: summit[:code])
         if asset
           puts 'found ' + asset.code
           asset.old_code = summit[:id].to_s
@@ -181,11 +173,7 @@ class Hump < ActiveRecord::Base
           asset.save
         else
           puts 'not found: ' + summit[:code]
-          if summit[:code][0..1]=='VK'
-            asset = VkAsset.new
-          else
-            asset = Asset.new
-          end
+          asset = Asset.new
           asset.old_code = summit[:id].to_s
           asset.code = summit[:code]
           asset.name = summit[:name]

@@ -196,7 +196,6 @@ class Post < ActiveRecord::Base
     else
       codes.each do |code|
         newcodes += Asset.containing_codes_from_parent(code)
-        newcodes += VkAsset.containing_codes_from_parent(code)
       end
     end
     newcodes = newcodes.uniq

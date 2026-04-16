@@ -23,14 +23,23 @@ class ApplicationController < ActionController::Base
     if current_user then
       session[:dxcc] = current_user.dxcc
       session[:dxcc]='ZL' if session[:dxcc] == nil or session[:dxcc] == ""  
+      @default_layer = current_user.baselayer if current_user.baselayer
+      @preferred_layer = current_user.baselayer if current_user.baselayer
     end
-    if request.fullpath.include?('/vkassets') then
+    if session[:dxcc]=='VK'
       @dxcc = 'VK'
-    elsif request.fullpath.include?('/assets') then
+      @default_x =  16085209
+      @default_y = -4006631
+      @zoomlevel = 6
+    elsif session[:dxcc]=='ZL'
       @dxcc = 'ZL'
+      @default_x =  19430000
+      @default_y = -5040000
+      @zoomlevel = 7
     else
       @dxcc = session[:dxcc] if session[:dxcc]
     end
+
  
     if session[:dxcc]=='VK' then as.title = as.title.gsub('ZL','') end
     @site_title="'"+as.title+"'"
@@ -69,7 +78,9 @@ class ApplicationController < ActionController::Base
     end
     @zoomlevel = params[:zoom] if params[:zoom]
     @proj=as.default_projection    
-    @layer=as.default_layer    
+    @preferred_layer=as.default_layer  if !@preferred_layer
+    m = Maplayer.find_by(name: @preferred_layer)
+    @preferred_extent=m.extent if m
     @proj = 'EPSG:'+params[:proj] if params[:proj]
     session[:proj] = @proj
     @proj_srs=@proj[5..-1].to_i

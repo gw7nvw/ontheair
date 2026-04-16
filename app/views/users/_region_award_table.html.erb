@@ -11,7 +11,7 @@
 
     <%@region_awards.each do |award|%>
       <% this_combo=@regions.select {|d| d.name==award.region.sota_code and d.type==award.award_class} %>
-      <% abt=award.region.assets_by_type(award.award_class, award.created_at) %>
+      <% abt=award.region.assets_by_type(award.award_class, @dxcc, award.created_at) %>
       <tr>
         <td><%=link_to award.region.name, '/regions/'+award.region.sota_code+"?section="+award.award_class+"&callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler('award')" %></td>
         <td><%=award.activity_type.capitalize%></td>

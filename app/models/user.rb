@@ -728,7 +728,7 @@ class User < ActiveRecord::Base
   #    ]
   ###############################################################################
   def wwff_logs(resubmit = false)
-    resubmit_str = resubmit == true ? '' : ' and submitted_to_wwff is not true'
+    resubmit_str = resubmit == true ? '' : " and not 'WWFF' = ANY(submitted_to)"
     wwff_logs = []
     logger.debug 'resubmit: ' + resubmit_str
 
@@ -792,7 +792,7 @@ class User < ActiveRecord::Base
                  (select callsign1, callsign2, date,  time,
                     unnest(asset1_classes) as asset1_classes,
                     unnest(asset1_codes) as asset1_codes,
-                    submitted_to_sota
+                   'SOTA' = ANY(submitted_to) as submitted_to_sota 
                     from contacts
                     where user1_id=#{id} and #{summit_query1}) as c1
                  where #{summit_query2}) as c2
@@ -829,7 +829,8 @@ class User < ActiveRecord::Base
   def sota_chaser_contacts(summit_code = nil, resubmit = false)
     sota_logs = []
     submitted_clause = if resubmit == false
-                         ' and submitted_to_sota is not true'
+                         " and not 'SOTA' = ANY(submitted_to)"
+#                         " and submitted_to_sota is not true"
                        else
                          ''
                        end
@@ -931,7 +932,7 @@ class User < ActiveRecord::Base
                  (select callsign1, callsign2, date,
                     unnest(asset1_classes) as asset1_classes,
                     unnest(asset1_codes) as asset1_codes,
-                    submitted_to_llota
+                    'LLOTA' = ANY(submitted_to) as submitted_to_llota
                     from contacts
                     where user1_id=#{id} and #{lake_query1}) as c1
                  where #{lake_query2}) as c2
@@ -973,7 +974,7 @@ class User < ActiveRecord::Base
                  (select callsign1, callsign2, date,
                     unnest(asset1_classes) as asset1_classes,
                     unnest(asset1_codes) as asset1_codes,
-                    submitted_to_pota
+                    'POTA' = ANY(submitted_to) as submitted_to_pota
                     from contacts
                     where user1_id=#{id} and #{park_query1}) as c1
                  where #{park_query2}) as c2
@@ -1052,8 +1053,10 @@ class User < ActiveRecord::Base
   #                   }
   #                 ] array of ...
   ############################################################################
-  def area_activations(scope, include_minor = false)
+  def area_activations(scope, include_minor = false, dxcc='ZL', region=nil)
     minor_query = include_minor == false ? 'a.minor is not true' : 'true'
+    region_query = ""
+    region_query = " and a.region = '#{region}'" if region
 
     Contact.find_by_sql ["
       select array_agg(DISTINCT asset1_code) as site_list,
@@ -1074,7 +1077,7 @@ class User < ActiveRecord::Base
             where user_id=" + id.to_s + "
           )
         ) as foo
-      inner join assets a on a.code=asset1_code
+      inner join assets a on a.code=asset1_code and a.country='#{dxcc}' #{region_query}
       where #{minor_query}
         and (a.valid_from is null or a.valid_from<=foo.date)
         and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date)
@@ -1097,8 +1100,11 @@ class User < ActiveRecord::Base
   #               }
   #             ] array of ...
   ############################################################################
-  def area_chases(scope, include_minor = false)
+  def area_chases(scope, include_minor = false, dxcc = 'ZL', region=nil)
     minor_query = include_minor == false ? 'a.minor is not true' : 'true'
+
+    region_query = ""
+    region_query = " and a.region = '#{region}'" if region
 
     Contact.find_by_sql ["
       select array_agg(DISTINCT asset1_code) as site_list,
@@ -1119,7 +1125,7 @@ class User < ActiveRecord::Base
             where user_id=" + id.to_s + "
           )
         ) as foo
-      inner join assets a on a.code=asset1_code
+      inner join assets a on a.code=asset1_code and a.country='#{dxcc}' #{region_query} 
       where #{minor_query}
         and (a.valid_from is null or a.valid_from<=foo.date)
         and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date)

@@ -26,7 +26,8 @@
 <div id="right_scroll">
   <%= render 'flash' %>
   <div class="erow">
-    <div class="sectiontitle" style="margin-top: 12px;">Progress towards Worked-all-District Awards:</div>
+    <div class="sectiontitle" style="margin-top: 12px;">Progress towards worked-all-District awards for <%=@dxcc%> / <%=@region.name%>:</div>
+    <%= link_to "Return to regional progress", '/users/'+@user.callsign+"/region_progress", remote: true,  :id => 'region', :onclick => "linkHandler('region')" %>
     <div class="sectiontitle" style="margin-top: 12px;">Activations:</div>
     <% columnsize=100/(6+@award_classes.count) %>
     <table id="district_activated_table">
@@ -38,17 +39,17 @@
         <%end%>
       </tr>
 
-      <%@districts.each do |district|%>
+      <% @districts.each do |district|%>
         <tr>
           <td><%=if district.region_name then link_to district.region_name, '/regions/'+district.region_code+"?callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler('award')" end %></td>
           <td><%=link_to district.name, '/districts/'+district.district_code+"?callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler('award')" %></td>
           <%@award_classes.each do |award_class|%>
             <% assets=@district_assets.select {|d| d.name==district.district_code and d.type==award_class.name} %>
             <% activation=@activations.select {|d| d.name==district.district_code and d.type==award_class.name} %>
-            <td class="percentage" style='color: #777; text-align: center; background-size:<%=if activation and activation.count>0 and assets.first.code_count>0 then (1.0*activation.first.site_list.uniq.count/assets.first.code_count)*100 else 0 end%>% 100%'><%=if activation and activation.count>0 then activation.first.site_list.uniq.count.to_s+"/"+assets.first.code_count.to_s end%></td>
+            <td class="percentage" style='color: #777; text-align: center; background-size:<%=if activation and activation.count>0 and assets and assets.first and assets.first.code_count>0 then (1.0*activation.first.site_list.uniq.count/assets.first.code_count)*100 else 0 end%>% 100%'><%=if activation and activation.count>0 and assets and assets.first then activation.first.site_list.uniq.count.to_s+"/"+assets.first.code_count.to_s end%></td>
           <% end %>
         </tr>
-      <%end%>
+      <% end %>
     </table>
 
     <div class="sectiontitle" style="margin-top: 12px;">Chases:</div>
@@ -60,8 +61,8 @@
           <th style="text-align: center; width: <%=columnsize%>%"><%=award_class.display_name%></th>
         <%end%>
       </tr>
+      <% @districts.each do |district|%>
 
-      <%@districts.each do |district|%>
         <tr>
           <td><%=if district.region_name then link_to district.region_name, '/regions/'+district.region_code+"?callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler('award')" end%></td>
           <td><%=link_to district.name, '/districts/'+district.district_code+"?callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler('award')" %></td>
@@ -71,7 +72,7 @@
             <td class="percentage" style='color: #777; text-align: center; background-size:<%=if chase and chase.count>0 and assets.first.code_count>0 then (1.0*chase.first.site_list.uniq.count/assets.first.code_count)*100 else 0 end%>% 100%'><%=if chase and chase.count>0 then chase.first.site_list.uniq.count.to_s+"/"+assets.first.code_count.to_s end%></td>
           <% end %>
         </tr>
-      <%end%>
+      <% end %>
     </table>
   </div>
 </div>

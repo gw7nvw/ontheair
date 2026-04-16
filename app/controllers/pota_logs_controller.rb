@@ -97,11 +97,14 @@ class PotaLogsController < ApplicationController
     show
     if @contacts 
       @contacts.each do |contact|
-        contact.update_column(:submitted_to_pota, true)
+#        contact.update_column(:submitted_to_pota, true)
+         contact.update_column(:submitted_to, contact.submitted_to+['POTA'])
+
 
       end
       @duplicate_contacts.each do |contact|
-        contact.update_column(:submitted_to_pota, true)
+        contact.update_column(:submitted_to, contact.submitted_to+['POTA'])
+#        contact.update_column(:submitted_to_pota, true)
       end
 
       respond_to do |format|
@@ -123,12 +126,14 @@ class PotaLogsController < ApplicationController
         # UserMailer.pota_log_submission(@user,@park,@logdate,@filename,@pota_log,"mattbriggs@yahoo.com").deliver
         end
         @contacts.each do |contact|
-          contact.submitted_to_pota = true
-          contact.save
+          contact.update_column(:submitted_to, contact.submitted_to+['POTA'])
+#          contact.submitted_to_pota = true
+#          contact.save
         end
         @duplicate_contacts.each do |contact|
-          contact.submitted_to_pota = true
-          contact.save
+          contact.update_column(:submitted_to, contact.submitted_to+['POTA'])
+ #         contact.submitted_to_pota = true
+ #         contact.save
         end
       end
       flash[:success] = 'Your log has been sent'

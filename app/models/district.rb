@@ -15,6 +15,15 @@ class District < ActiveRecord::Base
     end; true
   end
 
+  def self.import_vk(filename)
+    CSV.foreach(filename, headers: true) do |row|
+      place = row.to_hash
+      if place && place['WKT']
+        ActiveRecord::Base.connection.execute("insert into districts (dxcc, district_code, name, boundary) values ('VK', '" + place['lga_code'] + "','" + place['LGA_NAME25'].gsub("'", "''") + "',ST_GeomFromText('" + place['WKT'] + "',4326));")
+      end
+    end; true
+  end
+
   def self.add_regions
     District.all.each do |district|
       regions = Region.find_by_sql [' select r.id, r.sota_code from districts d inner join regions r on ST_Within(ST_PointOnSurface(d.boundary), r.boundary) where d.id = ' + district.id.to_s]
@@ -57,15 +66,20 @@ class District < ActiveRecord::Base
     name
   end
 
-  def assets(at_date = Time.now)
-    Asset.find_by_sql [" select * from assets where district='#{district_code}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') "]
+  def assets(dxcc = 'ZL', at_date = Time.now)
+    Asset.find_by_sql [" select * from assets where country='#{dxcc}' and district='#{district_code}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') "]
   end
 
-  def assets_by_type(type, at_date = Time.now)
-    Asset.find_by_sql [" select * from assets where district='#{district_code}' and asset_type='#{type}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') "]
+  def assets_by_type(type, dxcc = 'ZL', at_date = Time.now)
+    Asset.find_by_sql [" select * from assets where country = '#{dxcc}' and district='#{district_code}' and asset_type='#{type}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') "]
   end
 
-  def self.get_assets_with_type(at_date = Time.now)
-    Contact.find_by_sql [" select name, type, code_count, site_list from (select a.is_active as is_active, a.minor as minor, d.district_code as name, a.asset_type as type, count(distinct(a.code)) as code_count, array_agg(a.code) as site_list from districts d inner join assets a on a.district=d.district_code where a.minor is not true and (a.valid_from is null or a.valid_from<='#{at_date}') and ((a.valid_to is null and a.is_active=true) or a.valid_to>='#{at_date}') group by d.district_code, a.asset_type, a.is_active, a.minor) as foo; "]
+  def self.get_assets_with_type(dxcc = 'ZL', region = nil, at_date = Time.now)
+    region_query = ""
+    if region
+      region_query = " and a.region = '#{region}'"
+      region_query2 = " and d.region_code = '#{region}'"
+    end
+    Contact.find_by_sql [" select name, type, code_count, site_list from (select a.is_active as is_active, a.minor as minor, d.district_code as name, a.asset_type as type, count(distinct(a.code)) as code_count, array_agg(a.code) as site_list from districts d inner join assets a on a.district=d.district_code where a.minor is not true and (a.valid_from is null or a.valid_from<='#{at_date}') and ((a.valid_to is null and a.is_active=true) or a.valid_to>='#{at_date}') and a.country='#{dxcc}' and d.dxcc='#{dxcc}' #{region_query} #{region_query2} group by d.district_code, a.asset_type, a.is_active, a.minor) as foo; "]
   end
 end

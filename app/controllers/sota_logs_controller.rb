@@ -104,7 +104,8 @@ class SotaLogsController < ApplicationController
         @contacts.each do |contact|
           c2 = Contact.find(contact.id)
           # Mark as sent. Use update column to avoid callbacks
-          c2.update_column(:submitted_to_sota, true)
+#          c2.update_column(:submitted_to_sota, true)
+          c2.update_column(:submitted_to, c2.submitted_to+['SOTA'])
         end
       end
     end

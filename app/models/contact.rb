@@ -212,9 +212,6 @@ class Contact < ActiveRecord::Base
     codes = asset2_codes
     newcodes = codes
     if location2 and loc_source2!="unreliable" then newcodes += Asset.containing_codes_from_location(location2, asset) end
-    codes.each do |code|
-      newcodes += VkAsset.containing_codes_from_parent(code)
-    end
     newcodes.uniq
   end
 

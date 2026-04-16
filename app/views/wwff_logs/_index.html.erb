@@ -41,7 +41,7 @@
         <% 
            submitted_to_wwff=true
            logday[:contacts].each do |c| 
-             if !c.submitted_to_wwff then submitted_to_wwff=false end 
+             if !c.submitted_to.include?('WWFF') then submitted_to_wwff=false end 
            end
         %>
 

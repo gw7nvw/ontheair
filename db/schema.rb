@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20260409022344) do
+ActiveRecord::Schema.define(version: 20260415220504) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -142,6 +142,7 @@ ActiveRecord::Schema.define(version: 20260409022344) do
     t.string   "field_code"
     t.spatial  "az_boundary",               limit: {:srid=>4326, :type=>"multi_polygon"}
     t.float    "az_area"
+    t.string   "country"
   end
 
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
@@ -240,7 +241,7 @@ ActiveRecord::Schema.define(version: 20260409022344) do
     t.string   "transceiver1"
     t.string   "antenna1"
     t.string   "comments1"
-    t.boolean  "first_contact1",                                                 default: true
+    t.boolean  "first_contact1",                                       default: true
     t.string   "loc_desc1"
     t.float    "x1"
     t.float    "y1"
@@ -252,7 +253,7 @@ ActiveRecord::Schema.define(version: 20260409022344) do
     t.string   "transceiver2"
     t.string   "antenna2"
     t.string   "comments2"
-    t.boolean  "first_contact2",                                                 default: true
+    t.boolean  "first_contact2",                                       default: true
     t.string   "loc_desc2"
     t.float    "x2"
     t.float    "y2"
@@ -262,32 +263,27 @@ ActiveRecord::Schema.define(version: 20260409022344) do
     t.string   "timezone"
     t.float    "frequency"
     t.string   "mode"
-    t.boolean  "is_active",                                                      default: true
+    t.boolean  "is_active",                                            default: true
     t.integer  "createdBy_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.spatial  "location1",                limit: {:srid=>4326, :type=>"point"}
-    t.spatial  "location2",                limit: {:srid=>4326, :type=>"point"}
+    t.spatial  "location1",      limit: {:srid=>4326, :type=>"point"}
+    t.spatial  "location2",      limit: {:srid=>4326, :type=>"point"}
     t.boolean  "is_qrp1"
     t.boolean  "is_portable1"
     t.boolean  "is_qrp2"
     t.boolean  "is_portable2"
-    t.boolean  "submitted_to_pota"
-    t.boolean  "submitted_to_wwff"
-    t.boolean  "submitted_to_sota"
     t.integer  "log_id"
-    t.string   "asset1_codes",                                                   default: [],   array: true
-    t.string   "asset2_codes",                                                   default: [],   array: true
+    t.string   "asset1_codes",                                         default: [],   array: true
+    t.string   "asset2_codes",                                         default: [],   array: true
     t.string   "name1"
     t.string   "name2"
-    t.string   "asset1_classes",                                                 default: [],   array: true
-    t.string   "asset2_classes",                                                 default: [],   array: true
-    t.boolean  "submitted_to_hema"
+    t.string   "asset1_classes",                                       default: [],   array: true
+    t.string   "asset2_classes",                                       default: [],   array: true
     t.string   "band"
     t.string   "loc_source2"
     t.boolean  "do_not_lookup"
-    t.boolean  "submitted_to_hema_chaser"
-    t.boolean  "submitted_to_llota"
+    t.string   "submitted_to",                                         default: [],   array: true
   end
 
   add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"
@@ -327,6 +323,7 @@ ActiveRecord::Schema.define(version: 20260409022344) do
     t.spatial  "boundary_quite_simplified", limit: {:srid=>4326, :type=>"multi_polygon"}
     t.spatial  "boundary_simplified",       limit: {:srid=>4326, :type=>"multi_polygon"}
     t.spatial  "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.string   "dxcc"
   end
 
   create_table "doc_tracks", force: true do |t|
@@ -338,12 +335,13 @@ ActiveRecord::Schema.define(version: 20260409022344) do
   end
 
   create_table "dxcc_prefixes", force: true do |t|
-    t.string "name"
-    t.string "prefix"
-    t.string "itu_zone"
-    t.string "cq_zone"
-    t.string "continent_code"
-    t.string "dxcc_enum"
+    t.string  "name"
+    t.string  "prefix"
+    t.string  "itu_zone"
+    t.string  "cq_zone"
+    t.string  "continent_code"
+    t.string  "dxcc_enum"
+    t.boolean "is_active"
   end
 
   create_table "email_blacklists", force: true do |t|
@@ -665,12 +663,14 @@ ActiveRecord::Schema.define(version: 20260409022344) do
     t.datetime "updated_at"
     t.string   "copyright_text"
     t.string   "copyright_link"
+    t.string   "extent"
   end
 
   create_table "nz_tribal_lands", primary_key: "ogc_fid", force: true do |t|
     t.spatial "wkb_geometry", limit: {:srid=>4326, :type=>"multi_polygon"}
     t.decimal "id",                                                         precision: 10, scale: 0
     t.string  "name",         limit: 80
+    t.string  "country"
   end
 
   add_index "nz_tribal_lands", ["wkb_geometry"], :name => "nz_tribal_lands_wkb_geometry_geom_idx", :spatial => true
@@ -776,6 +776,7 @@ ActiveRecord::Schema.define(version: 20260409022344) do
     t.spatial  "boundary_quite_simplified", limit: {:srid=>4326, :type=>"multi_polygon"}
     t.spatial  "boundary_simplified",       limit: {:srid=>4326, :type=>"multi_polygon"}
     t.spatial  "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.string   "dxcc"
   end
 
   create_table "roads", force: true do |t|
@@ -933,6 +934,7 @@ ActiveRecord::Schema.define(version: 20260409022344) do
     t.string   "push_external_filter"
     t.boolean  "push_include_external"
     t.string   "dxcc"
+    t.string   "baselayer"
   end
 
   add_index "users", ["callsign"], :name => "index_users_on_callsign"

@@ -31,4 +31,8 @@ class DxccPrefix < ActiveRecord::Base
            end
     name
   end
+
+  def code_name
+    self.name+" ("+self.prefix+")"
+  end
 end

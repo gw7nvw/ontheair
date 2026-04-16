@@ -1,5 +1,5 @@
 <div class="erow">
-  <div class="sectiontitle" style="margin-top: 12px;">Worked-all-District Awards: (<%=link_to "show progress", "/users/"+@user.callsign+"/district_progress", remote: true,  :id => 'district_progress', :onclick => "linkHandler('district_progress')" %>)</div>
+  <div class="sectiontitle" style="margin-top: 12px;">Worked-all-District Awards: (<%=link_to "show progress", "/users/"+@user.callsign+"/region_progress", remote: true,  :id => 'district_progress', :onclick => "linkHandler('district_progress')" %>)</div>
   <table id="district_award_table">
     <tr>
       <th>District</th>
@@ -11,7 +11,7 @@
 
     <%@district_awards.each do |award|%>
       <% this_combo=@districts.select {|d| d.name==award.district.district_code and d.type==award.award_class} %>
-      <% abt=award.district.assets_by_type(award.award_class, award.created_at) %>
+      <% abt=award.district.assets_by_type(award.award_class, @dxcc, award.created_at) %>
 
       <tr>
         <td><%=link_to award.district.name+" ("+award.district.region_name+")", '/districts/'+award.district.district_code+"?section="+award.award_class+"&callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler('award')" %></td>

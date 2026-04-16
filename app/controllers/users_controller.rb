@@ -18,21 +18,32 @@ class UsersController < ApplicationController
   end
 
   def district_progress
+    @dxcc = params[:dxcc] if params[:dxcc]
+    @dxcc = session[:dxcc] if !@dxcc
+    @dxcc = 'ZL' if !@dxcc
+    @region = Region.find_by(sota_code: params[:region]) 
     @user = User.find_by(callsign: params[:id].upcase)
-    @activations = @user.area_activations('district')
-    @chases = @user.area_chases('district')
-    @award_classes = AssetType.where("name != 'all' and name !='pota park' and name!='wwff park' and name!='lighthouse'").order(:name)
-    @district_assets = District.get_assets_with_type
-    @districts = District.all.order(:region_code, :name)
+    @activations = @user.area_activations('district', false, @dxcc, @region.sota_code)
+    @chases = @user.area_chases('district', false, @dxcc, @region.sota_code)
+    class_filter = "('pota park', 'wwff park', 'lighthouse', 'silo', 'all')" if @dxcc=="ZL"
+    class_filter = "('park', 'lake', 'lighthouse', 'island', 'hut', 'volcano', 'all')" if @dxcc=="VK"
+    @award_classes = AssetType.where("name not in #{class_filter}").order(:name)
+    @district_assets = District.get_assets_with_type(@dxcc, @region.sota_code)
+    @districts = District.where(dxcc: @dxcc, region_code: @region.sota_code)
   end
 
   def region_progress
+    @dxcc = params[:dxcc] if params[:dxcc]
+    @dxcc = session[:dxcc] if !@dxcc
+    @dxcc = 'ZL' if !@dxcc
     @user = User.find_by(callsign: params[:id].upcase)
     @activations = @user.area_activations('region')
-    @chases = @user.area_chases('region')
-    @award_classes = AssetType.where("name != 'all'").order(:name)
-    @region_assets = Region.get_assets_with_type
-    @regions = Region.all.order(:name)
+    @chases = @user.area_chases('region', false, @dxcc)
+    class_filter = "('silo', 'all')" if @dxcc=="ZL"
+    class_filter = "('park', 'lake', 'lighthouse', 'island', 'hut', 'volcano', 'all')" if @dxcc=="VK"
+    @award_classes = AssetType.where("name not in #{class_filter}").order(:name)
+    @region_assets = Region.get_assets_with_type(@dxcc)
+    @regions = Region.where(dxcc: @dxcc).order(:name)
   end
 
   def wishlist
@@ -42,12 +53,15 @@ class UsersController < ApplicationController
   end
 
   def awards
+    @dxcc = params[:dxcc] if params[:dxcc]
+    @dxcc = session[:dxcc] if !@dxcc
+    $dxcc = 'ZL' if !@dxcc
     @user = User.find_by(callsign: params[:id].upcase)
     @awards = Award.where(count_based: true, is_active: true).sort_by &:name
     @district_awards = AwardUserLink.where(award_type: 'district', user_id: @user.id).sort_by { |a| a.district.name }
     @region_awards = AwardUserLink.where(award_type: 'region', user_id: @user.id).sort_by { |a| a.region.name }
-    @districts = District.get_assets_with_type
-    @regions = Region.get_assets_with_type
+    @districts = District.get_assets_with_type(@dxcc)
+    @regions = Region.get_assets_with_type(@dxcc)
   end
 
   def assets

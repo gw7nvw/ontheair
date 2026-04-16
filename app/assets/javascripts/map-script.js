@@ -99,7 +99,9 @@ var mapspast_resolutions=[156543.0339,
                           38.21851413574219,
                           19.109257067871095,
                           9.554628533935547,
-                          4.777314266967774];
+                          4.777314266967774,
+                          2.388657133,
+                          1.194328567];
 var mapspast_extent=[-20037508, -20037508, 20037508, 20037508];
 var mapspast_tilegrid=new ol.tilegrid.TileGrid({
 	origin: mapspast_origin,
@@ -266,7 +268,7 @@ function map_add_wmts_layer(name,url,layer,source,maxresolution,numzooms,project
 }
 
 
-function map_add_raster_layer(name,url,source,maxresolution,numzooms,copyright, copyright_link) {
+function map_add_raster_layer(name,url,source,maxresolution,numzooms,copyright, copyright_link, min_zoom, max_zoom) {
    if (source=="mapspast") {
            var tilegrid=mapspast_tilegrid;
            var layer_proj=epsg2193;
@@ -294,7 +296,9 @@ function map_add_raster_layer(name,url,source,maxresolution,numzooms,copyright, 
        visible: false,
        projection: epsg2193,
        maxResolution: maxresolution,
-       numZoomLevels: numzooms
+       numZoomLevels: numzooms,
+       max_zoom: max_zoom,
+       min_zoom: min_zoom
      });
    } else {
      maplayers[map_layer_count]=new ol.layer.Tile({
@@ -590,7 +594,7 @@ function map_init(divid, projection) {
 		     projection: ol.proj.get('EPSG:2193'),
 //   		     maxResolution: 4891.969809375,
    		     maxResolution: 2445.9849046875,
-                     numZoomLevels: 11
+                     numZoomLevels: 17
         });
         view_3857 = new ol.View({
                      zoom: 6,
@@ -630,8 +634,6 @@ function map_init(divid, projection) {
     });
     layerid='';
       map_show_only_layer(name);
-      map_map.getView().setMinZoom(minzoom);
-      map_map.getView().setMaxZoom(maxzoom);
       map_set_default_extent(mapBounds);
 }
 
@@ -659,6 +661,8 @@ function map_show_only_layer(name, type) {
       if (layer.get('name') != undefined && layer.get('name') === name) {
         layer.setVisible(true);
         document.getElementById('copyright').innerHTML="<a href="+layer.values_.copyright_link+" target='_blank'>"+layer.values_.copyright+"</a>"
+        map_map.getView().setMinZoom(layer.values_.min_zoom);
+        map_map.getView().setMaxZoom(layer.values_.max_zoom);
 //        if(type!='TILE') layer.getSource().clear(); //refresh
       } else {
         if (layer.getType()==type) {
@@ -667,6 +671,7 @@ function map_show_only_layer(name, type) {
       };
     });
     map_current_layer=name;
+
 }
 
 function map_mapLayers() {
@@ -782,7 +787,7 @@ function map_zoom_to_default_extent() {
 }
 
 function map_zoom(zoom) {
-     map_map.getView().setZoom(zoom-5);
+     map_map.getView().setZoom(zoom);
 }
 function map_add_feature_from_wkt(wkt, source_proj, style) {
   var format = new ol.format.WKT();

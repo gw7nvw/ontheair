@@ -225,7 +225,7 @@ class Asset < ActiveRecord::Base
   # If we are near the boundary, hedge our bets and say 'in or near'
   def traditional_owners
     trad_owners=nil
-    if (!!NzTribalLands rescue false) then
+    if (!!NzTribalLand rescue false) then
       buffer = 5000 # say in or near if we are withing this distance of boundary (meters)
       if type.has_boundary && area && (area > 0)
         tos1 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.boundary, tl.wkb_geometry) "]
@@ -581,7 +581,6 @@ class Asset < ActiveRecord::Base
   # Provide infomation about the asset that a code refers to
   # Checks:
   # - Assets table
-  # - VkAssets table
   # - then calculates info based on the code from fixed rules
   #   for any other codes
   # Input: codes: [code]
@@ -609,7 +608,6 @@ class Asset < ActiveRecord::Base
           code = code.upcase
           a = Asset.find_by(code: code.split(' ')[0])
           a ||= Asset.find_by(old_code: code.split(' ')[0])
-          va = VkAsset.find_by(code: code.split(' ')[0])
   
           # Assets listed on ontheair.nz - look up in db
           if a
@@ -625,23 +623,6 @@ class Asset < ActiveRecord::Base
             asset[:external_url] = a.external_url unless code =~ /ZL^[a-zA-Z]-./
             a.type ? (asset[:title] = a.type.display_name) : (logger.error 'ERROR: cannot find type ' + a.asset_type)
             asset[:url] = '/' + asset[:url] if asset[:url][0] != '/'
-  
-          # Assets in VK pulled in from PnP - look up in VK db tables
-          elsif va
-            asset[:asset] = va
-            asset[:url] = '/vkassets/' + va.get_safecode
-            asset[:name] = va.name
-            asset[:codename] = va.codename
-            asset[:external] = false
-            asset[:code] = va.code
-            asset[:pnp_class] = asset[:type]
-            asset[:type] = va.award
-            asset[:type] = 'summit' if asset[:type] == 'SOTA'
-            asset[:type] = 'pota park' if asset[:type] == 'POTA'
-            asset[:type] = 'wwff park' if asset[:type] == 'WWFF'
-            asset[:external_url] = va.external_url
-  
-            asset[:title] = va.site_type
   
           # Otherwise - we guess based on the reference
           elsif (thecode = code.match(LLOTA_REGEX))
@@ -1012,7 +993,7 @@ class Asset < ActiveRecord::Base
         newcode = prefix + codenumber.to_s.rjust(codestring.length, '0')
       end
     end
-    logger.debug 'Code: ' + newcode||""
+    logger.debug 'Code: ' + (newcode||"")
     newcode
   end
 

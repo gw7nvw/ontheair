@@ -1,6 +1,35 @@
 # typed: false
 class VkAsset < ActiveRecord::Base
   before_validation { assign_calculated_fields }
+
+  def copy_to_assets(newonly)
+    puts "#{self.code}"
+    a=Asset.find_by(code: self.code)
+    if !a or newonly!=true then
+      if !a
+       a=Asset.new
+       puts "New!" 
+      end
+
+      a.asset_type = self.asset_type
+      a.code = self.code
+      a.name = self.name
+      a.is_active = true
+      a.created_at = self.created_at
+      a.location = self.location
+      a.description = self.description
+      a.country = 'VK'
+      if !a.save
+        puts "ERROR: "+a.errors.messages.to_s
+        return
+      end
+      ActiveRecord::Base.connection.execute("update assets set boundary=(select boundary from vk_assets where id=#{self.id}) where code = '#{a.code}' ")
+      a.reload
+      a.save 
+      puts "End #{self.code}"
+    end
+  end
+
   def assign_calculated_fields
     at = AssetType.find_by(pnp_class: self.award)
     self.asset_type = at.name if at
@@ -206,8 +235,52 @@ class VkAsset < ActiveRecord::Base
     end
   end
 
+  def find_state_park
+    sps = VkStatePark.find_by_sql [ %q{select * from vk_state_park where st_within ( st_geomfromtext('}+self.location.to_s+%q{', 4326), boundary);} ]
+   
+    if sps and sps.count == 1 then
+        found = false
+        spsname = (sps.first.name || "").upcase.gsub(/[^A-Z0-9 ]/, '')
+        ourname = (self.name.upcase || "").gsub(/[^A-Z0-9 ]/, '') 
+        if spsname.split(" ").sort == ourname.split(" ").sort  then 
+          found=true 
+        else
+          puts "Does not match, use anyway (N/y): "+self.name+" = "+(sps.first.name || "")
+          id = gets
+          if (id[0] == 'y')  then
+            found = true
+          end
+        end
+        if found == true 
+          puts "#{self.name} == #{sps.first.unique_name}"
+          self.boundary = sps.first.boundary.to_s
+          self.old_code = sps.first.unique_name
+          self.save
+          found = true
+        end
+      elsif sps.count == 0
+        puts "Not found #{self.name}"
+      else
+        puts "Asset: "+self.name
+         count=0
+         puts "Found: "
+         sps.each do |c| puts (count=count+1).to_s+" "+c.unique_name end
+         puts "Select match number or enter to skip:"
+         id = gets
+         if id.to_i>0 then
+            c=sps[id.to_i-1]
+            self.old_code = c.unique_name
+            sp = VkStatePark.find_by_sql [ %q{select ST_Multi(ST_Buffer(ST_Simplify(st_union("boundary"),0.0002),0)) as "boundary" from vk_state_park where id = }+c.id.to_s ]
+            self.boundary = sp.first.boundary
+            self.save
+            puts "assigned "+c.name+" to "+self.name
+         end
+      end
+      self.add_simple_boundary
+  end
+
   def find_capad_park
-   if !self.name.include?("Beach")
+   if !self.name.include?("Beach") and !self.name.include?("Wild and Scenic River")
     found=false
     shortname = self.name.gsub(" B.R.","").gsub(" N.C.R.","").gsub(" SS.R.","").gsub(" F.R.","").gsub(" B.R","")
     if self.caped_id and self.caped_id>0 then
@@ -228,9 +301,11 @@ class VkAsset < ActiveRecord::Base
        found = false
        cs.each do |c|
          c_shortname = c.name.gsub(" B.R.","").gsub(" N.C.R.","").gsub( "N.C.R","").gsub(" SS.R.","").gsub(" SS.R","").gsub(" F.R.","").gsub(" F.R","").gsub(" B.R","").gsub(" S.R.","").gsub(" S.R","").gsub(" F.F.R.","").gsub(" F.F.R","").gsub(" G.R.","").gsub(" G.R","").gsub(" W.R.","").gsub(" W.R","").gsub(" N.F.S.R.","").gsub(" N.F.S.R","").gsub(" G.L.R.","").gsub(" G.L.R","").gsub(" N.F.R.","").gsub(" N.F.R","")
+         
          if found==false and ((shortname == c_shortname) or (shortname == c_shortname+" "+c.capad_type) or (shortname == (c_shortname+" "+c.capad_type)[0..shortname.length-1]) or (shortname[0..c_shortname.length-1] == (c_shortname))) then
            self.caped_id = c.objectid
-           self.boundary = c.wkb_geometry.to_s.gsub("POLYGON ","MULTIPOLYGON (")+")"
+           capads = Capad.find_by_sql [ %q{select ST_Multi(ST_Buffer(ST_Simplify(st_union("wkb_geometry"),0.0002),0)) as "wkb_geometry" from capad where objectid = }+c.objectid.to_s ]
+           self.boundary = capads.first.wkb_geometry
            self.save
            puts "assigned "+c.name+" to "+self.name
            found = true
@@ -240,13 +315,14 @@ class VkAsset < ActiveRecord::Base
          puts "Asset: "+self.name+" ("+shortname+")"
          count=0
          puts "Found: "
-         cs.each do |c| puts (count=count+1).to_s+" "+c.name; end
+         cs.each do |c| puts (count=count+1).to_s+" "+c.name+" "+c.objectid.to_s+" Area: "+c.shape_area.to_s; end
          puts "Select match number or enter to skip:"
          id = gets
          if id.to_i>0 then
             c=cs[id.to_i-1]
             self.caped_id = c.objectid
-            self.boundary = c.wkb_geometry.to_s.gsub("POLYGON ","MULTIPOLYGON (")+")"
+            capads = Capad.find_by_sql [ %q{select ST_Multi(ST_Buffer(ST_Simplify(st_union("wkb_geometry"),0.0002),0)) as "wkb_geometry" from capad where objectid = }+c.objectid.to_s ]
+            self.boundary = capads.first.wkb_geometry
             self.save
             puts "assigned "+c.name+" to "+self.name
          end
@@ -256,17 +332,21 @@ class VkAsset < ActiveRecord::Base
        if (shortname == cs.first.name) or (shortname == cs.first.name+" "+cs.first.capad_type) or (shortname == (cs.first.name+" "+cs.first.capad_type)[0..shortname.length-1])then
          puts "Found: "+self.name+" = "+cs.first.name+" "+cs.first.capad_type
          self.caped_id = cs.first.objectid
-         self.boundary = cs.first.wkb_geometry.to_s.gsub("POLYGON ","MULTIPOLYGON (")+")"
+         capads = Capad.find_by_sql [ %q{select ST_Multi(ST_Buffer(ST_Simplify(st_union("wkb_geometry"),0.0002),0)) as "wkb_geometry" from capad where objectid = }+cs.first.objectid.to_s ]
+         self.boundary = capads.first.wkb_geometry
          self.save
        else
          puts "Does not match, use anyway (N/y): "+self.name+" = "+cs.first.name+" "+cs.first.capad_type 
          id = gets
          if (id[0] == 'y')  then
            self.caped_id = cs.first.objectid
-           self.boundary = cs.first.wkb_geometry.to_s.gsub("POLYGON ","MULTIPOLYGON (")+")"
+           capads = Capad.find_by_sql [ %q{select ST_Multi(ST_Buffer(ST_Simplify(st_union("wkb_geometry"),0.0002),0)) as "wkb_geometry" from capad where objectid = }+cs.first.objectid.to_s ]
+           self.boundary = capads.first.wkb_geometry
            self.save
          end
       end
+     else
+      puts "NO MATCH FOUND for "+self.name
      end
     end
     cs
