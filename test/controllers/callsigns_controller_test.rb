@@ -10,8 +10,8 @@ class CallsignsControllerTest < ActionController::TestCase
   test "Can edit an existing callsign" do
     sign_in users(:zl3cc)
     user=User.find_by(callsign: 'ZL3CC')
+    user.save #forces creation of asociated callsign
     uc=UserCallsign.find_by(user_id: user.id)
-
     get :edit, {id: uc.id}
     assert_response :success
 

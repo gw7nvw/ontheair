@@ -59,10 +59,8 @@ class StaticPagesControllerTest < ActionController::TestCase
 
   test "Signed in user should see news" do
     create_test_post(NEWS_TOPIC,"the title","the contents",1.day.ago)
-
     sign_in users(:zl4nvw)
     get :home
-
     #News is now shown
     assert_select '.heading2', /What.*s New/
     assert_select '.sectiontitle', /the title/
@@ -317,24 +315,25 @@ class StaticPagesControllerTest < ActionController::TestCase
     asset1=create_test_asset
     asset2=create_test_asset
 
-    item=create_test_alert(user2, asset_codes: [asset1.code, asset2.code], callsign: user2.callsign, freq: 7.09, mode: "SSB", duration: 1, description: "This is a comment")
+    item=create_test_alert(user2, asset_codes: [asset1.code, asset2.code], callsign: user2.callsign, referenced_datetime: Time.now(), freq: 7.09, mode: "SSB", duration: 1, description: "This is a comment")
     spot=item.post
 
     get :alerts
 
     #data:
-    table=get_table_test(@response.body, 'zlota_alert_table')
-    assert_equal 2, get_row_count_test(table), "2 rows"
-    row=get_row_test(table,2)
+    table=get_table_test(@response.body, 'alert_table')
+    assert_equal 2, get_row_count_test(table), "2 rows" 
+    row=get_row_test(table,1)
 
-    assert_match /#{Time.now.strftime("%Y-%m-%d")}/, get_col_test(row,1), "Correct date"
+    assert_match /#{Time.now.strftime("%Y-%m-%d")}/, get_col_test(row,2), "Correct date"
     assert_match /#{Time.now.strftime("%H:%M")}/, get_col_test(row,2), "Correct time"
-    assert_match /1/, get_col_test(row,3), "Correct duration"
-    assert_match /#{user2.callsign}/, get_col_test(row,4), "Correct activator"
-    assert_match /#{asset1.code}/, get_col_test(row,5), "Correct asset"
-    assert_match /7.09/, get_col_test(row,6), "Correct frequency"
-    assert_match /SSB/, get_col_test(row,6), "Correct mode"
-    assert_match /This is a comment/, get_col_test(row,7), "Correct comment"
+    assert_match /#{(Time.now+60*60).strftime("%H:%M")}/, get_col_test(row,2), "Correct duration"
+    assert_match /#{user2.callsign}/, get_col_test(row,3), "Correct activator"
+    assert_match /#{asset1.code}/, get_col_test(row,4), "Correct asset"
+    assert_match /7.09/, get_col_test(row,5), "Correct frequency"
+    assert_match /SSB/, get_col_test(row,5), "Correct mode"
+    row=get_row_test(table,2)
+    assert_match /This is a comment/, get_col_test(row,2), "Correct comment"
   end
 
 end

@@ -41,7 +41,7 @@ class DistrictsControllerTest < ActionController::TestCase
     assert_match /Otago/, get_col_test(row,3), "Correct region"
   end
 
-  test "should get show page" do
+  test "Not logged in should get show page" do
     asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-43))
     asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'CC', location: create_point(173,-43), test_radius: 0.1)
     asset3=create_test_asset(asset_type: 'park', region: 'CB', district: 'WA',  location: create_point(173,-45), test_radius: 0.1)
@@ -50,8 +50,8 @@ class DistrictsControllerTest < ActionController::TestCase
     assert_response :success
     assert_select '#code', /CC/
     assert_select '#name', /Christchurch/
-    assert_select '#callsign', {value: '*'}
-    assert_select '#submit', {value: 'Show'}
+    assert_select '#callsign', /Log in/  #non logged in version
+    assert_select '#submit', {count: 0}  #no per-user stats
 
     #Places
     table=get_table_test(@response.body, 'hut')
@@ -68,6 +68,7 @@ class DistrictsControllerTest < ActionController::TestCase
   end
 
   test "should show activaity" do
+    sign_in users(:zl3cc)
     user1=create_test_user
     user2=create_test_user
     user3=create_test_user
@@ -91,7 +92,7 @@ class DistrictsControllerTest < ActionController::TestCase
     activation=create_test_external_activation(user1,asset3, date: '2022-01-01'.to_date)
     chase=create_test_external_chase(activation,user2,asset3,time: '2022-01-01 02:00'.to_time)
 
-    get :show, {id: 'CC'}
+    get :show, {id: 'CC', callsign: "*"}
     assert_response :success
     assert_select '#callsign', {value: '*'}
 

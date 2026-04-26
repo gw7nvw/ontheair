@@ -95,10 +95,10 @@ class PotaLogsControllerTest < ActionController::TestCase
 
     log=create_test_log(user1,asset_codes: [asset1.code], date: '2022-01-02'.to_date)
     contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-02 00:00:00'.to_time, signal1: '59', signal2: '31', mode: 'SSB', frequency: 14.310)
-    contact=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-02 00:00:00'.to_time, signal1: '59', signal2: '31', mode: 'SSB', frequency: 14.310, submitted_to_pota: true)
+    contact=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-02 00:00:00'.to_time, signal1: '59', signal2: '31', mode: 'SSB', frequency: 14.310, submitted_to: ['POTA'] )
 
     log2=create_test_log(user1,asset_codes: [asset2.code], date: '2022-01-01'.to_date)
-    contact2=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code], time: '2022-01-01 00:00:00'.to_time, signal1: '59', signal2: '31', mode: 'SSB', frequency: 14.310, submitted_to_pota: true)
+    contact2=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code], time: '2022-01-01 00:00:00'.to_time, signal1: '59', signal2: '31', mode: 'SSB', frequency: 14.310, submitted_to: ['POTA'] )
     sign_in user1
 
     get :index

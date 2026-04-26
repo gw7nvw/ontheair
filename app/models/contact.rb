@@ -336,9 +336,11 @@ class Contact < ActiveRecord::Base
       contact = reverse
       contact.id = nil
       contact.log_id = nil
+      contact.do_not_lookup=true
       contact.save
     else
       contact = self
+      contact.do_not_lookup=true
     end
 
     if contact.log_id
@@ -369,7 +371,7 @@ class Contact < ActiveRecord::Base
         logger.debug 'Reuse log'
       else
         logger.debug 'New log'
-        log = Log.create(callsign1: contact.callsign1, date: contact.date, asset_codes: contact.asset1_codes, is_qrp1: contact.is_qrp1, is_portable1: contact.is_portable1, location1: contact.location1, power1: contact.power1)
+        log = Log.create(callsign1: contact.callsign1, date: contact.date, asset_codes: contact.asset1_codes, is_qrp1: contact.is_qrp1, is_portable1: contact.is_portable1, location1: contact.location1, power1: contact.power1, do_not_lookup: true)
       end
       contact.log_id = log.id
       contact.save

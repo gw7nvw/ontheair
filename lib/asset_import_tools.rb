@@ -2,34 +2,229 @@
 
 # typed: false
 module AssetImportTools
-  def Asset.import_llota
+  def Asset.import_vk_pota(update = true)
+    urls = ['https://api.pota.app/park/grids/-43/143/-39/149/0', 'https://api.pota.app/park/grids/-39/113/-11/155/0']
+    urls.each do |url|
+      data = JSON.parse(open(url).read)
+      next unless data
+      puts 'Found ' + data['features'].count.to_s + ' parks'
+      data['features'].each do |feature|
+        is_invalid = false
+        properties = feature['properties']
+        geometry = feature['geometry']
+        puts properties.to_json
+        ref = properties['reference']
+        if ref[0..1]=='AU'
+          p = Asset.find_by(code: properties['reference'])
+          new = false
+          unless p
+            p = Asset.new
+            new = true
+            puts 'New park'
+          else
+            puts 'Existing POTA park'
+          end
+          if new == true or update == true then
+            p.asset_type = 'pota park'
+            p.code = properties['reference']
+            p.safecode = p.get_safecode
+            puts p.code
+            p.name = properties['name']
+            p.is_active = true
+            p.url = 'assets/' + p.get_safecode
+            puts p.name
+            p.location = "POINT (#{geometry['coordinates'][0]} #{geometry['coordinates'][1]})"
+            p.save
+            if new then
+               p.find_vk_capad_park
+               p.reload
+               p.find_vk_state_park if !p.boundary
+            end
+          end
+        end
+      end
+    end
+  end
+  
+  def Asset.export_llota(dxcc, filename)
+    as = Asset.where(country: dxcc, asset_type: 'llota lake', is_active: true)
+
+    headers = "reference_code, name, region, region_iso_code, longitude, latitude, grid_locator, description, access_info, info_url, is_active"
+
+    rows = []
+    as.each do |a|
+      row = []
+      row.push(a.code.gsub('LL-','-'))
+      row.push(a.name)
+      #handle blank regions
+      if a.region == "" or a.region == nil then
+        l=Asset.find_by(code: a.code.gsub("NZLL-","ZLL/"))
+        if l then
+          a.region=l.region
+          a.save
+        end
+      end
+      row.push(a.region_name)
+      row.push(a.region)
+      row.push(a.location.x)
+      row.push(a.location.y)
+      row.push("")
+      row.push('"'+a.description.gsub('"',"'")+'"')
+      if a.public_access == true then
+        access = "Public access to AZ exists:\n"
+        if a.access_road_ids !=nil then
+          road_names=[]
+          unnamed_road=0
+          access+= "Via public road(s):\n"
+          a.access_road_ids.each do |rid|
+            r=Road.find_by(id: rid)
+            if r and r.name and r.name.length>0
+              road_names+=[r.name.downcase.titlecase]
+            else unnamed_road+=1 end
+          end
+          if unnamed_road>0 then road_names+=[unnamed_road.to_s+" unnamed road(s)"] end
+          access+= road_names.uniq.join('; ')
+          access+="\n"
+        end
+
+        if a.access_track_ids != nil then
+          access+="Via DOC track(s):\n"
+          unnamed_track=0
+          track_names=[]
+          a.access_track_ids.each do |rid|
+            r=DocTrack.find_by(id: rid)
+            if r and r.name and r.name.length>0
+              track_names+=[r.name.downcase.titlecase]
+            else
+              unnamed_track+=1
+            end
+          end
+          if unnamed_track>0 then track_names+=[unnamed_track.to_s+" unnamed track(s)"] end
+          access+= track_names.uniq.join('; ')
+          access+= "\n"
+        end
+     
+        if a.access_park_ids != nil then
+          access+= "Via park(s):\n"
+          park_names=[]
+          a.access_park_ids.each do |rid|
+            r=Asset.find_by(id: rid)
+            park_names+=[r.name]
+          end
+          access += park_names.uniq.join('; ')
+          access+= "\n"
+        end
+
+        if a.access_road_ids == nil and a.access_legal_road_ids != nil then
+          access+= "Via unformed legal road(s)\n"
+        end
+        access+="See the Public Access Layer on the maps under More Information for a detailed map of public access to this lake"
+      else
+        access = "Accessible only via private land with landowner consent" 
+      end
+      row.push('"'+access.gsub('"',"'")+'"')
+      row.push("https://ontheair.nz/"+a.url)
+      row.push(a.is_active.to_s)
+      rows.push(row.join(','))
+    end
+    f = File.new(filename, "w")
+    f.puts(headers)
+    rows.each do |row|
+      f.puts(row)
+    end
+    f.close
+  
+  end
+
+  def Asset.import_wwff(dxcc = 'ZL', update = true)
+    require 'csv'
+    url = 'https://wwff.co/wwff-data/wwff_directory.csv'
+    data = open(url).read
+    fields = data.parse_csv
+    values = CSV(data).read
+
+    row_count=0
+    values.each do |row|
+      row_count+=1
+      next if row_count==1
+      next unless row[fields.index("dxcc")] == dxcc
+      next unless row[fields.index("status")] == 'active'
+      next if row[fields.index("reference")][0..5]=='Select'
+      code = row[fields.index("reference")]
+      name = row[fields.index("name")]
+      next unless name && code
+      puts 'Code: ' + code + ', name: ' + name
+      p = Asset.find_by(code: code)
+      new = false
+      if p
+        puts "Existing park #{code}"
+      else
+        puts row.to_json
+        p = Asset.new
+        new = true
+      end
+      if new or update then
+        p.code = code.strip
+        p.name = name.strip
+        p.location = "POINT(#{row[fields.index('longitude')]} #{row[fields.index('latitude')]})"
+        p.country = dxcc
+        p.region = "OC / #{dxcc}"
+        puts p.to_json
+        p.save
+        if new == true
+          if p.country == 'ZL'
+            p.find_zlota_park
+            p.reload
+          elsif p.country == 'VK'
+            p.find_vk_capad_park
+            p.reload
+            p.find_vk_state_park if !p.boundary
+          end
+        else
+          puts 'Existing WWFF park'
+        end
+        p.save
+        next unless new
+        #p.add_region
+        #p.add_area
+        #p.add_links
+      end
+    end
+  end
+   
+
+  def Asset.import_llota(update = true)
     url = 'https://llota.app/api/public/references?version=lite'
     data = JSON.parse(open(url).read)
     if data
       puts 'Found ' + data.count.to_s + ' lakes'
       count = 0
       data.each do |l|
-        if l["reference_code"][0..2]=='NZ-' then
+        if l["reference_code"][0..2]=='NZ-' or l["reference_code"][0..2]=='AU-'then
           count += 1
-          a = Asset.find_by(code: l["reference_code"].gsub('NZ-','NZLL-'))
+          new = false
+          a = Asset.find_by(code: l["reference_code"].gsub('-','LL-'))
           if !a  
-            puts "Creating #{l["reference_code"].gsub('NZ-','NZLL-')}"
+            puts "Creating #{l["reference_code"].gsub('-','LL-')}"
             a = Asset.new 
+            new = true
           else
             puts "Updating #{a.code}"
           end
-          a.asset_type="llota lake"
-          a.code = l["reference_code"].gsub('NZ-','NZLL-')
-          a2 = Asset.find_by(code: a.code.gsub('NZLL-','ZLL/'))
-          if a2 then
-            puts "Found matching lake #{a2.code}"
-            a.description = a2.description
-            a.boundary = a2.boundary
-            a.is_active = a2.is_active
+          if new or update then
+            a.asset_type="llota lake"
+            a.code = l["reference_code"].gsub('-','LL-')
+            a2 = Asset.find_by(code: a.code.gsub('NZLL-','ZLL/'))
+            if a2 then
+              puts "Found matching lake #{a2.code}"
+              a.description = a2.description
+              a.boundary = a2.boundary
+              a.is_active = a2.is_active
+            end
+            a.name = l["name"]
+            a.location = "POINT(#{l["longitude"]} #{l["latitude"]})"
+            a.save 
           end
-          a.name = l["name"]
-          a.location = "POINT(#{l["longitude"]} #{l["latitude"]})"
-          a.save 
         end
       end
     end
@@ -352,4 +547,174 @@ module AssetImportTools
     logger.debug a.code
     a
   end
+
+  def find_zlota_park
+    # p.location='POINT('+feature["Longitude"].to_s+' '+feature["Latitude"].to_s+')'
+    # try to match against park
+    searchname = name.gsub("'", "''")
+    zps = Asset.find_by_sql [" select id, name, code, asset_type, location from assets where asset_type='park' and name='#{searchname}' and is_active=true"]
+    if !zps || zps.count.zero?
+      # look for best name match
+      short_name = searchname
+      short_name = short_name.gsub('Forest', '')
+      short_name = short_name.gsub('Conservation', '')
+      short_name = short_name.gsub('Park', '')
+      short_name = short_name.gsub('Area', '')
+      short_name = short_name.gsub('Scenic', '')
+      short_name = short_name.gsub('Reserve', '')
+      short_name = short_name.gsub('Marine', '')
+      short_name = short_name.gsub('Wildlife', '')
+      short_name = short_name.gsub('Ecological', '')
+      short_name = short_name.gsub('National', '')
+      short_name = short_name.gsub('Wilderness', '')
+      short_name = short_name.gsub('Te', '')
+      puts 'no exact match, try like: ' + short_name
+      zps = Asset.find_by_sql [" select id, name, code, asset_type, location from assets where asset_type='park' and name ilike '%%#{short_name.strip}%%' and is_active=true"]
+      id = nil
+      if zps && (zps.count > 1)
+        puts '==========================================================='
+        count = 0
+        zps.each do |pp|
+          puts count.to_s + ' - ' + pp.name + ' == ' + self.name
+          count += 1
+        end
+        puts "Select match (or 'a' to skip):"
+        id = gets
+        zps = [zps[id.to_i]] if id && (id.length > 1) && (id[0] != 'a')
+      end
+    end
+    if !zps || zps.count.zero? || (id && id[0] == 'a')
+      puts 'enter asset id to match: '
+      code = gets
+      zps = Asset.where(code: code.strip)
+    end
+
+    if zps && (zps.count == 1)
+      park = zps.first
+      location = park.location
+      puts "Matched #{name} with #{park.name}"
+    else
+      puts 'Could not find match. No location'
+    end
+  end 
+
+  def find_vk_capad_park
+   if !self.name.include?("Beach") and !self.name.include?("Wild and Scenic River")
+    found=false
+    shortname = self.name.gsub(" B.R.","").gsub(" N.C.R.","").gsub(" SS.R.","").gsub(" F.R.","").gsub(" B.R","")
+    if self.old_code and self.old_code>0 then
+      cs = Capad.find_by_sql [ %q{select "objectid", ST_Buffer(ST_Simplify("wkb_geometry",0.0002),0) as "wkb_geometry", "pa_id", "pa_pid", "name", "capad_type", "type_abbr", "iucn", "nrs_pa", "nrs_mpa", "gaz_area", "gis_area", "gaz_date", "latest_gaz", "state", "authority", "datasource", "governance", "comments", "environ", "overlap", "mgt_plan", "res_number", "zone_type", "epbc", "longitude", "latitude", "pa_system", "shape_leng", "shape_area" from capad where objectid = }+self.old_code.to_s+%q{;} ]
+      if cs and cs.count>0 then
+        self.boundary = cs.first.wkb_geometry.to_s.gsub("POLYGON ","MULTIPOLYGON (")+")"
+        self.save
+        puts self.code
+        found = true
+      else
+        puts "Has id but no boundary!  Why?: "+self.code
+      end
+    end
+    if found==false
+     cs = Capad.find_by_sql [ %q{select distinct "wkb_geometry", "pa_id", "pa_pid", "name", "capad_type", "type_abbr", "iucn", "nrs_pa", "nrs_mpa", "gaz_area", "gis_area", "gaz_date", "latest_gaz", "state", "authority", "datasource", "governance", "comments", "environ", "overlap", "mgt_plan", "res_number", "zone_type", "epbc", "longitude", "latitude", "pa_system", "shape_leng", "shape_area" from capad where st_within ( st_geomfromtext('}+self.location.to_s+%q{', 4326), wkb_geometry);} ]
+     if cs and cs.count>0 then
+       cs = Capad.find_by_sql [ %q{select "objectid", ST_Buffer(ST_Simplify("wkb_geometry",0.0002),0) as "wkb_geometry", "pa_id", "pa_pid", "name", "capad_type", "type_abbr", "iucn", "nrs_pa", "nrs_mpa", "gaz_area", "gis_area", "gaz_date", "latest_gaz", "state", "authority", "datasource", "governance", "comments", "environ", "overlap", "mgt_plan", "res_number", "zone_type", "epbc", "longitude", "latitude", "pa_system", "shape_leng", "shape_area" from capad where st_within ( st_geomfromtext('}+self.location.to_s+%q{', 4326), wkb_geometry);} ]
+       found = false
+       cs.each do |c|
+         c_shortname = c.name.gsub(" B.R.","").gsub(" N.C.R.","").gsub( "N.C.R","").gsub(" SS.R.","").gsub(" SS.R","").gsub(" F.R.","").gsub(" F.R","").gsub(" B.R","").gsub(" S.R.","").gsub(" S.R","").gsub(" F.F.R.","").gsub(" F.F.R","").gsub(" G.R.","").gsub(" G.R","").gsub(" W.R.","").gsub(" W.R","").gsub(" N.F.S.R.","").gsub(" N.F.S.R","").gsub(" G.L.R.","").gsub(" G.L.R","").gsub(" N.F.R.","").gsub(" N.F.R","")
+
+         if found==false and ((shortname == c_shortname) or (shortname == c_shortname+" "+c.capad_type) or (shortname == (c_shortname+" "+c.capad_type)[0..shortname.length-1]) or (shortname[0..c_shortname.length-1] == (c_shortname))) then
+           self.old_code = c.objectid
+           capads = Capad.find_by_sql [ %q{select ST_Multi(ST_Buffer(ST_Simplify(st_union("wkb_geometry"),0.0002),0)) as "wkb_geometry" from capad where objectid = }+c.objectid.to_s ]
+           self.boundary = capads.first.wkb_geometry
+           self.save
+           puts "assigned "+c.name+" to "+self.name
+           found = true
+         end
+       end
+       if found == false then
+         puts "Asset: "+self.name+" ("+shortname+")"
+         count=0
+         puts "Found: "
+         cs.each do |c| puts (count=count+1).to_s+" "+c.name+" "+c.objectid.to_s+" Area: "+c.shape_area.to_s; end
+         puts "Select match number or enter to skip:"
+         id = gets
+         if id.to_i>0 then
+            c=cs[id.to_i-1]
+            self.old_code = c.objectid
+            capads = Capad.find_by_sql [ %q{select ST_Multi(ST_Buffer(ST_Simplify(st_union("wkb_geometry"),0.0002),0)) as "wkb_geometry" from capad where objectid = }+c.objectid.to_s ]
+            self.boundary = capads.first.wkb_geometry
+            self.save
+            puts "assigned "+c.name+" to "+self.name
+         end
+       end
+     elsif cs and cs.count == 1 then
+        cs = Capad.find_by_sql [ %q{select "objectid", ST_Buffer(ST_Simplify("wkb_geometry",0.0002),0) as "wkb_geometry", "pa_id", "pa_pid", "name", "capad_type", "type_abbr", "iucn", "nrs_pa", "nrs_mpa", "gaz_area", "gis_area", "gaz_date", "latest_gaz", "state", "authority", "datasource", "governance", "comments", "environ", "overlap", "mgt_plan", "res_number", "zone_type", "epbc", "longitude", "latitude", "pa_system", "shape_leng", "shape_area" from capad where st_within ( st_geomfromtext('}+self.location.to_s+%q{', 4326), wkb_geometry) limit 1;} ]
+       if (shortname == cs.first.name) or (shortname == cs.first.name+" "+cs.first.capad_type) or (shortname == (cs.first.name+" "+cs.first.capad_type)[0..shortname.length-1])then
+         puts "Found: "+self.name+" = "+cs.first.name+" "+cs.first.capad_type
+         self.old_code = cs.first.objectid
+         capads = Capad.find_by_sql [ %q{select ST_Multi(ST_Buffer(ST_Simplify(st_union("wkb_geometry"),0.0002),0)) as "wkb_geometry" from capad where objectid = }+cs.first.objectid.to_s ]
+         self.boundary = capads.first.wkb_geometry
+         self.save
+       else
+         puts "Does not match, use anyway (N/y): "+self.name+" = "+cs.first.name+" "+cs.first.capad_type
+         id = gets
+         if (id[0] == 'y')  then
+           self.old_code = cs.first.objectid
+           capads = Capad.find_by_sql [ %q{select ST_Multi(ST_Buffer(ST_Simplify(st_union("wkb_geometry"),0.0002),0)) as "wkb_geometry" from capad where objectid = }+cs.first.objectid.to_s ]
+           self.boundary = capads.first.wkb_geometry
+           self.save
+         end
+      end
+     else
+      puts "NO MATCH FOUND for "+self.name
+     end
+    end
+    cs
+   end
+  end
+
+  def find_vk_state_park
+    sps = VkStatePark.find_by_sql [ %q{select * from vk_state_park where st_within ( st_geomfromtext('}+self.location.to_s+%q{', 4326), boundary);} ]
+
+    if sps and sps.count == 1 then
+        found = false
+        spsname = (sps.first.name || "").upcase.gsub(/[^A-Z0-9 ]/, '')
+        ourname = (self.name.upcase || "").gsub(/[^A-Z0-9 ]/, '')
+        if spsname.split(" ").sort == ourname.split(" ").sort  then
+          found=true
+        else
+          puts "Does not match, use anyway (N/y): "+self.name+" = "+(sps.first.name || "")
+          id = gets
+          if (id[0] == 'y')  then
+            found = true
+          end
+        end
+        if found == true
+          puts "#{self.name} == #{sps.first.unique_name}"
+          self.boundary = sps.first.boundary.to_s
+          self.old_code = sps.first.unique_name
+          self.save
+          found = true
+        end
+      elsif sps.count == 0
+        puts "Not found #{self.name}"
+      else
+        puts "Asset: "+self.name
+         count=0
+         puts "Found: "
+         sps.each do |c| puts (count=count+1).to_s+" "+c.unique_name end
+         puts "Select match number or enter to skip:"
+         id = gets
+         if id.to_i>0 then
+            c=sps[id.to_i-1]
+            self.old_code = c.unique_name
+            sp = VkStatePark.find_by_sql [ %q{select ST_Multi(ST_Buffer(ST_Simplify(st_union("boundary"),0.0002),0)) as "boundary" from vk_state_park where id = }+c.id.to_s ]
+            self.boundary = sp.first.boundary
+            self.save
+            puts "assigned "+c.name+" to "+self.name
+         end
+      end
+      self.add_simple_boundary
+  end
+
+
 end

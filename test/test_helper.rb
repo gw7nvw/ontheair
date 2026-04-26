@@ -14,21 +14,51 @@ $last_suffix="AAAA"
 $last_asset="place-AAAA"
 $last_asset_code=1
 $last_ext_act_id=1
-NEWS_TOPIC=42
+NEWS_TOPIC=4
 SPOT_TOPIC=35
 ALERT_TOPIC=1
 
 Region.destroy_all
-Region.create(sota_code: 'CB', name: "Canterbury", boundary: 'MULTIPOLYGON(((171 -40, 174 -40, 174 -41, 171 -41)))') 
-Region.create(sota_code: 'OT', name: "Otago", boundary: 'MULTIPOLYGON(((171 -41, 174 -41, 174 -42, 171 -42)))')
+Region.create(dxcc: 'ZL', sota_code: 'CB', name: "Canterbury", boundary: 'MULTIPOLYGON(((171 -40, 174 -40, 174 -41, 171 -41)))') 
+Region.create(dxcc: 'ZL', sota_code: 'OT', name: "Otago", boundary: 'MULTIPOLYGON(((171 -41, 174 -41, 174 -42, 171 -42)))')
 District.destroy_all
-District.create(district_code: 'CC', name: "Christchurch", region_code: "CB", boundary: 'MULTIPOLYGON(((171 -40, 173 -40, 173 -41, 171 -41)))')
-District.create(district_code: 'WA', name: "Waimate", region_code: "CB", boundary: 'MULTIPOLYGON(((173 -40, 174 -40, 174 -41, 173 -41)))')
-District.create(district_code: 'DU', name: "Dunedin", region_code: "OT",boundary: 'MULTIPOLYGON(((171 -41, 173 -41, 173 -42, 171 -42)))') 
-District.create(district_code: 'CO', name: "Central Otago", region_code: "OT",boundary: 'MULTIPOLYGON(((173 -41, 174 -41, 174 -42, 173 -42)))')
+District.create(dxcc: 'ZL', district_code: 'CC', name: "Christchurch", region_code: "CB", boundary: 'MULTIPOLYGON(((171 -40, 173 -40, 173 -41, 171 -41)))')
+District.create(dxcc: 'ZL', district_code: 'WA', name: "Waimate", region_code: "CB", boundary: 'MULTIPOLYGON(((173 -40, 174 -40, 174 -41, 173 -41)))')
+District.create(dxcc: 'ZL', district_code: 'DU', name: "Dunedin", region_code: "OT",boundary: 'MULTIPOLYGON(((171 -41, 173 -41, 173 -42, 171 -42)))') 
+District.create(dxcc: 'ZL', district_code: 'CO', name: "Central Otago", region_code: "OT",boundary: 'MULTIPOLYGON(((173 -41, 174 -41, 174 -42, 173 -42)))')
 NzTribalLand.destroy_all
 NzTribalLand.create({ "ogc_fid"=>21, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 175 -40, 175 -35, 170 -35)))", "name"=>"Ngāti Apa"})
 NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 175 -40, 175 -45, 170 -45)))", "name"=>"Ngāi Tahu"})
+Band.create({"meter_band"=>"2190m", "freq_band"=>"136kHz", "group"=>"MF", "min_frequency"=>0.136, "max_frequency"=>0.137})
+Band.create({"meter_band"=>"560m", "freq_band"=>"501kHz", "group"=>"MF", "min_frequency"=>0.501, "max_frequency"=>0.504})
+Band.create({"meter_band"=>"60m", "freq_band"=>"5MHz", "group"=>"HF", "min_frequency"=>5.351, "max_frequency"=>5.367})
+Band.create({"meter_band"=>"40m", "freq_band"=>"7MHz", "group"=>"HF", "min_frequency"=>7.0, "max_frequency"=>7.3})
+Band.create({"meter_band"=>"30m", "freq_band"=>"10MHz", "group"=>"HF", "min_frequency"=>10.1, "max_frequency"=>10.15})
+Band.create({"meter_band"=>"20m", "freq_band"=>"14MHz", "group"=>"HF", "min_frequency"=>14.0, "max_frequency"=>14.35})
+Band.create({"meter_band"=>"17m", "freq_band"=>"18MHz", "group"=>"HF", "min_frequency"=>18.068, "max_frequency"=>18.168})
+Band.create({"meter_band"=>"15m", "freq_band"=>"21MHz", "group"=>"HF", "min_frequency"=>21.0, "max_frequency"=>21.45})
+Band.create({"meter_band"=>"12m", "freq_band"=>"24MHz", "group"=>"HF", "min_frequency"=>24.89, "max_frequency"=>24.99})
+Band.create({"meter_band"=>"11m", "freq_band"=>"27MHz", "group"=>"HF", "min_frequency"=>26.95, "max_frequency"=>27.3})
+Band.create({"meter_band"=>"10m", "freq_band"=>"28MHz", "group"=>"HF", "min_frequency"=>28.0, "max_frequency"=>29.7})
+Band.create({"meter_band"=>"6m", "freq_band"=>"50MHz", "group"=>"VHF", "min_frequency"=>50.0, "max_frequency"=>54.0})
+Band.create({"meter_band"=>"4m", "freq_band"=>"70MHz", "group"=>"VHF", "min_frequency"=>70.0, "max_frequency"=>71.0})
+Band.create({"meter_band"=>"2m", "freq_band"=>"144MHz", "group"=>"VHF", "min_frequency"=>144.0, "max_frequency"=>148.0})
+Band.create({"meter_band"=>"1.25m", "freq_band"=>"220MHz", "group"=>"VHF", "min_frequency"=>222.0, "max_frequency"=>225.0})
+Band.create({"meter_band"=>"70cm", "freq_band"=>"430MHz", "group"=>"UHF", "min_frequency"=>420.0, "max_frequency"=>450.0})
+Band.create({"meter_band"=>"33cm", "freq_band"=>"900MHz", "group"=>"UHF", "min_frequency"=>902.0, "max_frequency"=>928.0})
+Band.create({"meter_band"=>"23cm", "freq_band"=>"1.24GHz", "group"=>"UHF", "min_frequency"=>1240.0, "max_frequency"=>1300.0})
+Band.create({"meter_band"=>"13cm", "freq_band"=>"2.3GHz", "group"=>"UHF", "min_frequency"=>2300.0, "max_frequency"=>2450.0})
+Band.create({"meter_band"=>"9cm", "freq_band"=>"3.4GHz", "group"=>"microwave", "min_frequency"=>3300.0, "max_frequency"=>3500.0})
+Band.create({"meter_band"=>"6cm", "freq_band"=>"5.7GHz", "group"=>"microwave", "min_frequency"=>5650.0, "max_frequency"=>5925.0})
+Band.create({"meter_band"=>"3cm", "freq_band"=>"10GHz", "group"=>"microwave", "min_frequency"=>10000.0, "max_frequency"=>10500.0})
+Band.create({"meter_band"=>"1.25cm", "freq_band"=>"24GHz", "group"=>"microwave", "min_frequency"=>24000.0, "max_frequency"=>24250.0})
+Band.create({"meter_band"=>"6mm", "freq_band"=>"47GHz", "group"=>"microwave", "min_frequency"=>47000.0, "max_frequency"=>47250.0})
+Band.create({"meter_band"=>"4mm", "freq_band"=>"76GHz", "group"=>"microwave", "min_frequency"=>75500.0, "max_frequency"=>81000.0})
+Band.create({"meter_band"=>"2.5mm", "freq_band"=>"122GHz", "group"=>"microwave", "min_frequency"=>119980.0, "max_frequency"=>120020.0})
+Band.create({"meter_band"=>"2mm", "freq_band"=>"146GHz", "group"=>"microwave", "min_frequency"=>142000.0, "max_frequency"=>149000.0})
+Band.create({"meter_band"=>"1mm", "freq_band"=>"248GHz", "group"=>"microwave", "min_frequency"=>241000.0, "max_frequency"=>250000.0})
+Band.create({"meter_band"=>"160m", "freq_band"=>"1.8MHz", "group"=>"HF", "min_frequency"=>1.8, "max_frequency"=>2.0})
+Band.create({"meter_band"=>"80m", "freq_band"=>"3.6MHz", "group"=>"HF", "min_frequency"=>3.5, "max_frequency"=>4.0})
 
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   #
@@ -39,12 +69,13 @@ NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 
   def create_test_spot(user, params={})
      if !params[:callsign] then params[:callsign]=user.callsign end
      if !params[:user1_id] then params[:created_by_id]=user.id end
+     if !params[:user1_id] then params[:updated_by_id]=user.id end
      if !params[:referenced_date] then params[:referenced_date]=Time.now().to_date end
      if !params[:referenced_time] then params[:referenced_time]=Time.now() end
      topic_id=SPOT_TOPIC
 
      post=Post.create(params)
-     item=Item.create(topic_id: topic_id, item_type: 'post', item_id: post.id, created_at: post.created_at, created_by_id: params[:created_by_id])
+     item=Item.create(topic_id: topic_id, item_type: 'post', item_id: post.id, created_at: post.created_at, created_by_id: params[:created_by_id], updated_by_id: params[:created_by_id])
      item.reload
   end
 
@@ -58,7 +89,7 @@ NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 
   def create_test_alert(user, params={})
      if !params[:callsign] then params[:callsign]=user.callsign end
      if !params[:user1_id] then params[:created_by_id]=user.id end
-     if !params[:referenced_date] then params[:referenced_date]=Time.now().to_date end
+     if !params[:referenced_date] then params[:referenced_date]=Time.now() end
      if !params[:referenced_time] then params[:referenced_time]=Time.now() end
      topic_id=ALERT_TOPIC
 
@@ -137,6 +168,7 @@ NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 
      if !params[:asset_type] then params[:asset_type]="hut" end
      if !params[:minor] then params[:minor]=false end
      if params[:is_active]==nil then params[:is_active]=true end
+     if params[:country]==nil then params[:country]='ZL' end
      if !params[:name] then 
         params[:name]=$last_asset
         $last_asset=$last_asset.next

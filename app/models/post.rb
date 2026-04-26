@@ -36,7 +36,6 @@ class Post < ActiveRecord::Base
       assets = Asset.assets_from_code(ac)
       self.site += (assets && (assets.count > 0) ? (assets.first[:name] || '') : '') + ' [' + ac + '] ' + (assets && (assets.count > 0) && assets.first[:asset] ? '{' + assets.first[:asset].maidenhead + '}; ' : '')
     end
-    puts "SITE: "+self.site
   end
 
   def update_item
@@ -289,7 +288,7 @@ class Post < ActiveRecord::Base
       http.use_ssl = true
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
-      req = Net::HTTP::Post.new("#{url.path}?", 'Content-Type' => 'application/json', 'connection' => 'keep-alive', 'X-API-Key' => "#{WWFF_API_KEY}")
+      req = Net::HTTP::Post.new("#{url.path}?", 'Content-Type' => 'application/json', 'connection' => 'keep-alive', 'X-API-Key' => "#{WWFF_API_KEY}", 'User-Agent' => 'ontheair.nz')
 
       payloadspot = {
         'activator': callsign.upcase,
@@ -382,7 +381,7 @@ class Post < ActiveRecord::Base
 
         #        req = Net::HTTP::Get.new("#{url.path}?".concat(payloadspot.collect { |k,v| "#{k}=#{CGI::escape(v.to_s)}" }.join('&')), 'Content-Type' => 'application/json' )
         if !debug
-          req = Net::HTTP::Post.new("#{url.path}?", 'Content-Type' => 'application/json')
+          req = Net::HTTP::Post.new("#{url.path}?", 'Content-Type' => 'application/json', 'User-Agent' => 'ontheair.nz')
           req.body = payloadspot.to_json
           begin
             res = http.request(req)
@@ -486,7 +485,7 @@ class Post < ActiveRecord::Base
       uri = URI('http://www.hema.org.uk/submitMobileSpot.jsp')
       puts 'DEBUG: http://www.hema.org.uk/submitMobileSpot.jsp' + params
       http = Net::HTTP.new(uri.host, uri.port)
-      req = Net::HTTP::Get.new(uri.path + params)
+      req = Net::HTTP::Get.new(uri.path + params, 'User-Agent' => 'ontheair.nz')
       begin
         response = http.request(req)
         result = true if response
@@ -547,7 +546,7 @@ class Post < ActiveRecord::Base
           puts payloadspot
         end
 
-        req = Net::HTTP::Get.new("#{url.path}?"+(payloadspot.collect { |k, v| "#{k}=#{CGI.escape(v.to_s)}" }.join('&')), 'Content-Type' => 'application/json', 'Authorization' => 'bearer ' + access_token, 'id_token' => id_token, 'connection' => 'keep-alive')
+        req = Net::HTTP::Get.new("#{url.path}?"+(payloadspot.collect { |k, v| "#{k}=#{CGI.escape(v.to_s)}" }.join('&')), 'Content-Type' => 'application/json', 'Authorization' => 'bearer ' + access_token, 'id_token' => id_token, 'connection' => 'keep-alive', 'User-Agent' => 'ontheair.nz' )
         begin
           res = http.request(req)
         rescue StandardError
@@ -602,7 +601,7 @@ class Post < ActiveRecord::Base
         params = { 'actClass' => pnp_class, 'actCallsign' => callsign, 'actSite' => code, 'actMode' => mode.strip, 'actFreq' => freq.strip, 'actComments' => PostsHelper.convert_to_text(description.to_s), 'userID' => 'ZLOTA', 'APIKey' => '4DDA205E08D2', 'alDate' => tt ? tt.strftime('%Y-%m-%d') : '', 'alTime' => tt ? tt.strftime('%H:%M') : '', 'optDay' => dayflag ? '1' : '0' }
         uri = URI('http://parksnpeaks.org/api/ALERT' + dbtext)
         http = Net::HTTP.new(uri.host, uri.port)
-        req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
+        req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json', 'User-Agent' => 'ontheair.nz')
         req.body = params.to_json
         begin
           response = http.request(req)
@@ -626,7 +625,7 @@ class Post < ActiveRecord::Base
         uri = URI('http://parksnpeaks.org/api/SPOT' + dbtext)
         puts 'DEBUG: http://parksnpeaks.org/api/SPOT' + dbtext
         http = Net::HTTP.new(uri.host, uri.port)
-        req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
+        req = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json', 'User-Agent' => 'ontheair.nz')
         req.body = params.to_json
         begin
           response = http.request(req)

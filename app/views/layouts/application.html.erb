@@ -7,11 +7,10 @@
     <meta name="google-site-verification" content="KIylIchG3986annyXGfxBNJ-qMOJCDG2tdcuUMFPoO0" />
   </head>
   <body>
-      <%=yield %>
+    <%=yield %>
   </body>
 </html>
 <% else %>
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -21,31 +20,32 @@
     <script src="/handsontable/handsontable.full.min.js"></script>
     <link rel="stylesheet" href="/assets/ol.css" type="text/css">
     <link rel="stylesheet" href="/handsontable/handsontable.full.css" type="text/css">
-<script>
-if( /Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent))
-{
- var ismobile=true;
-} else {
- var ismobile=false;
-}
-</script>
+
+    <script>
+      if( /Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent)) {
+        var ismobile=true;
+      } else {
+        var ismobile=false;
+      }
+    </script>
 
     <script>
       <% if @zoomlevel and @zoomlevel.to_i>=5 and @zoomlevel.to_i<=15%> var def_zoom=<%=@zoomlevel%> <% end %>
       <% if @dxcc %> var def_dxcc='<%=@dxcc%>' <% end %>
-      <% if @map_x %> var def_x=<%=@map_x%> <% else %> var def_x=<%=@default_x%> <% end %>
-      <% if @map_y %> var def_y=<%=@map_y%> <% else %> var def_y=<%=@default_y%> <% end %>
+      <% if @map_x %> var def_x=<%=@map_x%> <% elsif @default_x %> var def_x=<%=@default_x%> <% end %>
+      <% if @map_y %> var def_y=<%=@map_y%> <% elsif @default_y %> var def_y=<%=@default_y%> <% end %>
       <% if @proj %> var def_proj=<%=raw("'"+@proj+"'")%> <% end %>
       <% if @layer %> var def_layer=<%=raw("'"+@layer+"'")%> <% elsif @default_layer %> var def_layer=<%=raw("'"+@default_layer+"'")%> <% end %>
-      <% if @preferred_layer %> var site_pref_layer=<%=raw("'"+@preferred_layer+"'")%>; var site_pref_extent=<%=raw("["+@preferred_extent+"]")%> <% end %>
+      <% if @preferred_layer %> var site_pref_layer=<%=raw("'"+@preferred_layer+"'")%>; <% end %>
+      <% if @preferred_extent %> var site_pref_extent=<%=raw("["+@preferred_extent+"]")%> <% end %>
       <% if @default_pointlayers %> var user_point_layers=[<%=raw(@default_pointlayers||"")%>] <% end %>
       <% if @default_polygonlayers %> var user_polygon_layers=[<%=raw(@default_polygonlayers||"")%>] <% end %>
     </script>
-    <%  @init_name = "site_init()" %>
+    <% @init_name = "site_init()" %>
 
     <title>... On The Air</title>
     <% if @description and @description.length>0 %>
-    <meta name="description" content="<%=@description%>">
+      <meta name="description" content="<%=@description%>">
     <% end %>
     <%= stylesheet_link_tag "application", media: "all", "data-turbolinks-track" => true %>
     <%= stylesheet_link_tag "application", media: "all", "jquery-ui.mi" => true %>
@@ -55,44 +55,45 @@ if( /Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent))
     <%= render 'layouts/shim' %> 
     <meta name="google-site-verification" content="KIylIchG3986annyXGfxBNJ-qMOJCDG2tdcuUMFPoO0" />
 
-</head>
+  </head>
 <% if @help=="true" %>
- <body>
+  <body>
     <div id="right_panel" class="panel" class='style="margin-left: 0px; width: 100%'>
-<% else %>
- <body onload='<%=@init_name%>' style="cursor: auto;"> 
-  <%= form_tag '/redisplay', :remote=> true, :id => "thelink", :name=> 'selectform', :method=> 'post'%>
-    <div class="row">
-     <input type="hidden" name="select"/>
-     <input type="hidden" name="signed_in" value="<%=signed_in?%>"/>
-     <input type="hidden" name="selectname"/>
-     <input type="hidden" name="selectx"/>
-     <input type="hidden" name="selecty"/>
-     <input type="hidden" name="selecttype"/>
-     <input type="hidden" name="currentx"/>
-     <input type="hidden" name="currenty"/>
-     <input type="hidden" name="currentzoom"/>
-    </div>
-  </form>
-
-   <%= render 'layouts/header' %>
-   <div class="row-fluid">
-   <div id="main_page" class="container-fluid"> 
-   <div id="actionbar-full" class="span12"> </div>
-   <div id="actionbar-push"> </div>
-    <div id="left_panel" class="span5"> 
-      <%=render 'maps/map' %>
-    </div> 
-    <div id="right_panel" class="span7"> 
- <% end %> 
-
       <%=yield %>
-    </div> 
-    <div class="clear"></div> 
-  </div>
-  </div>
-<div class="spinner_modal"></div>
-</body>
+    </div>
+  </body>
+<% else %>
+  <body onload='<%=@init_name%>' style="cursor: auto;"> 
+    <%= form_tag '/redisplay', :remote=> true, :id => "thelink", :name=> 'selectform', :method=> 'post'%>
+      <div class="row">
+        <input type="hidden" name="select"/>
+        <input type="hidden" name="signed_in" value="<%=signed_in?%>"/>
+        <input type="hidden" name="selectname"/>
+        <input type="hidden" name="selectx"/>
+        <input type="hidden" name="selecty"/>
+        <input type="hidden" name="selecttype"/>
+        <input type="hidden" name="currentx"/>
+        <input type="hidden" name="currenty"/>
+        <input type="hidden" name="currentzoom"/>
+      </div>
+    </form>
 
+    <%= render 'layouts/header' %>
+    <div class="row-fluid">
+      <div id="main_page" class="container-fluid"> 
+        <div id="actionbar-full" class="span12"> </div>
+        <div id="actionbar-push"> </div>
+        <div id="left_panel" class="span5"> 
+          <%=render 'maps/map' %>
+        </div> 
+        <div id="right_panel" class="span7"> 
+          <%=yield %>
+        </div> 
+      </div>
+      <div class="clear"></div> 
+    </div>
+    <div class="spinner_modal"></div>
+  </body>
+<% end %>
 </html>
 <% end %>

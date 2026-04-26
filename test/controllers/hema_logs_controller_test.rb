@@ -20,6 +20,8 @@ class HemaLogsControllerTest < ActionController::TestCase
 
     log2=create_test_log(user1,asset_codes: [asset2.code], date: '2022-01-01'.to_date)
     contact2=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code], time: '2022-01-01 00:00:00'.to_time, signal1: '59', signal2: '31', mode: 'SSB', frequency: 14.310)
+    log3=create_test_log(user1, date: '2022-01-03'.to_date)
+    contact3=create_test_contact(user1,user2,log_id: log3.id, asset2_codes: [asset2.code], time: '2022-01-03 00:00:00'.to_time, signal1: '59', signal2: '31', mode: 'SSB', frequency: 14.310)
     sign_in user1
 
     get :index
@@ -37,19 +39,23 @@ class HemaLogsControllerTest < ActionController::TestCase
     #table
     table=get_table_test(@response.body, 'logs_table')
 
-    assert_equal 3, get_row_count_test(table), '3 rows incl header'
+    assert_equal 4, get_row_count_test(table), '3 rows incl header'
     row=get_row_test(table,2)
-    assert_match /#{asset1.name}/, get_col_test(row,1), "Correct summit"
-    assert_match /#{make_regex_safe(asset1.code)}/, get_col_test(row,2), "Correct code"
-    assert_match /2022-01-02/, get_col_test(row,3), "Correct date"
-    assert_match /2/, get_col_test(row,4), "Correct count"
-    assert_match /Submit/, get_col_test(row,5), "Correct submit / resubmit"
+    assert_match /CHASER/, get_col_test(row,1), "Chaser logs"
+    assert_match /1/, get_col_test(row,4), "Correct chaser count"
+
     row=get_row_test(table,3)
-    assert_match /#{asset2.name}/, get_col_test(row,1), "Correct summit"
-    assert_match /#{make_regex_safe(asset2.code)}/, get_col_test(row,2), "Correct code"
-    assert_match /2022-01-01/, get_col_test(row,3), "Correct date"
-    assert_match /1/, get_col_test(row,4), "Correct count"
-    assert_match /Submit/, get_col_test(row,5), "Correct submit / resubmit"
+    assert_match /#{asset1.name}/, get_col_test(row,1), "Correct summit 1"
+    assert_match /#{make_regex_safe(asset1.code)}/, get_col_test(row,2), "Correct code 1"
+    assert_match /2022-01-02/, get_col_test(row,3), "Correct date 1"
+    assert_match /2/, get_col_test(row,4), "Correct asset 1 count"
+    assert_match /Submit/, get_col_test(row,5), "Correct submit / resubmit 1"
+    row=get_row_test(table,4)
+    assert_match /#{asset2.name}/, get_col_test(row,1), "Correct summit 2"
+    assert_match /#{make_regex_safe(asset2.code)}/, get_col_test(row,2), "Correct code 2"
+    assert_match /2022-01-01/, get_col_test(row,3), "Correct date 2"
+    assert_match /1/, get_col_test(row,4), "Correct asset 2 count"
+    assert_match /Submit/, get_col_test(row,5), "Correct submit / resubmit 2"
   end
 
   test "Normal user cannot get another users index page" do
@@ -95,24 +101,23 @@ class HemaLogsControllerTest < ActionController::TestCase
 
     log=create_test_log(user1,asset_codes: [asset1.code], date: '2022-01-02'.to_date)
     contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-02 00:00:00'.to_time, signal1: '59', signal2: '31', mode: 'SSB', frequency: 14.310)
-    contact=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-02 00:00:00'.to_time, signal1: '59', signal2: '31', mode: 'SSB', frequency: 14.310, submitted_to_hema: true)
+    contact2=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-02 00:00:00'.to_time, signal1: '59', signal2: '31', mode: 'SSB', frequency: 14.310, submitted_to: ['HEMA_A'])
 
     log2=create_test_log(user1,asset_codes: [asset2.code], date: '2022-01-01'.to_date)
-    contact2=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code], time: '2022-01-01 00:00:00'.to_time, signal1: '59', signal2: '31', mode: 'SSB', frequency: 14.310, submitted_to_hema: true)
+    contact3=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code], time: '2022-01-01 00:00:00'.to_time, signal1: '59', signal2: '31', mode: 'SSB', frequency: 14.310, submitted_to: ['HEMA_A'])
     sign_in user1
-
     get :index
     assert_response :success
 
     #table
     table=get_table_test(@response.body, 'logs_table')
 
-    assert_equal 3, get_row_count_test(table), '3 rows incl header'
-    row=get_row_test(table,2)
+    assert_equal 4, get_row_count_test(table), '4 rows incl header'
+    row=get_row_test(table,3)
     assert_match /#{asset1.name}/, get_col_test(row,1), "Correct summit"
     assert_match /Submit/, get_col_test(row,5), "Correct submit / resubmit - 1 of 2 contacts submitted"
 
-    row=get_row_test(table,3)
+    row=get_row_test(table,4)
     assert_match /#{asset2.name}/, get_col_test(row,1), "Correct summit"
     assert_match /Resend/, get_col_test(row,5), "Correct resubmit - single contact already submitted"
   end

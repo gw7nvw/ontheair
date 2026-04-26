@@ -105,10 +105,10 @@ class Item < ActiveRecord::Base
   end
 
   def create_consolidated_spot
-     round_freq = post.freq.to_d.round(3).to_s
+     
+     round_freq = (post.freq||"0").to_d.round(3).to_s
 
 #    dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where updated_at > '#{MAX_SPOT_CONSOLIDATION_TIME.minutes.ago.to_s}' and \"activatorCallsign\" = '#{post.callsign}' and frequency = '#{post.freq.to_s}' and mode = '#{post.mode}' order by created_at desc limit 1" ]
-     puts "select * from consolidated_spots where (updated_at > '#{MAX_SPOT_CONSOLIDATION_TIME.minutes.ago.to_s}' or ('#{post.asset_codes.first}' = ANY(code) and updated_at > '#{MAX_SPOT_LIFETIME.minutes.ago.to_s}')) and \"activatorCallsign\" = '#{post.callsign}' and (frequency = '#{round_freq}' or frequency is null or frequency = '' or frequency = '0.0' or '#{round_freq}' = '' or '#{round_freq}' = '0.0') and (mode = '#{post.mode}' or mode is null or mode = '' or '#{post.mode}'='') order by created_at desc limit 1"
 
     dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where (updated_at > '#{MAX_SPOT_CONSOLIDATION_TIME.minutes.ago.to_s}' or ('#{post.asset_codes.first}' = ANY(code) and updated_at > '#{MAX_SPOT_LIFETIME.minutes.ago.to_s}')) and \"activatorCallsign\" = '#{post.callsign}' and (frequency = '#{round_freq}' or frequency is null or frequency = '' or frequency = '0.0' or '#{round_freq}' = '' or '#{round_freq}' = '0.0') and (mode = '#{post.mode}' or mode is null or mode = '' or '#{post.mode}'='') order by created_at desc limit 1" ]
 
@@ -128,7 +128,7 @@ class Item < ActiveRecord::Base
     cs.code = cs.code.uniq
     cs.name += [post.site]
     cs.name = cs.name.uniq
-    cs.comments += [post.updated_by_name+": "+post.description + " ("+post.created_at.strftime("%H:%M:%S")+")"]
+    cs.comments += [post.updated_by_name+": "+(post.description||"") + " ("+post.created_at.strftime("%H:%M:%S")+")"]
     as = Asset.assets_from_code(cs.code.join(', '))
     types =  as.map{|a| a[:pnp_class]}
     cs.spot_type += types

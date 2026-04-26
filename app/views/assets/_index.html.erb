@@ -79,20 +79,20 @@
         <div class="rowtitle">Include valid only:</div>
       </span>
       <div class="rowtext">
-        <input id="minor" name="minor" type="checkbox" checked="checked">
+        <input id="minor" name="minor" type="checkbox" checked="checked"/>
       </div>
     </div>
 
     <% if signed_in? and (current_user.is_admin or current_user.is_modifier) then %>
       <div class="rowtitle">Include inactive records:</div>
       <div class="rowtext">
-        <input id="active" name="active" type="checkbox" value="0">
+        <input id="active" name="active" type="checkbox" value="0"/>
       </div>
     <% end %>
 
     <div class="buttonshort">
       <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
-      <%=  link_to "Clear", '/assets', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
+      <%= link_to "Clear", '/assets', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')" %>
     </div>
   </form>
 

@@ -7,21 +7,9 @@ class AwardsControllerTest < ActionController::TestCase
   ##################################################################
   # INDEX
   ##################################################################
-  test "Should get index page" do
+  test "Not signed in cannot get index page" do
     get :index
-    assert_response :success
-
-    #Breadcrumbs
-    assert_select '#crumbs', /Home/
-    assert_select '#crumbs', /Awards/
-
-    #Action control bar
-    #does not show logged in version
-    assert_select '#controls', {count: 0, text: /Add/}
-
-    assert_select '#controls', /Smaller Map/
-    assert_select '#controls', /Larger Map/
-    assert_select '#controls', /Back/
+    assert_response :redirect
   end
 
   test "Logged in user should get index page" do
@@ -64,6 +52,7 @@ class AwardsControllerTest < ActionController::TestCase
   end
 
   test "Shows all awards by default" do
+    sign_in users(:zl3cc)
     get :index
     assert_response :success
 
@@ -77,6 +66,7 @@ class AwardsControllerTest < ActionController::TestCase
   end
 
   test "Shows stats for district / region award" do
+    sign_in users(:zl3cc)
     user1=create_test_user
     user2=create_test_user
     asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut')
@@ -101,7 +91,14 @@ class AwardsControllerTest < ActionController::TestCase
   ##################################################################
   # SHOW
   ##################################################################
-  test "Should get show page" do
+  test "not signed in Should not get show page" do
+    award=Award.first
+    get :show, {id: award.id}
+    assert_response :redirect
+  end
+
+  test "Signed in user should get show page" do
+    sign_in users(:zl3cc)
     award=Award.first
     get :show, {id: award.id}
     assert_response :success
@@ -167,6 +164,7 @@ class AwardsControllerTest < ActionController::TestCase
   end
 
   test "Awardees listed - threshold" do
+    sign_in users(:zl3cc)
     user1=create_test_user
     award=Award.find_by(count_based: true, activated: true, programme: 'hut')
     user1.issue_award(award.id,10)

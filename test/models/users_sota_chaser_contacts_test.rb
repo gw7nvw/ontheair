@@ -128,7 +128,7 @@ class UserSotaChaserContactsTest < ActiveSupport::TestCase
 
     log=create_test_log(user1,date: '2022-01-01'.to_date)
     contact=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 00:01:00'.to_time)
-    contact2=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset2.code], mode: 'SSB', frequency: 7.01, time: '2022-02-01 00:01:00'.to_time, submitted_to_sota: true)
+    contact2=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset2.code], mode: 'SSB', frequency: 7.01, time: '2022-02-01 00:01:00'.to_time, submitted_to: ['SOTA'])
 
     sota_logs=user1.sota_chaser_contacts
 
@@ -145,7 +145,7 @@ class UserSotaChaserContactsTest < ActiveSupport::TestCase
   
     log=create_test_log(user1,date: '2022-01-01'.to_date)
     contact=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 00:01:00'.to_time)
-    contact2=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset2.code], mode: 'SSB', frequency: 7.01, time: '2022-02-01 00:01:00'.to_time, submitted_to_sota: true)
+    contact2=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset2.code], mode: 'SSB', frequency: 7.01, time: '2022-02-01 00:01:00'.to_time, submitted_to: ['SOTA'])
 
     sota_logs=user1.sota_chaser_contacts(nil, true)
 

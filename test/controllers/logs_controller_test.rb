@@ -7,10 +7,13 @@ class LogsControllerTest < ActionController::TestCase
   ##################################################################
   # INDEX 
   ##################################################################
-  test "Index for a user" do
+  test "Index for another user" do
     user1=create_test_user
     user2=create_test_user
     user3=create_test_user
+    user4=create_test_user
+
+    sign_in user4
 
     asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-43))
     asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'CC', location: create_point(173,-43), test_radius: 0.1)
@@ -38,10 +41,10 @@ class LogsControllerTest < ActionController::TestCase
     assert_select '#crumbs', /Logs/
     assert_select '#crumbs', /#{user1.callsign}/
 
-    #Action control bar - non logged in version
+    #Action control bar - another users version
     assert_select '#controls', {count: 0, text: /View All/}
-    assert_select '#controls', {count: 0, text: /Add/}
-    assert_select '#controls', {count: 0, text: /Upload/}
+    assert_select '#controls', {count: 1, text: /Add/}
+    assert_select '#controls', {count: 1, text: /Upload/}
     assert_select '#controls', {count: 0, text: /Download/}
     assert_select '#controls', /Smaller Map/
     assert_select '#controls', /Larger Map/
@@ -194,7 +197,8 @@ class LogsControllerTest < ActionController::TestCase
   ##################################################################
   # SHOW 
   ##################################################################
-  test "Can view a log" do
+  test "Can view someone elses log" do
+    sign_in(users(:zl3cc))
     user1=create_test_user
     user2=create_test_user
     user3=create_test_user
@@ -211,7 +215,6 @@ class LogsControllerTest < ActionController::TestCase
 
     get :show, {id: log.id}
     assert_response :success
-
     #Breadcrumbs
     assert_select '#crumbs', /Home/
     assert_select '#crumbs', /Logs/
@@ -234,7 +237,6 @@ class LogsControllerTest < ActionController::TestCase
     assert_match '2022-01-01', get_col_test(row,4), "Activation date"
     assert_match 'Yes', get_col_test(row,6), "QRP"
     row=get_row_test(table,2)
-    assert_match 'UTC', get_col_test(row,2), "UTC for non logeed in"
     assert_match '10', get_col_test(row,4), "Activation power"
     assert_match 'Yes', get_col_test(row,6), "portable"
     row=get_row_test(table,3)
@@ -249,8 +251,6 @@ class LogsControllerTest < ActionController::TestCase
     row=get_row_test(table,2)
     assert_match 'View', get_col_test(row,1), "View shown"
     assert_no_match 'Edit', get_col_test(row,1), "Edit not shown for not logged in"
-    assert_match '01:00', get_col_test(row,2), "Activation time"
-    assert_match 'UTC', get_col_test(row,2), "Show UTC for non logged in"
     assert_match user2.callsign, get_col_test(row,3), "Callsign2"
     assert_match 'Yes', get_col_test(row,4), "QRP2"
     assert_match 'Yes', get_col_test(row,5), "Portable2"
@@ -265,8 +265,6 @@ class LogsControllerTest < ActionController::TestCase
     row=get_row_test(table,3)
     assert_match 'View', get_col_test(row,1), "View shown"
     assert_no_match 'Edit', get_col_test(row,1), "Edit not shown for not logged in"
-    assert_match '01:01', get_col_test(row,2), "Activation time"
-    assert_match 'UTC', get_col_test(row,2), "Show UTC for non logged in"
     assert_match user3.callsign, get_col_test(row,3), "Callsign2"
     assert_match 'No', get_col_test(row,4), "QRP2"
     assert_match 'No', get_col_test(row,5), "Portable2"
@@ -749,6 +747,7 @@ class LogsControllerTest < ActionController::TestCase
 
   test "Can submit a hamrs log" do
     user1=users(:zl4nvw)
+    user1.save #force usercallsign
     sign_in user1
 
     #upload log

@@ -64,8 +64,8 @@ var mapcontrols = [];
 var map_control_count=0;
 var map_layer_count=0;
 var map_default_extent=mapBounds;
-var map_scratch_source=new ol.source.Vector();
-var map_scratch_layer=new ol.layer.Vector({ source: map_scratch_source, name: 'Scratch layer' });
+var map_scratch_source;
+var map_scratch_layer;
 var map_position_layer
 var maplayers = [];
 var map_last_centre='POINT(173 -41)';
@@ -158,13 +158,28 @@ positionFeature.setStyle(
 map_geolocation.on('change', function () {
   const coordinates = map_geolocation.getPosition();
   const proj_coords = ol.proj.transform(coordinates, 'EPSG:4326',map_projection_name);
+//  const proj_coords = ol.proj.transform(coordinates, 'EPSG:4326','EPSG:3857')
   positionFeature.setGeometry(coordinates ? new ol.geom.Point(proj_coords) : null);
 });
+
+function map_add_scratch_layer() {
+  map_scratch_source=new ol.source.Vector({
+      projection: map_projection
+    });
+
+  map_scratch_layer=new ol.layer.Vector({
+    source: map_scratch_source,
+    name: 'Scratch layer',
+    visible: true
+  });
+  map_map.addLayer(map_scratch_layer);
+};
 
 function map_add_position_layer() {
   map_position_layer=new ol.layer.Vector({
     source: new ol.source.Vector({
       features: [positionFeature],
+      projection: map_projection
     }),
     name: 'position',
     visible: true
@@ -538,9 +553,6 @@ function map_enable_draw(type, style, loc_dest, x_dest, y_dest, move) {
 		if (move==true) map_clear_scratch_layer(type,style);
 		var feature = event.feature;
                 var format = new ol.format.WKT;
-                persist_feature=feature; 
-		x=feature.values_.geometry.flatCoordinates[0];
-		y=feature.values_.geometry.flatCoordinates[1];
                 if(map_view_projection_name=='EPSG:2193') {
                   dest_projection='EPSG:2193';
                 } else {
@@ -552,12 +564,14 @@ function map_enable_draw(type, style, loc_dest, x_dest, y_dest, move) {
                             featureProjection: map_view_projection_name
                      });
 
-                feature.getGeometry().transform(map_view_projection_name, dest_projection)
+		x=feature.values_.geometry.flatCoordinates[0];
+		y=feature.values_.geometry.flatCoordinates[1];
+                xy=ol.proj.transform([x, y],map_view_projection_name,dest_projection);
                 debug_f=feature;
 		// write back to webpage
                 if(loc_dest!=null)  document.getElementById(loc_dest).value=loc; 
-                if(x_dest!=null)  document.getElementById(x_dest).value=feature.getGeometry().flatCoordinates[0];
-                if(y_dest!=null)  document.getElementById(y_dest).value=feature.getGeometry().flatCoordinates[1];
+                if(x_dest!=null)  document.getElementById(x_dest).value=xy[0];
+                if(y_dest!=null)  document.getElementById(y_dest).value=xy[1];
 
 	 });
 	map_draw.on('drawstart',function(event){
@@ -574,19 +588,27 @@ function map_enable_draw(type, style, loc_dest, x_dest, y_dest, move) {
 function map_switch_proj(proj_name) {
   if(proj_name == '2193') {
     map_view_projection_name='EPSG:2193';
-    map_projection_name = '2193';
+    map_projection_name = 'EPSG:2193';
     map_projection = epsg2193;
     map_map.setView(view_2193);
   } else {
     map_view_projection_name='EPSG:3857';
-    map_projection_name = '3857';
+    map_projection_name = 'EPSG:3857';
     map_projection = epsg3857;
     map_map.setView(view_3857);
   };
 }
 
 function map_init(divid, projection) {
-        map_view_projection_name=projection;
+        if(projection == '2193') {
+          map_view_projection_name='EPSG:2193';
+          map_projection_name = 'EPSG:2193';
+          map_projection = epsg2193;
+        } else {
+          map_view_projection_name='EPSG:3857';
+          map_projection_name = 'EPSG:3857';
+          map_projection = epsg3857;
+        };
         if(divid==null) divid='map';
         view_2193 = new ol.View({
                      center: [1600000, 5500000],

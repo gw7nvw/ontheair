@@ -45,6 +45,8 @@
      <b>Spots</b>
    </div>
    <div id="controls">
+     <%=  link_to "History", '/spots/history', remote: true,  :id => 'spots_history', :onclick => "linkHandler('spots_history')", class: "btn btn-small btn-primary" %>
+
      <% if write_access?  %>
        <%=  link_to "Add Spot", "/posts/new?topic_id="+SPOT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
      <% end %>
@@ -64,7 +66,6 @@
   <% if stale==true
       #Should really do this in controller ...
       sch_running=system('ps -ef | grep ota_schedule | grep resqu | grep -v grep')
-      puts "Scheduler running: "+sch_running.to_s
       if sch_running==false then
          success=system('RAILS_ENV=production nohup bundle exec rake environment resque:work QUEUE=ota_scheduled > log/redisch.log & echo $! > /tmp/schedule.pid')
          if !success then 

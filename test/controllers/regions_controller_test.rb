@@ -42,8 +42,8 @@ class RegionsControllerTest < ActionController::TestCase
     assert_response :success
     assert_select '#code', /CB/
     assert_select '#name', /Canterbury/
-    assert_select '#callsign', {value: '*'}
-    assert_select '#submit', {value: 'Show'}
+    assert_select '#callsign', {count: 0}
+    assert_select '#submit', {count: 0}
 
     #districts table
     table=get_table_test(@response.body, 'district_table')
@@ -69,10 +69,16 @@ class RegionsControllerTest < ActionController::TestCase
     assert_match /#{asset2.code}/, get_col_test(row,2), "Correct code"
   end
 
-  test "should show activaity" do
+  test "should show activity" do
     user1=create_test_user
+    user1.save
     user2=create_test_user
+    user2.save
     user3=create_test_user
+    user3.save
+    user4=create_test_user
+    sign_in user4
+ 
 
     asset1=create_test_asset(asset_type: 'hut', region: 'CB', description: "This is a comment", location: create_point(173,-43))
     asset4=create_test_asset(asset_type: 'hut', region: 'CB', description: "This is a comment", location: create_point(173.1,-43))
@@ -93,7 +99,7 @@ class RegionsControllerTest < ActionController::TestCase
     activation=create_test_external_activation(user1,asset3, date: '2022-01-01'.to_date)
     chase=create_test_external_chase(activation,user2,asset3,time: '2022-01-01 02:00'.to_time)
 
-    get :show, {id: 'CB'}
+    get :show, {id: 'CB', callsign: '*'}
     assert_response :success
     assert_select '#callsign', {value: '*'}
 
@@ -191,13 +197,13 @@ class RegionsControllerTest < ActionController::TestCase
 
     user1=User.find_by(callsign: 'ZL4NVW')
     user2=create_test_user
+    user1.save
 
     asset1=create_test_asset(asset_type: 'hut', region: 'CB', description: "This is a comment", location: create_point(173,-43))
 
     #activator log
     log=create_test_log(user1, asset_codes: [asset1.code], date: '2022-01-01'.to_date)
     contact=create_test_contact(user1, user2, log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-01 01:00'.to_time)
-
     get :show, {id: 'CB'}
     assert_response :success
     assert_select '#callsign', {value: 'ZL4NVW'}

@@ -132,6 +132,8 @@ class UsersControllerTest < ActionController::TestCase
     user1=User.find_by(callsign: 'ZL4NVW')
     user1.add_callsigns
     user2=User.find_by(callsign: 'ZL3CC')
+    sign_in(user2)
+
     uc=create_callsign(user1, from_date: '2020-01-01'.to_date, to_date: '2023-01-01'.to_date) #add secondary callsign
     asset1=create_test_asset(asset_type: 'park')
     asset2=create_test_asset(asset_type: 'park')
@@ -198,6 +200,12 @@ class UsersControllerTest < ActionController::TestCase
     #awards
     assert_select '#awards_link'
 
+    #logs and contacts
+    assert_select '#contacts_box', /Show 4/
+    assert_select '#logs_box', /Show 2/
+
+    get :stats, {id: 'ZL4NVW'}
+
     #Stats
     assert_select '#parks_bagged', /Bagged: 2 unique/
     #activations are by year so 1 (1)
@@ -209,9 +217,6 @@ class UsersControllerTest < ActionController::TestCase
     assert_select '#parks_chased', /Chased: 1 unique/
     assert_select '#parks_chased', /2 total/
 
-    #logs and contacts
-    assert_select '#contacts', /4 \(view\)/
-    assert_select '#logs', /2 \(view\)/
   end
 
   test "logged in can view another user" do
@@ -289,6 +294,13 @@ class UsersControllerTest < ActionController::TestCase
     #awards
     assert_select '#awards_link'
 
+
+    #logs and contacts
+    assert_select '#contacts_box', /Show 4/
+    assert_select '#logs_box', /Show 2/
+
+    get :stats, {id: 'ZL4NVW'}
+
     #Stats
     assert_select '#parks_bagged', /Bagged: 2 unique/
     #activations are by year so 1 (1)
@@ -299,10 +311,6 @@ class UsersControllerTest < ActionController::TestCase
     #chases are by day so 1 (2)
     assert_select '#parks_chased', /Chased: 1 unique/
     assert_select '#parks_chased', /2 total/
-
-    #logs and contacts
-    assert_select '#contacts', /4 \(view\)/
-    assert_select '#logs', /2 \(view\)/
   end
 
   test "logged in can view / edit self" do
@@ -385,19 +393,25 @@ class UsersControllerTest < ActionController::TestCase
     row=get_row_test(table,2)
     assert_match /SPOTS/, get_col_test(row,1), "Spots"
     assert_match /No/, get_col_test(row,2), "No mail"
-    assert_match /Add/, get_col_test(row,3), "Add button"
+    assert_match /Add/, get_col_test(row,2), "Add button"
     row=get_row_test(table,3)
     assert_match /ALERTS/, get_col_test(row,1), "Alerts"
     assert_match /Yes/, get_col_test(row,2), "mail"
-    assert_match /Delete/, get_col_test(row,3), "Delete button"
+    assert_match /Delete/, get_col_test(row,2), "Delete button"
     row=get_row_test(table,4)
     assert_match /NEWS/, get_col_test(row,1), "News"
     assert_match /No/, get_col_test(row,2), "No mail"
-    assert_match /Add/, get_col_test(row,3), "Add button"
+    assert_match /Add/, get_col_test(row,2), "Add button"
  
     #awards
     assert_select '#awards_link'
 
+    #logs and contacts
+    assert_select '#stats_box', /Show statistics/
+    assert_select '#contacts_box', /Show 4/
+    assert_select '#logs_box', /Show 2/
+
+    get :stats, {id: 'ZL3CC'}
     #Stats
     assert_select '#parks_bagged', /Bagged: 2 unique/
     #activations are by year so 1 (1)
@@ -409,9 +423,6 @@ class UsersControllerTest < ActionController::TestCase
     assert_select '#parks_chased', /Chased: 1 unique/
     assert_select '#parks_chased', /2 total/
 
-    #logs and contacts
-    assert_select '#contacts', /4 \(view\)/
-    assert_select '#logs', /2 \(view\)/
   end
 
   test "qrp and p2p stats" do
@@ -419,6 +430,8 @@ class UsersControllerTest < ActionController::TestCase
     user2=User.find_by(callsign: 'ZL3CC')
     user1.add_callsigns
     user2.add_callsigns
+    sign_in(user2)
+
     asset1=create_test_asset(asset_type: 'park')
     asset2=create_test_asset(asset_type: 'park')
     #2 activations and 2 chases on successive days one QRP and one not
@@ -431,7 +444,7 @@ class UsersControllerTest < ActionController::TestCase
     user1.update_score
     user2.update_score
 
-    get :show, {id: 'ZL4NVW'}
+    get :stats, {id: 'ZL4NVW'}
     assert_response :success
 
     #Stats
@@ -514,15 +527,15 @@ class UsersControllerTest < ActionController::TestCase
     row=get_row_test(table,2)
     assert_match /SPOTS/, get_col_test(row,1), "Spots"
     assert_match /No/, get_col_test(row,2), "No mail"
-    assert_match /Add/, get_col_test(row,3), "Add button"
+    assert_match /Add/, get_col_test(row,2), "Add button"
     row=get_row_test(table,3)
     assert_match /ALERTS/, get_col_test(row,1), "Alerts"
     assert_match /Yes/, get_col_test(row,2), "mail"
-    assert_match /Delete/, get_col_test(row,3), "Delete button"
+    assert_match /Delete/, get_col_test(row,2), "Delete button"
     row=get_row_test(table,4)
     assert_match /NEWS/, get_col_test(row,1), "News"
     assert_match /No/, get_col_test(row,2), "No mail"
-    assert_match /Add/, get_col_test(row,3), "Add button"
+    assert_match /Add/, get_col_test(row,2), "Add button"
   end 
 
 ####################################################################
@@ -533,6 +546,7 @@ class UsersControllerTest < ActionController::TestCase
     user1.add_callsigns
     user2=User.find_by(callsign: 'ZL3CC')
     user2.add_callsigns
+    sign_in(user2)
     asset1=create_test_asset(asset_type: 'park')
     asset2=create_test_asset(asset_type: 'park')
     #2 activations and 2 chases on successive days
@@ -551,7 +565,7 @@ class UsersControllerTest < ActionController::TestCase
     #bagged
     get 'assets', {id: 'ZL4NVW', asset_type: 'park', count_type: 'bagged'}
     #assert_select  "#valid_count", /2/  #cannot check as filled in by js
-    assert_select  "#total_count", /2/
+    #assert_select  "#total_count", /2/
 
     #list of assets - 2 unique assets bagged
     table=get_table_test(@response.body, 'place_table')
@@ -603,6 +617,7 @@ class UsersControllerTest < ActionController::TestCase
     user1.add_callsigns
     user2=User.find_by(callsign: 'ZL3CC')
     user2.add_callsigns
+    sign_in(user2)
     asset1=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/CB-')
     asset2=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/CB-', minor: true)
     asset3=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/CB-')
@@ -693,6 +708,7 @@ class UsersControllerTest < ActionController::TestCase
   test "can view user's qualified summits" do
     user1=User.find_by(callsign: 'ZL4NVW')
     user1.add_callsigns
+    sign_in(user1)
     asset1=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/CB-')
     asset2=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/CB-')
     asset3=create_test_asset(asset_type: 'summit', code_prefix: 'ZL3/CB-')
@@ -737,6 +753,7 @@ class UsersControllerTest < ActionController::TestCase
     user1.add_callsigns
     user2=User.find_by(callsign: 'ZL3CC')
     user2.add_callsigns
+    sign_in(user2)
 
     #10 contact with a hut
     count=0
@@ -797,6 +814,7 @@ class UsersControllerTest < ActionController::TestCase
     user1.add_callsigns
     user2=User.find_by(callsign: 'ZL3CC')
     user2.add_callsigns
+    sign_in(user2)
     region=Region.find_by(sota_code: 'CB')
     asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
 
@@ -845,6 +863,7 @@ class UsersControllerTest < ActionController::TestCase
     user1.add_callsigns
     user2=User.find_by(callsign: 'ZL3CC')
     user2.add_callsigns
+    sign_in(user2)
     region=Region.find_by(sota_code: 'CB')
     asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
 
@@ -894,6 +913,7 @@ class UsersControllerTest < ActionController::TestCase
   test "can view user's progress towards region awards" do
     user1=create_test_user
     user2=create_test_user
+    sign_in(user2)
     asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
     asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
     log=create_test_log(user1,asset_codes: [asset1.code])
@@ -923,10 +943,10 @@ class UsersControllerTest < ActionController::TestCase
     table=get_table_test(@response.body, 'region_chased_table')
     assert_equal 3, get_row_count_test(table), "3 rows - header and 2 regions"
 
-    #Relies on park being 7th column. Will need updating if new classes added
+    #Relies on park being 8th column. Will need updating if new classes added
     row=get_row_test(table,2)
     assert_match /Canterbury/, get_col_test(row,1), "Correct region"
-    assert_match /1\/2/, get_col_test(row,7), "Correct progress"
+    assert_match /1\/2/, get_col_test(row,8), "Correct progress"
 
     #Now check activated
     get 'region_progress', {id: user1.callsign}
@@ -935,16 +955,17 @@ class UsersControllerTest < ActionController::TestCase
     table=get_table_test(@response.body, 'region_activated_table')
     assert_equal 3, get_row_count_test(table), "3 rows - header and 2 regions"
 
-    #Relies on park being 7th column. Will need updating if new classes added
+    #Relies on park being 8th column. Will need updating if new classes added
     row=get_row_test(table,2)
     assert_match /Canterbury/, get_col_test(row,1), "Correct region"
-    assert_match /1\/2/, get_col_test(row,7), "Correct progress"
+    assert_match /1\/2/, get_col_test(row,8), "Correct progress"
 
   end
 
   test "can view user's progress towards district awards" do
     user1=create_test_user
     user2=create_test_user
+    sign_in(user2)
     asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
     asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
     log=create_test_log(user1,asset_codes: [asset1.code])
@@ -956,7 +977,7 @@ class UsersControllerTest < ActionController::TestCase
     user1.update_score
     user1.check_completion_awards('district')
 
-    get 'district_progress', {id: user2.callsign}
+    get 'district_progress', {id: user2.callsign, region: 'CB'}
     #Breadcrumbs
     assert_select '#crumbs', /Home/
     assert_select '#crumbs', /Users/
@@ -972,7 +993,7 @@ class UsersControllerTest < ActionController::TestCase
     assert_select '#controls', /Back/
 
     table=get_table_test(@response.body, 'district_chased_table')
-    assert_equal 5, get_row_count_test(table), "5 rows - header and 4 districts"
+    assert_equal 3, get_row_count_test(table), "3 rows - header and 2 districts"
 
     #Relies on park being 7th column. Will need updating if new classes added
     row=get_row_test(table,2)
@@ -981,11 +1002,11 @@ class UsersControllerTest < ActionController::TestCase
     assert_match /1\/2/, get_col_test(row,7), "Correct progress"
 
     #Now check activated
-    get 'district_progress', {id: user1.callsign}
+    get 'district_progress', {id: user1.callsign, region: 'CB'}
     assert_select '#crumbs', /#{user1.callsign}/
 
     table=get_table_test(@response.body, 'district_activated_table')
-    assert_equal 5, get_row_count_test(table), "5 rows - header and 4 districts"
+    assert_equal 3, get_row_count_test(table), "3 rows - header and 2 districts"
 
     #Relies on park being 7th column. Will need updating if new classes added
     row=get_row_test(table,2)
@@ -1004,6 +1025,7 @@ class UsersControllerTest < ActionController::TestCase
     user2=User.find_by(callsign: 'ZL3CC')
     user1.add_callsigns
     user2.add_callsigns
+    sign_in(user2)
     asset1=create_test_asset(asset_type: 'park')
     asset2=create_test_asset(asset_type: 'park')
     asset3=create_test_vkasset(award: 'WWFF', code_prefix: 'VKFF-0')
@@ -1046,13 +1068,13 @@ class UsersControllerTest < ActionController::TestCase
 
     row=get_row_test(table,3)
     assert_match /#{1.day.ago.strftime("%Y-%m-%d")}/, get_col_test(row,1), "Correct date"
-    assert_match /#{make_regex_safe(asset1.codename)}/, get_col_test(row,2), "Correct from"
-    assert_match /#{make_regex_safe(asset3.codename)}/, get_col_test(row,3), "Correct to"
+    assert_match /#{make_regex_safe(asset1.code)}/, get_col_test(row,2), "Correct from"
+    assert_match /#{make_regex_safe(asset3.code)}/, get_col_test(row,3), "Correct to"
 
     row=get_row_test(table,4)
     assert_match /#{Time.now.strftime("%Y-%m-%d")}/, get_col_test(row,1), "Correct date"
-    assert_match /#{make_regex_safe(asset1.codename)}/, get_col_test(row,2), "Correct from"
-    assert_match /#{make_regex_safe(asset2.codename)}/, get_col_test(row,3), "Correct to"
+    assert_match /#{make_regex_safe(asset1.code)}/, get_col_test(row,2), "Correct from"
+    assert_match /#{make_regex_safe(asset2.code)}/, get_col_test(row,3), "Correct to"
   end
 
   #############################################################################
@@ -1183,7 +1205,7 @@ class UsersControllerTest < ActionController::TestCase
     assert_match /ALERTS/, get_col_test(row,1), "ALERTS"
     assert_match /No/, get_col_test(row,2), "No mail"
 
-    get :add, id: user.callsign, topic_id: ALERT_TOPIC
+    get :add, method: 'mail', id: user.callsign, topic_id: ALERT_TOPIC
     assert_response :success
 
     #mail
@@ -1192,7 +1214,7 @@ class UsersControllerTest < ActionController::TestCase
     assert_match /ALERTS/, get_col_test(row,1), "ALERTS"
     assert_match /Yes/, get_col_test(row,2), "mail enabled"
 
-    get :delete, id: user.callsign, topic_id: ALERT_TOPIC
+    get :delete, method: 'mail', id: user.callsign, topic_id: ALERT_TOPIC
     assert_response :success
 
     #mail

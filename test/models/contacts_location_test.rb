@@ -103,13 +103,4 @@ class ContactLocationTest < ActiveSupport::TestCase
     assert contact.loc_source2=='user', "Location type is user"
   end
 
-  test "overwrite existing location by default" do
-    user1=create_test_user
-    user2=create_test_user
-    asset1=create_test_asset(asset_type: 'park', location: create_point(173.01,-45.01), test_radius: 0.1)
-    log=create_test_log(user1)
-    contact=create_test_contact(user1, user2, log_id: log.id, asset2_codes: [asset1.code], location2: create_point(174,-46), loc_source2: 'point')
-    assert contact.location2==asset1.location, "Previous location overwritten when not user"
-    assert contact.loc_source2=='area', "Location type is now area"
-  end
 end

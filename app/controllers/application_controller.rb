@@ -20,24 +20,34 @@ class ApplicationController < ActionController::Base
 
   def global_variables
     as=AdminSettings.first
+    @default_layer = params[:baselayer] if params[:baselayer]
     if current_user then
       session[:dxcc] = current_user.dxcc
       session[:dxcc]='ZL' if session[:dxcc] == nil or session[:dxcc] == ""  
-      @default_layer = current_user.baselayer if current_user.baselayer
-      @preferred_layer = current_user.baselayer if current_user.baselayer
+      @default_layer = current_user.baselayer if current_user.baselayer and !@default_layer
+      @default_layer = as.default_layer if !@default_layer
     end
+    @preferred_layer = @default_layer
+    puts "LAYER: #{@default_layer}"
+    if params[:dxcc]
+      if params[:dxcc][:prefix]
+        session[:dxcc]=params[:dxcc][:prefix].upcase
+      else
+        session[:dxcc]=params[:dxcc].upcase
+      end
+      params.delete(:dxcc)
+    end
+
     if session[:dxcc]=='VK'
       @dxcc = 'VK'
       @default_x =  16085209
       @default_y = -4006631
       @zoomlevel = 6
-    elsif session[:dxcc]=='ZL'
+    else
       @dxcc = 'ZL'
       @default_x =  19430000
       @default_y = -5040000
       @zoomlevel = 7
-    else
-      @dxcc = session[:dxcc] if session[:dxcc]
     end
 
  
@@ -152,9 +162,9 @@ class ApplicationController < ActionController::Base
   end
 
   def set_cache_headers
-    response.headers['Cache-Control'] = 'no-cache, no-store, max-age=0, must-revalidate'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = 'Fri, 01 Jan 1990 00:00:00 GMT'
+    response.headers['Cache-Control'] = 'max-age=30, public'
+    #response.headers['Pragma'] = 'no-cache'
+    #response.headers['Expires'] = 'Fri, 01 Jan 1990 00:00:00 GMT'
   end
 
   def collection_to_csv(items)

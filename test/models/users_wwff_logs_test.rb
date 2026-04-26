@@ -131,11 +131,11 @@ class UserWwffLogsTest < ActiveSupport::TestCase
 
     #fully submitted log
     log=create_test_log(user1,asset_codes: [asset1.code])
-    contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 23:59:59'.to_time, submitted_to_wwff: true)
-    contact2=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-02 00:00:00'.to_time, submitted_to_wwff: true)
+    contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 23:59:59'.to_time, submitted_to: ['WWFF'] )
+    contact2=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-02 00:00:00'.to_time, submitted_to: ['WWFF'] )
     #part submitted log
     log2=create_test_log(user1,asset_codes: [asset2.code])
-    contact3=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 23:57:59'.to_time, submitted_to_wwff: true)
+    contact3=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 23:57:59'.to_time, submitted_to: ['WWFF'] )
     contact4=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code], mode: 'SSB', frequency: 7.01, time: '2022-01-02 00:01:00'.to_time)
 
     wwff_logs=user1.wwff_logs
@@ -155,10 +155,10 @@ class UserWwffLogsTest < ActiveSupport::TestCase
     asset2=create_test_asset(asset_type: 'wwff park', code_prefix: 'ZLFF-0')
 
     log=create_test_log(user1,asset_codes: [asset1.code])
-    contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 23:59:59'.to_time, submitted_to_wwff: true)
-    contact2=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-02 00:00:00'.to_time, submitted_to_wwff: true)
+    contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 23:59:59'.to_time, submitted_to: ['WWFF'] )
+    contact2=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-02 00:00:00'.to_time, submitted_to: ['WWFF'] )
     log2=create_test_log(user1,asset_codes: [asset2.code])
-    contact3=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 23:57:59'.to_time, submitted_to_wwff: true)
+    contact3=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 23:57:59'.to_time, submitted_to: ['WWFF'] )
     contact4=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code], mode: 'SSB', frequency: 7.01, time: '2022-01-02 00:01:00'.to_time)
 
 

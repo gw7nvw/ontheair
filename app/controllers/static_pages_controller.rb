@@ -103,6 +103,38 @@ class StaticPagesController < ApplicationController
     @items = Item.where(topic_id: FAQ_TOPIC).order(:created_at).reverse
   end
 
+  def spot_history
+    @start_date = params[:start_date] if params[:start_date]
+    @end_date = params[:end_date] if params[:end_date]
+    @this_dxcc = params[:dxcc][:prefix] if params[:dxcc]
+    puts "DXCC:#{@this_dxcc.to_s}:"
+    @activator = params[:activator] if params[:activator] 
+    @reference = params[:reference] if params[:reference]
+    @programme = params[:programme][:name] if params[:programme]
+
+    blank_search = true if !@start_date 
+    #defaults
+    @start_date = 24.hours.ago.to_date if !@start_date
+    @end_date = Time.now.to_date if !@end_date
+    @this_dxcc=session[:dxcc] if !@this_dxcc
+    puts "DXCC:#{@this_dxcc.to_s}:"
+    @dxcc="All" if !@this_dxcc
+    puts "DXCC:#{@this_dxcc.to_s}:"
+    @activator="*" if !@activator or @activator.strip==""
+    @reference="*" if !@reference or @reference.strip==""
+    @programme="All" if !@programme
+    spots=[] 
+    iso_code=''
+    if @this_dxcc == 'VK' then
+      iso_code = 'AU'
+    elsif @this_dxcc == 'ZL'
+      iso_code = 'NZ'
+    end
+    spots = ConsolidatedSpot.where(%Q{date_trunc('day',created_at)>='#{@start_date}' and date_trunc('day',updated_at) <='#{@end_date}' and ('#{@programme}' = ANY(spot_type) or '#{@programme}' = 'All') and (ARRAY_TO_STRING(code,' ') like '%#{@this_dxcc.gsub('All','')}%' or ARRAY_TO_STRING(code, ' ') like '%#{iso_code}%') and "activatorCallsign" like '#{@activator.gsub("*","%")}' and ('#{@reference}'=ANY(code)  or '#{@reference}'='*')}) if !blank_search
+    @spot_count = spots.count
+    @all_spots = spots[0..199]
+  end
+
   def spots
     alerts
 
@@ -116,31 +148,6 @@ class StaticPagesController < ApplicationController
 
     # read spots from db
     @all_spots = ConsolidatedSpot.where("updated_at>'" + onehourago + "'")
-
-#    @hota_spots = Post.find_by_sql ["
-#            select p.* from posts p
-#            inner join items i on i.item_id=p.id and i.item_type='post'
-#            where
-#              i.topic_id=#{SPOT_TOPIC} and p.referenced_date>'#{Time.now.to_date - 1.days}'
-#              and (p.referenced_time>'#{Time.now - 1.hours}' or p.referenced_time is null)
-#            order by p.created_at desc;
-#      "]
-#    @hota_spots.each do |post|
-#      created_by = User.find_by(id: post.created_by_id)
-#      created_by_callsign = created_by ? created_by.callsign : ''
-#      @all_spots.push(ExternalSpot.new(
-#                        spot_type: 'ZLOTA',
-#                        time: post.referenced_time ? post.referenced_time.in_time_zone('UTC') : '',
-#                        activatorCallsign: post.callsign,
-#                        callsign: created_by_callsign,
-#                        code: post.asset_codes,
-#                        frequency: post.freq,
-#                        mode: post.mode,
-#                        name: post.site,
-#                        comments: (post.title || '') + ' - ' + (post.description || ''),
-#                        id: -post.id
-#                      ))
-#    end
 
     if @all_spots then @all_spots = @all_spots.sort_by { |hsh| hsh[:date].to_s + hsh[:time].last.to_s }.reverse! end
 

@@ -8,12 +8,12 @@ class RegionsController < ApplicationController
     dxcc = 'ZL'
     dxcc = session[:dxcc] if session[:dxcc]
 
-    @regions = Region.find_by_sql [" select id, name, sota_code from regions where dxcc='#{dxcc}' order by sota_code; "]
+    @regions = Region.find_by_sql [" select id, dxcc, name, sota_code from regions where dxcc='#{dxcc}' order by sota_code; "]
   end
 
   def show
     @section = params[:section]
-    ds = Region.find_by_sql [%q{ select id, name, sota_code, sota_code, ST_Simplify("boundary",0.002) as boundary from regions where sota_code = '} + params[:id] + "';"]
+    ds = Region.find_by_sql [%q{ select id, dxcc, name, sota_code, sota_code, ST_Simplify("boundary",0.002) as boundary from regions where sota_code = '} + params[:id] + "';"]
     if ds
       @region = ds.first
     else
@@ -28,9 +28,8 @@ class RegionsController < ApplicationController
 
     @callsign = safe_param(params[:callsign])
     @callsign = current_user.callsign if !@callsign && signed_in?
-
     if current_user
-      if !@callsign || (@callsign == '/') || (@callsign == '*')
+      if !@callsign || @callsign=="" || (@callsign == '/') || (@callsign == '*')
         @callsign = '*'
         @activations = User.all_activations
         @chased = User.all_chases

@@ -9,6 +9,7 @@ mount Resque::Server.new, at: "/resque"
 root 'static_pages#home'
 match '/results',   to: 'static_pages#results',   via: 'get'
 match '/recent',   to: 'static_pages#recent',   via: 'get'
+match '/spots/history',   to: 'static_pages#spot_history',   via: 'get'
 match '/spots',   to: 'static_pages#spots',   via: 'get'
 match '/alerts',   to: 'static_pages#alerts',   via: 'get'
 match '/alerts/:id/delete',   to: 'static_pages#delete_alert',   via: 'get'

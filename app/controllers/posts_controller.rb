@@ -248,7 +248,11 @@ class PostsController < ApplicationController
           item.item_type = 'post'
           item.item_id = @post.id
           item.save
-          item.send_emails unless @post.do_not_publish
+          if ENV['RAILS_ENV'] == 'production'
+            item.send_emails unless @post.do_not_publish
+          else
+            Item.send_emails_now(item.id) unless @post.do_not_publish
+          end
         end
         flash[:success] = 'Posted! '
         @edit = true

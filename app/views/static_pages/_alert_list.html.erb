@@ -3,7 +3,7 @@
   <% if Time.now > alert[:starttime].to_time and Time.now < alert[:starttime].to_time + alert[:duration].to_f*3600 then stylestr="style='background: #befabe'" 
      elsif Time.now.in_time_zone(@tz.name).strftime('%Y-%m-%d') == alert[:starttime].to_time.in_time_zone(@tz.name).strftime('%Y-%m-%d') then stylestr="style='background: #f0e68c'" 
      else stylestr=''  end %>
-    <tr <%=raw(stylestr) %> >
+    <tr><span <%=raw(stylestr)%> >
       <td>
          <%if alert[:programme]=="ZLOTA" then %><b><%=alert[:programme]%></b><% else %><%=alert[:programme]%> <% end %><br>
          <%if alert[:id] and alert[:id].to_i<0 then %><%=link_to 'View','/topics/1?post='+(-alert[:id]).to_s,remote: true,  :id => 'view', :onclick => "linkHandler('view')"%><% end %> 
@@ -30,8 +30,8 @@
           <% end %>
         </td>
         <td><%=if alert[:frequency] and alert[:frequency]!="" then alert[:frequency].to_f.round(5) else "" end%>-<%=alert[:mode]%></td>
-      </tr>
-      <tr <%= raw(stylestr) %>>
+      </span></tr>
+      <tr><span <%= raw(stylestr)%>>
         <td></td>
         <td colspan=7>
           <%=alert[:name]%> -
@@ -40,7 +40,7 @@
             <%#=link_to '(spot)','/posts/new?topic_id='+SPOT_TOPIC.to_s+'&alert='+alert[:id].to_s, remote: true,  :id => 'spot', :onclick => "linkHandler('spot')" %>
           <% end%></small></i>
         </td>
-      </tr>
+      </span></tr>
   <% end %>
 </table>
 

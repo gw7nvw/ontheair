@@ -32,7 +32,6 @@
   <% if stale==true
       #Should really do this in controller ...
       sch_running=system('ps -ef | grep ota_schedule | grep resqu | grep -v grep')
-      puts "Scheduler running: "+sch_running.to_s
       if sch_running==false then
          success=system('RAILS_ENV=production nohup bundle exec rake environment resque:work QUEUE=ota_scheduled > log/redisch.log & echo $! > /tmp/schedule.pid')
          if !success then
@@ -76,7 +75,7 @@
        <%=link_to "WWFF", "/alerts?#{new_class_parameters}&class=WWFF", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
     </i>
   <% end %>
-  </i></p>
+  </p>
   <%= render 'alert_list' %>
 
 </div>

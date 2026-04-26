@@ -113,15 +113,10 @@ function site_init() {
     }
     map_init_mapspast('map_map',site_projection);
     site_add_vector_layers();
-    map_map.addLayer(map_scratch_layer);
+    map_add_scratch_layer();
     map_add_position_layer();
     
 
-//    if (site_projection!='EPSG:2193') {
-    //   def_layer=site_default_world_layer;
-//       def_zoom=site_default_world_zoom;
-//       def_centre = site_default_world_centre;
-//    }
     if(typeof(def_layer)!='undefined') {
        map_show_only_layer(def_layer);
     }
@@ -152,9 +147,9 @@ function site_init() {
         currZoom = newZoom;
       }
       xy = map_map.getView().getCenter();
-      if (map_current_layer != site_default_world_layer && (xy[0] < site_pref_extent[0] || xy[0] > site_pref_extent[2] || xy[1] < site_pref_extent[1] || xy[1] > site_pref_extent[3])) {
+      if (map_current_layer != site_default_world_layer && ((typeof site_pref_extent === 'undefined') || (xy[0] < site_pref_extent[0] || xy[0] > site_pref_extent[2] || xy[1] < site_pref_extent[1] || xy[1] > site_pref_extent[3]))) {
         map_show_only_layer(site_default_world_layer);
-      } else if (site_pref_layer != map_current_layer && xy[0] > site_pref_extent[0] && xy[0] < site_pref_extent[2] && xy[1] > site_pref_extent[1] && xy[1] < site_pref_extent[3]) {
+      } else if (site_pref_layer != map_current_layer && typeof site_pref_extent != 'undefined' && xy[0] > site_pref_extent[0] && xy[0] < site_pref_extent[2] && xy[1] > site_pref_extent[1] && xy[1] < site_pref_extent[3]) {
         map_show_only_layer(site_pref_layer)
       };
 

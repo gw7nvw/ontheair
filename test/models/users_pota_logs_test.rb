@@ -127,11 +127,11 @@ class UserPotaLogsTest < ActiveSupport::TestCase
 
     #fully submitted log
     log=create_test_log(user1,asset_codes: [asset1.code])
-    contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 23:59:59'.to_time, submitted_to_pota: true)
-    contact2=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 00:00:00'.to_time, submitted_to_pota: true)
+    contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 23:59:59'.to_time, submitted_to: ['POTA'])
+    contact2=create_test_contact(user1,user3,log_id: log.id, asset1_codes: [asset1.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 00:00:00'.to_time, submitted_to: ['POTA'])
     #part submitted log
     log2=create_test_log(user1,asset_codes: [asset2.code])
-    contact3=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 23:57:59'.to_time, submitted_to_pota: true)
+    contact3=create_test_contact(user1,user2,log_id: log2.id, asset1_codes: [asset2.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 23:57:59'.to_time, submitted_to: ['POTA'])
     contact4=create_test_contact(user1,user3,log_id: log2.id, asset1_codes: [asset2.code], mode: 'SSB', frequency: 7.01, time: '2022-01-01 00:01:00'.to_time)
 
     pota_logs=user1.pota_logs

@@ -626,7 +626,7 @@ class Asset < ActiveRecord::Base
   
           # Otherwise - we guess based on the reference
           elsif (thecode = code.match(LLOTA_REGEX))
-            # HEMA
+            # LLOTA
             logger.debug 'LLOTA'
             asset[:name] = code
             asset[:url] = LLOTA_ASSET_URL+thecode.to_s.gsub('LL-','-')
