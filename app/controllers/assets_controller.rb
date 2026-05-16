@@ -283,6 +283,8 @@ class AssetsController < ApplicationController
   end
 
   def update
+    do_not_cache()
+
     if signed_in? && current_user.is_modifier
       if params[:delete]
         asset = Asset.find_by_id(params[:id])

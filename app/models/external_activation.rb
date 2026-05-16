@@ -67,7 +67,7 @@ class ExternalActivation < ActiveRecord::Base
     end
   end
 
-  def self.update_sota_activation(summit)
+  def self.update_sota_activation(summit, only_new=true)
     # log in
 
     jscreds = Keycloak::Client.get_token(SOTA_USER, SOTA_PASSWORD, 'sotadata', SOTA_SECRET)
@@ -104,35 +104,39 @@ class ExternalActivation < ActiveRecord::Base
         sa.external_activation_id = activation['id'].to_i
         # sa.callsign=activation["ownCallsign"].strip
         sa.callsign = User.remove_call_suffix(activation['ownCallsign'].strip)
-        puts 'Activator: ' + sa.callsign
-        sa.summit_code = summit.code.strip
-        # sa.summit_sota_id=summitId
-        # if activation["ActivationDate"] then sa.date=activation["ActivationDate"].to_date  end
-        if activation['activationDate'] then sa.date = activation['activationDate'].to_date.strftime('%Y-%m-%d') end
-        sa.qso_count = activation['qsos']
-        # sa.qso_count=activation["QSOs"]
-        activation_ids += [activation['id']]
-        dups = ExternalActivation.where(external_activation_id: sa.external_activation_id).count
-        next unless dups.zero?
-        puts sa.callsign + ': New!'
-        newcount += 1
-        sa.save
-        user = User.find_by(callsign: sa.callsign)
-        user ||= User.create(callsign: sa.callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
-        if user
-          if Rails.env.production?
-            user.outstanding = true
-            user.save
-            Resque.enqueue(Scorer)
-          else
-            user.update_score
-            user.check_awards
-            user.check_completion_awards('district')
-            user.check_completion_awards('region')
+        if sa.callsign then
+          puts "Activator: #{sa.callsign}"
+          sa.summit_code = summit.code.strip
+          # sa.summit_sota_id=summitId
+          # if activation["ActivationDate"] then sa.date=activation["ActivationDate"].to_date  end
+          if activation['activationDate'] then sa.date = activation['activationDate'].to_date.strftime('%Y-%m-%d') end
+          sa.qso_count = activation['qsos']
+          # sa.qso_count=activation["QSOs"]
+          activation_ids += [activation['id']] if !only_new #triggers chaser check for all activations
+          dups = ExternalActivation.where(external_activation_id: sa.external_activation_id).count
+          if dups.zero?
+            activation_ids += [activation['id']] if only_new #triggers chaser check for new activations only
+            puts "#{sa.callsign}  New!"
+            newcount += 1
+            sa.save
+            user = User.find_by(callsign: sa.callsign)
+            user ||= User.create(callsign: sa.callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
+            if user
+              if Rails.env.production?
+                user.outstanding = true
+                user.save
+                Resque.enqueue(Scorer)
+              else
+                user.update_score
+                user.check_awards
+                user.check_completion_awards('district')
+                user.check_completion_awards('region')
+              end
+            end
           end
         end
+        puts 'New: ' + newcount.to_s
       end
-      puts 'New: ' + newcount.to_s
     end
 
     # get chasers

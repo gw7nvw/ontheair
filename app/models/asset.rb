@@ -34,6 +34,7 @@ class Asset < ActiveRecord::Base
     add_simple_boundary
     self.reload
     add_activation_zone(true)
+    add_az_area(true)
     add_links
   end
 

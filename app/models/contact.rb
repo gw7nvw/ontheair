@@ -280,8 +280,7 @@ class Contact < ActiveRecord::Base
       if user
         log.update_qualified if log
         if Rails.env.production?
-          user.outstanding = true
-          user.save
+          user.update_column(:outstanding, true)
           Resque.enqueue(Scorer)
         elsif Rails.env.development?
           user.update_score

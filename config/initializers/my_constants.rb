@@ -1,4 +1,5 @@
 # typed: strict
+#topics
   SPOT_TOPIC=35
   TEST_SPOT_TOPIC=43
   ALERT_TOPIC=1
@@ -8,4 +9,9 @@
   NEWS_TOPIC=4
   AWARDS_TOPIC=42
   PHOTO_TOPIC=41
+
+#specific posts
   ACCESS_INFO="/posts/831/"
+
+#mutex locks
+  SCHED_LOCK = 1

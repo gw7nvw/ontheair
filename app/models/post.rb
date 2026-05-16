@@ -21,6 +21,7 @@ class Post < ActiveRecord::Base
 
   def before_save_actions
     check_codes
+    self.mode = self.mode.upcase if self.mode
     location=get_most_accurate_location
     add_containing_codes
     # again to vet child codes added

@@ -22,36 +22,9 @@
 
 <div id="right_scroll">
   <% as=AdminSettings.first %>
-  <% if as and as.last_spot_read then
-       last_spot_read=as.last_spot_read.in_time_zone(@tz.name).strftime("%H:%M:%S")
-       if as.last_spot_read<5.minutes.ago then stale=true end
-     else
-       last_spot_read="Unknown"
-       stale=true
-     end %>
-  <% if stale==true
-      #Should really do this in controller ...
-      sch_running=system('ps -ef | grep ota_schedule | grep resqu | grep -v grep')
-      if sch_running==false then
-         success=system('RAILS_ENV=production nohup bundle exec rake environment resque:work QUEUE=ota_scheduled > log/redisch.log & echo $! > /tmp/schedule.pid')
-         if !success then
-           flashlocal="Error: process to retrieve remote alerts failed and we could not restart it"
-           flashlocaltype='error'
-         else
-           flashlocal="Success: process to retrieve remote alerts failed but we successfully restarted it. Remote alerts will show on the next refresh"
-           flashlocaltype='success'
-         end
-      end
-     end
-  %>
 
   <%= render 'flash' %>
-  <% if flashlocal then %>
-    <div class="alert alert-<%= flashlocaltype %>"><%= flashlocal %></div>
-  <% end%>
-
   <h2>Going portable - Alerts</h2>
-     <p><span <%=if stale then raw("style='color: #900'") end%> >Last updated: <%=last_spot_read%> (<%=@tz.name%>)</span> - <span id="retrieved">Retrieved at <%=Time.now.in_time_zone(@tz.name).strftime("%H:%M:%S")%> (<%=@tz.name%>)</span><i>&nbsp;<%=  link_to "Refresh Now", '/alerts?'+raw(@parameters), remote: true,  :onclick => "linkHandler('refresh_link')"%> </i></p>
   <p>
   <% new_parameters=@parameters.gsub(/zone=[A-Za-z]+/,'') %>
   <% if @zone=='all' then %>

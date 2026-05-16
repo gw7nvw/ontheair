@@ -22,20 +22,18 @@ class ApplicationController < ActionController::Base
     as=AdminSettings.first
     @default_layer = params[:baselayer] if params[:baselayer]
     if current_user then
-      session[:dxcc] = current_user.dxcc
+      session[:dxcc] = current_user.dxcc if session[:dxcc] == nil or session[:dxcc] == ""
       session[:dxcc]='ZL' if session[:dxcc] == nil or session[:dxcc] == ""  
       @default_layer = current_user.baselayer if current_user.baselayer and !@default_layer
       @default_layer = as.default_layer if !@default_layer
     end
     @preferred_layer = @default_layer
-    puts "LAYER: #{@default_layer}"
     if params[:dxcc]
-      if params[:dxcc][:prefix]
+      if params[:dxcc].class.to_s=="Hash"
         session[:dxcc]=params[:dxcc][:prefix].upcase
-      else
+      elsif params[:dxcc].class.to_s=="String"
         session[:dxcc]=params[:dxcc].upcase
       end
-      params.delete(:dxcc)
     end
 
     if session[:dxcc]=='VK'
@@ -187,5 +185,11 @@ class ApplicationController < ActionController::Base
     newparams.delete(:controller)
     newparams.delete(:id)
     newparams.to_query
+  end
+  
+  def do_not_cache
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate' # HTTP 1.1.
+    response.headers['Pragma'] = 'no-cache' # HTTP 1.0.
+    response.headers['Expires'] = '0' # Proxies.
   end
 end

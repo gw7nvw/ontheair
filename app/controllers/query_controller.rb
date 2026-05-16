@@ -23,7 +23,7 @@ class QueryController < ApplicationController
   # Note: results limited to first 40 matches
   def index
   
-    dxcc = params[:dxcc][:prefix] if params[:dxcc]
+    dxcc = params[:dxcc][:prefix] if params[:dxcc] 
     dxcc = session[:dxcc] if !dxcc
     dxcc = 'ZL' if !dxcc
  

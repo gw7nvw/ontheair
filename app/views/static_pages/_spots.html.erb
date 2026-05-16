@@ -31,8 +31,8 @@
 </script>
 <script>
    //reset_map_controllers();
-   //document.getElementById("page_status").innerHTML = '';
-   //document.body.classList.remove('loading');
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
    //document.title = '... On The Air'
    //document.getElementById('logo').innerHTML='... On The Air'
 
@@ -64,17 +64,28 @@
        stale=true
      end %>
   <% if stale==true
+      #Need to put a set a lock flag here to prevent parallel execution of this (resulting in 2 workers)
       #Should really do this in controller ...
-      sch_running=system('ps -ef | grep ota_schedule | grep resqu | grep -v grep')
-      if sch_running==false then
-         success=system('RAILS_ENV=production nohup bundle exec rake environment resque:work QUEUE=ota_scheduled > log/redisch.log & echo $! > /tmp/schedule.pid')
-         if !success then 
-           flashlocal="Error: process to retrieve remote spotsfailed and we could not restart it"
-           flashlocaltype='error' 
-         else
-           flashlocal="Success: process to retrieve remote spots failed but we successfully restarted it. Remote spots will show on the next refresh"
-           flashlocaltype='success'
-         end
+      unlocked = ActiveRecord::Base.connection.execute("SELECT pg_try_advisory_lock( #{SCHED_LOCK} );")
+      if unlocked and unlocked.values and unlocked.values.first and unlocked.values.first.first=='t' then
+        puts "UNLOCKED"
+        begin
+          sch_running=system('ps -ef | grep ota_schedule | grep resqu | grep -v grep')
+          if sch_running==false then
+             success=system('RAILS_ENV=production nohup bundle exec rake environment resque:work QUEUE=ota_scheduled > log/redisch.log & echo $! > /tmp/schedule.pid')
+             if !success then 
+               flashlocal="Error: process to retrieve remote spots failed and we could not restart it"
+               flashlocaltype='error' 
+             else
+               flashlocal="Success: process to retrieve remote spots failed but we successfully restarted it. Remote spots will show on the next refresh"
+               flashlocaltype='success'
+             end
+          end
+        rescue
+          puts "ERROR: failed in scheduler process check"
+        end
+        #And release lock
+        ActiveRecord::Base.connection.execute("SELECT pg_advisory_unlock( #{SCHED_LOCK} );")
       end
      end
   %>

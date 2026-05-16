@@ -447,14 +447,15 @@ class User < ActiveRecord::Base
             unnest(qualified) as qualified
           from logs
           where user1_id=#{id}
-            and '#{params[:asset_type]}'=ANY(asset_classes)
+            and asset_classes @> ARRAY['#{params[:asset_type]}'::varchar]
         ) as als
       inner join assets a on a.code=als.asset_codes
       where als.asset_classes='#{params[:asset_type]}'
         and als.qualified=true
         and #{minor_query};
     "]
-
+# and '#{params[:asset_type]}'=ANY(asset_classes)
+# and asset_classes @> ARRAY['#{params[:asset_type]}'::varchar]
     qual_codes2 = []
     if params[:include_external]
       at = AssetType.find_by(name: params[:asset_type])
@@ -514,7 +515,6 @@ class User < ActiveRecord::Base
     chased_count['elevation'] = elevation_chased(include_external: true)
 
     score['p2p'] = get_p2p_all.count
-
     save
   end
 
@@ -537,10 +537,13 @@ class User < ActiveRecord::Base
     params[:asset_type] = ats.map(&:name).join(',')
 
     codes = bagged(params)
-    codes.each do |code|
-      asset = Asset.find_by(code: code)
-      elevation += asset.altitude if asset && !asset.altitude.nil?
-    end
+    #codes.each do |code|
+    #  asset = Asset.find_by(code: code)
+    #  elevation += asset.altitude if asset && !asset.altitude.nil?
+    #end
+    #puts "OLD ELE: #{elevation}"
+    elevations = Asset.find_by_sql ["select sum(altitude) as altitude from assets where code in (#{codes.map { |e| "'#{e}'" }.join(', ')})"] if codes and codes.count>0
+    elevation=elevations.first.altitude if elevations 
     elevation
   end
 
@@ -559,10 +562,12 @@ class User < ActiveRecord::Base
     params[:asset_type] = ats.map(&:name).join(',')
 
     codes = chased(params)
-    codes.each do |code|
-      asset = Asset.find_by(code: code.split(' ')[0])
-      elevation += asset.altitude if asset && !asset.altitude.nil?
-    end
+#    codes.each do |code|
+#      asset = Asset.find_by(code: code.split(' ')[0])
+#      elevation += asset.altitude if asset && !asset.altitude.nil?
+#    end
+    elevations = Asset.find_by_sql ["select sum(altitude) as altitude from assets a join UNNEST(ARRAY[#{codes.map { |e| "'#{e.split(' ')[0]}'" }.join(', ')}]) AS  codes(code) on codes.code=a.code;"] if codes and codes.count>0
+    elevation=elevations.first.altitude if elevations  
     elevation
   end
 
@@ -582,10 +587,13 @@ class User < ActiveRecord::Base
       params[:asset_type] = at.name
       codes += qualified(params)
     end
-    codes.each do |code|
-      asset = Asset.find_by(code: code.split(' ')[0])
-      elevation += asset.altitude if asset && !asset.altitude.nil?
-    end
+#    codes.each do |code|
+#      asset = Asset.find_by(code: code.split(' ')[0])
+#      elevation += asset.altitude if asset && !asset.altitude.nil?
+#    end
+    elevations = Asset.find_by_sql ["select sum(altitude) as altitude from assets where code in (#{codes.map { |e| "'#{e}'" }.join(', ')})"] if codes and codes.count>0
+    elevation=elevations.first.altitude if elevations
+
     elevation
   end
 
@@ -604,10 +612,13 @@ class User < ActiveRecord::Base
     params[:asset_type] = ats.map(&:name).join(',')
 
     codes = activations(params)
-    codes.each do |code|
-      asset = Asset.find_by(code: code.split(' ')[0])
-      elevation += asset.altitude if asset && !asset.altitude.nil?
-    end
+#    codes.each do |code|
+#      asset = Asset.find_by(code: code.split(' ')[0])
+#      elevation += asset.altitude if asset && !asset.altitude.nil?
+#    end
+    elevations = Asset.find_by_sql ["select sum(altitude) as altitude from assets a join UNNEST(ARRAY[#{codes.map { |e| "'#{e.split(' ')[0]}'" }.join(', ')}]) AS  codes(code) on codes.code=a.code;"] if codes and codes.count>0
+    elevation=elevations.first.altitude if elevations
+
     elevation
   end
 
@@ -732,7 +743,8 @@ class User < ActiveRecord::Base
     wwff_logs = []
     logger.debug 'resubmit: ' + resubmit_str
 
-    contacts2 = Contact.find_by_sql ['select distinct asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where user1_id = ' + id.to_s + '' + resubmit_str + " and 'wwff park'=ANY(asset1_classes)) as sq where asset1_codes like 'ZLFF-%%'"]
+#    contacts2 = Contact.find_by_sql ['select distinct asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where user1_id = ' + id.to_s + '' + resubmit_str + " and 'wwff park'=ANY(asset1_classes)) as sq where asset1_codes like 'ZLFF-%%'"]
+    contacts2 = Contact.find_by_sql ['select distinct asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where user1_id = ' + id.to_s + '' + resubmit_str + " and asset1_classes @> ARRAY['wwff park'::varchar]) as sq where asset1_codes like 'ZLFF-%%'"]
     references = contacts2.map(&:asset1_codes)
 
     # get list of contacts for each park
@@ -740,7 +752,8 @@ class User < ActiveRecord::Base
       pp = Asset.find_by(code: park)
       next unless pp
       # all contacts for this user from this park
-      contacts1 = Contact.find_by_sql ['select distinct callsign2, date::date as date, band, mode from contacts where  user1_id = ? and (? = ANY(asset1_codes)) and (date >= ?)' + resubmit_str, id, park, pp.valid_from]
+#      contacts1 = Contact.find_by_sql ['select distinct callsign2, date::date as date, band, mode from contacts where  user1_id = ? and (? = ANY(asset1_codes)) and (date >= ?)' + resubmit_str, id, park, pp.valid_from]
+      contacts1 = Contact.find_by_sql ['select distinct callsign2, date::date as date, band, mode from contacts where  user1_id = ? and (asset1_codes @> ARRAY[?::varchar]) and (date >= ?)' + resubmit_str, id, park, pp.valid_from]
       contacts = []
       dups = []
 
@@ -748,7 +761,7 @@ class User < ActiveRecord::Base
       # add 1st matching contacts to valid list
       # and add remainder to duplicates list
       contacts1.each do |c|
-        contacts2 = Contact.find_by_sql [' select * from contacts where user1_id= ? and callsign2 = ? and band = ? and mode = ? and date::date = ? and (? = ANY(asset1_codes))' + resubmit_str + ' order by time asc;', id, c.callsign2, c.band, c.mode, c.date.strftime('%Y-%m-%d'), park]
+        contacts2 = Contact.find_by_sql [' select * from contacts where user1_id= ? and callsign2 = ? and band = ? and mode = ? and date::date = ? and (asset1_codes @> ARRAY[?::varchar])' + resubmit_str + ' order by time asc;', id, c.callsign2, c.band, c.mode, c.date.strftime('%Y-%m-%d'), park]
         if contacts2 && contacts2.count.positive?
           contacts.push(contacts2.first)
           dups += contacts2[1..-1] if contacts2.count > 1

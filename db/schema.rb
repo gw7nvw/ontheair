@@ -11,13 +11,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20260415220504) do
+ActiveRecord::Schema.define(version: 20260426224343) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "postgis"
   enable_extension "postgres_fdw"
   enable_extension "unaccent"
+  enable_extension "pg_stat_statements"
 
   create_table "admin_settings", force: true do |t|
     t.string   "qrpnz_email"
@@ -152,6 +153,7 @@ ActiveRecord::Schema.define(version: 20260415220504) do
   add_index "assets", ["boundary_very_simplified"], :name => "assets_boundary_very_simplified_index", :spatial => true
   add_index "assets", ["code"], :name => "index_assets_on_code"
   add_index "assets", ["location"], :name => "assets_location_index", :spatial => true
+  add_index "assets", ["old_code"], :name => "index_name"
   add_index "assets", ["safecode"], :name => "index_assets_on_safecode"
 
   create_table "award_thresholds", force: true do |t|
@@ -231,6 +233,7 @@ ActiveRecord::Schema.define(version: 20260415220504) do
     t.datetime "updated_at"
     t.string   "old_spot_type",     default: [], array: true
     t.string   "band"
+    t.string   "dxcc"
   end
 
   create_table "contacts", force: true do |t|
@@ -289,6 +292,7 @@ ActiveRecord::Schema.define(version: 20260415220504) do
   add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"
   add_index "contacts", ["callsign2"], :name => "index_contacts_on_callsign2"
   add_index "contacts", ["date"], :name => "index_contacts_on_date"
+  add_index "contacts", ["log_id"], :name => "contacts_log_id_idx"
 
   create_table "continents", force: true do |t|
     t.string "name"
@@ -326,6 +330,9 @@ ActiveRecord::Schema.define(version: 20260415220504) do
     t.string   "dxcc"
   end
 
+  add_index "districts", ["district_code"], :name => "districts_district_code_idx"
+  add_index "districts", ["region_code"], :name => "districts_region_code_idx"
+
   create_table "doc_tracks", force: true do |t|
     t.string   "name"
     t.string   "object_type"
@@ -342,6 +349,7 @@ ActiveRecord::Schema.define(version: 20260415220504) do
     t.string  "continent_code"
     t.string  "dxcc_enum"
     t.boolean "is_active"
+    t.string  "iso_code"
   end
 
   create_table "email_blacklists", force: true do |t|
@@ -778,6 +786,8 @@ ActiveRecord::Schema.define(version: 20260415220504) do
     t.spatial  "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
     t.string   "dxcc"
   end
+
+  add_index "regions", ["sota_code"], :name => "regions_sota_code_idx"
 
   create_table "roads", force: true do |t|
     t.string   "name"

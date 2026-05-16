@@ -82,6 +82,8 @@ class ApiController < ApplicationController
 
     whereclause = 'is_active is true' unless params[:is_active]
 
+    whereclause = "safecode = '#{params[:code]}'"  if params[:code]
+
     whereclause += ' and minor is not true' unless params[:minor]
 
     if params[:asset_type] && (params[:asset_type] != '') && (params[:asset_type] != 'all')
@@ -95,7 +97,7 @@ class ApiController < ApplicationController
 
     if asset_type then 
       whereclause += " and asset_type = '" + asset_type + "'" 
-    else
+    elsif not params[:code]
       ats=AssetType.where(is_zlota: true)
       whereclause += " and asset_type in ("+ats.map{|at| "'"+at.name+"'"}.join(', ')+")"
     end

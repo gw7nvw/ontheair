@@ -208,10 +208,6 @@ class Log < ActiveRecord::Base
       logid = nil
       contact.asset1_codes = []
       contact.asset2_codes = []
-      if default_location && !default_location.empty? && !default_location.strip.empty?
-        protolog.asset_codes.push(default_location.strip.upcase)
-        contact.asset1_codes.push(default_location.strip.upcase)
-      end
 
       contact.timezone = Timezone.find_by(name: 'UTC').id
       # if it is a valid contact it will have one of these two fields
@@ -225,6 +221,11 @@ class Log < ActiveRecord::Base
         protolog, contact, timestring = Log.parse_csv_record(line, protolog, contact, unreliable_chaser_loc)
       end
 
+      #override default location
+      if default_location && !default_location.empty? && !default_location.strip.empty?
+        protolog.asset_codes=[default_location.strip.upcase]
+        contact.asset1_codes=[default_location.strip.upcase]
+      end
       # Override callsign if asked
       if force_callsign
         contact.callsign1 = default_callsign
@@ -524,6 +525,10 @@ puts value
     state = ''
     country = ''
     callsign_source = nil
+    my_sig = nil
+    my_sig_info_values = nil
+    sig = nil
+    sig_info_values = nil
 
     line.split('<').each do |parm|
       next unless parm && !parm.empty?
@@ -635,16 +640,13 @@ puts value
             contact.is_portable1 = true
           end
         end
+      when 'my_sig'
+        if value && !value.empty? && !value.strip.empty?
+          my_sig = value.strip
+        end
       when 'my_sig_info'
         if value && !value.empty? && !value.strip.empty?
-          values = value.split(',')
-          values.each do |val|
-            val = Asset.correct_separators(val.strip)
-            protolog.asset_codes.push(val)
-            contact.asset1_codes.push(val)
-            protolog.is_portable1 = true
-            contact.is_portable1 = true
-          end
+          my_sig_info_values = value.split(',')
         end
       when 'comment'
         if value && !value.empty?
@@ -815,20 +817,39 @@ puts value
             contact.is_portable2 = true
           end
         end
+      when 'sig'
+        if value && !value.empty? && !value.strip.empty?
+          sig = value.strip
+        end
       when 'sig_info'
-        if value && !value.empty?
-          values = value.split(',')
-          values.each do |val|
-            val = Asset.correct_separators(val.strip)
-            contact.asset2_codes.push(val)
-            contact.is_portable2 = true
-          end
+        if value && !value.empty? && !value.strip.empty?
+          sig_info_values = value.split(',')
         end
       end
       # end of if
     end
 
     # combined fields
+    #handle my_sig_info last so we can test if we also got my_sig
+    if my_sig_info_values
+      my_sig_info_values.each do |val|
+        val = Asset.correct_separators(val.strip)
+        val = val.gsub('NZ-', 'NZLL-') if my_sig and my_sig.upcase=='LLOTA' 
+        protolog.asset_codes.push(val)
+        contact.asset1_codes.push(val)
+        protolog.is_portable1 = true
+        contact.is_portable1 = true
+      end
+    end
+    #handle sig_info last so we can test if we also got my_sig
+    if sig_info_values
+      sig_info_values.each do |val|
+        val = Asset.correct_separators(val.strip)
+        val = val.gsub('NZ-', 'NZLL-') if sig and sig.upcase=='LLOTA' 
+        contact.asset2_codes.push(val)
+        contact.is_portable2 = true
+      end
+    end
     contact.loc_desc2 = [city, state, country].compact.split('').flatten.join(', ')
     contact.loc_desc1 = [my_city, my_state, my_country].compact.split('').flatten.join(', ')
     protolog.loc_desc1 = [my_city, my_state, my_country].compact.split('').flatten.join(', ')

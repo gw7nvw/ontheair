@@ -8,10 +8,14 @@ class StaticPagesController < ApplicationController
 
   def ack_news
     if current_user
-      current_user.hide_news_at = Time.now
-      current_user.save
+#      current_user.hide_news_at = Time.now
+      current_user.update_column(:hide_news_at, Time.now)
+
+      current_user.reload
     end
-    redirect_to '/'
+    do_not_cache()
+    home
+    render 'home'
   end
 
   def admin_stats
@@ -56,7 +60,7 @@ class StaticPagesController < ApplicationController
     @logs = @fulllogs.paginate(per_page: 20, page: params[:page])
 
     @awards = AwardUserLink.find_by_sql [ "select * from award_user_links where created_at>'#{ack_time}'; "]
-    @award_users = User.find_by_sql [ "select * from users where id in (select distinct user_id from award_user_links where created_at>'#{ack_time}') order by callsign;"]
+    @award_users = User.find_by_sql [ "select * from users where id in (select distinct user_id from award_user_links where created_at>'#{ack_time}') order by callsign limit 20;"]
 
     @items = Item.find_by_sql ["select * from items where (topic_id = 4 )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;"]
     @asset_type_filter = "('all', 'silo')" if @dxcc=='ZL'
@@ -108,8 +112,8 @@ class StaticPagesController < ApplicationController
     @end_date = params[:end_date] if params[:end_date]
     @this_dxcc = params[:dxcc][:prefix] if params[:dxcc]
     puts "DXCC:#{@this_dxcc.to_s}:"
-    @activator = params[:activator] if params[:activator] 
-    @reference = params[:reference] if params[:reference]
+    @activator = params[:activator].upcase if params[:activator] 
+    @reference = params[:reference].upcase if params[:reference]
     @programme = params[:programme][:name] if params[:programme]
 
     blank_search = true if !@start_date 
@@ -130,7 +134,7 @@ class StaticPagesController < ApplicationController
     elsif @this_dxcc == 'ZL'
       iso_code = 'NZ'
     end
-    spots = ConsolidatedSpot.where(%Q{date_trunc('day',created_at)>='#{@start_date}' and date_trunc('day',updated_at) <='#{@end_date}' and ('#{@programme}' = ANY(spot_type) or '#{@programme}' = 'All') and (ARRAY_TO_STRING(code,' ') like '%#{@this_dxcc.gsub('All','')}%' or ARRAY_TO_STRING(code, ' ') like '%#{iso_code}%') and "activatorCallsign" like '#{@activator.gsub("*","%")}' and ('#{@reference}'=ANY(code)  or '#{@reference}'='*')}) if !blank_search
+    spots = ConsolidatedSpot.where(%Q{date_trunc('day',created_at)>='#{@start_date}' and date_trunc('day',updated_at) <='#{@end_date}' and ('#{@programme}' = ANY(spot_type) or '#{@programme}' = 'All') and (ARRAY_TO_STRING(code,' ') like '%#{@this_dxcc.gsub('All','')}%' or ARRAY_TO_STRING(code, ' ') like '%#{iso_code}%') and "activatorCallsign" like '#{@activator.gsub("*","%")}' and ('#{@reference}'=ANY(code)  or '#{@reference}'='*')}).order(updated_at: :desc) if !blank_search
     @spot_count = spots.count
     @all_spots = spots[0..199]
   end

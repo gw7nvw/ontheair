@@ -116,9 +116,9 @@ module AssetGisTools
 
   # add az_areas for all assets
   # Calculate az_area of the asset
-  def add_az_area
+  def add_az_area(overwrite=false)
     asset_test = Asset.find_by_sql [" select (az_boundary is not null) as has_boundary from assets where id=#{id}"]
-    if asset_test.first.has_boundary == true
+    if asset_test.first.has_boundary == true or overwrite==true
       ActiveRecord::Base.connection.execute(' update assets set az_area=ST_Area(geography(az_boundary)) where id=' + id.to_s)
     end
   end

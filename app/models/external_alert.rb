@@ -149,7 +149,7 @@ def self.fetch
     #tidy up
     oneweekago=Time.at(Time.now.to_i - 60 * 60 * 24 * 7).in_time_zone('UTC').to_s
 
-    ActiveRecord::Base.connection.execute("delete from external_alerts where starttime < '#{oneweekago}'")
+    ActiveRecord::Base.connection.execute("delete from external_alerts where starttime + (duration::float * interval '1 hour') < '#{oneweekago}'")
 
   @all_alerts
 

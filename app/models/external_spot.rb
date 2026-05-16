@@ -11,6 +11,7 @@ class ExternalSpot < ActiveRecord::Base
 
   def before_save_actions
      self.comments=self.comments[0..254] if self.comments
+     self.mode = self.mode.upcase if self.mode
   end
 
   def create_consolidated_spot
@@ -243,7 +244,7 @@ class ExternalSpot < ActiveRecord::Base
           time: spot['actTime'].to_datetime ? spot['actTime'].to_datetime.in_time_zone('UTC') : nil,
           callsign: spot['actSpoter'].strip,
           activatorCallsign: spot['actCallsign'].strip,
-          code: spot['actSiteID'] && !spot['actSiteID'].empty? ? spot['actSiteID'] : spot['actLocation'],
+          code: (spot['actSiteID'] && !spot['actSiteID'].empty? ? spot['actSiteID'] : spot['actLocation']).gsub('?','X'),
           name: spot['altLocation'] && !spot['altLocation'].empty? ? spot['altLocation'] : spot['actLocation'],
           frequency: spot['actFreq'],
           mode: spot['actMode'],

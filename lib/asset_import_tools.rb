@@ -120,7 +120,10 @@ module AssetImportTools
         end
         access+="See the Public Access Layer on the maps under More Information for a detailed map of public access to this lake"
       else
-        access = "Accessible only via private land with landowner consent" 
+        access = "No public access details are available for this lake. May be accessible only via private land with landowner consent" 
+        if a.district == "NZCT1" then 
+          access = "Public access data is not currently available for the Chatham Islands"
+        end
       end
       row.push('"'+access.gsub('"',"'")+'"')
       row.push("https://ontheair.nz/"+a.url)
@@ -321,8 +324,10 @@ module AssetImportTools
 
   def Asset.add_lake(l)
     a = Asset.find_by(asset_type: 'lake', code: l.code)
+    new = false
     unless a
       a = Asset.new
+      new = true
       logger.debug 'New'
     end
     a.asset_type = 'lake'
@@ -331,8 +336,8 @@ module AssetImportTools
     a.url = '/assets/' + a.safecode
     a.is_active = true
     a.name = l.name
-    a.location = l.location
-    a.boundary = l.boundary
+    a.location = l.location if new
+    a.boundary = l.boundary if new
     a.ref_id = l.topo50_fid
     a.save
     logger.debug a.code

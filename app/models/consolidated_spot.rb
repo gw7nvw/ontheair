@@ -7,8 +7,20 @@ class ConsolidatedSpot < ActiveRecord::Base
 
   def before_save_actions
      add_band
+     add_dxcc
      self.comments=self.comments[0..254] if self.comments
      self.spot_type = self.spot_type.compact if self.spot_type
+  end
+
+  def add_dxcc
+    if !self.dxcc then
+      reference = code.first if code
+      if reference  then
+        dxccs = DxccPrefix.find_by("'#{reference}' like concat(prefix,'%%')")
+        dxccs = DxccPrefix.find_by(iso_code: reference[0..1]) if !dxccs
+        self.dxcc = dxccs.prefix if dxccs
+      end 
+    end
   end
 
   def self.delete_old_spots
@@ -99,7 +111,7 @@ class ConsolidatedSpot < ActiveRecord::Base
           puts "send notification to #{sub.callsign}"
           sub.send_notification(summary, self.url, if sub.push_include_comments then self.comments.last else nil end, if sub.push_include_map then raw_image else nil end) 
         end
-        system("rm #{filename}")
+        system("rm #{filename}") if filename
 
       end
     end
