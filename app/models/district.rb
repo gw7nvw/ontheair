@@ -37,9 +37,18 @@ class District < ActiveRecord::Base
     end; true
   end
 
+  def self.add_states
+    District.all.each do |district|
+      states = State.find_by_sql [' select r.id, r.code from districts d inner join states r on ST_Within(ST_PointOnSurface(d.boundary), r.boundary) where d.id = ' + district.id.to_s]
+      if states && states.count.positive?
+        ActiveRecord::Base.connection.execute("update districts set state_code='" + states.first.code + "' where id=" + district.id.to_s + ';')
+      end
+    end; true
+  end
+
   def self.add_district_codes
     District.all.order(:id).each do |district|
-      dc = district.name.split(' ').first[0] + district.name.split(' ').last[0]
+      dc = district.dxcc + '-' + district.name.split(' ').first[0] + district.name.split(' ').last[0]
       index = 0
       free = false
       while free == false
@@ -82,4 +91,39 @@ class District < ActiveRecord::Base
     end
     Contact.find_by_sql [" select name, type, code_count, site_list from (select a.is_active as is_active, a.minor as minor, d.district_code as name, a.asset_type as type, count(distinct(a.code)) as code_count, array_agg(a.code) as site_list from districts d inner join assets a on a.district=d.district_code where a.minor is not true and (a.valid_from is null or a.valid_from<='#{at_date}') and ((a.valid_to is null and a.is_active=true) or a.valid_to>='#{at_date}') and a.country='#{dxcc}' and d.dxcc='#{dxcc}' #{region_query} #{region_query2} group by d.district_code, a.asset_type, a.is_active, a.minor) as foo; "]
   end
+
+  def self.generate_pnp_sites(dxccs)
+    assets = District.find_by_sql [ %Q{
+      SELECT 
+       'Shires' as "Award",
+       null as "Location",
+       CASE WHEN a.district_code LIKE 'VK%%' THEN
+          substr(a.district_code,4)
+       ELSE
+          a.district_code
+       END as "ID",
+       a.name as "Name",
+       ST_X(ST_Centroid(a.boundary)) as "Longitude",
+       ST_Y(ST_Centroid(a.boundary)) as "Latitude",
+       CASE WHEN a.district_code LIKE 'VK%%' THEN
+          substr(a.district_code,4)
+       ELSE
+          a.district_code
+       END as "ShireID",
+       null as "ContainedBy",
+       null as "Contains",
+       a.region_code as "Region",
+       d.continent_code as "Continent",
+       a.dxcc as "Country",
+       a.district_code as "District",
+       s.pnp_code as "State",
+       'SHIRE' as "Class"
+    FROM districts a
+    JOIN dxcc_prefixes d ON a.dxcc = d.prefix
+    JOIN states s ON s.code = a.state_code
+    WHERE a.dxcc IN (#{dxccs.map{|d| "'#{d}'"}.join(',')}) 
+    ORDER BY a.district_code
+} ]
+  end
+
 end

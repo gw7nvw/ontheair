@@ -8,12 +8,12 @@ class Asset < ActiveRecord::Base
   before_validation { assign_calculated_fields }
   after_save { post_save_actions }
 
-  SIOTA_REGEX = /^VK-[a-zA-Z]{3}\d{1}/
-  POTA_REGEX = /^[a-zA-Z0-9]{1,2}-\d{4,5}/
-  WWFF_REGEX = /^\d{0,1}[a-zA-Z]{1,2}[fF]{2}-\d{4}/
-  SOTA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/[a-zA-Z]{2}-\d{3}/
-  HEMA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/H[a-zA-Z]{2}-\d{3}/
-  LLOTA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}[lL]{2}-\d{4}/
+#  SIOTA_REGEX = /^VK-[a-zA-Z]{3}\d{1}/
+#  POTA_REGEX = /^[a-zA-Z0-9]{1,2}-\d{4,5}/
+#  WWFF_REGEX = /^\d{0,1}[a-zA-Z]{1,2}[fF]{2}-\d{4}/
+#  SOTA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/[a-zA-Z]{2}-\d{3}/
+#  HEMA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/H[a-zA-Z]{2}-\d{3}/
+#  LLOTA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}[lL]{2}-\d{4}/
 
   SOTA_ASSET_URL = 'https://www.sotadata.org.uk/en/summit/'
   WWFF_ASSET_URL = 'https://wwff.co/directory/?showRef='
@@ -45,6 +45,7 @@ class Asset < ActiveRecord::Base
 
     self.district = add_district if !district or district.blank?
     self.region = add_region if !region or region.blank? 
+    add_state if !state or state.blank?
 
     if code.nil? || (code == '')
       if self.type.use_volcanic_field then 
@@ -132,6 +133,19 @@ class Asset < ActiveRecord::Base
   end
 
   # add region - done directly in database so safe as an after-save callback
+  def add_state
+    location ? (region = State.find_by_sql ["select id, code, name from states where ST_Within(ST_GeomFromText('" + location.as_text + %q{', 4326), "boundary");}]) : (logger.error 'ERROR: place without location. Name: ' + name + ', id: ' + id.to_s)
+    if id && region && (region.count > 0) && (self.region != region.first.code)
+      logger.debug 'updating state to ' + region.first.to_json
+      ActiveRecord::Base.connection.execute("update assets set state='" + region.first.code + "' where id=" + id.to_s)
+    end
+
+    if region && (region.count > 0) && (self.state != region.first.code)
+      return region.first.code
+    end
+  end
+
+  # add district - done directly in database so safe as an after-save callback
   def add_region
     location ? (region = Region.find_by_sql ["select id, sota_code, name from regions where ST_Within(ST_GeomFromText('" + location.as_text + %q{', 4326), "boundary");}]) : (logger.error 'ERROR: place without location. Name: ' + name + ', id: ' + id.to_s)
     if id && region && (region.count > 0) && (self.region != region.first.sota_code)
@@ -332,6 +346,12 @@ class Asset < ActiveRecord::Base
   def district_name
     r = District.find_by(district_code: district)
     r ? r.name : ''
+  end
+
+  # name of region (without getting it's boundary)
+  def state_name
+    r = State.find_by(code: state)
+    r.name if r
   end
 
   # name of region (without getting it's boundary)
@@ -996,6 +1016,58 @@ class Asset < ActiveRecord::Base
     end
     logger.debug 'Code: ' + (newcode||"")
     newcode
+  end
+
+  # Create a pnp_format list of assets given the input filters
+  # dxccs is an array of dxcc_prefix vallues
+  # where_query is a where clause to append - muust start with AND
+  def Asset.generate_pnp_sites(dxccs, where_query)
+    assets = Asset.find_by_sql [ %Q{
+         SELECT at.pnp_class as "Award",
+       (
+          SELECT al.containing_code from asset_links al
+          WHERE al.contained_code = a.code AND al.containing_code like '__FF%%'
+          LIMIT 1
+       ) as "Location",
+       a.code as ID,
+       a.name as "Name",
+       a.region as "State",
+       ST_X(a.location) as "Longitude",
+       ST_Y(a.location) as "Latitude",
+       CASE WHEN a.district LIKE 'VK%%' THEN
+          substr(a.district,4)
+       ELSE
+          null
+       END as "ShireID",
+       (
+         SELECT ARRAY_AGG(ARRAY[cg.containing_code, cgat.pnp_class])
+         FROM asset_links cg
+         INNER JOIN assets cga ON cga.code = cg.containing_code
+         INNER JOIN asset_types cgat ON cgat.name = cga.asset_type
+         WHERE cg.contained_code = a.code
+       ) as "ContainedBy",
+       (
+         SELECT ARRAY_AGG(ARRAY[cd.contained_code, cdat.pnp_class])
+         FROM asset_links cd
+         INNER JOIN assets cda ON cda.code = cd.contained_code
+         INNER JOIN asset_types cdat ON cdat.name = cda.asset_type
+         WHERE cd.containing_code = a.code
+       ) as "Contains",
+
+       a.region as "Region",
+       d.continent_code as "Continent",
+       a.country as "Country",
+       a.district as "District",
+       s.pnp_code as "State",
+       UPPER(at.name) as "Class"
+    FROM assets a
+    JOIN dxcc_prefixes d ON a.country = d.prefix
+    INNER JOIN asset_types at ON at.name = a.asset_type
+    JOIN states s ON s.code = a.state
+    WHERE country IN (#{dxccs.map{|d| "'#{d}'"}.join(',')})  AND a.is_active=true
+    #{where_query}
+    ORDER BY a.code
+} ]
   end
 
   #################################################################

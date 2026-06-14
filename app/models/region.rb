@@ -20,7 +20,13 @@ class Region < ActiveRecord::Base
   def self.import_vk(filename)
     CSV.foreach(filename, headers: true) do |row|
       place = row.to_hash
-      ActiveRecord::Base.connection.execute("insert into regions (dxcc, sota_code, regc_code, name, boundary) values ('VK', '" + place['STE_CODE'] + "','" + place['STE_CODE'] + "','" + place['STE_NAME'].gsub("'", "''") + "',ST_GeomFromText('" + place['WKT'] + "',4326));")
+      state = State.find_by(pnp_code: place['STATE_CODE'])
+      state = State.find_by(code: place['STATE_CODE']) if !state
+      state = State.find_by(code: 'OTH') if !state
+      if state then state_code = state.code else state_code = "" end
+      reg_code = state.pnp_code + "-" + place['GROUP_NAME']
+      ActiveRecord::Base.connection.execute("insert into regions (dxcc, state_code, sota_code, regc_code, name, boundary) values ('VK', '" + state_code + "','" + reg_code + "','"+ reg_code + "','" + place['DIST_NAME'].gsub("'", "''") + "',ST_GeomFromText('" + place['WKT'] + "',4326));")
+      puts "insert into regions (dxcc, state_code, sota_code, regc_code, name, boundary) values ('VK', '" + state_code + "','" + reg_code + "','"+ reg_code + "','" + place['DIST_NAME'].gsub("'", "''") + "',ST_GeomFromText('" +  "',4326));"
     end; true
   end
 
@@ -75,6 +81,18 @@ class Region < ActiveRecord::Base
 
   def districts
     District.where(dxcc: dxcc, region_code: sota_code)
+  end
+
+  def get_state
+   states = State.find_by_sql [ "select s.* from states s inner join regions r on r.id = #{self.id} where ST_Within(r.boundary, s.boundary); " ]
+   state = states.first if states
+  end
+ 
+  def add_state
+   state = self.get_state
+   if state then
+     self.update_attribute(:state_code, state.code)
+   end
   end
 
   def self.get_assets_with_type(dxcc='ZL', at_date = Time.now)

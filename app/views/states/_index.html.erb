@@ -1,0 +1,41 @@
+
+<script>
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+   document.title = <%= raw(@site_title) %>
+   document.getElementById('logo').innerHTML = <%= raw(@site_title) %>
+   reset_map_controllers();
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=link_to "States", '/states', remote: true,  :id => 'states', :onclick => "linkHandler('states')" %>
+     </div>
+   <div id="controls">
+       <%=render 'map_controls'%>
+   </div>
+</div>
+<div id="right_scroll">
+<%= render 'flash' %>
+
+  <table class="places" id="state_table">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+      </tr>
+    <% if @states then @states.each do |state| %>
+      <tr>
+        <td><%=state.code%></td>
+        <td>
+          <%= link_to state.name, '/states/'+state.code, remote: true, :id => 'state_link_'+state.id.to_s, :onclick => "linkHandler('state_link_"+state.id.to_s+"')" %>
+        </td>
+      </tr>
+    <% end end %>
+</table>
+</div>
+
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>

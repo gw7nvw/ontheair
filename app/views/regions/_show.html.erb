@@ -21,6 +21,19 @@
 <div id="right_scroll">
   <%= render 'flash' %>
   <div class="erow" id="code">
+    <div class="rowtitle"><%= "DXCC" %></div>
+    <div class="rowtext"> 
+      <%= @region.dxcc %>
+    </div>
+  </div>
+  <div class="erow" id="code">
+    <div class="rowtitle"><%= "State / Island" %></div>
+    <div class="rowtext"> 
+      <%=link_to @region.state_code, '/states/'+@region.state_code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+
+    </div>
+  </div>
+  <div class="erow" id="code">
     <div class="rowtitle"><%= "Code" %></div>
     <div class="rowtext"> 
       <%= @region.sota_code %>

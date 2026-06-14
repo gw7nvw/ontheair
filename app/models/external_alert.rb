@@ -1,5 +1,25 @@
 class ExternalAlert < ActiveRecord::Base
 
+  before_save {before_save_actions}
+
+  def before_save_actions
+     add_dxcc
+     self.comments=self.comments[0..254] if self.comments
+  end
+
+  def add_dxcc
+    if !self.dxcc or !self.continent then
+      reference = code if code
+      if reference  then
+        dxccs = DxccPrefix.find_by("'#{reference}' like concat(iso_code,'-%%') or '#{reference}' like concat(iso_code,'LL-%%')")
+        dxccs = DxccPrefix.find_by("'#{reference}' like concat(prefix,'FF-%%') or '#{reference}' like concat(prefix,'-%%') or '#{reference}' like concat(prefix,'/%%')") if !dxccs
+
+        self.dxcc = dxccs.prefix if dxccs
+        self.continent = dxccs.continent_code if dxccs
+      end
+    end
+  end
+
 def self.fetch
     zlvk_sota_alerts = []
     zlvk_pota_alerts = []

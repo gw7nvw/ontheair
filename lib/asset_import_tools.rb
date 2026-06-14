@@ -146,6 +146,7 @@ module AssetImportTools
     fields = data.parse_csv
     values = CSV(data).read
 
+puts values.first.to_json
     row_count=0
     values.each do |row|
       row_count+=1
@@ -162,6 +163,7 @@ module AssetImportTools
       if p
         puts "Existing park #{code}"
       else
+        puts "NEW"
         puts row.to_json
         p = Asset.new
         new = true
@@ -171,9 +173,13 @@ module AssetImportTools
         p.name = name.strip
         p.location = "POINT(#{row[fields.index('longitude')]} #{row[fields.index('latitude')]})"
         p.country = dxcc
-        p.region = "OC / #{dxcc}"
-        puts p.to_json
-        p.save
+        if p.changed?
+          puts p.changed
+          puts p.changed_attributes
+          p.save
+          p.add_region
+          p.reload
+        end
         if new == true
           if p.country == 'ZL'
             p.find_zlota_park
@@ -186,16 +192,91 @@ module AssetImportTools
         else
           puts 'Existing WWFF park'
         end
-        p.save
+        #p.save
         next unless new
-        #p.add_region
-        #p.add_area
-        #p.add_links
+#        p.add_region
+#        p.add_area
+#        p.add_links
       end
     end
   end
-   
+  
+  def Asset.import_krmnpa(update = true)
+    url = 'https://parksnpeaks.org/api/sites/KRMNPA'
+    data = JSON.parse(open(url).read)
+    if data
+      puts 'Found ' + data.count.to_s + ' parks'
+      count = 0
+      data.each do |l|
+        if l["KRMNPAID"][0..2]=='3NP' then
+          count += 1
+          new = false
+          a = Asset.find_by(code: l["KRMNPAID"])
+          if !a  
+            puts "Creating #{l["KRMNPAID"]}"
+            a = Asset.new 
+            new = true
+          else
+            puts "Updating #{a.code}"
+          end
+          if new or update then
+            a.asset_type="krmnpa park"
+            a.code = l["KRMNPAID"]
+            a2 = Asset.find_by(code: l["Location"])
+            if a2 then
+              puts "Found matching wwff park #{a2.code}"
+              a.description = a2.description
+              a.boundary = a2.boundary
+              a.is_active = a2.is_active
+            end
+            a.name = l["Name"]
+            a.location = "POINT(#{l["Longitude"]} #{l["Latitude"]})"
+            a.country = "VK"
+            a.save 
+          end
+        end
+      end
+    end
+  end 
 
+  def Asset.import_sanpcpa(update = true)
+    url = 'https://parksnpeaks.org/api/sites/SANPCPA'
+    data = JSON.parse(open(url).read)
+    if data
+      puts 'Found ' + data.count.to_s + ' parks'
+      count = 0
+      data.each do |l|
+        if l["SANPCPAID"][0..2]=='5NP' then
+          count += 1
+          new = false
+          a = Asset.find_by(code: l["SANPCPAID"])
+          if !a  
+            puts "Creating #{l["SANPCPAID"]}"
+            a = Asset.new 
+            new = true
+          else
+            puts "Updating #{a.code}"
+          end
+          if new or update then
+            a.asset_type="sanpcpa park"
+            a.code = l["SANPCPAID"]
+            a2 = Asset.find_by(code: l["Location"])
+            if a2 then
+              puts "Found matching wwff park #{a2.code}"
+              a.description = a2.description
+              a.boundary = a2.boundary
+              a.is_active = a2.is_active
+            end
+            a.name = l["Name"]
+            a.location = "POINT(#{l["Longitude"]} #{l["Latitude"]})"
+            a.country = "VK"
+            a.save 
+          end
+        end
+      end
+    end
+
+  end 
   def Asset.import_llota(update = true)
     url = 'https://llota.app/api/public/references?version=lite'
     data = JSON.parse(open(url).read)
@@ -226,6 +307,8 @@ module AssetImportTools
             end
             a.name = l["name"]
             a.location = "POINT(#{l["longitude"]} #{l["latitude"]})"
+            dxcc = DxccPrefix.find_by(iso_prefix: a.code[0..1])
+            a.country = dxcc.prefix if dxcc
             a.save 
           end
         end
@@ -552,7 +635,9 @@ module AssetImportTools
     logger.debug a.code
     a
   end
+end
 
+class Asset
   def find_zlota_park
     # p.location='POINT('+feature["Longitude"].to_s+' '+feature["Latitude"].to_s+')'
     # try to match against park
@@ -602,12 +687,11 @@ module AssetImportTools
       puts 'Could not find match. No location'
     end
   end 
-
   def find_vk_capad_park
    if !self.name.include?("Beach") and !self.name.include?("Wild and Scenic River")
     found=false
     shortname = self.name.gsub(" B.R.","").gsub(" N.C.R.","").gsub(" SS.R.","").gsub(" F.R.","").gsub(" B.R","")
-    if self.old_code and self.old_code>0 then
+    if self.old_code and self.old_code.to_i>0 then
       cs = Capad.find_by_sql [ %q{select "objectid", ST_Buffer(ST_Simplify("wkb_geometry",0.0002),0) as "wkb_geometry", "pa_id", "pa_pid", "name", "capad_type", "type_abbr", "iucn", "nrs_pa", "nrs_mpa", "gaz_area", "gis_area", "gaz_date", "latest_gaz", "state", "authority", "datasource", "governance", "comments", "environ", "overlap", "mgt_plan", "res_number", "zone_type", "epbc", "longitude", "latitude", "pa_system", "shape_leng", "shape_area" from capad where objectid = }+self.old_code.to_s+%q{;} ]
       if cs and cs.count>0 then
         self.boundary = cs.first.wkb_geometry.to_s.gsub("POLYGON ","MULTIPOLYGON (")+")"
@@ -618,7 +702,7 @@ module AssetImportTools
         puts "Has id but no boundary!  Why?: "+self.code
       end
     end
-    if found==false
+    if found==false and self.location and self.location.to_s.length>0
      cs = Capad.find_by_sql [ %q{select distinct "wkb_geometry", "pa_id", "pa_pid", "name", "capad_type", "type_abbr", "iucn", "nrs_pa", "nrs_mpa", "gaz_area", "gis_area", "gaz_date", "latest_gaz", "state", "authority", "datasource", "governance", "comments", "environ", "overlap", "mgt_plan", "res_number", "zone_type", "epbc", "longitude", "latitude", "pa_system", "shape_leng", "shape_area" from capad where st_within ( st_geomfromtext('}+self.location.to_s+%q{', 4326), wkb_geometry);} ]
      if cs and cs.count>0 then
        cs = Capad.find_by_sql [ %q{select "objectid", ST_Buffer(ST_Simplify("wkb_geometry",0.0002),0) as "wkb_geometry", "pa_id", "pa_pid", "name", "capad_type", "type_abbr", "iucn", "nrs_pa", "nrs_mpa", "gaz_area", "gis_area", "gaz_date", "latest_gaz", "state", "authority", "datasource", "governance", "comments", "environ", "overlap", "mgt_plan", "res_number", "zone_type", "epbc", "longitude", "latitude", "pa_system", "shape_leng", "shape_area" from capad where st_within ( st_geomfromtext('}+self.location.to_s+%q{', 4326), wkb_geometry);} ]
@@ -678,7 +762,7 @@ module AssetImportTools
   end
 
   def find_vk_state_park
-    sps = VkStatePark.find_by_sql [ %q{select * from vk_state_park where st_within ( st_geomfromtext('}+self.location.to_s+%q{', 4326), boundary);} ]
+    sps = VkStatePark.find_by_sql [ %q{select * from vk_state_park where st_within ( st_geomfromtext('}+self.location.to_s+%q{', 4326), boundary);} ]  if self.location
 
     if sps and sps.count == 1 then
         found = false
@@ -700,7 +784,7 @@ module AssetImportTools
           self.save
           found = true
         end
-      elsif sps.count == 0
+      elsif !sps or sps.count == 0
         puts "Not found #{self.name}"
       else
         puts "Asset: "+self.name
@@ -721,5 +805,15 @@ module AssetImportTools
       self.add_simple_boundary
   end
 
-
+  def add_govt_parks
+    if country == 'ZL'
+      find_zlota_park
+      reload
+    elsif country == 'VK'
+      find_vk_capad_park
+      reload
+      find_vk_state_park if !boundary
+    end
+  end
 end
+

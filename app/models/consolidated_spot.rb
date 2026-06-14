@@ -13,12 +13,13 @@ class ConsolidatedSpot < ActiveRecord::Base
   end
 
   def add_dxcc
-    if !self.dxcc then
+    if !self.dxcc or !self.continent then
       reference = code.first if code
       if reference  then
-        dxccs = DxccPrefix.find_by("'#{reference}' like concat(prefix,'%%')")
-        dxccs = DxccPrefix.find_by(iso_code: reference[0..1]) if !dxccs
+        dxccs = DxccPrefix.find_by("'#{reference}' like concat(iso_code,'-%%') or '#{reference}' like concat(iso_code,'LL-%%')")
+        dxccs = DxccPrefix.find_by("'#{reference}' like concat(prefix,'FF-%%') or '#{reference}' like concat(prefix,'/%%') or '#{reference}' like concat(prefix,'_/%%')") if !dxccs
         self.dxcc = dxccs.prefix if dxccs
+        self.continent = dxccs.continent_code if dxccs
       end 
     end
   end
@@ -74,6 +75,7 @@ class ConsolidatedSpot < ActiveRecord::Base
   end
 
   def create_notifications
+   if ENV['RAILS_ENV'] == 'production'
     is_new = true if !self.old_spot_type
 
     programme_array = self.spot_type.map { |a| "'%%:programme:%%"+a.to_s+"%%'"}.join(", ")
@@ -116,6 +118,7 @@ class ConsolidatedSpot < ActiveRecord::Base
       end
     end
     self.update_column :old_spot_type, self.spot_type
+   end
   true
   end
 end

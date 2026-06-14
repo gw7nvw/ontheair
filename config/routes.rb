@@ -104,6 +104,8 @@ get 'users/:id/delete', to: 'users#delete'
 get 'users/:id/set_external', to: 'users#update_external'
 match '/signup',  to: 'users#new',         via: 'get'
 
+post 'posts/sms', to: 'posts#sms'
+get 'posts/sms', to: 'posts#sms'
 resources :posts, only: [:new, :create, :show, :edit, :update]
 get 'posts/:id/delete', to: 'posts#delete'
 
@@ -124,6 +126,20 @@ match '/api/logs', to: 'api#logs_post',    via:'post'
 match '/api/spots', to: 'api#spot_post',    via:'post'
 match '/api/spots', to: 'api#spot',    via:'get'
 match '/api/alerts', to: 'api#alert',    via:'get'
+match '/api/ALL', to: 'api#pnp_all',    via:'get'
+match '/api/ALL/:id', to: 'api#pnp_all',    via:'get'
+match '/api/SOTA', to: 'api#pnp_sota',    via:'get'
+match '/api/SOTA/:id', to: 'api#pnp_sota',    via:'get'
+match '/api/WWFF', to: 'api#pnp_wwff',    via:'get'
+match '/api/WWFF/:id', to: 'api#pnp_wwff',    via:'get'
+match '/api/VK', to: 'api#pnp_vk',    via:'get'
+match '/api/CHECK/SPOTS', to: 'api#pnp_check_spots',    via:'get'
+match '/api/ALERTS', to: 'api#pnp_alerts',    via:'get'
+match '/api/SITES/CHECK', to: 'api#pnp_check',    via:'get'
+match '/api/SITES/:id', to: 'api#pnp_sites_by_class',    via:'get'
+match '/api/SITES', to: 'api#pnp_sites',    via:'get'
+match '/api/CHECK', to: 'api#pnp_check',    via:'get'
+match '/api/CLOSE/:lat/:long', to: 'api#pnp_close',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
 
 resources :sota_logs
 
@@ -141,6 +157,7 @@ match "/wwff_logs/:id/download", :to => "wwff_logs#download", :as => "wwff_downl
 resources :vkassets
 
 resources :regions
+resources :states
 
 resources :geology, only: [:index, :show]
 

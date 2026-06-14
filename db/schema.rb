@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20260426224343) do
+ActiveRecord::Schema.define(version: 20260527003752) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -144,6 +144,7 @@ ActiveRecord::Schema.define(version: 20260426224343) do
     t.spatial  "az_boundary",               limit: {:srid=>4326, :type=>"multi_polygon"}
     t.float    "az_area"
     t.string   "country"
+    t.string   "state"
   end
 
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
@@ -234,6 +235,7 @@ ActiveRecord::Schema.define(version: 20260426224343) do
     t.string   "old_spot_type",     default: [], array: true
     t.string   "band"
     t.string   "dxcc"
+    t.string   "continent"
   end
 
   create_table "contacts", force: true do |t|
@@ -289,10 +291,14 @@ ActiveRecord::Schema.define(version: 20260426224343) do
     t.string   "submitted_to",                                         default: [],   array: true
   end
 
+  add_index "contacts", ["asset1_classes"], :name => "idx_contacts_asset1_classes"
+  add_index "contacts", ["asset2_classes"], :name => "idx_contacts_asset2_classes"
   add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"
   add_index "contacts", ["callsign2"], :name => "index_contacts_on_callsign2"
   add_index "contacts", ["date"], :name => "index_contacts_on_date"
   add_index "contacts", ["log_id"], :name => "contacts_log_id_idx"
+  add_index "contacts", ["user1_id"], :name => "contacts_user1id_idx"
+  add_index "contacts", ["user2_id"], :name => "contacts_user2id_idx"
 
   create_table "continents", force: true do |t|
     t.string "name"
@@ -328,6 +334,7 @@ ActiveRecord::Schema.define(version: 20260426224343) do
     t.spatial  "boundary_simplified",       limit: {:srid=>4326, :type=>"multi_polygon"}
     t.spatial  "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
     t.string   "dxcc"
+    t.string   "state_code"
   end
 
   add_index "districts", ["district_code"], :name => "districts_district_code_idx"
@@ -369,6 +376,10 @@ ActiveRecord::Schema.define(version: 20260426224343) do
     t.string   "asset_type"
   end
 
+  add_index "external_activations", ["asset_type"], :name => "eas_asset_type_idx"
+  add_index "external_activations", ["qso_count"], :name => "eas_qso_count_idx"
+  add_index "external_activations", ["user_id"], :name => "eas_userid_idx"
+
   create_table "external_alerts", force: true do |t|
     t.datetime "starttime"
     t.string   "activatingCallsign"
@@ -381,6 +392,8 @@ ActiveRecord::Schema.define(version: 20260426224343) do
     t.string   "mode"
     t.string   "programme"
     t.string   "duration"
+    t.string   "dxcc"
+    t.string   "continent"
   end
 
   create_table "external_chases", force: true do |t|
@@ -658,7 +671,9 @@ ActiveRecord::Schema.define(version: 20260426224343) do
     t.boolean  "qualified",                                            default: [],   array: true
   end
 
+  add_index "logs", ["asset_classes"], :name => "idx_logs_asset_classes"
   add_index "logs", ["date"], :name => "index_logs_on_date"
+  add_index "logs", ["user1_id"], :name => "logs_user1id_idx"
 
   create_table "maplayers", force: true do |t|
     t.string   "name"
@@ -785,6 +800,7 @@ ActiveRecord::Schema.define(version: 20260426224343) do
     t.spatial  "boundary_simplified",       limit: {:srid=>4326, :type=>"multi_polygon"}
     t.spatial  "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
     t.string   "dxcc"
+    t.string   "state_code"
   end
 
   add_index "regions", ["sota_code"], :name => "regions_sota_code_idx"
@@ -824,6 +840,19 @@ ActiveRecord::Schema.define(version: 20260426224343) do
     t.string   "region"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "states", force: true do |t|
+    t.string   "code"
+    t.string   "pnp_code"
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "dxcc"
+    t.spatial  "boundary",                  limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary_quite_simplified", limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary_simplified",       limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial  "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
   end
 
   create_table "timezones", force: true do |t|

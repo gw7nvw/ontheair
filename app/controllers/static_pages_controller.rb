@@ -63,7 +63,7 @@ class StaticPagesController < ApplicationController
     @award_users = User.find_by_sql [ "select * from users where id in (select distinct user_id from award_user_links where created_at>'#{ack_time}') order by callsign limit 20;"]
 
     @items = Item.find_by_sql ["select * from items where (topic_id = 4 )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;"]
-    @asset_type_filter = "('all', 'silo')" if @dxcc=='ZL'
+    @asset_type_filter = "('all', 'silo', 'sanpcpa park', 'krmnpa park')" if @dxcc=='ZL'
     @asset_type_filter = "('park', 'lake', 'lighthouse', 'island', 'hut', 'volcano', 'all')" if @dxcc=="VK"
   end
 
@@ -149,15 +149,12 @@ class StaticPagesController < ApplicationController
 
     @zone = 'OC'
     @zone = params[:zone] if params[:zone]
-
+    zone_query = ""
+    zone_query = " and continent = '#{@zone}' " if @zone != "all"
     # read spots from db
-    @all_spots = ConsolidatedSpot.where("updated_at>'" + onehourago + "'")
+    @all_spots = ConsolidatedSpot.where("updated_at>'#{onehourago}'#{zone_query}")
 
     if @all_spots then @all_spots = @all_spots.sort_by { |hsh| hsh[:date].to_s + hsh[:time].last.to_s }.reverse! end
-
-    if @zone && (@zone != 'all')
-      @all_spots = @all_spots.select { |spot| DxccPrefix.continent_from_call(spot[:activatorCallsign]) == @zone }
-    end
 
     if params[:class]
       @class = params[:class]
@@ -185,17 +182,18 @@ class StaticPagesController < ApplicationController
   def alerts
     @zone = 'OC'
     @zone = params[:zone] if params[:zone]
+    zone_query = " and continent = '#{@zone}' " if @zone != 'all'
 
     hota_alerts = Post.find_by_sql [ " select p.*, i.id as item_id from posts p inner join items i on i.item_id=p.id and i.topic_id=1 and i.item_type='post' and ((p.referenced_date + interval '1 hours' * duration::numeric) > '#{(Time.now - 1.days).strftime("%Y-%m-%d %H:%M")}' or p.referenced_date > '#{(Time.now - 1.days).strftime("%Y-%m-%d %H:%M")}')" ]
 
-    @all_alerts = ExternalAlert.find_by_sql [ " select * from external_alerts where starttime >'#{Time.now - 1.days}' or (starttime + interval '1 hours' * duration::numeric) >'#{Time.now - 1.days}' order by starttime desc " ] 
-    @all_alerts += ExternalAlert.import_hota_alerts(hota_alerts)
-
-    if @all_alerts then @all_alerts = @all_alerts.sort_by { |hsh| hsh[:starttime].to_s }.reverse! end
-
+    @all_alerts = ExternalAlert.import_hota_alerts(hota_alerts)
     if @zone && (@zone != 'all')
       @all_alerts = @all_alerts.select { |alert| DxccPrefix.continent_from_call(alert[:activatingCallsign]) == @zone }
     end
+
+    @all_alerts += ExternalAlert.find_by_sql [ " select * from external_alerts where (starttime >'#{Time.now - 1.days}' or (starttime + interval '1 hours' * duration::numeric) >'#{Time.now - 1.days}') #{zone_query} order by starttime desc " ] 
+    if @all_alerts then @all_alerts = @all_alerts.sort_by { |hsh| hsh[:starttime].to_s }.reverse! end
+
 
     if params[:class]
       @class = params[:class]

@@ -2,6 +2,11 @@ module ExportAssets
 
   @queue = :ota_scheduled
   def self.perform
+     export_zlota
+     export_pnp
+  end
+
+  def self.export_zlota
     puts "SCHED JOB: Exporting assets"
     ats=AssetType.where(is_zlota: true)
     assets = Asset.find_by_sql [ "select id, name, code, ST_X(location) as x, ST_Y(location) as y, asset_type from assets where is_active=true and minor=false and asset_type in (#{ats.map{|at| "'"+at.name+"'"}.join(", ")}) order by code asc; "]
@@ -22,6 +27,22 @@ module ExportAssets
       file.write(jsonfile)
     end
 
+  end
+  def self.export_pnp
+    puts "SCHED JOB: Exporting SITES"
+    dxccs=['ZL','VK']
+
+    assets = Asset.generate_pnp_sites(dxccs, "")
+
+    csvfile=asset_to_csv(assets).gsub('""','')
+    f = File.open('public/assets/sites.csv', 'w') do |file|
+      file.write(csvfile)
+    end
+
+    jsonfile=assets.map{|a| a.attributes}.to_json
+    f = File.open('public/assets/sites.json', 'w') do |file|
+      file.write(jsonfile)
+    end
   end
 
   def self.asset_to_polo_csv(items)

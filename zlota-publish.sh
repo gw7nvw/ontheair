@@ -4,11 +4,13 @@ cp db/seeds-zlota.rb db/seeds.rb
 RAILS_ENV=production bundle exec rake assets:clean assets:precompile
 sudo cp -r /var/www/html/hota/public/system /tmp/
 sudo cp -r /var/www/html/hota/public/assets/assets.* /tmp/
+sudo cp -r /var/www/html/hota/public/assets/sites.* /tmp/
 sudo rm -r /var/www/html/hota/*
 sudo cp -r /home/mbriggs/rails_projects/hota-2.2/* /var/www/html/hota/
 sudo rm -r /var/www/html/hota/public/system
 sudo cp -r  /tmp/system /var/www/html/hota/public/
 sudo cp -r  /tmp/assets.* /var/www/html/hota/public/assets
+sudo cp -r  /tmp/sites.* /var/www/html/hota/public/assets
 sudo chmod -R a+rw /var/www/html/hota/log/*
 sudo chmod -R a+rw /var/www/html/hota/public/system
 sudo chmod -R a+rw /var/www/html/hota/public/assets

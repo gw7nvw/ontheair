@@ -226,6 +226,15 @@
     </div>
   <% end %>
 
+  <% if @asset.state %>
+    <div class="erow" id="region">
+      <div class="rowtitle">State / Territory</div>
+      <div class="rowtext"> 
+        <%=link_to @asset.state_name, '/states/'+@asset.state, remote: true,  :id => 'region', :onclick => "linkHandler('region')"  %>
+      </div>
+    </div>
+  <% end %>
+
   <% if @asset.region %>
     <div class="erow" id="region">
       <div class="rowtitle">Region</div>

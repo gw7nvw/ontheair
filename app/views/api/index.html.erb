@@ -300,6 +300,10 @@
     <td><i>zlota_only</i></td>
     <td>optional: Include this parameter with any value to retrieve only spots for assets in the ZLOTA scheme (default is all locally created spots from ontheair)</td>
   </tr>
+  <tr>
+    <td><i>(Notes)</i></td>
+    <td>The data served by the spotting API is updated once every minute.  If you poll this endpoint, please limit your polling interval to 60 seconds or more. More frequent polling will not give you any faster results, and just puts unnecessary load on the server.
+  </tr>
 </table>
 
 <table>
@@ -392,7 +396,6 @@
     <td>optional: including this parameter with any value will disable lookup of containing assets (e.g. if you post a spot for a summit <b>only</b> the summit will appear in the spot, rather than the summit and any park it lies within)</td>
   </tr>
 
-  <tr>
   <tr>
     <td><i>(Example)</i></td>
     <td>curl -F "userID=ZL4TEST" -F "APIKey=XXXX" -F "do_not_lookup=true" -F "activator=ZL2TEST" -F "spotter=ZL3TEST" -F "reference=ZLL/0002" -F "frequency=7090" -F "mode=SSB" -F "comments=DEBUG testing spotting API" https://ontheair.nz/api/spots</td>

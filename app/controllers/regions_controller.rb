@@ -13,7 +13,7 @@ class RegionsController < ApplicationController
 
   def show
     @section = params[:section]
-    ds = Region.find_by_sql [%q{ select id, dxcc, name, sota_code, sota_code, ST_Simplify("boundary",0.002) as boundary from regions where sota_code = '} + params[:id] + "';"]
+    ds = Region.find_by_sql [%q{ select id, dxcc, state_code, name, sota_code, sota_code, ST_Simplify("boundary",0.002) as boundary from regions where sota_code = '} + params[:id] + "';"]
     if ds
       @region = ds.first
     else
