@@ -24,6 +24,7 @@
       <tr>
         <th>ID</th>
         <th>Name</th>
+        <th>State / Island</th>
       </tr>
     <% if @regions then @regions.each do |region| %>
       <tr>
@@ -31,6 +32,12 @@
         <td>
           <%= link_to region.name, '/regions/'+region.sota_code, remote: true, :id => 'region_link_'+region.id.to_s, :onclick => "linkHandler('region_link_"+region.id.to_s+"')" %>
         </td>
+        <td>
+            <% if region.state_code and region.state_code!='' then %>
+              <%=link_to region.state_code, '/states/'+region.state_code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+            <% end %>
+        </td>
+
       </tr>
     <% end end %>
 </table>

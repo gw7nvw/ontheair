@@ -431,7 +431,7 @@ class Post < ActiveRecord::Base
       payloadspot = {
         'callsign': callsign.upcase,
         'frequency': (freq.to_f * 1000).to_s,
-        'reference': a_code.gsub('LL-','-'),
+        'reference': a_code,
         'mode': mode.upcase,
         'source': 'ontheair.nz',
         'comments': description

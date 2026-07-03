@@ -12,6 +12,9 @@ class PostsController < ApplicationController
     logger.info params.to_json
     logger.info response.body.to_json
 
+    ats = AssetType.where("name != 'all'")
+    pnp_classes = ats.map{|at| at.pnp_class}
+
     via = 'SMS'
     puts 'DEBUG SMS'
     body = params[:text]
@@ -36,6 +39,11 @@ class PostsController < ApplicationController
     logger.error "ERROR: SMS account not found for " + acctnumber if !user
 
     if msgs then
+      #handle pnp style spots by dropping 2nd parameter
+      if pnp_classes.include?(msgs[1])
+        msgs=[msgs[0]]+msgs[2..-1] 
+      end
+
       callsign = msgs[0].upcase
       callsign = sub_callsign if callsign == '!'
       asset_code = msgs[1].upcase

@@ -1,0 +1,102 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+   document.title = <%= raw(@site_title) %>
+   document.getElementById('logo').innerHTML = <%= raw(@site_title) %>
+   <% if session[:dxcc]=='VK' %>
+     document.getElementById('VK').style = "display:inline" 
+     document.getElementById('ZL').style = "display:none" 
+  <% else %>
+     document.getElementById('VK').style = "display:none" 
+     document.getElementById('ZL').style = "display:inline" 
+  <% end %>
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <b>Home</b>
+   </div>
+   <div id="controls">
+     <%=  link_to "History", '/spots/history', remote: true,  :id => 'spots_history', :onclick => "linkHandler('spots_history')", class: "btn btn-small btn-primary" %>
+     <% if write_access?  %>
+       <%=  link_to "Add Spot", "/posts/new?topic_id="+SPOT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=  link_to "Add Alert", "/posts/new?topic_id="+ALERT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+     <% end %>
+     <%=render 'map_controls'%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <div style="background-image: url(<%=@site_title_image%>); background-size: cover;padding-bottom: 10px; margin-top: -2px;">
+    <h1> <%= raw(@site_title_unquoted) %> </h1>
+  </div>
+
+  <table style='table-layout:fixed'>
+    <tr>
+      <% AssetType.where("name not in #{@asset_type_filter}").order(:name).each do |at| %>
+        <th style='font-size: 1.1vw; text-align: center'><%=link_to at.display_name.pluralize, '/assets/?asset_type[name]='+at.name,remote: true,:onclick => "linkHandler('"+at.name+"')", :style=>'color:#fff' %></th>
+      <% end %>
+    </tr>
+  </table>
+
+<% if signed_in? and ((@items and @items.count>0) or (@awards and @awards.count>0)) then %>
+  <h2>
+    <span class="heading2"><%=link_to "What's New", '/topics/4',  remote: true,:onclick => "linkHandler('more')"%></span>
+    <%=link_to "Hide", 'ack_news', remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler('acklink')"%>
+  </h2>
+
+  <% @items.each do |item| %>
+     <%=render :partial => 'item_details',  :locals => {:item => item} %>
+  <% end%>
+  <div class="erow">
+     <div class="hrline">
+        <hr noshade size="4">
+     </div>
+  </div>
+<% end %>
+
+  <%= form_tag '/assets', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+  <br/>
+  <div class="rowtitle">Search for <%=session[:dxcc]%> place:</div>
+  <div class="rowtext">
+    <input type="text" name="searchtext" value='<%=@searchtext%>'/>
+  </div>
+  <div class="rowtext" style="display:none">
+    <input id="minor" name="minor" type="checkbox" checked="checked">
+  </div>
+
+  <div class="buttonshort">
+    <%= submit_tag "Find", :id => "find", :onclick => "submitHandler('Finding...');", :class => "btn btn-small" %>
+  </div>
+</form>
+
+  <div class="erow">
+     <div class="hrline">
+        <hr noshade size="4">
+     </div>
+  </div>
+
+  <%=render 'alert_summary'%>
+  <div>
+    <span class="heading2"><%= link_to 'Latest Oceania Spots', '/spots', remote: true, :onclick => "linkHandler('results')"%></span>
+    <i><%=  link_to "More (with auto-refresh)...", '/spots', remote: true, :onclick => "linkHandler('refresh_link')"%></i>
+  </div>
+  <% @all_spots=@all_spots[0..9] %>
+  <%=render 'spot_list'%>
+  
+  <div class="erow">
+     <div class="hrline">
+        <hr noshade size="4">
+     </div>
+  </div>
+
+<script>
+document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+if ($(window).width() < 960) {
+        site_smaller_map();
+      }
+
+</script>
+

@@ -291,6 +291,17 @@ class ApiController < ApplicationController
     end
   end
 
+  def pnp_getuserkey
+    user = User.find_by(callsign: params[:callsign].upcase, pin: params[:pin].upcase)
+    if user then res = user.pin else res = "FALSE" end
+
+    respond_to do |format|
+      format.js { render text: res }
+      format.json { render text: res  }
+      format.html { render text: res  }
+    end
+  end
+
   def pnp_check
     activations = ConsolidatedSpot.find_by_sql [ "select max(updated_at) as updated_at from consolidated_spots;" ]
     sota_activations = ConsolidatedSpot.find_by_sql [ "select max(updated_at) as updated_at from consolidated_spots where 'SOTA' = ANY(spot_type);" ]
@@ -332,28 +343,55 @@ class ApiController < ApplicationController
     lat = params[:lat]
     long = params[:long]
 
-    #get list of closest assets by location and boundary
-    assets = Asset.find_by_sql [ %Q{ 
-   SELECT * from (
-     ( SELECT 
-        code,
-        boundary <-> 'SRID=4326;POINT(#{long} #{lat})'::geometry as dist
-      FROM assets 
-      order by dist
-      limit 10 )
-   UNION (
-      SELECT 
-        code,
-        location <-> 'SRID=4326;POINT(#{long} #{lat})'::geometry as dist
-      FROM assets
-      ORDER BY dist
-      LIMIT 10 ) 
-   ) AS a order by dist limit 10
-   } ]
+    asset_types = AssetType.where("name != 'all'")
+
+    codes_arr = []
+    asset_types.each do |at|
+      if at.has_boundary then
+      #get list of closest assets by location and boundary
+      assets = Asset.find_by_sql [ %Q{ 
+       SELECT code from (
+         ( SELECT 
+            code,
+            asset_type,
+            boundary <-> 'SRID=4326;POINT(#{long} #{lat})'::geometry as dist
+          FROM assets 
+          WHERE 
+            asset_type = '#{at.name}'
+          order by dist limit 10
+          )
+       UNION (
+          SELECT 
+            code,
+            asset_type,
+            location <-> 'SRID=4326;POINT(#{long} #{lat})'::geometry as dist
+          FROM assets
+          WHERE 
+            asset_type = '#{at.name}'
+          ORDER BY dist limit 10
+          ) 
+       ) AS a order by dist 
+     } ]
+     else
+      assets = Asset.find_by_sql [ %Q{ 
+          SELECT 
+            code,
+            asset_type,
+            location <-> 'SRID=4326;POINT(#{long} #{lat})'::geometry as dist
+          FROM assets
+          WHERE 
+            asset_type = '#{at.name}'
+          ORDER BY dist limit 10
+     } ]
+    end
       
-   codes = assets.map {|a| "'#{a.code}'"}.join(", ")
- 
-   res = Asset.find_by_sql [ %Q{
+     if assets and assets.count>0 
+       codes_arr += assets.map {|a| "'"+a.code+"'"}
+     end
+   end
+   codes = codes_arr.uniq.join(", ") 
+   if codes
+     res = Asset.find_by_sql [ %Q{
      SELECT 
        a.code as id,
        a.code as "siteID",   
@@ -371,12 +409,17 @@ class ApiController < ApplicationController
            'km ',
            ST_CardinalDirection(ST_Azimuth(ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326), ST_ClosestPoint(boundary, ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326))))
          )
-       END as "siteDistance"
+       END as "siteDistance",
+       CASE WHEN boundary is null THEN 
+           Round((ST_Distance_Sphere(ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326), location)/1000)::numeric,2)
+       ELSE
+           Round((ST_Distance_Sphere(ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326), boundary)/1000)::numeric,2)
+       END as "siteDistanceNumeric"
      FROM assets a
      INNER JOIN asset_types at on at.name = a.asset_type
      WHERE a.code in (#{codes})
-     ORDER by "siteDistance"} ]
-
+     ORDER by "siteDistanceNumeric"} ]
+  end
 #REQUIRES following function in POSTGRES
 # CREATE OR REPLACE FUNCTION ST_CardinalDirection(azimuth float8) RETURNS character varying AS
 # $BODY$SELECT CASE
@@ -398,8 +441,66 @@ class ApiController < ApplicationController
       format.json { render json: res.to_json }
       format.html { render json: res.to_json }
     end
- 
   end
+
+  def pnp_callsign
+    res = User.find_by_sql [ %Q{select callsign as "callSign", firstname as name, '' as "alsoKnownAs", '0000-00-00' as "lastDate", '2026-06-01' as "lastUpdateDate" from users where firstname is not null and activated = true and callsign ~ '.[A-Z]+[0-9]+[A-Z]+'} ]
+
+    respond_to do |format|
+      format.js { render json: res.to_json }
+      format.json { render json: res.to_json }
+      format.html { render json: res.to_json }
+    end
+  end
+
+  def pnp_shiresid
+    lat = params[:lat]
+    long = params[:long]
+
+    #get list of closest assets by location and boundary
+    shires = District.find_by_sql [ %Q{ 
+      SELECT 
+        CONCAT('(',substr(district_code,4),') ', name, ' [', district_code,']') AS name 
+        FROM districts 
+        WHERE ST_WITHIN(ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326), boundary); 
+      } ]
+    name = ""
+    name = shires.first.name if shires and shires.count>0
+
+    respond_to do |format|
+      format.js { render text: name }
+      format.json { render text: name  }
+      format.html { render text: name  }
+    end
+  end
+ 
+  def pnp_parkid
+    lat = params[:lat]
+    long = params[:long]
+
+    #get list of closest assets by location and boundary
+    res = Asset.find_by_sql [ %Q{ 
+      SELECT  
+          code as id,
+          code, 
+          name 
+        FROM assets 
+        WHERE ST_WITHIN(ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326), boundary) 
+         OR ST_WITHIN(ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326), az_boundary); 
+      } ]
+
+    name = ""
+    names = res.map {|r| "("+r.code+") "+r.name.gsub(',',';')  }
+    name = names.join(", ")
+    name = "Currently not within a Park" if !name or name==""
+
+    respond_to do |format|
+      format.js { render text: name }
+      format.json { render text: name  }
+      format.html { render text: name  }
+    end
+  end
+ 
 
   def pnp_sites_by_class
     dxccs = ['ZL', 'VK']
@@ -428,11 +529,89 @@ class ApiController < ApplicationController
     zone = 'OC'
     zone = params[:zone].upcase if params[:zone]
     zone_query = " and continent = '#{zone}'" if zone != 'ALL'
-    duration = 120
+    duration = 520
 
     duration = params[:id].to_i if params[:id]
-    spots=ConsolidatedSpot.where("updated_at>? #{zone_query}",duration.minutes.ago.strftime("%Y-%m-%dT%H:%M:%SZ"))
+    spots=ConsolidatedSpot.where("updated_at>? #{zone_query}",duration.minutes.ago.strftime("%Y-%m-%dT%H:%M:%SZ")).order('time desc')
     res = to_pnp_spots(spots)
+    respond_to do |format|
+      format.js { render json: res.to_json }
+      format.json { render json: res.to_json }
+      format.html { render json: res.to_json }
+    end
+  end
+
+  #PNP post spot
+  def pnp_spot
+    parstr = params.first
+    parstr = parstr.first
+    parstr = JSON.parse(parstr)
+    params=parstr.transform_keys(&:to_sym) 
+    logger.debug params.to_s
+    if api_authenticate(params)
+      user = User.find_by(callsign: params[:userID].upcase)
+      res = { success: true, message: 'Thanks for the data!' }
+      p = Post.new
+      p.callsign = params[:actCallsign] || ''
+      p.freq = params[:freq].to_f
+      p.mode = params[:mode] || ''
+      p.created_by_id = user.id
+      p.updated_by_id = user.id
+      p.description = params[:comments] || ''
+      if !user then 
+        user = User.find_by(callsign: 'GUEST') 
+        p.description = p.description + ' (via '+params[:spotter]+')'
+      end
+      asset_code = params[:actSite] || ''
+      assets = Asset.assets_from_code(asset_code)
+      if !assets || assets.count.zero? || assets.first[:code].nil?
+        logger.error 'Asset not known:' + asset_code + ' ... trying to continue'
+        a_code = ''
+        a_name = 'Unrecognised location: ' + asset_code
+        a_ext = false
+      else
+        a_code = assets.first[:code]
+        a_codes = assets.map{|a| a[:code]}
+        a_name = assets.first[:name]
+        a_ext = assets.first[:external]
+      end
+
+      if params[:do_not_lookup] then p.do_not_lookup=true end
+      p.asset_codes=a_code != '' ? a_codes : []
+      debug = p.description.upcase['DEBUG'] ? true : false
+      al_date = Time.now.in_time_zone('UTC').strftime('%Y-%m-%d')
+      al_time = Time.now.in_time_zone('UTC').strftime('%H:%M')
+      p.referenced_time = (al_date + ' ' + al_time + ' UTC').to_time
+      p.referenced_date = (al_date + ' 00:00:00 UTC').to_time
+      p.updated_at = Time.now
+      p.title = 'SPOT: ' + p.callsign + ' spotted portable at ' + a_name + '[' + a_code + '] on ' + p.freq.to_s + '/' + p.mode + ' at ' + Time.now.in_time_zone('Pacific/Auckland').strftime('%Y-%m-%d %H:%M') + 'NZ'
+      topic_id = if debug
+                       TEST_SPOT_TOPIC
+                     else
+                       SPOT_TOPIC 
+                     end
+      success = p.save
+      if success
+        if a_ext == false
+          p.add_map_image
+          success = p.save
+        end
+
+        item = Item.new
+        item.topic_id = topic_id
+        item.item_type = 'post'
+        item.item_id = p.id
+        item.save
+        item.send_emails
+      else
+        logger.error "Bad spot"
+        res = { success: false, message: u.errors.first.to_s }
+      end
+    else
+      logger.error "Authentication failed"
+      res = { success: false, message: 'Authentication failed!' }
+    end
+    logger.debug res.to_json
     respond_to do |format|
       format.js { render json: res.to_json }
       format.json { render json: res.to_json }
@@ -518,6 +697,7 @@ class ApiController < ApplicationController
 
   def api_authenticate(params)
     valid = false
+  
     if params[:userID] && params[:APIKey]
       user = User.find_by(callsign: params[:userID].upcase)
       if user && user.pin.casecmp(params[:APIKey]).zero?
@@ -582,7 +762,7 @@ class ApiController < ApplicationController
         pnp_spot[:actLocation] = spot.name[index]
         pnp_spot[:altLocation] = ""
         pnp_spot[:actComments] = spot.comments[index]
-        pnp_spot[:actSpoter] = spot.callsign[respot_count-index]
+        pnp_spot[:actSpoter] = spot.callsign[index]
         wwff_code = ""
         wwff_code = spot.code[index] if spot.code[index].match(WWFF_REGEX)
         pnp_spot[:WWFFid] = wwff_code  

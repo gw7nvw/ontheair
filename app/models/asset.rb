@@ -13,7 +13,7 @@ class Asset < ActiveRecord::Base
 #  WWFF_REGEX = /^\d{0,1}[a-zA-Z]{1,2}[fF]{2}-\d{4}/
 #  SOTA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/[a-zA-Z]{2}-\d{3}/
 #  HEMA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/H[a-zA-Z]{2}-\d{3}/
-#  LLOTA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}[lL]{2}-\d{4}/
+#  LLOTA_REGEX = /^[lL]{2}\d{0,1}[a-zA-Z]{1,2}-\d{4}/
 
   SOTA_ASSET_URL = 'https://www.sotadata.org.uk/en/summit/'
   WWFF_ASSET_URL = 'https://wwff.co/directory/?showRef='
@@ -40,6 +40,7 @@ class Asset < ActiveRecord::Base
 
   # After validation but before save
   def assign_calculated_fields
+    self.old_code = 'invalid' if self.old_code==nil or self.old_code==""
     self.valid_from = Time.new('1900-01-01') unless valid_from
     self.minor = false if minor != true
 
@@ -391,7 +392,7 @@ class Asset < ActiveRecord::Base
   end
 
   def first_activated
-    cs = Contact.find_by_sql [' select * from contacts where ? = ANY(asset1_codes) or ? = ANY(asset2_codes) order by date, time limit 1 ', code, code]
+    cs = Contact.find_by_sql [' select * from contacts where ? = ANY(asset1_codes) or ? = ANY(asset2_codes) or ? = ANY(asset1_codes) or ? = ANY(asset2_codes)order by date, time limit 1 ', code, code, old_code, old_code]
     if cs && (cs.count > 0)
       c = cs.first
       c = c.reverse if c.asset2_codes.include?(code)
@@ -433,9 +434,14 @@ class Asset < ActiveRecord::Base
   end
 
   def activators
-    cals1 = Contact.where('? = ANY(asset1_codes)', code)
+    if old_code and old_code.length>0 then
+      cals1 = Contact.where('? = ANY(asset1_codes) or ? = ANY(asset1_codes)', code, old_code)
+      cals2 = Contact.where('? = ANY(asset2_codes) or ? = ANY(asset2_codes)', code, old_code)
+    else
+      cals1 = Contact.where('? = ANY(asset1_codes)', code)
+      cals2 = Contact.where('? = ANY(asset2_codes)', code)
+    end
     callsigns1 = cals1.map { |cal| User.find_by_callsign_date(cal.callsign1, cal.date).try(:callsign) }
-    cals2 = Contact.where('? = ANY(asset2_codes)', code)
     callsigns2 = cals2.map { |cal| User.find_by_callsign_date(cal.callsign2, cal.date).try(:callsign) }
     callsigns = callsigns1 + callsigns2
     User.where(callsign: callsigns).order(:callsign)
@@ -453,9 +459,14 @@ class Asset < ActiveRecord::Base
   end
 
   def chasers
-    cals = Contact.where('? = ANY(asset1_codes)', code)
+    if old_code and old_code.length>0 then
+      cals = Contact.where('? = ANY(asset1_codes) or ? = ANY(asset1_codes)', code, old_code)
+      cals2 = Contact.where('? = ANY(asset2_codes) or ? = ANY(asset2_codes)', code, old_code)
+    else
+      cals = Contact.where('? = ANY(asset1_codes)', code)
+      cals2 = Contact.where('? = ANY(asset2_codes)', code)
+    end
     callsigns1 = cals.map { |cal| User.find_by_callsign_date(cal.callsign2, cal.date).try(:callsign) }
-    cals2 = Contact.where('? = ANY(asset2_codes)', code)
     callsigns2 = cals2.map { |cal| User.find_by_callsign_date(cal.callsign1, cal.date).try(:callsign) }
     callsigns = callsigns1 + callsigns2
     User.where(callsign: callsigns).order(:callsign)
@@ -502,7 +513,7 @@ class Asset < ActiveRecord::Base
     if callsign && (callsign != '') && (callsign != '*')
       callsign = callsign.upcase
 
-      cs = Contact.find_by_sql [' select id from contacts where (callsign1 = ? and ? = ANY(asset1_codes)) or (callsign2 = ? and ? = ANY(asset2_codes)) limit 1 ', callsign, code, callsign, code]
+      cs = Contact.find_by_sql [' select id from contacts where (callsign1 = ? and (? = ANY(asset1_codes) or ? = ANY(asset1_codes))) or (callsign2 = ? and (? = ANY(asset2_codes) or ? = ANY(asset2_codes))) limit 1 ', callsign, code, old_code, callsign, code, old_code]
 
       if (asset_type == 'summit') || (asset_type == 'pota park')
         as = ExternalActivation.find_by_sql ["select * from external_activations where summit_code='" + code + "' and callsign = '" + callsign + "' limit 1"]
@@ -523,7 +534,7 @@ class Asset < ActiveRecord::Base
   def chased_by?(callsign)
     if callsign && (callsign != '') && (callsign != '*')
       callsign = callsign.upcase
-      cs = Contact.find_by_sql [' select id from contacts where (callsign2 = ? and ? = ANY(asset1_codes)) or (callsign1 = ? and ? = ANY(asset2_codes)) limit 1 ', callsign, code, callsign, code]
+      cs = Contact.find_by_sql [' select id from contacts where (callsign2 = ? and (? = ANY(asset1_codes) or ? = ANY(asset2_codes))) or (callsign1 = ? and (? = ANY(asset2_codes) or ? = ANY(asset2_codes))) limit 1 ', callsign, code, old_code, callsign, code, old_code]
 
       if (asset_type == 'summit') || (asset_type == 'pota park')
         as = ExternalChase.find_by_sql ["select * from external_chases where summit_code='" + code + "' and callsign = '" + callsign + "' limit 1"]
@@ -650,7 +661,7 @@ class Asset < ActiveRecord::Base
             # LLOTA
             logger.debug 'LLOTA'
             asset[:name] = code
-            asset[:url] = LLOTA_ASSET_URL+thecode.to_s.gsub('LL-','-')
+            asset[:url] = LLOTA_ASSET_URL+thecode.to_s
             asset[:external] = true
             asset[:code] = thecode.to_s
             asset[:type] = 'LLOTA lake'
@@ -743,7 +754,7 @@ class Asset < ActiveRecord::Base
       url = WWFF_ASSET_URL + code
     elsif asset_type == 'llota lake'
       # LLOTA
-      url = LLOTA_ASSET_URL + code.gsub('LL-','-')
+      url = LLOTA_ASSET_URL + code
     elsif asset_type == 'silo'
       # SiOTA
       url = SIOTA_ASSET_URL + code

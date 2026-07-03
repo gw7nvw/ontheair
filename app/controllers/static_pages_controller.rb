@@ -15,7 +15,6 @@ class StaticPagesController < ApplicationController
     end
     do_not_cache()
     home
-    render 'home'
   end
 
   def admin_stats
@@ -36,35 +35,40 @@ class StaticPagesController < ApplicationController
       current_user.dxcc=params[:id].upcase
       current_user.save
     end
-    @site_title_unquoted = "... On The Air"
-    @site_title_unquoted = "ZL "+@site_title_unquoted if session[:dxcc]=='ZL'
-    @site_title_quoted="'"+@site_title_unquoted+"'"
     home
-    render "home"
   end
 
   def home
     spots
     ack_time = current_user.hide_news_at if current_user
     ack_time ||= '1900-01-01'
+    @static_page = true
     @dxcc = session[:dxcc]
     @dxcc='ZL' if !@dxcc
-
-    @max_rows = 30
-    results
-    @users = @full_users
-
-    @static_page = true
-    @brief = true
-    @fulllogs = Log.find_by_sql [" select * from logs where asset_codes != '{}' order by date desc limit 20 "]
-    @logs = @fulllogs.paginate(per_page: 20, page: params[:page])
-
-    @awards = AwardUserLink.find_by_sql [ "select * from award_user_links where created_at>'#{ack_time}'; "]
-    @award_users = User.find_by_sql [ "select * from users where id in (select distinct user_id from award_user_links where created_at>'#{ack_time}') order by callsign limit 20;"]
-
-    @items = Item.find_by_sql ["select * from items where (topic_id = 4 )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;"]
     @asset_type_filter = "('all', 'silo', 'sanpcpa park', 'krmnpa park')" if @dxcc=='ZL'
     @asset_type_filter = "('park', 'lake', 'lighthouse', 'island', 'hut', 'volcano', 'all')" if @dxcc=="VK"
+    @site_title_unquoted = "... On The Air"
+    @site_title_unquoted = "ZL "+@site_title_unquoted if session[:dxcc]=='ZL'
+    @site_title_unquoted = "VK "+@site_title_unquoted if session[:dxcc]=='VK'
+    @site_title_quoted="'"+@site_title_unquoted+"'"
+  
+    if @dxcc=='VK' then 
+      render "vk_home"
+    else
+      @max_rows = 30
+      results
+      @users = @full_users
+  
+      @brief = true
+      @fulllogs = Log.find_by_sql [" select * from logs where asset_codes != '{}' order by date desc limit 20 "]
+      @logs = @fulllogs.paginate(per_page: 20, page: params[:page])
+  
+      @awards = AwardUserLink.find_by_sql [ "select * from award_user_links where created_at>'#{ack_time}'; "]
+      @award_users = User.find_by_sql [ "select * from users where id in (select distinct user_id from award_user_links where created_at>'#{ack_time}') order by callsign limit 20;"]
+  
+      @items = Item.find_by_sql ["select * from items where (topic_id = 4 )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;"]
+      render "home"
+    end
   end
 
   def recent

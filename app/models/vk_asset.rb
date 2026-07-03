@@ -465,15 +465,15 @@ class VkAsset < ActiveRecord::Base
       data.each do |l|
         if l["reference_code"][0..2]=='AU-' then
           count += 1
-          a = VkAsset.find_by(code: l["reference_code"].gsub('AU-','AULL-'))
+          a = VkAsset.find_by(code: l["reference_code"])
           if !a
-            puts "Creating #{l["reference_code"].gsub('AU-','AULL-')}"
+            puts "Creating #{l["reference_code"]}"
             a = VkAsset.new
           else
             puts "Updating #{a.code}"
           end
           a.asset_type="llota lake"
-          a.code = l["reference_code"].gsub('AU-','AULL-')
+          a.code = l["reference_code"]
           a.is_active = true
           a.name = l["name"]
           a.location = "POINT(#{l["longitude"]} #{l["latitude"]})"

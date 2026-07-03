@@ -89,7 +89,7 @@ class UserMailer < ActionMailer::Base
   def zlsota_mail(body, subject)
     @body = body
     puts 'MAILER: sending :' + body
-    mail from: 'zl4nvw@ontheair.nz', to: 'zl-sota@zl-sota.org', subject: subject
+    mail from: 'zl4nvw@ontheair.nz', to: 'zl-sota@groups.io', subject: subject
     # mail from: "zl4nvw@ontheair.nz", to: "mattbriggs@yahoo.com", subject: subject
   end
 

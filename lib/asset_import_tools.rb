@@ -54,7 +54,7 @@ module AssetImportTools
     rows = []
     as.each do |a|
       row = []
-      row.push(a.code.gsub('LL-','-'))
+      row.push(a.code)
       row.push(a.name)
       #handle blank regions
       if a.region == "" or a.region == nil then
@@ -287,9 +287,9 @@ puts values.first.to_json
         if l["reference_code"][0..2]=='NZ-' or l["reference_code"][0..2]=='AU-'then
           count += 1
           new = false
-          a = Asset.find_by(code: l["reference_code"].gsub('-','LL-'))
+          a = Asset.find_by(code: l["reference_code"])
           if !a  
-            puts "Creating #{l["reference_code"].gsub('-','LL-')}"
+            puts "Creating #{l["reference_code"]}"
             a = Asset.new 
             new = true
           else
@@ -297,7 +297,7 @@ puts values.first.to_json
           end
           if new or update then
             a.asset_type="llota lake"
-            a.code = l["reference_code"].gsub('-','LL-')
+            a.code = l["reference_code"]
             a2 = Asset.find_by(code: a.code.gsub('NZLL-','ZLL/'))
             if a2 then
               puts "Found matching lake #{a2.code}"

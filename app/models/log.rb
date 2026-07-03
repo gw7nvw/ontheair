@@ -834,7 +834,7 @@ puts value
     if my_sig_info_values
       my_sig_info_values.each do |val|
         val = Asset.correct_separators(val.strip)
-        val = val.gsub('NZ-', 'NZLL-') if my_sig and my_sig.upcase=='LLOTA' 
+        val = val.gsub('NZ-', 'LLNZ-').gsub('AU-', 'LLAU-') if my_sig and my_sig.upcase=='LLOTA'
         protolog.asset_codes.push(val)
         contact.asset1_codes.push(val)
         protolog.is_portable1 = true
@@ -845,7 +845,6 @@ puts value
     if sig_info_values
       sig_info_values.each do |val|
         val = Asset.correct_separators(val.strip)
-        val = val.gsub('NZ-', 'NZLL-') if sig and sig.upcase=='LLOTA' 
         contact.asset2_codes.push(val)
         contact.is_portable2 = true
       end

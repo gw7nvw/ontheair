@@ -135,11 +135,18 @@ match '/api/WWFF/:id', to: 'api#pnp_wwff',    via:'get'
 match '/api/VK', to: 'api#pnp_vk',    via:'get'
 match '/api/CHECK/SPOTS', to: 'api#pnp_check_spots',    via:'get'
 match '/api/ALERTS', to: 'api#pnp_alerts',    via:'get'
+match '/api/CHECK', to: 'api#pnp_check',    via:'get'
 match '/api/SITES/CHECK', to: 'api#pnp_check',    via:'get'
 match '/api/SITES/:id', to: 'api#pnp_sites_by_class',    via:'get'
 match '/api/SITES', to: 'api#pnp_sites',    via:'get'
-match '/api/CHECK', to: 'api#pnp_check',    via:'get'
+match '/api/GETUSERKEY/:callsign/:pin', to: 'api#pnp_getuserkey',    via:'get'
+match '/api/SPOT', to: 'api#pnp_spot',    via:'post'
 match '/api/CLOSE/:lat/:long', to: 'api#pnp_close',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
+match '/api/SHIRESID/:lat/:long', to: 'api#pnp_shiresid',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
+match '/api/PARKID/:lat/:long', to: 'api#pnp_parkid',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
+match '/api/parkid/:lat/:long', to: 'api#pnp_parkid',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
+match '/api/CALLSIGN', to: 'api#pnp_callsign',    via:'get'
+match '/api/USERS', to: 'api#pnp_callsign',    via:'get'
 
 resources :sota_logs
 

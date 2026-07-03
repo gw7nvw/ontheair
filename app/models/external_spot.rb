@@ -39,12 +39,12 @@ class ExternalSpot < ActiveRecord::Base
       cs.code += [code]
       cs.code = cs.code.uniq
       cs.name += [(name||"")+"; "]
-      cs.name = cs.name.uniq
+#      cs.name = cs.name.uniq
       cs.comments += ["["+(if is_pnp then "PnP-" else "" end)+(spot_type||"")+"] "+((callsign||"")+": "+(comments||"") + " ("+(time.strftime("%H:%M:%S")||"")+")")[0..254]]
-      cs.comments = cs.comments.uniq  
+#      cs.comments = cs.comments.uniq  
   
       cs.spot_type += [spot_type]
-      cs.spot_type = cs.spot_type.uniq  
+#      cs.spot_type = cs.spot_type.uniq  
       cs.save 
     end
     #we now do this on_save
@@ -214,15 +214,16 @@ class ExternalSpot < ActiveRecord::Base
       end
      
       zlvk_llota_spots.each do |spot|
+        spot['reference']='LL'+spot['reference'] if spot['reference'] and spot['reference'][2]=='-'
         ExternalSpot.create(
           time: spot['updated_at'].to_datetime ? spot['updated_at'].to_datetime.in_time_zone('UTC') : nil,
           callsign: spot['history'][-1]['spotter_callsign'] ? spot['history'][-1]['spotter_callsign'] : spot['callsign'].strip,
           activatorCallsign: spot['callsign'].strip,
-          code: spot['reference'].gsub('-','LL-'),
+          code: spot['reference'],
           name: spot['reference_name'],
           frequency: (spot['frequency'].to_f / 1000).to_s,
           mode: spot['mode'],
-          comments: spot['history'][-1]['comment'],
+          comments: spot['history'][-1]['comment'][0..255],
           spot_type: 'LLOTA'
         )
       end
@@ -235,7 +236,7 @@ class ExternalSpot < ActiveRecord::Base
           name: spot['name'],
           frequency: (spot['frequency'].to_f / 1000).to_s,
           mode: spot['mode'],
-          comments: spot['comments'],
+          comments: spot['comments'][0..255],
           spot_type: 'POTA'
         )
       end
@@ -248,7 +249,7 @@ class ExternalSpot < ActiveRecord::Base
           name: spot['altLocation'] && !spot['altLocation'].empty? ? spot['altLocation'] : spot['actLocation'],
           frequency: spot['actFreq'],
           mode: spot['actMode'],
-          comments: spot['actComments'],
+          comments: spot['actComments'][0..255],
           spot_type: spot['actClass'],
           is_pnp: true
         )
@@ -262,7 +263,7 @@ class ExternalSpot < ActiveRecord::Base
           name: spot['reference_name'] && !spot['reference_name'].empty? ? spot['reference_name'] : 'UNKNOWN',
           frequency: (if spot['frequency_khz'].to_f then (spot['frequency_khz'].to_f/1000).to_s else "" end),
           mode: spot['mode'],
-          comments: spot['remarks'],
+          comments: spot['remarks'][0..255],
           spot_type: 'WWFF'
         )
         # temporary cludge to get WWFF spots into PnP - 

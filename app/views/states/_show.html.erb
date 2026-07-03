@@ -55,9 +55,9 @@
       </tr>
       <% if @state.regions then @state.regions.each do |region| %>
         <tr>
-          <td><%=region.regc_code%></td>
+          <td><%=region.sota_code%></td>
           <td>
-            <%= link_to region.name, '/regions/'+region.regc_code, remote: true, :id => 'region_link_'+region.id.to_s, :onclick => "linkHandler('region_link_"+region.id.to_s+"')" %>
+            <%= link_to region.name, '/regions/'+region.sota_code, remote: true, :id => 'region_link_'+region.id.to_s, :onclick => "linkHandler('region_link_"+region.id.to_s+"')" %>
           </td>
         </tr>
       <% end end %>

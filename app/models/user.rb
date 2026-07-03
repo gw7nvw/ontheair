@@ -1090,7 +1090,7 @@ class User < ActiveRecord::Base
             where user_id=" + id.to_s + "
           )
         ) as foo
-      inner join assets a on a.code=asset1_code and a.country='#{dxcc}' #{region_query}
+      inner join assets a on (a.code=asset1_code or a.old_code=asset1_code)  and a.country='#{dxcc}' #{region_query}
       where #{minor_query}
         and (a.valid_from is null or a.valid_from<=foo.date)
         and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date)
@@ -1138,7 +1138,7 @@ class User < ActiveRecord::Base
             where user_id=" + id.to_s + "
           )
         ) as foo
-      inner join assets a on a.code=asset1_code and a.country='#{dxcc}' #{region_query} 
+      inner join assets a on (a.code=asset1_code or a.old_code=asset1_code) and a.country='#{dxcc}' #{region_query} 
       where #{minor_query}
         and (a.valid_from is null or a.valid_from<=foo.date)
         and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date)

@@ -64,13 +64,14 @@ class LlotaLogsController < ApplicationController
       if !contact.band.empty? && !contact.adif_mode.empty? && contact.time && (contact.time.strftime('%H%M').length == 4) && !((callsigns.include? unique_details) && !other_park_code)
         callsigns.push(unique_details)
         if contact.is_portable2 && (other_callsign[-2..-1] != '/P') then other_callsign += '/P' end
-        corrected_code = park.code.gsub('LL-','-')
+        corrected_code = park.code
         @llota_log += '<call:' + other_callsign.length.to_s + '>' + other_callsign
         @llota_log += '<station_callsign:' + @user.callsign.length.to_s + '>' + @user.callsign
         @llota_log += '<band:' + contact.band.length.to_s + '>' + contact.band
         @llota_log += '<mode:' + contact.adif_mode.length.to_s + '>' + contact.adif_mode
         @llota_log += '<qso_date:8>' + params[:date]
         @llota_log += '<time_on:4>' + contact.time.strftime('%H%M')
+        @llota_log += '<my_sig:5>LLOTA'
         @llota_log += '<my_sig_info:' + corrected_code.length.to_s + '>' + corrected_code
         if other_park_code then @llota_log += '<sig_info:' + other_park_code.length.to_s + '>' + other_park_code end
         @llota_log += "<eor>\n"
