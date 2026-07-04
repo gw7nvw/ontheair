@@ -342,84 +342,44 @@ class ApiController < ApplicationController
   def pnp_close
     lat = params[:lat]
     long = params[:long]
-
-    asset_types = AssetType.where("name != 'all'")
-
-    codes_arr = []
-    asset_types.each do |at|
-      if at.has_boundary then
-      #get list of closest assets by location and boundary
-      assets = Asset.find_by_sql [ %Q{ 
-       SELECT code from (
-         ( SELECT 
-            code,
-            asset_type,
-            boundary <-> 'SRID=4326;POINT(#{long} #{lat})'::geometry as dist
-          FROM assets 
-          WHERE 
-            asset_type = '#{at.name}'
-          order by dist limit 10
-          )
-       UNION (
-          SELECT 
-            code,
-            asset_type,
-            location <-> 'SRID=4326;POINT(#{long} #{lat})'::geometry as dist
-          FROM assets
-          WHERE 
-            asset_type = '#{at.name}'
-          ORDER BY dist limit 10
-          ) 
-       ) AS a order by dist 
-     } ]
-     else
-      assets = Asset.find_by_sql [ %Q{ 
-          SELECT 
-            code,
-            asset_type,
-            location <-> 'SRID=4326;POINT(#{long} #{lat})'::geometry as dist
-          FROM assets
-          WHERE 
-            asset_type = '#{at.name}'
-          ORDER BY dist limit 10
-     } ]
-    end
-      
-     if assets and assets.count>0 
-       codes_arr += assets.map {|a| "'"+a.code+"'"}
-     end
-   end
-   codes = codes_arr.uniq.join(", ") 
-   if codes
-     res = Asset.find_by_sql [ %Q{
-     SELECT 
-       a.code as id,
-       a.code as "siteID",   
-       at.pnp_class as "awardID",
-       a.name as "siteName",
-       CASE WHEN boundary is null THEN 
-         CONCAT(
-           Round((ST_Distance_Sphere(ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326), location)/1000)::numeric,2)::varchar,
-           'km ',
-           ST_CardinalDirection(ST_Azimuth(ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326), location))
-         )
-       ELSE
-         CONCAT(
-           Round((ST_Distance_Sphere(ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326), boundary)/1000)::numeric,2)::varchar,
-           'km ',
-           ST_CardinalDirection(ST_Azimuth(ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326), ST_ClosestPoint(boundary, ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326))))
-         )
-       END as "siteDistance",
-       CASE WHEN boundary is null THEN 
-           Round((ST_Distance_Sphere(ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326), location)/1000)::numeric,2)
-       ELSE
-           Round((ST_Distance_Sphere(ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326), boundary)/1000)::numeric,2)
-       END as "siteDistanceNumeric"
-     FROM assets a
-     INNER JOIN asset_types at on at.name = a.asset_type
-     WHERE a.code in (#{codes})
-     ORDER by "siteDistanceNumeric"} ]
-  end
+    res = Asset.find_by_sql [ %Q{
+      WITH config AS (
+        SELECT ST_SetSRID(ST_MakePoint(#{long}, #{lat}), 4326) AS origin
+      )
+      SELECT 
+        r.code AS id,
+        r.code AS "siteID",   
+        t.pnp_class AS "awardID",
+        r.name AS "siteName",
+        CONCAT(calc.dist_km::varchar, 'km ', ST_CardinalDirection(ST_Azimuth(c.origin, calc.azimuth_target))) AS "siteDistance",
+        calc.dist_km AS "siteDistanceNumeric"
+      FROM config c
+      CROSS JOIN (
+        SELECT pnp_class, name FROM asset_types WHERE name != 'all'
+      ) t
+ -- STEP 1: Find ONLY the top 10 rows instantly using the spatial index
+      CROSS JOIN LATERAL (
+        SELECT 
+          a.code,
+          a.name,
+          a.asset_type,
+          a.location,
+          COALESCE(a.boundary, a.location) AS active_geom
+        FROM assets a
+        WHERE a.asset_type = t.name
+        ORDER BY COALESCE(a.boundary, a.location) <-> c.origin
+        LIMIT 10 
+      ) r
+ -- STEP 2: Only calculate heavy math on those 10 isolated rows
+      CROSS JOIN LATERAL (
+        SELECT 
+          Round((ST_Distance_Sphere(c.origin, r.active_geom) / 1000)::numeric, 2) AS dist_km,
+          CASE WHEN r.active_geom = r.location THEN r.active_geom -- if it was location
+               ELSE ST_ClosestPoint(r.active_geom, c.origin) 
+          END AS azimuth_target
+      ) calc
+      ORDER BY "siteDistanceNumeric";
+    } ]
 #REQUIRES following function in POSTGRES
 # CREATE OR REPLACE FUNCTION ST_CardinalDirection(azimuth float8) RETURNS character varying AS
 # $BODY$SELECT CASE
@@ -535,9 +495,9 @@ class ApiController < ApplicationController
     spots=ConsolidatedSpot.where("updated_at>? #{zone_query}",duration.minutes.ago.strftime("%Y-%m-%dT%H:%M:%SZ")).order('time desc')
     res = to_pnp_spots(spots)
     respond_to do |format|
-      format.js { render json: res.to_json }
-      format.json { render json: res.to_json }
-      format.html { render json: res.to_json }
+      format.js { render json: res.to_json.gsub('/','\/') }
+      format.json { render json: res.to_json.gsub('/','\/') }
+      format.html { render json: res.to_json.gsub('/','\/') }
     end
   end
 
@@ -733,7 +693,7 @@ class ApiController < ApplicationController
       pnp_alert[:Class] = alert.programme  
       pnp_alert[:Location] = alert.name
       pnp_alert[:alDay] = "0"
-      pnp_alert[:alTime] = alert.starttime
+      pnp_alert[:alTime] = alert.starttime.strftime("%Y-%m-%d %H:%M:%S")
       pnp_alert[:Freq] = alert.frequency
       pnp_alert[:MODE] = alert.mode
       pnp_alert[:Comments] = alert.comments
@@ -751,25 +711,32 @@ class ApiController < ApplicationController
       spot_count = spot.code.count
       respot_count = spot.time.count
       while index < spot_count
-        pnp_spot={}
-        pnp_spot[:actTime] = spot.time.last
-        pnp_spot[:actID] = spot.id.to_s
-        pnp_spot[:actSiteID] = spot.code[index]
-        pnp_spot[:actCallsign] = spot.activatorCallsign
-        pnp_spot[:actMode] = spot.mode
-        pnp_spot[:actFreq] = spot.frequency
-        pnp_spot[:actClass] = spot.spot_type[index]
-        pnp_spot[:actLocation] = spot.name[index]
-        pnp_spot[:altLocation] = ""
-        pnp_spot[:actComments] = spot.comments[index]
-        pnp_spot[:actSpoter] = spot.callsign[index]
-        wwff_code = ""
-        wwff_code = spot.code[index] if spot.code[index].match(WWFF_REGEX)
-        pnp_spot[:WWFFid] = wwff_code  
-        pnp_spots.push(pnp_spot)
+        if spot.time[index] then
+          pnp_spot={}
+          pnp_spot[:actTime] = spot.time[index]
+          pnp_spot[:actID] = spot.id.to_s
+          pnp_spot[:actSiteID] = spot.code[index]
+          pnp_spot[:actCallsign] = spot.activatorCallsign
+          pnp_spot[:actMode] = spot.mode
+          pnp_spot[:actFreq] = spot.frequency
+          pnp_spot[:actClass] = spot.spot_type[index]
+          if spot.spot_type[index] == "SOTA" then
+            pnp_spot[:actLocation] = spot.code[index] 
+            pnp_spot[:altLocation] = spot.name[index]
+          else
+            pnp_spot[:actLocation] = spot.name[index]
+          end
+          #remove (##:##:##) at end and everything up to first :
+          pnp_spot[:actComments] = (spot.comments[index] || "").gsub(/\(\d{2}\:\d{2}\:\d{2}\)/,'').gsub(/^([^:]*):/,'').strip
+          pnp_spot[:actSpoter] = spot.callsign[index]
+          wwff_code = ""
+          wwff_code = spot.code[index] if spot.code[index].match(WWFF_REGEX)
+          pnp_spot[:WWFFid] = wwff_code  
+          pnp_spots.push(pnp_spot)
+        end
         index += 1
       end
     end
-  pnp_spots
+  (pnp_spots.sort_by { |spot| spot[:actTime] }).reverse
   end
 end

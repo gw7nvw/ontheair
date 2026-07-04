@@ -37,7 +37,7 @@ class ExternalSpot < ActiveRecord::Base
       cs.time += [time]
       cs.callsign += [callsign]
       cs.code += [code]
-      cs.code = cs.code.uniq
+      cs.code = cs.code #.uniq
       cs.name += [(name||"")+"; "]
 #      cs.name = cs.name.uniq
       cs.comments += ["["+(if is_pnp then "PnP-" else "" end)+(spot_type||"")+"] "+((callsign||"")+": "+(comments||"") + " ("+(time.strftime("%H:%M:%S")||"")+")")[0..254]]

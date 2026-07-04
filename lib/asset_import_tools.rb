@@ -246,7 +246,7 @@ puts values.first.to_json
       puts 'Found ' + data.count.to_s + ' parks'
       count = 0
       data.each do |l|
-        if l["SANPCPAID"][0..2]=='5NP' then
+        if l["SANPCPAID"][0]=='5' then
           count += 1
           new = false
           a = Asset.find_by(code: l["SANPCPAID"])

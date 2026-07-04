@@ -125,14 +125,14 @@ class Item < ActiveRecord::Base
     cs.time += [self.created_at]
     cs.callsign += [post.updated_by_name]
     cs.code += post.asset_codes
-    cs.code = cs.code.uniq
+    cs.code = cs.code# .uniq
     cs.name += [post.site]
-    cs.name = cs.name.uniq
+    cs.name = cs.name# .uniq
     cs.comments += [post.updated_by_name+": "+(post.description||"") + " ("+post.created_at.strftime("%H:%M:%S")+")"]
     as = Asset.assets_from_code(cs.code.join(', '))
     types =  as.map{|a| a[:pnp_class]}
     cs.spot_type += types
-    cs.spot_type = cs.spot_type.uniq
+    cs.spot_type = cs.spot_type# .uniq
     cs.post_id += [id.to_s]
 
     cs.save
