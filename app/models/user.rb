@@ -22,7 +22,6 @@ class User < ActiveRecord::Base
   before_save { if timezone.nil? then self.timezone = Timezone.find_by(name: 'UTC').id end }
   before_save do
     self.pin = callsign.chars.sample(4).join if pin.nil? || (pin.length < 4)
-    self.pin = pin[0..3]
   end
   after_save :add_callsigns
   before_create :create_remember_token

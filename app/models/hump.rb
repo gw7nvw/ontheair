@@ -50,6 +50,40 @@ class Hump < ActiveRecord::Base
     end
   end
 
+  def self.get_elevation(dxcc, region)
+    uri = URI("http://www.hema.org.uk/region.jsp?countryCode=#{dxcc}&regionCode=#{region}")
+    http = Net::HTTP.new(uri.host, uri.port)
+    req = Net::HTTP::Get.new(uri.path+"?countryCode=#{dxcc}&regionCode=#{region}")
+    response = http.request(req)
+    puts response.body
+    body = response.body
+    table = body.split('<table>')[3]
+    table = table.split('</table>')[0]
+    rows = table.split('<tr>')
+    count=1
+    rows.each do |row|
+      if count>1 
+        puts row
+        name = row.split('>')[2]
+        name = name.split('<')[0]
+        id = name.split(' ')[0]
+        name = name[6..-1]
+        elevation=row.split("Number'>")[1]|| ""
+        elevation = elevation.split('<')[0] || "" if elevation
+        puts "#{dxcc}/#{region}-#{id} - #{name} - #{elevation.gsub('m','')}"
+
+        code = "#{dxcc}/#{region}-#{id}"
+        a = Asset.find_by(code: code)
+        if a then
+          puts "SET Altitude to #{elevation.gsub('m','').to_i}"
+          a.altitude = elevation.gsub('m','').to_i if (!a.altitude or a.altitude==0) and elevation
+          a.save
+        end
+      end
+      count+=1
+    end
+  end
+
   def self.get_lat_long(user, pass, regions) 
     uri = URI('http://www.hema.org.uk/indexDatabase.jsp')
     http = Net::HTTP.new(uri.host, uri.port)
@@ -72,9 +106,11 @@ class Hump < ActiveRecord::Base
 
       response = http.request(req)
       body = response.body
+      puts body
       rows = body.split('var Latitude=')
       rows[1..-1].each do |row|
         fields = row.split(';') 
+        puts fields.to_json
         lat = fields[0]
         long = fields[1].split('=')[1]
         name = fields[2].split('=')[1]
@@ -83,7 +119,7 @@ class Hump < ActiveRecord::Base
         if asset then
           asset.location = "POINT (#{long} #{lat})"
           puts "Updating asset #{asset.code} #{asset.name} = #{name}: #{asset.location.to_s}"
-          asset.save
+          #asset.save
        else
           puts "Not found: "+old_code
        end

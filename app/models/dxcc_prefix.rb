@@ -35,4 +35,9 @@ class DxccPrefix < ActiveRecord::Base
   def code_name
     self.name+" ("+self.prefix+")"
   end
+  def self.get_assets_with_type(dxcc='ZL', at_date = Time.now)
+    Contact.find_by_sql [" select name, type, code_count, site_list from (select a.is_active as is_active, d.sota_code as name, a.asset_type as type, count(distinct(a.code)) as code_count, array_agg(a.code) as site_list from states d inner join assets a on a.state=d.sota_code where a.minor is not true and (a.valid_from is null or a.valid_from<='#{at_date}') and ((a.valid_to is null and a.is_active=true) or a.valid_to>='#{at_date}') and  d.dxcc='#{dxcc}' group by d.sota_code, a.asset_type, a.is_active, a.minor) as foo; "]
+  end
+
+
 end

@@ -178,7 +178,16 @@ end
 def self.import_hota_alerts(alerts)
   all_alerts=[]
   alerts.each do |alert|
-    ext_alert=ExternalAlert.new(id: -alert.item_id, starttime: alert.referenced_date, duration: alert.duration, activatingCallsign: alert.callsign, code: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: 'ZLOTA')
+    code = alert.code
+    dxcc = ""
+    continent = "OC"
+    asset = Asset.find_by(code)
+    if asset then
+      dxcc = asset.country
+      dxccs = DxccPrefix.find_by(prefix: dxcc)
+      continent = dxccs.continent
+    end
+    ext_alert=ExternalAlert.new(id: -alert.item_id, starttime: alert.referenced_date, duration: alert.duration, activatingCallsign: alert.callsign, code: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: 'ZLOTA', dxcc: dxcc, continent: continent)
     all_alerts+=[ext_alert] 
   end 
   all_alerts

@@ -95,4 +95,30 @@ class State < ActiveRecord::Base
   def self.get_assets_with_type(dxcc='ZL', at_date = Time.now)
     Contact.find_by_sql [" select name, type, code_count, site_list from (select a.is_active as is_active, d.sota_code as name, a.asset_type as type, count(distinct(a.code)) as code_count, array_agg(a.code) as site_list from states d inner join assets a on a.state=d.sota_code where a.minor is not true and (a.valid_from is null or a.valid_from<='#{at_date}') and ((a.valid_to is null and a.is_active=true) or a.valid_to>='#{at_date}') and  d.dxcc='#{dxcc}' group by d.sota_code, a.asset_type, a.is_active, a.minor) as foo; "]
   end
+  def self.generate_pnp2_sites(dxccs)
+
+    sql = <<-SQL
+      SELECT 
+       a.code as "regionID",
+       a.pnp_code as "regionCode",
+       a.name,
+       ST_X(ST_Centroid(a.boundary))::varchar as "longitude",
+       ST_Y(ST_Centroid(a.boundary))::varchar as "latitude",
+       a.dxcc as "dxccPrefix",
+       d.iso_code as "countryID",
+       d.continent_code as "continentID"
+    FROM  states a
+    JOIN dxcc_prefixes d ON a.dxcc = d.prefix
+    WHERE a.dxcc IN (:dxccs) 
+    ORDER BY a.code
+    SQL
+
+    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
+    sanitized_sql = sanitize_sql_array([sql, { dxccs: dxccs }])
+
+    # 3. Pull raw string text directly from the execution block
+    connection.select_all(sanitized_sql)
+
+  end
+
 end

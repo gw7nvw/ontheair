@@ -35,7 +35,8 @@ class Asset < ActiveRecord::Base
     self.reload
     add_activation_zone(true)
     add_az_area(true)
-    add_links
+#    add_links
+    add_state if !state or state.blank?
   end
 
   # After validation but before save
@@ -46,7 +47,6 @@ class Asset < ActiveRecord::Base
 
     self.district = add_district if !district or district.blank?
     self.region = add_region if !region or region.blank? 
-    add_state if !state or state.blank?
 
     if code.nil? || (code == '')
       if self.type.use_volcanic_field then 
@@ -139,6 +139,7 @@ class Asset < ActiveRecord::Base
     if id && region && (region.count > 0) && (self.region != region.first.code)
       logger.debug 'updating state to ' + region.first.to_json
       ActiveRecord::Base.connection.execute("update assets set state='" + region.first.code + "' where id=" + id.to_s)
+      ActiveRecord::Base.connection.execute("update assets set country='" + region.first.dxcc + "' where id=" + id.to_s)
     end
 
     if region && (region.count > 0) && (self.state != region.first.code)
@@ -1029,56 +1030,380 @@ class Asset < ActiveRecord::Base
     newcode
   end
 
+  def self.get_pnp_parkid(lat, long)
+    sql = <<-SQL
+      SELECT  
+          a.code as id,
+          a.code, 
+          a.name,
+          a.asset_type as class,
+          at.pnp_class as award
+        FROM assets a
+        INNER JOIN asset_types at ON at.name = a.asset_type
+        WHERE is_active = true and minor is not true AND (
+           ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), boundary) 
+           OR ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), az_boundary)
+        )
+        AND asset_type='wwff park' 
+        ORDER BY area LIMIT 1; 
+    SQL
+
+    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
+    sanitized_sql = sanitize_sql_array([sql, { lat: lat, long: long }])
+
+    # 3. Pull raw string text directly from the execution block
+    connection.select_all(sanitized_sql)
+  end
+
+  def self.get_pnp_within(lat, long)
+    sql = <<-SQL
+      SELECT  
+          a.code, 
+          a.name,
+          a.asset_type as class,
+          at.pnp_class as award
+        FROM assets a
+        INNER JOIN asset_types at ON at.name = a.asset_type
+        WHERE is_active = true and minor is not true AND (
+           ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), boundary) 
+           OR ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), az_boundary)
+         )
+    SQL
+
+    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
+    sanitized_sql = sanitize_sql_array([sql, { lat: lat, long: long }])
+
+    # 3. Pull raw string text directly from the execution block
+    connection.select_all(sanitized_sql)
+  end
+
+  def self.get_pnp2_close(lat, long, limit)
+    sql = <<-SQL
+      WITH config AS (
+        SELECT ST_SetSRID(ST_MakePoint(:long, :lat), 4326) AS origin
+      )
+      SELECT 
+        r.code AS "siteID",   
+        t.pnp_class AS "award",
+        r.name AS "name",
+        ST_CardinalDirection(ST_Azimuth(c.origin, calc.azimuth_target)) AS "siteDirection",
+        calc.dist_km AS "siteDistance"
+      FROM config c
+      CROSS JOIN (
+        SELECT pnp_class, name FROM asset_types WHERE name != 'all'
+      ) t
+ -- STEP 1: Find ONLY the top N rows instantly using the spatial index
+      CROSS JOIN LATERAL (
+        SELECT 
+          a.code,
+          a.name,
+          a.asset_type,
+          a.location,
+          COALESCE(a.boundary, a.location) AS active_geom
+        FROM assets a
+        WHERE a.asset_type = t.name and is_active=true and minor is not true
+        ORDER BY COALESCE(a.boundary, a.location) <-> c.origin
+        LIMIT :limit 
+      ) r
+ -- STEP 2: Only calculate heavy math on those 10 isolated rows
+      CROSS JOIN LATERAL (
+        SELECT 
+          Round((ST_Distance_Sphere(c.origin, r.active_geom) / 1000)::numeric, 2) AS dist_km,
+          CASE WHEN r.active_geom = r.location THEN r.active_geom -- if it was location
+               ELSE ST_ClosestPoint(r.active_geom, c.origin) 
+          END AS azimuth_target
+      ) calc
+      ORDER BY "siteDistance";
+    SQL
+
+    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
+    sanitized_sql = sanitize_sql_array([sql, { lat: lat, long: long, limit: limit }])
+
+    # 3. Pull raw string text directly from the execution block
+    connection.select_all(sanitized_sql)
+  end
+
   # Create a pnp_format list of assets given the input filters
   # dxccs is an array of dxcc_prefix vallues
   # where_query is a where clause to append - muust start with AND
-  def Asset.generate_pnp_sites(dxccs, where_query)
-    assets = Asset.find_by_sql [ %Q{
-         SELECT at.pnp_class as "Award",
-       (
-          SELECT al.containing_code from asset_links al
-          WHERE al.contained_code = a.code AND al.containing_code like '__FF%%'
-          LIMIT 1
-       ) as "Location",
-       a.code as ID,
-       a.name as "Name",
-       a.region as "State",
-       ST_X(a.location) as "Longitude",
-       ST_Y(a.location) as "Latitude",
-       CASE WHEN a.district LIKE 'VK%%' THEN
-          substr(a.district,4)
-       ELSE
-          null
-       END as "ShireID",
-       (
-         SELECT ARRAY_AGG(ARRAY[cg.containing_code, cgat.pnp_class])
-         FROM asset_links cg
-         INNER JOIN assets cga ON cga.code = cg.containing_code
-         INNER JOIN asset_types cgat ON cgat.name = cga.asset_type
-         WHERE cg.contained_code = a.code
-       ) as "ContainedBy",
-       (
-         SELECT ARRAY_AGG(ARRAY[cd.contained_code, cdat.pnp_class])
-         FROM asset_links cd
-         INNER JOIN assets cda ON cda.code = cd.contained_code
-         INNER JOIN asset_types cdat ON cdat.name = cda.asset_type
-         WHERE cd.containing_code = a.code
-       ) as "Contains",
+  def self.get_pnp_close(lat, long)
+    sql = <<-SQL
+      WITH config AS (
+        SELECT ST_SetSRID(ST_MakePoint(:long, :lat), 4326) AS origin
+      )
+      SELECT 
+        r.code AS id,
+        r.code AS "siteID",   
+        t.pnp_class AS "awardID",
+        r.name AS "siteName",
+        CONCAT(calc.dist_km::varchar, 'km ', ST_CardinalDirection(ST_Azimuth(c.origin, calc.azimuth_target))) AS "siteDistance",
+        calc.dist_km AS "siteDistanceNumeric"
+      FROM config c
+      CROSS JOIN (
+        SELECT pnp_class, name FROM asset_types WHERE name != 'all'
+      ) t
+ -- STEP 1: Find ONLY the top 10 rows instantly using the spatial index
+      CROSS JOIN LATERAL (
+        SELECT 
+          a.code,
+          a.name,
+          a.asset_type,
+          a.location,
+          COALESCE(a.boundary, a.location) AS active_geom
+        FROM assets a
+        WHERE a.asset_type = t.name and is_active=true and minor is not true
+        ORDER BY COALESCE(a.boundary, a.location) <-> c.origin
+        LIMIT 10 
+      ) r
+ -- STEP 2: Only calculate heavy math on those 10 isolated rows
+      CROSS JOIN LATERAL (
+        SELECT 
+          Round((ST_Distance_Sphere(c.origin, r.active_geom) / 1000)::numeric, 2) AS dist_km,
+          CASE WHEN r.active_geom = r.location THEN r.active_geom -- if it was location
+               ELSE ST_ClosestPoint(r.active_geom, c.origin) 
+          END AS azimuth_target
+      ) calc
+      ORDER BY "siteDistanceNumeric";
+    SQL
 
-       a.region as "Region",
-       d.continent_code as "Continent",
-       a.country as "Country",
-       a.district as "District",
-       s.pnp_code as "State",
-       UPPER(at.name) as "Class"
-    FROM assets a
-    JOIN dxcc_prefixes d ON a.country = d.prefix
-    INNER JOIN asset_types at ON at.name = a.asset_type
-    JOIN states s ON s.code = a.state
-    WHERE country IN (#{dxccs.map{|d| "'#{d}'"}.join(',')})  AND a.is_active=true
-    #{where_query}
-    ORDER BY a.code
-} ]
+    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
+    sanitized_sql = sanitize_sql_array([sql, { lat: lat, long: long }])
+
+    # 3. Pull raw string text directly from the execution block
+    connection.select_all(sanitized_sql)
+  end
+
+  # Create a pnp_format list of assets given the input filters
+  # dxccs is an array of dxcc_prefix vallues
+  # where_query is a where clause to append - muust start with AND
+  def Asset.generate_pnp2_sites(dxccs, pnp_class_filter)
+    assets = ActiveRecord::Base.connection.select_all ( %Q{
+WITH CombinedLinks AS (
+  -- 1. Gather raw direction maps AND true mutual equivalents directly from the tables
+  select 
+    a.code as asset_code,
+    
+    -- Normal direction maps for Tier 3 fallbacks
+    jsonb_object_agg(cgat.pnp_class, cg.containing_code) 
+      FILTER (WHERE cgat.pnp_class IS NOT NULL) as "containedby_map",
+    jsonb_object_agg(cdat.pnp_class, cd.contained_code) 
+      FILTER (WHERE cdat.pnp_class IS NOT NULL) as "contains_map",
+      
+    -- Legacy array payloads for your API contract
+    array_agg(distinct array[cg.containing_code, cgat.pnp_class]) filter (where cg.containing_code is not null) as "containedby_arr",
+    array_agg(distinct array[cd.contained_code, cdat.pnp_class]) filter (where cd.contained_code is not null) as "contains_arr",
+    
+    -- Calculate EquivalentTo directly from the database tables
+    coalesce(
+      (
+        select array_agg(distinct array[eq_links.containing_code, eq_types.pnp_class])
+        from asset_links eq_links
+        inner join asset_links al2 on al2.containing_code = a.code and al2.contained_code = eq_links.containing_code
+        inner join assets eq_assets on eq_assets.code = eq_links.containing_code
+        inner join asset_types eq_types on eq_types.name = eq_assets.asset_type
+        where eq_links.contained_code = a.code
+      ),
+      '{}'
+    ) as "equivalent_arr",
+    
+    -- A safe, collision-free JSON map built directly from the true database intersection rows
+    coalesce(
+      (
+        select jsonb_object_agg(eq_types.pnp_class, eq_links.containing_code)
+        from asset_links eq_links
+        inner join asset_links al2 on al2.containing_code = a.code and al2.contained_code = eq_links.containing_code
+        inner join assets eq_assets on eq_assets.code = eq_links.containing_code
+        inner join asset_types eq_types on eq_types.name = eq_assets.asset_type
+        where eq_links.contained_code = a.code
+      ),
+      '{}'::jsonb
+    ) as "equivalent_map"
+
+  from assets a
+  inner join asset_types at on at.name = a.asset_type
+  left join asset_links cg on cg.contained_code = a.code
+  left join assets cga on cga.code = cg.containing_code
+  left join asset_types cgat on cgat.name = cga.asset_type
+  left join asset_links cd on cd.containing_code = a.code
+  left join assets cda on cda.code = cd.contained_code
+  left join asset_types cdat on cdat.name = cda.asset_type
+  where a.country in (#{dxccs.map{|d| "'#{d}'"}.join(',')}) 
+    and a.is_active = true and (a.minor is not true)
+    and (at.pnp_class = '#{pnp_class_filter}' or '#{pnp_class_filter}' = '')
+  group by a.code
+),
+ProcessedAssets AS (
+  -- 2. Construct the primary asset results
+  select 
+    at.pnp_class as "award", 
+    a.code as "id", 
+    a.name as "name", 
+    Round(st_x(a.location)::numeric,4)::varchar as "longitude", 
+    Round(st_y(a.location)::numeric,4)::varchar as "latitude", 
+    case when a.district like 'VK%%' then substr(a.district,4) else null end as "shireid", 
+    coalesce(cl.containedby_arr, '{}') as "containedby",
+    coalesce(cl.contains_arr, '{}') as "contains",
+    cl.equivalent_arr as "equivalent",
+    cl.containedby_map,
+    cl.contains_map,
+    cl.equivalent_map,
+    a.region as "region", 
+    d.continent_code as "continent", 
+    a.country as "country", 
+    a.district as "district", 
+    s.pnp_code as "state_pnp", 
+    upper(at.name) as "class" 
+  from assets a 
+  join dxcc_prefixes d on a.country = d.prefix 
+  inner join asset_types at on at.name = a.asset_type 
+  left join states s on s.code = a.state 
+  left join CombinedLinks cl on cl.asset_code = a.code
+  where a.country in (#{dxccs.map{|d| "'#{d}'"}.join(',')}) 
+    and a.is_active = true and (a.minor is not true)
+    and (at.pnp_class = '#{pnp_class_filter}' or '#{pnp_class_filter}' = '')
+)
+-- 3. Final Output: Merge base fields with cleanly stripped ID keys
+SELECT 
+  (
+    jsonb_build_object(
+      'siteID', id, 'name', name, 'award', award, 'state', state_pnp, 
+      'longitude', longitude, 'latitude', latitude,  
+      'containedBy', containedby, 'contains', contains, 
+      'equivalentTo', equivalent,
+      'region', region, 'continent', continent, 'country', country, 
+      'district', district, 'state', state_pnp, 'class', class
+    ) 
+  ) as "asset_json"
+
+FROM ProcessedAssets
+ORDER BY id;
+
+} )
+  json_res = assets.map { |row| JSON.parse(row['asset_json']) }
+  logger.debug json_res.to_json
+   json_res
+  end
+
+  # Create a pnp_format list of assets given the input filters
+  # dxccs is an array of dxcc_prefix vallues
+  # where_query is a where clause to append - muust start with AND
+  def Asset.generate_pnp_sites(dxccs, pnp_class_filter)
+    assets = ActiveRecord::Base.connection.select_all ( %Q{
+WITH CombinedLinks AS (
+  -- 1. Gather raw direction maps AND true mutual equivalents directly from the tables
+  select 
+    a.code as asset_code,
+    
+    -- Normal direction maps for Tier 3 fallbacks
+    jsonb_object_agg(cgat.pnp_class, cg.containing_code) 
+      FILTER (WHERE cgat.pnp_class IS NOT NULL) as "containedby_map",
+    jsonb_object_agg(cdat.pnp_class, cd.contained_code) 
+      FILTER (WHERE cdat.pnp_class IS NOT NULL) as "contains_map",
+      
+    -- Legacy array payloads for your API contract
+    array_agg(distinct array[cg.containing_code, cgat.pnp_class]) filter (where cg.containing_code is not null) as "containedby_arr",
+    array_agg(distinct array[cd.contained_code, cdat.pnp_class]) filter (where cd.contained_code is not null) as "contains_arr",
+    
+    -- Calculate EquivalentTo directly from the database tables
+    coalesce(
+      (
+        select array_agg(distinct array[eq_links.containing_code, eq_types.pnp_class])
+        from asset_links eq_links
+        inner join asset_links al2 on al2.containing_code = a.code and al2.contained_code = eq_links.containing_code
+        inner join assets eq_assets on eq_assets.code = eq_links.containing_code
+        inner join asset_types eq_types on eq_types.name = eq_assets.asset_type
+        where eq_links.contained_code = a.code
+      ),
+      '{}'
+    ) as "equivalent_arr",
+    
+    -- A safe, collision-free JSON map built directly from the true database intersection rows
+    coalesce(
+      (
+        select jsonb_object_agg(eq_types.pnp_class, eq_links.containing_code)
+        from asset_links eq_links
+        inner join asset_links al2 on al2.containing_code = a.code and al2.contained_code = eq_links.containing_code
+        inner join assets eq_assets on eq_assets.code = eq_links.containing_code
+        inner join asset_types eq_types on eq_types.name = eq_assets.asset_type
+        where eq_links.contained_code = a.code
+      ),
+      '{}'::jsonb
+    ) as "equivalent_map"
+
+  from assets a
+  inner join asset_types at on at.name = a.asset_type
+  left join asset_links cg on cg.contained_code = a.code
+  left join assets cga on cga.code = cg.containing_code
+  left join asset_types cgat on cgat.name = cga.asset_type
+  left join asset_links cd on cd.containing_code = a.code
+  left join assets cda on cda.code = cd.contained_code
+  left join asset_types cdat on cdat.name = cda.asset_type
+  where a.country in (#{dxccs.map{|d| "'#{d}'"}.join(',')}) 
+    and a.is_active = true and (a.minor is not true)
+    and (at.pnp_class = '#{pnp_class_filter}' or '#{pnp_class_filter}' = '')
+  group by a.code
+),
+ProcessedAssets AS (
+  -- 2. Construct the primary asset results
+  select 
+    at.pnp_class as "award", 
+    a.code as "id", 
+    a.name as "name", 
+    Round(st_x(a.location)::numeric,4)::varchar as "longitude", 
+    Round(st_y(a.location)::numeric,4)::varchar as "latitude", 
+    case when a.district like 'VK%%' then substr(a.district,4) else null end as "shireid", 
+    coalesce(cl.containedby_arr, '{}') as "containedby",
+    coalesce(cl.contains_arr, '{}') as "contains",
+    cl.equivalent_arr as "equivalent",
+    cl.containedby_map,
+    cl.contains_map,
+    cl.equivalent_map,
+    a.region as "region", 
+    d.continent_code as "continent", 
+    a.country as "country", 
+    a.district as "district", 
+    s.pnp_code as "state_pnp", 
+    upper(at.name) as "class" 
+  from assets a 
+  join dxcc_prefixes d on a.country = d.prefix 
+  inner join asset_types at on at.name = a.asset_type 
+  left join states s on s.code = a.state 
+  left join CombinedLinks cl on cl.asset_code = a.code
+  where a.country in (#{dxccs.map{|d| "'#{d}'"}.join(',')}) 
+    and a.is_active = true and (a.minor is not true)
+    and (at.pnp_class = '#{pnp_class_filter}' or '#{pnp_class_filter}' = '')
+)
+-- 3. Final Output: Merge base fields with cleanly stripped ID keys
+SELECT 
+  (
+    jsonb_build_object(
+      'ID', id, 'Location', id, 'Name', name, 'Award', award, 'State', state_pnp, 
+      'Longitude', longitude, 'Latitude', latitude, 'ShireID', shireid, 
+      'ContainedBy', containedby, 'Contains', contains, 
+      'EquivalentTo', equivalent,
+      'Region', region, 'Continent', continent, 'Country', country, 
+      'District', district, 'State', state_pnp, 'Class', class
+    ) 
+    || 
+    -- Safe Tier Fallbacks built on robust database-queried maps
+    jsonb_strip_nulls(
+      jsonb_build_object(
+        'WWFFID',    COALESCE(CASE WHEN award = 'WWFF'    THEN id END, equivalent_map->>'WWFF'   , containedby_map->>'WWFF'),
+        'ParkID',    COALESCE(CASE WHEN award = 'WWFF'    THEN id END, equivalent_map->>'WWFF'   , containedby_map->>'WWFF'),
+        'SOTAID',    COALESCE(CASE WHEN award = 'SOTA'    THEN id END, equivalent_map->>'SOTA'   , containedby_map->>'SOTA'),
+        'POTAID',    COALESCE(CASE WHEN award = 'POTA'    THEN id END, equivalent_map->>'POTA'   , containedby_map->>'POTA'),
+        'SANPCPAID', COALESCE(CASE WHEN award = 'SANPCPA' THEN id END, equivalent_map->>'SANPCPA', containedby_map->>'SANPCPA'),
+        'KRMNPAID',  COALESCE(CASE WHEN award = 'KRMNPA'  THEN id END, equivalent_map->>'KRMNPA' , containedby_map->>'KRMNPA')
+      )
+    )
+  ) as "asset_json"
+
+FROM ProcessedAssets
+ORDER BY id;
+
+} )
+  json_res = assets.map { |row| JSON.parse(row['asset_json']) }
+  json_res
   end
 
   #################################################################

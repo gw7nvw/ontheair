@@ -18,6 +18,8 @@ class ConsolidatedSpot < ActiveRecord::Base
       if reference  then
         dxccs = DxccPrefix.find_by("'#{reference}' like concat(iso_code,'-%%') or '#{reference}' like concat(iso_code,'LL-%%')")
         dxccs = DxccPrefix.find_by("'#{reference}' like concat(prefix,'FF-%%') or '#{reference}' like concat(prefix,'/%%') or '#{reference}' like concat(prefix,'_/%%')") if !dxccs
+        #VK SIOTA
+        dxccs = DxccPrefix.find_by(prefix: 'VK') if !dxccs and reference.match(/^VK-.*/)
         self.dxcc = dxccs.prefix if dxccs
         self.continent = dxccs.continent_code if dxccs
       end 
@@ -49,6 +51,96 @@ class ConsolidatedSpot < ActiveRecord::Base
 
   def url
     "https://ontheair.nz/spots"
+  end
+
+
+  def self.check_pnp2_spots(zone)
+    sql = <<-SQL
+      SELECT 
+        round(EXTRACT(EPOCH FROM max(updated_at))::numeric,0) as "lastUpdatedAt"
+        FROM consolidated_spots
+        WHERE (:zone = 'ALL' OR continent = :zone)
+        ORDER BY time DESC
+        LIMIT 1;
+    SQL
+
+    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
+    sanitized_sql = sanitize_sql_array([sql, { zone: zone }])
+    
+    connection.select_all(sanitized_sql)
+  end
+
+  def self.get_pnp2_spots(start_time, zone)
+    sql = <<-SQL
+      SELECT 
+        id as "spotID",
+        updated_at as "updatedAt",
+        "activatorCallsign",
+        callsign[cardinality(callsign)] AS "lastSpotterCallsign",
+        frequency,
+        mode,
+        band,
+        dxcc,
+        continent,
+        (SELECT ARRAY_AGG(ARRAY[c, t, n])
+            FROM unnest(code, spot_type, name) AS elements(c, t, n)
+        ) AS location,
+        comments as comments
+        FROM consolidated_spots
+        WHERE updated_at >= :start_time::timestamptz 
+             AND (:zone = 'ALL' OR continent = :zone)
+        ORDER BY time DESC;
+    SQL
+
+    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
+    sanitized_sql = sanitize_sql_array([sql, { start_time: start_time, zone: zone }])
+    
+    find_by_sql(sanitized_sql).map(&:attributes)
+  end
+ 
+  def self.get_pnp_spots(start_time, zone)
+    sql = <<-SQL
+      SELECT jsonb_agg(spot_json) AS final_payload FROM (
+        SELECT 
+         (
+           jsonb_build_object(
+             'actTime', f.t_val, 'actId', f.id, 'actSiteID', f.c_val, 'ID', f.c_val,
+             'actCallsign', f."activatorCallsign", 'actMode', f.mode,
+             'actComments', CASE WHEN LENGTH(f.codes_str) - LENGTH(REPLACE(f.codes_str, ',', '')) > 0 THEN CONCAT('[', f.codes_str, '] ', f.comm_val) ELSE f.comm_val END,
+             'actFreq', f.frequency, 'actClass', f.st_val, 'altLocation', f.n_val, 'actSpoter', f.cs_val,
+             'actLocation', CASE WHEN f.st_val IN ('SOTA', 'SIOTA', 'SHIRES', 'ZLOTA') THEN f.c_val ELSE f.n_val END
+           ) ||
+           jsonb_strip_nulls(
+             jsonb_build_object(
+               'WWFFid', f.code_array[array_position(f.spot_type_array, 'WWFF')],
+               'WWFFID', f.code_array[array_position(f.spot_type_array, 'WWFF')],
+               'ParkID', f.code_array[array_position(f.spot_type_array, 'WWFF')],
+               'POTAID', f.code_array[array_position(f.spot_type_array, 'POTA')],
+               'SOTAID', f.code_array[array_position(f.spot_type_array, 'SOTA')],
+               'SANPCPAID', f.code_array[array_position(f.spot_type_array, 'SANPCPA')],
+               'KRMNPAID', f.code_array[array_position(f.spot_type_array, 'KRMNPA')]
+             )
+           )
+         ) AS spot_json
+        FROM ( 
+           SELECT id, "activatorCallsign", mode, frequency, code AS code_array, spot_type AS spot_type_array,
+               time[cardinality(time)] AS t_val, code[cardinality(code)] AS c_val, spot_type[cardinality(spot_type)] AS st_val,
+               name[cardinality(name)] AS n_val, callsign[cardinality(callsign)] AS cs_val,
+               TRIM(REGEXP_REPLACE(LEFT(comments[cardinality(comments)], -10), '^[^:]*:', '')) AS comm_val,
+               array_to_string(ARRAY(SELECT DISTINCT unnest(code)), ', ') AS codes_str
+           FROM consolidated_spots
+           WHERE updated_at >= :start_time::timestamptz 
+             AND (:zone = 'ALL' OR continent = :zone)
+        ) as f
+        ORDER BY f.t_val DESC
+      ) as sub;
+    SQL
+
+    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
+    sanitized_sql = sanitize_sql_array([sql, { start_time: start_time, zone: zone }])
+    
+    # 3. Pull raw string text directly from the execution block
+    connection.select_value(sanitized_sql) || '[]'
   end
  
   def get_subs(programme_array)

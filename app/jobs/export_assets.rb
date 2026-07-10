@@ -34,12 +34,7 @@ module ExportAssets
 
     assets = Asset.generate_pnp_sites(dxccs, "")
 
-    csvfile=asset_to_csv(assets).gsub('""','')
-    f = File.open('public/assets/sites.csv', 'w') do |file|
-      file.write(csvfile)
-    end
-
-    jsonfile=assets.map{|a| a.attributes}.to_json
+    jsonfile=assets.to_json
     f = File.open('public/assets/sites.json', 'w') do |file|
       file.write(jsonfile)
     end

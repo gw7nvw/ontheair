@@ -291,95 +291,61 @@ class ApiController < ApplicationController
     end
   end
 
+  def pnp_zlota
+    respond_to do |format|
+      format.js { send_file Rails.root.join('public/assets/zlota.json'), type: 'application/json', disposition: 'inline' }
+      format.json { send_file Rails.root.join('public/assets/zlota.json'), type: 'application/json', disposition: 'inline' }
+      format.html { send_file Rails.root.join('public/assets/zlota.json'), type: 'application/json', disposition: 'inline' }
+      format.csv { send_file Rails.root.join('public/assets/zlota.csv'), type: 'text/csv', disposition: 'inline' }
+    end
+  end
+
   def pnp_getuserkey
     user = User.find_by(callsign: params[:callsign].upcase, pin: params[:pin].upcase)
     if user then res = user.pin else res = "FALSE" end
 
-    respond_to do |format|
-      format.js { render text: res }
-      format.json { render text: res  }
-      format.html { render text: res  }
-    end
+    render text: res
   end
 
   def pnp_check
     activations = ConsolidatedSpot.find_by_sql [ "select max(updated_at) as updated_at from consolidated_spots;" ]
     sota_activations = ConsolidatedSpot.find_by_sql [ "select max(updated_at) as updated_at from consolidated_spots where 'SOTA' = ANY(spot_type);" ]
     wwff_activations = ConsolidatedSpot.find_by_sql [ "select max(updated_at) as updated_at from consolidated_spots where 'WWFF' = ANY(spot_type);" ]
-    types = {}
-    ats = AssetType.find_by_sql [ "select distinct pnp_class from asset_types where name != 'all'" ]
-
-    ats.each do |at|
-      cs = ConsolidatedSpot.find_by_sql [ "select max(a.updated_at) as updated_at from assets a inner join asset_types at on at.name = a.asset_type where '#{at.pnp_class}' = at.pnp_class " ]
-      types["#{at.pnp_class}"] = cs.first.updated_at.to_i
-    end
+    # Fetch all max updated_at timestamps grouped by pnp_class in a single query
+    results = Asset.find_by_sql([
+      "SELECT at.pnp_class, MAX(a.updated_at) AS max_updated_at 
+       FROM assets a 
+       INNER JOIN asset_types at ON at.name = a.asset_type 
+       WHERE at.name != 'all' 
+       GROUP BY at.pnp_class"
+    ])
 
     sites = Asset.find_by_sql [ "select max(updated_at) as updated_at from assets"]
 
     #Hand roll a PnP style CHECK result
     res = [
-      { Class: "ACTIVATIONS", LastUpdate: activations.first.updated_at.to_i },
-      { Class: "ActivationsLastUpdate", LastUpdate: activations.first.updated_at.to_i },
-      { Class: "LastSotaActivation", LastUpdate: sota_activations.first.updated_at.to_i },
-      { Class: "LastWWFFActivation", LastUpdate: wwff_activations.first.updated_at.to_i },
-      { Class: "USERS", LastUpdate: 0 },
-      { Class: "SITES", LastUpdate: sites.first.updated_at.to_i },
-      { Class: "IOTA", LastUpdate: 1682308190 },
-      { Class: "SHIRES", LastUpdate: 1781422821 },
-      { Class: "PARKS", LastUpdate: types["WWFF"] }
+      { Class: "ACTIVATIONS", LastUpdate: activations.first.updated_at.to_i.to_s },
+      { Class: "ActivationsLastUpdate", LastUpdate: activations.first.updated_at.to_i.to_s },
+      { Class: "LastSotaActivation", LastUpdate: sota_activations.first.updated_at.to_i.to_s },
+      { Class: "LastWWFFActivation", LastUpdate: wwff_activations.first.updated_at.to_i.to_s },
+      { Class: "USERS", LastUpdate: "0" },
+      { Class: "SITES", LastUpdate: sites.first.updated_at.to_i.to_s },
+      { Class: "IOTA", LastUpdate: "1682308190" },
+      { Class: "SHIRES", LastUpdate: "1781422821" },
     ]
-    types.each do |t|
-      res.push({Class: t.first, LastUpdate: t.last })
+    results.each_with_object({}) do |row, hash|
+      res.push({Class: row.pnp_class, LastUpdate: row.max_updated_at.to_i.to_s })
+      res.push({Class: "PARKS", LastUpdate: row.max_updated_at.to_i.to_s }) if row.pnp_class=="WWFF" 
     end
 
-    respond_to do |format|
-      format.js { render json: res.to_json }
-      format.json { render json: res.to_json }
-      format.html { render json: res.to_json }
-    end
+    render json: res.to_json 
   end
 
   def pnp_close
+   logger.debug "Incoming request: #{request.format}" 
     lat = params[:lat]
     long = params[:long]
-    res = Asset.find_by_sql [ %Q{
-      WITH config AS (
-        SELECT ST_SetSRID(ST_MakePoint(#{long}, #{lat}), 4326) AS origin
-      )
-      SELECT 
-        r.code AS id,
-        r.code AS "siteID",   
-        t.pnp_class AS "awardID",
-        r.name AS "siteName",
-        CONCAT(calc.dist_km::varchar, 'km ', ST_CardinalDirection(ST_Azimuth(c.origin, calc.azimuth_target))) AS "siteDistance",
-        calc.dist_km AS "siteDistanceNumeric"
-      FROM config c
-      CROSS JOIN (
-        SELECT pnp_class, name FROM asset_types WHERE name != 'all'
-      ) t
- -- STEP 1: Find ONLY the top 10 rows instantly using the spatial index
-      CROSS JOIN LATERAL (
-        SELECT 
-          a.code,
-          a.name,
-          a.asset_type,
-          a.location,
-          COALESCE(a.boundary, a.location) AS active_geom
-        FROM assets a
-        WHERE a.asset_type = t.name
-        ORDER BY COALESCE(a.boundary, a.location) <-> c.origin
-        LIMIT 10 
-      ) r
- -- STEP 2: Only calculate heavy math on those 10 isolated rows
-      CROSS JOIN LATERAL (
-        SELECT 
-          Round((ST_Distance_Sphere(c.origin, r.active_geom) / 1000)::numeric, 2) AS dist_km,
-          CASE WHEN r.active_geom = r.location THEN r.active_geom -- if it was location
-               ELSE ST_ClosestPoint(r.active_geom, c.origin) 
-          END AS azimuth_target
-      ) calc
-      ORDER BY "siteDistanceNumeric";
-    } ]
+    res = Asset.get_pnp_close(lat, long)
 #REQUIRES following function in POSTGRES
 # CREATE OR REPLACE FUNCTION ST_CardinalDirection(azimuth float8) RETURNS character varying AS
 # $BODY$SELECT CASE
@@ -396,21 +362,13 @@ class ApiController < ApplicationController
 # END;$BODY$ LANGUAGE sql IMMUTABLE COST 100;
 # COMMENT ON FUNCTION ST_CardinalDirection(float8) IS 'input azimuth in radians; returns N, NW, W, SW, S, SE, E, or NE';
 
-    respond_to do |format|
-      format.js { render json: res.to_json }
-      format.json { render json: res.to_json }
-      format.html { render json: res.to_json }
-    end
+    render json: res.to_json 
   end
 
   def pnp_callsign
     res = User.find_by_sql [ %Q{select callsign as "callSign", firstname as name, '' as "alsoKnownAs", '0000-00-00' as "lastDate", '2026-06-01' as "lastUpdateDate" from users where firstname is not null and activated = true and callsign ~ '.[A-Z]+[0-9]+[A-Z]+'} ]
 
-    respond_to do |format|
-      format.js { render json: res.to_json }
-      format.json { render json: res.to_json }
-      format.html { render json: res.to_json }
-    end
+    render json: res.to_json 
   end
 
   def pnp_shiresid
@@ -418,47 +376,38 @@ class ApiController < ApplicationController
     long = params[:long]
 
     #get list of closest assets by location and boundary
-    shires = District.find_by_sql [ %Q{ 
-      SELECT 
-        CONCAT('(',substr(district_code,4),') ', name, ' [', district_code,']') AS name 
-        FROM districts 
-        WHERE ST_WITHIN(ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326), boundary); 
-      } ]
+    shires = District.get_pnp_shiresid(lat, long)
     name = ""
-    name = shires.first.name if shires and shires.count>0
+    name = shires.first["name"] if shires and shires.count>0
 
-    respond_to do |format|
-      format.js { render text: name }
-      format.json { render text: name  }
-      format.html { render text: name  }
-    end
+    render text: name
   end
  
   def pnp_parkid
     lat = params[:lat]
     long = params[:long]
 
-    #get list of closest assets by location and boundary
-    res = Asset.find_by_sql [ %Q{ 
-      SELECT  
-          code as id,
-          code, 
-          name 
-        FROM assets 
-        WHERE ST_WITHIN(ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326), boundary) 
-         OR ST_WITHIN(ST_SetSRID(ST_MakePoint(#{long}, #{lat}),4326), az_boundary); 
-      } ]
+    res = Asset.get_pnp_parkid(lat, long)
 
-    name = ""
-    names = res.map {|r| "("+r.code+") "+r.name.gsub(',',';')  }
-    name = names.join(", ")
-    name = "Currently not within a Park" if !name or name==""
-
-    respond_to do |format|
-      format.js { render text: name }
-      format.json { render text: name  }
-      format.html { render text: name  }
+    logger.debug res.to_json
+    if res and res.count>0
+      res=res.first 
+      puts res.to_s 
+      name = "(#{res["code"]}) #{res["name"].gsub(',',';')}"  
+    else
+      name = "Currently not within a Park" 
     end
+
+    render text: name
+  end
+ 
+
+  def pnp_within
+    lat = params[:lat]
+    long = params[:long]
+
+    res = Asset.get_pnp_within(lat, long)
+    render json: res.to_json 
   end
  
 
@@ -473,40 +422,115 @@ class ApiController < ApplicationController
       asset_types = AssetType.where("pnp_class ilike '#{params[:id]}'")
       if asset_types and asset_types.count>0
         asset_type = asset_types.first
-        where_query = "AND at.pnp_class = '#{asset_type.pnp_class.upcase}' "
+        where_query = asset_type.pnp_class.upcase
         res = Asset.generate_pnp_sites(dxccs, where_query)
       end
     end
-    respond_to do |format|
-      format.js { render json: res.to_json }
-      format.json { render json: res.to_json }
-      format.html { render json: res.to_json }
-    end
+    render json: res.to_json.gsub('/', '\\/')
   end
 
   #GET SPOTS
   def pnp_all
-    zone = 'OC'
+    zone = 'ALL'
     zone = params[:zone].upcase if params[:zone]
-    zone_query = " and continent = '#{zone}'" if zone != 'ALL'
-    duration = 520
+    duration = 120
 
     duration = params[:id].to_i if params[:id]
-    spots=ConsolidatedSpot.where("updated_at>? #{zone_query}",duration.minutes.ago.strftime("%Y-%m-%dT%H:%M:%SZ")).order('time desc')
-    res = to_pnp_spots(spots)
-    respond_to do |format|
-      format.js { render json: res.to_json.gsub('/','\/') }
-      format.json { render json: res.to_json.gsub('/','\/') }
-      format.html { render json: res.to_json.gsub('/','\/') }
+    start_time = duration.minutes.ago.utc.iso8601
+    logger.debug "START: #{start_time}"
+    raw_json = ConsolidatedSpot.get_pnp_spots(start_time, zone)
+    
+    render json: raw_json
+  end
+
+  #PNP post alert
+  def pnp_post_alert
+    logger.debug params.to_json
+    if api_authenticate(params)
+      user = User.find_by(callsign: params[:userID].upcase)
+      res = { success: true, message: 'Thanks for the data!' }
+      p = Post.new
+      p.callsign = params[:actCallsign] || ''
+      p.freq = params[:actFreq].to_f
+      p.mode = params[:actMode] || ''
+      p.created_by_id = user.id
+      p.updated_by_id = user.id
+      p.description = params[:actComments] || ''
+      asset_code = params[:actSite] || ''
+      assets = Asset.assets_from_code(asset_code)
+      if !assets || assets.count.zero? || assets.first[:code].nil?
+        logger.error 'Asset not known:' + asset_code + ' ... trying to continue'
+        a_code = ''
+        a_name = 'Unrecognised location: ' + asset_code
+        a_ext = false
+      else
+        a_code = assets.first[:code]
+        a_codes = assets.map{|a| a[:code]}
+        a_name = assets.first[:name]
+        a_ext = assets.first[:external]
+      end
+
+      if params[:do_not_lookup] then p.do_not_lookup=true end
+      p.asset_codes=a_code != '' ? a_codes : []
+      debug = p.description.upcase['DEBUG'] ? true : false
+      al_date = params[:alDate]
+      al_time = params[:alTime]
+      p.referenced_time = (al_date + ' ' + al_time + ' UTC').to_time
+      p.referenced_date = (al_date + ' 00:00:00 UTC').to_time
+      p.updated_at = Time.now
+      p.title = 'ALERT: ' + p.callsign + ' going portable at ' + a_name + '[' + a_code + '] on ' + p.freq.to_s + '/' + p.mode + ' at ' + p.referenced_time.strftime('%Y-%m-%d %H:%M') + 'UTC'
+      topic_id = if debug
+                       TEST_ALERT_TOPIC
+                     else
+                       ALERT_TOPIC
+                     end
+      success = p.save
+      if success
+        if a_ext == false
+          p.add_map_image
+          success = p.save
+        end
+
+        item = Item.new
+        item.topic_id = topic_id
+        item.item_type = 'post'
+        item.item_id = p.id
+        item.save
+        item.send_emails
+      else
+        logger.error "Bad alert"
+        res = { success: false, message: u.errors.first.to_s }
+      end
+
+   else
+      logger.error "Authentication failed"
+      res = { success: false, message: 'Authentication failed!' }
     end
+    logger.debug res.to_json
+    render json: res.to_json
   end
 
   #PNP post spot
   def pnp_spot
-    parstr = params.first
-    parstr = parstr.first
-    parstr = JSON.parse(parstr)
-    params=parstr.transform_keys(&:to_sym) 
+    # handle both PnP and VKPortaLog
+    logger.debug params.to_json
+    logger.debug request.raw_post
+    if params and params.first and params.first.last.nil? then
+      logger.debug "Looks like a VKPortaLog JSON Srting POST"
+      #VKPortaLog - JSON
+      parstr = params.first
+      parstr = parstr.first
+      parstr = JSON.parse(parstr)
+      params=parstr.transform_keys(&:to_sym) 
+    elsif params==[] or params.nil? or params.blank?
+      #Parameterised - do nothing
+      logger.debug "Looks like a iPnP parameterised POST"
+      parstr = request.raw_post
+      parstr = JSON.parse(parstr)
+      params=parstr.transform_keys(&:to_sym) 
+    else
+      #hopefully we got some real params as the API is designed to do!
+    end
     logger.debug params.to_s
     if api_authenticate(params)
       user = User.find_by(callsign: params[:userID].upcase)
@@ -572,60 +596,29 @@ class ApiController < ApplicationController
       res = { success: false, message: 'Authentication failed!' }
     end
     logger.debug res.to_json
-    respond_to do |format|
-      format.js { render json: res.to_json }
-      format.json { render json: res.to_json }
-      format.html { render json: res.to_json }
-    end
+    render json: res.to_json
   end
 
-  def pnp_sota
-    duration = 120
-    duration = params[:id].to_i if params[:id]
-    spots=ConsolidatedSpot.where("updated_at>? and ? = ANY(spot_type) and (dxcc = 'VK' or dxcc = 'ZL')",duration.minutes.ago, "SOTA")  
-    res = to_pnp_spots(spots)
-    respond_to do |format|
-      format.js { render json: res.to_json }
-      format.json { render json: res.to_json }
-      format.html { render json: res.to_json }
-    end
+  def pnp_delete_spot
+    logger.debug params.to_json
+    logger.debug request.raw_post
+    res = { success: true, message: "Spot deleted"  }
+    render json: res.to_json
   end
-
-  def pnp_wwff
-    duration = 120
-    duration = params[:id].to_i if params[:id]
-    spots=ConsolidatedSpot.where("updated_at>? and ? = ANY(spot_type) and (dxcc = 'VK' or dxcc = 'ZL')",duration.minutes.ago, "WWFF") 
-    res = to_pnp_spots(spots)
-    respond_to do |format|
-      format.js { render json: res.to_json }
-      format.json { render json: res.to_json }
-      format.html { render json: res.to_json }
-    end
-  end
-
   def pnp_vk
-    spots=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where (dxcc = 'VK' or dxcc = 'ZL') order by time desc limit 10" ]
-    res = to_pnp_spots(spots)
-    respond_to do |format|
-      format.js { render json: res.to_json }
-      format.json { render json: res.to_json }
-      format.html { render json: res.to_json }
-    end
+    params[:zone]='OC'
+    pnp_all
   end
 
   def pnp_check_spots 
-    spots=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where (dxcc = 'VK' or dxcc = 'ZL') order by time desc limit 1" ]
+    spots = ConsolidatedSpot.find_by_sql [ "select max(updated_at) as updated_at from consolidated_spots;" ]
     spot=spots.first
     res = [{ActivationsLastUpdate: spot.updated_at.to_i}]
-    respond_to do |format|
-      format.js { render json: res.to_json }
-      format.json { render json: res.to_json }
-      format.html { render json: res.to_json }
-    end
+    render json: res.to_json
   end
 
   def pnp_alerts
-    zone = 'OC'
+    zone = 'ALL'
     zone = params[:zone].upcase if params[:zone]
     zone_query = " and continent = '#{zone}'" if zone != 'ALL'
 
@@ -642,11 +635,20 @@ class ApiController < ApplicationController
     if all_alerts then all_alerts = all_alerts.sort_by { |hsh| hsh[:starttime].to_s }.reverse! end
 
     res = to_pnp_alerts(all_alerts)
-    respond_to do |format|
-      format.js { render json: res.to_json }
-      format.json { render json: res.to_json }
-      format.html { render json: res.to_json }
+    render json: res.to_json
+  end
+
+  def pnp_verifyuser
+    if params[:user] and params[:pin] then
+      user=User.find_by(callsign: params[:user].upcase, pin: params[:pin].upcase)
     end
+
+    if user then 
+       res = '"TRUE"'
+    else
+       res = '"FALSE"'
+    end
+    render text: res
   end
 
   private
@@ -716,11 +718,13 @@ class ApiController < ApplicationController
           pnp_spot[:actTime] = spot.time[index]
           pnp_spot[:actID] = spot.id.to_s
           pnp_spot[:actSiteID] = spot.code[index]
+          pnp_spot[:ID] = spot.code[index]
           pnp_spot[:actCallsign] = spot.activatorCallsign
           pnp_spot[:actMode] = spot.mode
           pnp_spot[:actFreq] = spot.frequency
           pnp_spot[:actClass] = spot.spot_type[index]
-          if spot.spot_type[index] == "SOTA" then
+          case spot.spot_type[index] 
+          when "SOTA", "SIOTA", "SHIRES", "ZLOTA"
             pnp_spot[:actLocation] = spot.code[index] 
             pnp_spot[:altLocation] = spot.name[index]
           else

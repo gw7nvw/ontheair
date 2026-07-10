@@ -346,6 +346,9 @@ class Post < ActiveRecord::Base
   def send_to_pota(debug, from, callsign, a_code, freq, mode, description)
     result = true
     messages = ''
+    if debug then
+      return { result: result, messages: messages }
+    end
 
     # is this a valid sota reference?
     asset_type = Asset.get_asset_type_from_code(a_code)

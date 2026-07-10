@@ -37,6 +37,38 @@ module AssetGisTools
 
   end
 
+  def Asset.add_vk_sota_activation_zone_by_region(state)
+    regions = Region.where(state_code: state).order(:sota_code)
+
+    regions.each do |region|
+      puts "REGION: #{region.name} #{region.sota_code}"
+      puts "SOTA"
+      as=Asset.where("code like '#{region.sota_code.gsub('-','/')}%%'").order(:code)
+      as.each do |a|
+        puts a.code
+        a.add_vk_sota_activation_zone(25)
+      end
+      puts "HEMA"
+      as=Asset.where(region: region.sota_code, asset_type: 'hump')
+      as.each do |a|
+        puts a.code
+        a.add_vk_sota_activation_zone(25)
+      end
+      AustraliaDem.clear_table
+    end 
+    true
+  end
+
+  def add_vk_sota_activation_zone(buffer = 25)
+    polygon = AustraliaDem.get_sota_az(location.y, location.x, altitude)
+    if polygon then
+      puts "Added AZ"
+      ActiveRecord::Base.connection.execute("update assets set az_boundary=ST_geomfromtext('#{polygon}',4326) where id=#{id};")
+    else
+      puts "NO AZ FOUND"
+    end
+  end
+
   # add activation zone as area contained by contour 24m below summit,
   # surrounding summit.
   def add_sota_activation_zone(buffer = 25)
