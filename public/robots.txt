@@ -1,14 +1,20 @@
 #See http://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
 #
-# To ban all spiders from the entire site uncomment the next two lines:
+# Step 1: Target friendly search bots
 User-agent: Googlebot
 User-agent: Bingbot
 User-agent: Qwantbot
 User-agent: DuckDuckBot
-Allow: /$
-Allow: /assets
+
+# Step 3: Grant access ONLY to the home page and the /assets tree
 Allow: /assets/
+Allow: /assets
+Allow: /
+
+# Step 4: Block absolutely everything else on the domain
+Disallow: /
+
+# Step 5: Treat all other scrapers the same (or block them entirely)
 User-agent: *
 Disallow: /
-#User-Agent: *
-Sitemap: https://ontheair.nz/sitemap.xml
+

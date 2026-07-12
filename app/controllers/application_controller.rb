@@ -2,6 +2,10 @@
 
 # typed: false
 class ApplicationController < ActionController::Base
+  before_action :determine_country
+  helper_method :current_country 
+  helper_method :safe_session_get
+
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
@@ -22,28 +26,12 @@ class ApplicationController < ActionController::Base
     as=AdminSettings.first
     @default_layer = params[:baselayer] if params[:baselayer]
     if current_user then
-      session[:dxcc] = current_user.dxcc if session[:dxcc] == nil or session[:dxcc] == ""
       @default_layer = current_user.baselayer if current_user.baselayer and !@default_layer
       @default_layer = as.default_layer if !@default_layer
     end
-    if session[:dxcc] == nil or session[:dxcc] == ""  
-      if request.host == "parksnpeaks.org" or request.host == "dev.ontheair.nz" then
-        session[:dxcc]='VK' 
-      else
-        session[:dxcc]='ZL' 
-      end
-    end
-
     @preferred_layer = @default_layer
-    if params[:dxcc]
-      if params[:dxcc].class.to_s=="Hash"
-        session[:dxcc]=params[:dxcc][:prefix].upcase
-      elsif params[:dxcc].class.to_s=="String"
-        session[:dxcc]=params[:dxcc].upcase
-      end
-    end
 
-    if session[:dxcc]=='VK'
+    if @current_country=='VK'
       @dxcc = 'VK'
       @default_x =  16085209
       @default_y = -4006631
@@ -56,7 +44,7 @@ class ApplicationController < ActionController::Base
     end
 
  
-    if session[:dxcc]=='VK' then as.title = as.title.gsub('ZL','') end
+    if @current_country=='VK' then as.title = as.title.gsub('ZL','VK') end
     @site_title="'"+as.title+"'"
     @site_title_unquoted=as.title
     @site_title_image=as.imagepath
@@ -97,7 +85,7 @@ class ApplicationController < ActionController::Base
     m = Maplayer.find_by(name: @preferred_layer)
     @preferred_extent=m.extent if m
     @proj = 'EPSG:'+params[:proj] if params[:proj]
-    session[:proj] = @proj
+    #session[:proj] = @proj if has_session_cookie?
     @proj_srs=@proj[5..-1].to_i
     @layer = params[:layer] if params[:layer]
     @default_pointlayers = current_user.pointlayers if current_user
@@ -110,6 +98,7 @@ class ApplicationController < ActionController::Base
     if !as.last_monthly_sched_at || ((as.last_monthly_sched_at + 30.days) < time_now)
       if ENV['RAILS_ENV'] == 'production'
         Resque.enqueue(ExportAssets)
+        Resque.enqueue(TidyUserAgentsJob)
         as.update_attribute(:last_monthly_sched_at, Time.now)
       elsif ENV['RAILS_ENV'] == 'development'
         as.update_attribute(:last_monthly_sched_at, Time.now)
@@ -129,21 +118,38 @@ class ApplicationController < ActionController::Base
   end
 
   def store_last_index_page
-    session[:last_index_page] = [] if session[:last_index_page].nil?
-
-    if params[:back]
-      session[:last_index_page].pop
-    else
-      unless ['/styles.js', '/query', '/layerswitcher', '/legend'].include?(request.fullpath.split('?').first)
-        session[:last_index_page].push(request.fullpath).split('?back=true').first.split('&back=true').first
+    if request.referrer.present?
+      begin
+        uri = URI.parse(request.referer)
+        if uri.host.nil? || uri.host == request.host
+          # Combine just the path and the query params (e.g., "/items?page=2&dxcc=AU")
+          last_url = "#{uri.path}?#{uri.query}".chomp("?")
+          #iitialise the stack if empty
+          session[:last_index_page] = [] if session[:last_index_page] == nil 
+    
+          # pop a page for back
+          if params[:back]
+            session[:last_index_page].pop
+          #or add last page for forward
+          else
+            unless ['/styles.js', '/query', '/layerswitcher', '/legend'].include?(request.fullpath.split('?').first)
+              session[:last_index_page].push("#{uri.path}?#{uri.query}".chomp("?").gsub('?back=true','').gsub('&back=true',''))
+            end
+          end
+        end
+      rescue URI::InvalidURIError
+    # Fallback to default if the referrer string is corrupted
       end
     end
   end
 
   def retrieve_last_index_page_or_default(default_path: root_path)
-    concat_char = (session[:last_index_page][-2] || default_path).include?('?') ? '&' : '?'
-
-    (session[:last_index_page][-2] || default_path) + concat_char + 'back=true'
+    if has_session_cookie? 
+      if session[:last_index_page].present?
+        concat_char = (session[:last_index_page][-1] || default_path).include?('?') ? '&' : '?'
+        (session[:last_index_page][-1] || default_path) + concat_char + 'back=true'
+      end
+    end
   end
 
   def signed_in_user
@@ -198,5 +204,49 @@ class ApplicationController < ActionController::Base
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate' # HTTP 1.1.
     response.headers['Pragma'] = 'no-cache' # HTTP 1.0.
     response.headers['Expires'] = '0' # Proxies.
+  end
+
+  def current_country
+    @current_country
+  end
+
+  private
+
+  # Centralized cookie check to protect our database from bot lookups
+  def has_session_cookie?
+    (cookies[:remember_token2].present? or cookies[:remember_token3].present?)
+  end
+
+  def safe_session_get(key, default_value = nil)
+    if has_session_cookie?
+      session[key] || default_value
+    else
+      default_value
+    end
+  end
+
+  def determine_country
+    if params[:dxcc].present? and params[:dxcc].class.to_s=="String"
+      # 1. Absolute Highest Priority: The user just explicitly chose a country via an action/link
+      @current_country=params[:dxcc].upcase
+      session[:dxcc] = @current_country
+      # 2. Check if they have an active session cookie
+    elsif has_session_cookie? && session[:dxcc].present?
+      @current_country = session[:dxcc]
+    elsif current_user.present? && current_user.dxcc.present?
+      # 3. Second Priority: Use the logged-in user's profile database setting
+      @current_country = current_user.dxcc
+      session[:dxcc] = @current_country 
+    else
+      # 4. Fall back to the domain name if no session exists (or if it's an empty session)
+      @current_country = case request.host
+                         when /.*\.nz$/
+                           'ZL'
+                         when /.*\.com\.au$/
+                           'VK'
+                         else
+                           'ZL' # Default fallback
+                         end
+    end
   end
 end

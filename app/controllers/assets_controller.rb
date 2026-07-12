@@ -6,7 +6,7 @@ class AssetsController < ApplicationController
   include ApplicationHelper
   include AssetGisTools
 
-  before_action :signed_in_user, only: %i[edit update create new associations add_wish remove_wish rate]
+  before_action :signed_in_user, only: %i[edit update create new map_associate associations add_wish remove_wish rate]
 
   def associations
     @asset=Asset.find_by(code: params[:id].gsub('_','/'))
@@ -21,6 +21,88 @@ class AssetsController < ApplicationController
       @newparent.containing_code=@asset.code
     end
   end
+  def map_associate
+    @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+    @item = Asset.new if !@item
+    if @asset.nil?
+      flash[:error] = 'Sorry - ' + code + ' does not exist in our database'
+      redirect_to '/assets'
+      return true
+    end
+    @datasources=['capad','vk_state_parks','vk_hydro']
+  end
+
+  def map_find_poly
+    @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+    @datasources=['capad','vk_state_parks','vk_hydro']
+    a = params[:asset]
+    x = a[:x]
+    y = a[:y]
+    location = a[:location]
+    datasource = params[:ds][:datasource]
+    puts "DATASOURCE: #{datasource}"
+    if datasource == 'vk_hydro' then
+
+      item = VkLake.find_by_sql [ "select * from vk_lakes where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), wkb_geometry)" ]
+
+      puts item.to_json
+
+      @item = Asset.new
+      if item and item.count>0
+        @item.boundary = item.first.wkb_geometry 
+        @item.name = item.first.name
+        @item.old_code = item.first.objectid.to_s
+      end
+    elsif datasource == 'capad' then
+
+      item = Capad.find_by_sql [ "select * from capad where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), wkb_geometry)" ]
+
+      puts item.to_json
+
+      @item = Asset.new
+      if item and item.count>0
+        @item.boundary = item.first.wkb_geometry 
+        @item.name = item.first.name
+        @item.old_code = item.first.pa_id.to_s
+      end
+    elsif datasource == 'vk_state_parks' then
+      item = VkStatePark.find_by_sql [ "select * from vk_state_park where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), boundary)" ]
+
+      puts item.to_json
+
+      @item = Asset.new
+      if item and item.count>0
+        @item.boundary = item.first.boundary 
+        @item.name = item.first.name
+        @item.old_code = item.first.unique_name
+      end
+    end
+    render 'map_associate'
+  end
+
+  def map_apply_poly
+    if signed_in? && current_user.is_modifier
+    @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+    @datasources=['capad','vk_state_parks','vk_hydro']
+    @item = Asset.new
+  
+    if @asset then
+      @asset.boundary = params[:boundary]
+      @asset.old_code = params[:old_code]
+      puts @asset.to_json
+      @asset.save
+      @asset.reload
+      @asset.save
+    end
+    render 'map_associate'
+    else
+      flash[:error] = 'You do not have permissions to create a new asset'
+      redirect_to '/assets'
+    end
+  end
+        
+  
+    
 
   def rate
     show
@@ -118,8 +200,8 @@ class AssetsController < ApplicationController
 
   def index_prep
     dxcc = params[:dxcc][:prefix] if params[:dxcc]
-    dxcc = session[:dxcc] if !dxcc
-    dxcc = 'ZL' if !dxcc
+    dxcc = @current_dxcc if !dxcc
+    @dxcc_selected = dxcc
 
     whereclause = 'true'
 

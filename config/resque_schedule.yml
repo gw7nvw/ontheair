@@ -15,3 +15,10 @@ do_export_assets:
   class: ExportAssets
   args:
   description: Runs the perform method in ExportAssets monthly
+
+do_tidy_user_agents:
+  every: 2591000s
+  class: TidyUserAgentsJob
+  args:
+  description: Runs the perform method in TidyUserAgentsJob monthly-ish
+

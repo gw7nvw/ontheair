@@ -16,6 +16,17 @@ module SessionsHelper
     self.current_user = user
     session[:user_id] = user.id
     flush_old_tokens(user)
+    request_ip = request.remote_ip
+    user_agent = request.user_agent || 'Unknown'
+    UserAgent.where(user_ip: request_ip, user_agent: user_agent).update_all(
+        access_count: 0,
+        suspicious_access_count: 0,
+        suspected_bot: false,
+        confirmed_bot: false,
+        confirmed_human: true,
+        updated_at: Time.now
+    )
+
   end
 
   def flush_old_tokens(user)
@@ -54,6 +65,7 @@ module SessionsHelper
   end
 
   def current_user
+    return nil unless cookies[:remember_token2].present? or cookies[:remember_token3].present? 
     remember_token = if ENV['RAILS_ENV'] == 'production'
                        User.digest(cookies[:remember_token2])
                      else

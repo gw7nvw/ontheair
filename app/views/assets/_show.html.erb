@@ -21,6 +21,9 @@
     <% if @asset.asset_type=="pota park" %>
       <%=  link_to "Update from POTA", '/assets/'+@asset.safecode+'/refresh_pota', class: "btn btn-small btn-primary", remote: true, :id => 'sota', :onclick => "linkHandler('sota')" %>
     <% end %>
+    <% if write_access? and current_user.is_admin %>
+      <%= link_to "Find Boundary", '/assets/'+@asset.safecode+'/map_associate', class: "btn btn-small btn-primary", remote: true, :id => 'map_associate', :onclick => "linkHandler('map_associate')" %>
+    <% end %>
     <% if write_access? and current_user.is_modifier %>
       <%= link_to "Associate", '/assets/'+@asset.safecode+'/associations', class: "btn btn-small btn-primary", remote: true, :id => 'associations', :onclick => "linkHandler('associations')" %>
       <%= link_to "Edit", '/assets/'+@asset.safecode+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
@@ -94,12 +97,12 @@
     </div>
   <% end %>
 
-  <% if @asset.country == 'ZL' %>
+  <% if true #@asset.country == 'ZL' %>
     <% if @asset.public_access==false %>
       <div class="erow" id="publicaccess" style='color:#bb0000'>
         <div class="rowtitle" style='color:#bb0000'><%= "Public access to AZ" %></div>
         <div class="rowtext" >
-          No <%= link_to image_tag("/assets/info.png"), ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
+          None known <%= link_to image_tag("/assets/info.png"), ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
           <small><i><%= link_to '(what does this mean?)', ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></i></small>
         </div>
       </div>
@@ -170,6 +173,39 @@
               <% @asset.access_park_ids.each do |rid| %>
                 <% r=Asset.find_by(id: rid) %>
                 <% park_names+=[r.name] %>
+              <% end %>
+              <%= park_names.uniq.join('; ') %>
+            </span>
+          </div>
+        </div>
+      <% end %>
+
+      <% if @asset.access_capad_park_ids != nil and @asset.access_capad_park_ids != [] then %>
+        <div class="erow" id="capadparkids">
+          <div class="rowtitle"></div>
+          <div class="rowtext" style="color:#00bb00"> 
+            Via park(s): 
+            <span style="color:#333">
+              <% park_names=[] %>
+              <% @asset.access_capad_park_ids.each do |rid| %>
+                <% r=Capad.find_by(pa_id: rid) %>
+                <% park_names+=[(r.name||"").titlecase+" "+(r.capad_type||"").titlecase] %>
+              <% end %>
+              <%= park_names.uniq.join('; ') %>
+            </span>
+          </div>
+        </div>
+      <% end %>
+      <% if @asset.access_vk_state_park_ids != nil and @asset.access_vk_state_park_ids != [] then %>
+        <div class="erow" id="stateparkids">
+          <div class="rowtitle"></div>
+          <div class="rowtext" style="color:#00bb00"> 
+            Via state park(s): 
+            <span style="color:#333">
+              <% park_names=[] %>
+              <% @asset.access_vk_state_park_ids.each do |rid| %>
+                <% r=VkStatePark.find_by(id: rid) %>
+                <% park_names+=[(r.name||"").titlecase] %>
               <% end %>
               <%= park_names.uniq.join('; ') %>
             </span>

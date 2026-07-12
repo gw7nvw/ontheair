@@ -87,7 +87,19 @@
           <%=render 'maps/map' %>
         </div> 
         <div id="right_panel" class="span7"> 
-          <%=yield %>
+          <%=yield %>  
+          <div class="sys-nodes-container" style="display: none !important; visibility: hidden; opacity: 0; width: 0; height: 0;">
+            <% 
+              # Generate a couple of random fake tokens and anchor words on every page load
+              trap_words = %w[Support Index Archives Readme Status Settings Legacy Nodes]
+      
+              2.times do 
+                fake_id = SecureRandom.hex(4)
+                display_text = trap_words.sample
+            %>
+              <a href="<%= challenge_trap_path(id: fake_id) %>" tabindex="-1" aria-hidden="true" rel="nofollow"><%= display_text %></a>
+            <% end %>
+          </div>
         </div> 
       </div>
       <div class="clear"></div> 

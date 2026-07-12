@@ -40,7 +40,7 @@
 
       <%= f.label :country %>
       <% dxcc = @asset.country %>
-      <% if dxcc == nil or dxcc =='' and session[:dxcc] then dxcc = session[:dxcc] end %>
+      <% if dxcc == nil or dxcc =='' and @current_country then dxcc = @current_country end %>
       <%= f.collection_select(:country, DxccPrefix.where(is_active: true).order(:name), :prefix, :code_name,{selected: dxcc, include_blank: 'None'}, style: "margin-bottom: 0px;height: 24px;") %>
 
       <%= f.label :region %>

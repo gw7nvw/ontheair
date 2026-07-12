@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20260527003752) do
+ActiveRecord::Schema.define(version: 20260712002710) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -19,6 +19,7 @@ ActiveRecord::Schema.define(version: 20260527003752) do
   enable_extension "postgres_fdw"
   enable_extension "unaccent"
   enable_extension "pg_stat_statements"
+  enable_extension "btree_gist"
 
   create_table "admin_settings", force: true do |t|
     t.string   "qrpnz_email"
@@ -145,8 +146,12 @@ ActiveRecord::Schema.define(version: 20260527003752) do
     t.float    "az_area"
     t.string   "country"
     t.string   "state"
+    t.string   "access_capad_park_ids",                                                   default: [], array: true
+    t.string   "access_vk_state_park_ids",                                                default: [], array: true
   end
 
+  add_index "assets", ["asset_type", "updated_at"], :name => "index_assets_on_asset_type_and_updated_at"
+  add_index "assets", ["asset_type"], :name => "idx_assets_type_and_spatial"
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
   add_index "assets", ["boundary"], :name => "assets_boundary_index", :spatial => true
   add_index "assets", ["boundary_quite_simplified"], :name => "assets_boundary_quite_simplified_index", :spatial => true
@@ -156,6 +161,7 @@ ActiveRecord::Schema.define(version: 20260527003752) do
   add_index "assets", ["location"], :name => "assets_location_index", :spatial => true
   add_index "assets", ["old_code"], :name => "index_name"
   add_index "assets", ["safecode"], :name => "index_assets_on_safecode"
+  add_index "assets", ["updated_at"], :name => "idx_assets_uppdated_at"
 
   create_table "award_thresholds", force: true do |t|
     t.integer  "threshold"
@@ -237,6 +243,8 @@ ActiveRecord::Schema.define(version: 20260527003752) do
     t.string   "dxcc"
     t.string   "continent"
   end
+
+  add_index "consolidated_spots", ["updated_at"], :name => "idx_cs_updated_at"
 
   create_table "contacts", force: true do |t|
     t.string   "callsign1"
@@ -855,6 +863,8 @@ ActiveRecord::Schema.define(version: 20260527003752) do
     t.spatial  "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
   end
 
+  add_index "states", ["boundary"], :name => "states_geom_idx", :spatial => true
+
   create_table "timezones", force: true do |t|
     t.string   "name"
     t.string   "description"
@@ -895,6 +905,22 @@ ActiveRecord::Schema.define(version: 20260527003752) do
     t.boolean  "doc_ignore_error"
     t.string   "doc_location"
   end
+
+  create_table "user_agents", force: true do |t|
+    t.text     "user_agent",                          null: false
+    t.integer  "access_count",            default: 0, null: false
+    t.text     "user_ip",                             null: false
+    t.boolean  "suspected_bot"
+    t.boolean  "confirmed_bot"
+    t.integer  "suspicious_access_count", default: 0, null: false
+    t.datetime "created_at",                          null: false
+    t.datetime "updated_at",                          null: false
+    t.integer  "html_count",              default: 0, null: false
+    t.integer  "js_count",                default: 0, null: false
+    t.boolean  "confirmed_human"
+  end
+
+  add_index "user_agents", ["user_ip", "user_agent"], :name => "index_user_agents_on_user_ip_and_user_agent", :unique => true
 
   create_table "user_callsigns", force: true do |t|
     t.integer  "user_id"
@@ -1010,6 +1036,11 @@ ActiveRecord::Schema.define(version: 20260527003752) do
 
   add_index "vk_assets", ["award"], :name => "vk_award_indx"
   add_index "vk_assets", ["code"], :name => "vk_code_indx"
+
+  create_table "vk_lakes", force: true do |t|
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "volcanic_fields", force: true do |t|
     t.string  "code"

@@ -19,7 +19,7 @@ class UsersController < ApplicationController
 
   def district_progress
     @dxcc = params[:dxcc] if params[:dxcc]
-    @dxcc = session[:dxcc] if !@dxcc
+    @dxcc = @current_country if !@dxcc
     @dxcc = 'ZL' if !@dxcc
     @region = Region.find_by(sota_code: params[:region]) 
     @user = User.find_by(callsign: params[:id].upcase)
@@ -34,7 +34,7 @@ class UsersController < ApplicationController
 
   def region_progress
     @dxcc = params[:dxcc] if params[:dxcc]
-    @dxcc = session[:dxcc] if !@dxcc
+    @dxcc = @current_country if !@dxcc
     @dxcc = 'ZL' if !@dxcc
     @user = User.find_by(callsign: params[:id].upcase)
     @activations = @user.area_activations('region')
@@ -54,8 +54,8 @@ class UsersController < ApplicationController
 
   def awards
     @dxcc = params[:dxcc] if params[:dxcc]
-    @dxcc = session[:dxcc] if !@dxcc
-    $dxcc = 'ZL' if !@dxcc
+    @dxcc = @current_country if !@dxcc
+    @dxcc = 'ZL' if !@dxcc
     @user = User.find_by(callsign: params[:id].upcase)
     @awards = Award.where(count_based: true, is_active: true).sort_by &:name
     @district_awards = AwardUserLink.where(award_type: 'district', user_id: @user.id).sort_by { |a| a.district.name }

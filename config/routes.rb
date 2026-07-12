@@ -15,8 +15,13 @@ match '/alerts',   to: 'static_pages#alerts',   via: 'get'
 match '/alerts/:id/delete',   to: 'static_pages#delete_alert',   via: 'get'
 match '/admin_stats',   to: 'static_pages#admin_stats',   via: 'get'
 match '/ack_news',   to: 'static_pages#ack_news',   via: 'get'
-match '/dxcc/:id',   to: 'static_pages#dxcc',   via: 'get'
+match '/dxcc/:dxcc',   to: 'static_pages#dxcc',   via: 'get'
 
+resources :blocks, only: [:index]
+get 'blocks/:id/delete', to: 'blocks#delete'
+get 'blocks/reset', to: 'blocks#reset'
+get 'blocks/:id/human', to: 'blocks#human'
+get 'blocks/:id/robot', to: 'blocks#robot'
 resources :asset_links, only: [:create]
 get 'asset_links/:id/delete', to: 'asset_links#delete'
 
@@ -25,6 +30,9 @@ get 'asset_web_links/:id/delete', to: 'asset_web_links#delete'
 
 resources :assets, only: [:index, :show, :edit, :new, :create, :update]
 match "/assets/:id/associations", :to => "assets#associations", :via => "get"
+match "/assets/:id/map_associate", :to => "assets#map_associate", :via => "get"
+match "/assets/:id/find_poly", :to => "assets#map_find_poly", :via => "get"
+match "/assets/:id/apply_poly", :to => "assets#map_apply_poly", :via => "post"
 match "/assets/:id/rate", to: "assets#rate", via: "post"
 match "/assets/:id/derate", to: "assets#derate", via: "get"
 match "/assets/:id/rate", to: "assets#rate", via: "patch"
@@ -47,6 +55,10 @@ resources :contacts, only: [:index, :show, :new, :create]
 match "/contacts/:id/editlog", :to => "logs#editcontact", :via => "get"
 match "/contacts/:id/confirm", :to => "contacts#confirm", :via => "get"
 match "/contacts/:id/refute", :to => "contacts#refute", :via => "get"
+
+get  '/challenge',          to: 'challenges#show',   as: :challenge
+get  '/challenge/verify',   to: 'challenges#verify', as: :challenge_verify
+get  '/challenge/node/:id', to: 'challenges#trap',   as: :challenge_trap
 
 resources :districts, only: [:index, :show]
 

@@ -59,7 +59,8 @@
     <br/>  
     <div class="rowtitle">Dxcc:</div>
     <div class="rowtext">
-      <% dxcc = session[:dxcc] %>
+      <% dxcc = @dxcc_selected %>
+      <% dxcc = @current_country if !dxcc %>
       <% dxcc = 'ZL' if !dxcc %>
       <%= collection_select(:dxcc, :prefix, DxccPrefix.where(is_active: true).order(:name), :prefix, :code_name,{selected: dxcc}) %>
     </div>

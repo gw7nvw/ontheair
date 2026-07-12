@@ -223,7 +223,8 @@ class ExternalSpot < ActiveRecord::Base
           name: spot['reference_name'],
           frequency: (spot['frequency'].to_f / 1000).to_s,
           mode: spot['mode'],
-          comments: spot['history'][-1]['comment'][0..255],
+#          comments: spot['history'][-1]['comment'][0..255],
+          comments: spot.dig('history', -1, 'comment')&.slice(0..255),
           spot_type: 'LLOTA'
         )
       end

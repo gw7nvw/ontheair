@@ -30,9 +30,10 @@ class StaticPagesController < ApplicationController
   end
 
   def dxcc
-    session[:dxcc]=params[:id].upcase
+    session[:dxcc]=params[:dxcc].upcase
+    @current_country = session[:dxcc]
     if current_user
-      current_user.dxcc=params[:id].upcase
+      current_user.dxcc=session[:dxcc]
       current_user.save
     end
     home
@@ -43,13 +44,12 @@ class StaticPagesController < ApplicationController
     ack_time = current_user.hide_news_at if current_user
     ack_time ||= '1900-01-01'
     @static_page = true
-    @dxcc = session[:dxcc]
-    @dxcc='ZL' if !@dxcc
+    @dxcc = @current_country
     @asset_type_filter = "('all', 'silo', 'sanpcpa park', 'krmnpa park')" if @dxcc=='ZL'
     @asset_type_filter = "('park', 'lake', 'lighthouse', 'island', 'hut', 'volcano', 'all')" if @dxcc=="VK"
     @site_title_unquoted = "... On The Air"
-    @site_title_unquoted = "ZL "+@site_title_unquoted if session[:dxcc]=='ZL'
-    @site_title_unquoted = "VK "+@site_title_unquoted if session[:dxcc]=='VK'
+    @site_title_unquoted = "ZL "+@site_title_unquoted if @current_country=='ZL'
+    @site_title_unquoted = "VK "+@site_title_unquoted if @current_country=='VK'
     @site_title_quoted="'"+@site_title_unquoted+"'"
   
     if @dxcc=='VK' then 
@@ -124,7 +124,7 @@ class StaticPagesController < ApplicationController
     #defaults
     @start_date = 24.hours.ago.to_date if !@start_date
     @end_date = Time.now.to_date if !@end_date
-    @this_dxcc=session[:dxcc] if !@this_dxcc
+    @this_dxcc=@current_country if !@this_dxcc
     puts "DXCC:#{@this_dxcc.to_s}:"
     @dxcc="All" if !@this_dxcc
     puts "DXCC:#{@this_dxcc.to_s}:"

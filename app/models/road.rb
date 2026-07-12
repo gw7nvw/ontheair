@@ -4,14 +4,14 @@
 class Road < ActiveRecord::Base
   require 'csv'
 
-  def self.import(filename)
-    Road.destroy_all
+  def self.import(filename, wkt_column_no, offset=0)
     CSV.foreach(filename, headers: true) do |row|
       place = row.to_hash
-      wkt = place.first[1]
-      puts place['t50_fid'], place['name'], wkt.length
+      wkt = place['WKT']
+      #puts "#{(place['t50_fid'].to_i+offset.to_i).to_s} #{(place['name'] || '').delete("'")} - #{wkt.length.to_s}"
       if place && wkt
-        ActiveRecord::Base.connection.execute("insert into roads (id, name, linestring) values ('" + place['t50_fid'] + "','" + (place['name'] || '').delete("'") + "',ST_Multi(ST_GeomFromText('" + wkt + "',4326)));")
+        ActiveRecord::Base.connection.execute("delete from roads where id=" + (place['t50_fid'].to_i+offset.to_i).to_s + ";")
+        ActiveRecord::Base.connection.execute("insert into roads (id, name, linestring) values ('" + (place['t50_fid'].to_i+offset.to_i).to_s + "','" + (place['name'] || '').delete("'") + "',ST_Multi(ST_GeomFromText('" + wkt + "',4326)));")
       end
     end; true
   end

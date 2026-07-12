@@ -1,0 +1,102 @@
+<script>
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+   document.title = <%= raw(@site_title) %>
+   document.getElementById('logo').innerHTML = <%= raw(@site_title) %>
+$(function () {
+  $('#right_panel .pagination a').on('click', function () {
+    $.getScript(this.href+"&sortby=<%=@sortby%>");
+    return false;
+  });
+});
+
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     Home
+     &nbsp;--&gt;&nbsp;
+     <b>Confirmaton</b>
+   </div>
+   <div id="controls">
+     <%=render 'map_controls'%>
+   </div>
+</div>
+<div id="right_scroll">
+  <%= render 'flash' %>
+
+  <h2>Tracked IPs</h2>
+  <div class="erow">
+    <div class="rowtitle">Stats:</div>
+    <div class="rowtext">
+      Tracked: <%= @count %>, Humans: <%= @humans %>, Robots: <%= @robots %>
+    </div>
+  </div>
+  
+  <br/>
+  <br/>
+
+  <div class="erow">
+    <div class="rowtitle">Filters:</div>
+    <div class="rowtext">
+      <%=link_to 'Human',"/blocks?human=true#{if @suspicious then "&suspicious=true" else "" end}",remote: true,  :id => 'view', :onclick => "linkHandler('human')"%>
+      <%=link_to 'Robot',"/blocks?robot=true#{if @suspicious then "&suspicious=true" else "" end}",remote: true,  :id => 'view', :onclick => "linkHandler('robot')"%>
+      <%=link_to 'Suspect',"/blocks?suspect=true#{if @suspicious then "&suspicious=true" else "" end}#{if @robot then "&robot=true" else "" end}",remote: true,  :id => 'view', :onclick => "linkHandler('suspect')"%>
+      <%=link_to 'All',"/blocks#{if @suspicious then "?suspicious=true" else "" end}",remote: true,  :id => 'view', :onclick => "linkHandler('clear')"%>
+
+    </div>
+  </div>
+  <div class="erow">
+    <div class="rowtitle">Actions:</div>
+    <div class="rowtext">
+      <%=link_to 'Clear table',"/blocks/reset",data: {confirm: "Delete all firewall data: This will remove all blocks and potentially force valid users to re-verify. Are you sure?"}, remote: true,  :id => 'view', :onclick => "linkHandler('reset')"%>
+    </div>
+  </div>
+
+  <div class="erow">
+    <div class="rowtitle">Sort Order:</div>
+    <div class="rowtext">
+      <%=link_to 'Suspicious',"/blocks?suspicious=true#{if @robot then "&robot=true" else "" end}#{if @human then "&human=true" else "" end}",remote: true,  :id => 'view', :onclick => "linkHandler('suspicious')"%>
+      <%=link_to 'All',"/blocks?all=true#{if @robot then "&robot=true" else "" end}#{if @human then "&human=true" else "" end}",remote: true,  :id => 'view', :onclick => "linkHandler('suspicious')"%>
+    </div>
+  </div>
+  <table id="blocks">
+    <tr>
+      <th>Action</th>
+      <th>IP</th>
+      <th>First Seen</th>
+      <th>Last Seen</th>
+      <th>Human</th>
+      <th>Suspect</th>
+      <th>Bot</th>
+      <th>Hits</th>
+      <th>JS ratio</th>
+      <th>Suspect hits</th>
+      <th>User Agent</th>
+    </tr>
+    <% @blocks.each do |block| %>
+      <tr>
+        <td>
+           <%=link_to 'Delete',"/blocks/#{block.id}/delete",remote: true,  :id => 'view', :onclick => "linkHandler('delete')"%>
+           <%=link_to 'Human',"/blocks/#{block.id}/human",remote: true,  :id => 'view', :onclick => "linkHandler('human')"%>
+           <%=link_to 'Robot',"/blocks/#{block.id}/robot",remote: true,  :id => 'view', :onclick => "linkHandler('robot')"%>
+        <td><%= block.user_ip %></td> 
+        <td><%= block.created_at %></td> 
+        <td><%= block.updated_at %></td> 
+        <td><%= block.confirmed_human %></td> 
+        <td><%= block.suspected_bot %></td> 
+        <td><%= block.confirmed_bot %></td> 
+        <td><%= block.access_count %></td> 
+        <td><%= 1.0*(block.js_count/block.access_count) %></td> 
+        <td><%= block.suspicious_access_count %></td>
+        <td><%= block.user_agent %></td>
+      </tr>
+    <% end %>
+  </table>
+</div>
+<script>
+document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+site_smaller_map();
+
+</script>
+

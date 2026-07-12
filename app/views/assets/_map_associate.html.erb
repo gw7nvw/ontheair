@@ -1,0 +1,109 @@
+<script> 
+  reset_map_controllers();
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
+  document.title = <%= raw(@site_title) %>
+  document.getElementById('logo').innerHTML=<%= raw(@site_title) %>
+</script>
+
+<div id="actionbar" class="span7">
+  <div id="crumbs">
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <%=  link_to  "Places:", '/assets', remote: true,  :id => 'assets', :onclick => "linkHandler('assets')" %>
+    &nbsp;--&gt;&nbsp;
+    <%= link_to @asset.name, '/'+@asset.url, remote: true, onclick: "linkHandler('asset');" %>
+    &nbsp;--&gt;&nbsp;
+    <b>Associations</b>
+  </div>
+
+  <div id="controls">
+    <%=  link_to "Cancel", "/assets/"+@asset.safecode, class: "btn btn-small btn-primary", remote: true,  :id => 'asset', :onclick => "linkHandler('index')" %>
+    <%=render 'map_controls'%>
+  </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <div class="erow" id="code">
+    <div class="rowtitle"><%= "Id:" %></div>
+    <div class="rowtext"><%= @asset.code %></div>
+  </div>
+
+  <div class="erow" id="name">
+    <div class="rowtitle"><%= "Name" %></div>
+    <div class="rowtext"> 
+      <%=link_to @asset.name, '/assets/'+@asset.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+    </div>
+  </div>
+
+  <div class="erow" id="class">
+    <div class="rowtitle"><%= "Class" %></div>
+    <div class="rowtext"> 
+      <%= @asset.type.display_name %>
+    </div>
+  </div>
+
+  <%= form_tag 'find_poly', :name => 'asset', :id => 'asset', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+
+    <div class="erow">
+      <div class="leftbuttons">
+        <span title="Click to draw location on map">
+          <img id="placeplus" src="/assets/draw-point.png" onclick="site_drawPlace('placetick', 'placeplus', 'asset_location', 'asset_x', 'asset_y')" width="16" style="display:block">
+        </span>
+
+        <span title="Click to confirm selection">
+          <img id="placetick" src="/assets/tick.png" onclick="site_selectNothing('placetick', 'placeplus')" width="16" style="display:none">
+        </span>
+      </div>
+
+      <div class="sectiontitle25">Location:</div>
+    </div>
+
+
+    <%= hidden_field :asset, :location, :readonly => true %>
+
+    <div class="rowtitle">x:</div>
+    <div class="rowtext">
+    <%= text_field :asset, :x, :size => 8 %>
+    </div>
+
+    <div class="rowtitle">y:</div>
+    <div class="rowtext">
+    <%= text_field :asset, :y, :size => 8 %>
+    </div>
+
+    <div class="rowtitle">Data Source:</div>
+    <div class="rowtext">
+      <% @datasource = 'capad' if !@datasource %>
+      <%= collection_select :ds, :datasource, @datasources, :to_s, :to_s, { }  %>
+    </div>
+
+    <div class="buttonshort">
+      <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+    </div>
+
+  </form>
+  <%= form_tag 'apply_poly', :name => 'asset', :id => 'asset', :remote => true, :method => 'post', :style => 'margin-bottom: 0px' %>
+    <div class="rowtext">
+    <%= text_area_tag :boundary, @item.boundary  %>
+    </div>
+    <%= text_field_tag :old_code, @item.old_code %>
+    <div class="buttonshort">
+      <%= submit_tag "Apply", :id => "apply", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+    </div>
+  </form>
+
+  <div class="erow">
+    <div class="hrline">
+      <hr noshade size="4">
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+  place_init('<%=@asset.location%>',  0);
+  place_init('<%=@item.boundary%>',  0);
+</script>
+

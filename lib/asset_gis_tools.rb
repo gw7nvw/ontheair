@@ -97,6 +97,54 @@ module AssetGisTools
     # legal_roads
     ActiveRecord::Base.connection.execute("update assets set access_legal_road_ids=(select array_agg(r.id) as legal_road_ids from assets a, legal_roads r where (ST_intersects (a.az_boundary, r.boundary) or ST_intersects (a.location, r.boundary)) and a.code='#{code}') where code='#{code}'")
 
+    if country=='VK'
+      # capad parks - cross database so very slow
+      # Retrieve the single asset, prioritizing boundary, then falling back to location
+      asset_data = Asset.where(id: self.id)
+                  .select("
+                    id, 
+                    ST_AsBinary(COALESCE(az_boundary, location))::text AS raw_geometry_wkb
+                  ")
+                  .first
+
+      sql = <<-SQL
+        SELECT array_agg(pa_id::varchar) as ids FROM capad
+        WHERE ST_Intersects(wkb_geometry, ST_GeomFromWKB(decode(substring(? from 3), 'hex'), 4326))
+      SQL
+
+      sanitized_sql = Capad.send(:sanitize_sql_array, [sql, asset_data.raw_geometry_wkb])
+      capad_ids = Capad.connection.select_all(sanitized_sql).to_a
+
+      sql = <<-SQL
+        SELECT array_agg(id::varchar) as ids FROM vk_state_park
+        WHERE ST_Intersects(boundary, ST_GeomFromWKB(decode(substring(? from 3), 'hex'), 4326))
+      SQL
+      sanitized_sql = VkStatePark.send(:sanitize_sql_array, [sql, asset_data.raw_geometry_wkb])
+      state_ids = VkStatePark.connection.select_all(sanitized_sql).to_a
+
+      puts capad_ids.to_json
+      puts state_ids.to_json
+      capad_id_str = ""
+      if capad_ids and capad_ids.count>0
+        capad_id_arr = capad_ids.first["ids"]
+        capad_id_arr = capad_id_arr[1..-2] if capad_id_arr
+        capad_id_arr = capad_id_arr.split(',') if capad_id_arr
+        capad_id_str = capad_id_arr.uniq.join(', ')  if capad_id_arr
+      end
+      state_id_str = ""
+      if state_ids and state_ids.count>0
+        state_id_arr = state_ids.first["ids"]
+        state_id_arr = state_id_arr[1..-2] if state_id_arr
+        state_id_arr = state_id_arr.split(',') if state_id_arr
+        state_id_str = state_id_arr.uniq.join(', ')  if state_id_arr
+      end
+
+      puts capad_id_str.to_json
+      puts state_id_str.to_json
+      ActiveRecord::Base.connection.execute("update assets set access_capad_park_ids='{#{capad_id_str}}' where code='#{code}'")
+      ActiveRecord::Base.connection.execute("update assets set access_vk_state_park_ids='{#{state_id_str}}' where code='#{code}'")
+    end
+
     # parks
     ActiveRecord::Base.connection.execute("update assets set access_park_ids=(select array_agg(r.id) as park_ids from assets a, assets r where (ST_intersects (a.az_boundary, r.boundary) or ST_intersects (a.location, r.boundary)) and a.code='#{code}' and r.asset_type='park') where code='#{code}'")
 
@@ -104,7 +152,7 @@ module AssetGisTools
     ActiveRecord::Base.connection.execute("update assets set access_track_ids=(select array_agg(r.id) as track_ids from assets a, doc_tracks r where (ST_intersects (a.az_boundary, r.linestring) or ST_intersects (a.location, r.linestring)) and a.code='#{code}') where code='#{code}'")
 
     reload
-    if access_legal_road_ids.nil? && access_track_ids.nil? && access_park_ids.nil?
+    if access_road_ids.nil? && access_legal_road_ids.nil? && access_track_ids.nil? && access_park_ids.nil? && access_capad_park_ids.blank? && access_vk_state_park_ids.blank?
       ActiveRecord::Base.connection.execute("update assets set public_access=false where code='#{code}'")
     else
       ActiveRecord::Base.connection.execute("update assets set public_access=true where code='#{code}'")
@@ -179,8 +227,9 @@ module AssetGisTools
   end
 
   def add_buffered_activation_zone
-    calc_az_radius=az_radius
-    calc_az_radius=0 if calc_az_radius==nil
+    calc_az_radius=az_radius                             #asset radius if specified
+    calc_az_radius = 0.001*self.type.dist_buffer if !az_radius #type radius if not
+    calc_az_radius=0 if calc_az_radius==nil              #0 otherwise
 
     if self.type.has_boundary and area and area>0 then
       if calc_az_radius==0
@@ -199,4 +248,6 @@ module AssetGisTools
     if boundary[0..6] == 'POLYGON' then boundary = 'MULTIPOLYGON (' + boundary[7..-1] + ')' end
     boundary
   end
+
 end
+

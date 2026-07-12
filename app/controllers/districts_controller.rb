@@ -5,10 +5,7 @@ class DistrictsController < ApplicationController
   include ApplicationHelper
 
   def index
-    dxcc = 'ZL'
-    dxcc = session[:dxcc] if session[:dxcc]
-
-    @districts = District.find_by_sql [" select id, name, state_code, region_code, district_code from districts where dxcc='#{dxcc}' order by region_code, district_code; "]
+    @districts = District.find_by_sql [" select id, name, state_code, region_code, district_code from districts where dxcc='#{@current_country}' order by region_code, district_code; "]
   end
 
   def show

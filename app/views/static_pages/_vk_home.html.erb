@@ -4,7 +4,7 @@
    document.body.classList.remove('loading');
    document.title = <%= raw(@site_title) %>
    document.getElementById('logo').innerHTML = <%= raw(@site_title) %>
-   <% if session[:dxcc]=='VK' %>
+   <% if @current_country=='VK' %>
      document.getElementById('VK').style = "display:inline" 
      document.getElementById('ZL').style = "display:none" 
   <% else %>
@@ -59,7 +59,7 @@
 
   <%= form_tag '/assets', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
   <br/>
-  <div class="rowtitle">Search for <%=session[:dxcc]%> place:</div>
+  <div class="rowtitle">Search for <%=@current_country%> place:</div>
   <div class="rowtext">
     <input type="text" name="searchtext" value='<%=@searchtext%>'/>
   </div>

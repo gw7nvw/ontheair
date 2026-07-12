@@ -22,10 +22,8 @@ class QueryController < ApplicationController
   #
   # Note: results limited to first 40 matches
   def index
-  
     dxcc = params[:dxcc][:prefix] if params[:dxcc] 
-    dxcc = session[:dxcc] if !dxcc
-    dxcc = 'ZL' if !dxcc
+    dxcc = @current_country if !dxcc
  
     #take search params after makeing sql-injection safe 
     @searchtext = safe_param(params[:searchtext] || '')

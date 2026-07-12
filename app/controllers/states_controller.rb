@@ -5,10 +5,8 @@ class StatesController < ApplicationController
   include ApplicationHelper
 
   def index
-    dxcc = 'ZL'
-    dxcc = session[:dxcc] if session[:dxcc]
 
-    @states = State.find_by_sql [" select id, dxcc, name, code from states where dxcc='#{dxcc}' order by code; "]
+    @states = State.find_by_sql [" select id, dxcc, name, code from states where dxcc='#{@current_country}' order by code; "]
   end
 
   def show

@@ -349,6 +349,7 @@ function site_points_style_function(feature, resoluton) {
   if(feature.get('asset_type')=="hut")  return site_huts_style;
   if((feature.get('asset_type')=="lake") && (feature.get('public_access')=='t')) return site_public_lake_point_style;
   if(feature.get('asset_type')=="lake")  return site_lake_point_style;
+  if((feature.get('asset_type')=="llota lake") && (feature.get('public_access')=='t')) return site_public_lake_point_style;
   if(feature.get('asset_type')=="llota lake")  return site_lake_point_style;
   if(feature.get('asset_type')=="island")  return site_island_point_style;
   if((feature.get('asset_type')=="hump") && (feature.get('public_access')=='t')) return site_public_humps_style;

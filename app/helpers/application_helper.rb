@@ -9,6 +9,15 @@ module ApplicationHelper
     user.update_attribute(:remember_token, User.digest(remember_token))
     self.current_user = user
     session[:user_id] = user.id
+    request = ActionDispatch::Request.new(auth.env)
+    ip_address = request.remote_ip
+    user_agent = request.user_agent || 'Unknown'
+    UserAgent.where(user_ip: ip_address, user_agent: user_agent).update_all(
+      request_count: 0,
+      suspicious_access_count: 0,
+      confirmed_bot: false,
+      updated_at: Time.now
+    )
   end
 
   def safe_param(param)
