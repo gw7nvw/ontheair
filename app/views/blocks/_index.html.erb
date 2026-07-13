@@ -16,7 +16,7 @@ $(function () {
    <div id="crumbs">
      Home
      &nbsp;--&gt;&nbsp;
-     <b>Confirmaton</b>
+     <b>IP Blocking</b>
    </div>
    <div id="controls">
      <%=render 'map_controls'%>
@@ -29,37 +29,65 @@ $(function () {
   <div class="erow">
     <div class="rowtitle">Stats:</div>
     <div class="rowtext">
-      Tracked: <%= @count %>, Humans: <%= @humans %>, Robots: <%= @robots %>
+      Tracked: <%= @count %>, Humans: <%= @humans %>, Robots: <%= @robots %>, Suspects: <%= @suspects %>
     </div>
   </div>
   
   <br/>
   <br/>
+  <%= form_tag '/blocks', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+    <br/>
 
-  <div class="erow">
-    <div class="rowtitle">Filters:</div>
+    <div class="rowtitle">Order:</div>
     <div class="rowtext">
-      <%=link_to 'Human',"/blocks?human=true#{if @suspicious then "&suspicious=true" else "" end}",remote: true,  :id => 'view', :onclick => "linkHandler('human')"%>
-      <%=link_to 'Robot',"/blocks?robot=true#{if @suspicious then "&suspicious=true" else "" end}",remote: true,  :id => 'view', :onclick => "linkHandler('robot')"%>
-      <%=link_to 'Suspect',"/blocks?suspect=true#{if @suspicious then "&suspicious=true" else "" end}#{if @robot then "&robot=true" else "" end}",remote: true,  :id => 'view', :onclick => "linkHandler('suspect')"%>
-      <%=link_to 'All',"/blocks#{if @suspicious then "?suspicious=true" else "" end}",remote: true,  :id => 'view', :onclick => "linkHandler('clear')"%>
-
+      <%= collection_select :findform, :sort_order, ["total hits","suspicious hits"], :to_s, :to_s, { }  %>
     </div>
-  </div>
+
+    <div class="rowtitle">Find:</div>
+    <div class="rowtext">
+      <input type="text" name="searchtext" id="searchtext" value='<%=@searchtext%>'/>
+    </div>
+
+    <div class="sectiontitle">Filters</div>
+    <div class="erow">
+        <div class="rowtitle">Human:</div>
+      </span>
+      <div class="rowtext">
+<% puts "*********************** #{@human} *********************" %>
+
+        <input id="human" name="human" type="checkbox" <%= if @human then 'checked="checked"' end%>/>
+      </div>
+    </div>
+    <div class="erow">
+        <div class="rowtitle">Bot:</div>
+      </span>
+      <div class="rowtext">
+        <input id="robot" name="robot" type="checkbox" <%= if @robot then 'checked="checked"' end%>/>
+      </div>
+    </div>
+    <div class="erow">
+        <div class="rowtitle">Suspect:</div>
+      </span>
+      <div class="rowtext">
+        <input id="suspect" name="suspect" type="checkbox"  <%= if @suspect then 'checked="checked"' end%>/>
+      </div>
+    </div>
+
+    <div class="buttonshort">
+      <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+      <%= link_to "Clear", '/blocks', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')" %>
+    </div>
+  </form>
+
   <div class="erow">
     <div class="rowtitle">Actions:</div>
     <div class="rowtext">
-      <%=link_to 'Clear table',"/blocks/reset",data: {confirm: "Delete all firewall data: This will remove all blocks and potentially force valid users to re-verify. Are you sure?"}, remote: true,  :id => 'view', :onclick => "linkHandler('reset')"%>
+      <%=link_to 'Purge tracking table [DANGER!!!]',"/blocks/reset",data: {confirm: "Delete all firewall data: This will remove all blocks and potentially force valid users to re-verify. Are you sure?"}, remote: true,  :id => 'view', :onclick => "linkHandler('reset')"%>
     </div>
   </div>
 
-  <div class="erow">
-    <div class="rowtitle">Sort Order:</div>
-    <div class="rowtext">
-      <%=link_to 'Suspicious',"/blocks?suspicious=true#{if @robot then "&robot=true" else "" end}#{if @human then "&human=true" else "" end}",remote: true,  :id => 'view', :onclick => "linkHandler('suspicious')"%>
-      <%=link_to 'All',"/blocks?all=true#{if @robot then "&robot=true" else "" end}#{if @human then "&human=true" else "" end}",remote: true,  :id => 'view', :onclick => "linkHandler('suspicious')"%>
-    </div>
-  </div>
+  <div class="name_pagination"> <%= will_paginate(@blocks) %></div>
+
   <table id="blocks">
     <tr>
       <th>Action</th>
@@ -93,6 +121,8 @@ $(function () {
       </tr>
     <% end %>
   </table>
+  <div class="name_pagination"> <%= will_paginate(@blocks) %></div>
+
 </div>
 <script>
 document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;

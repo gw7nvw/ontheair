@@ -3,20 +3,34 @@ class BlocksController < ApplicationController
   before_action :signed_in_user
 
 def index
+  @human=params[:human]
+  @robot=params[:robot]
+  @suspect=params[:suspect]
+  @searchtext=params[:searchtext]
+
   where_clause = 'true'
-  where_clause += ' and confirmed_human = true' if params[:human]
-  where_clause += ' and confirmed_bot = true' if params[:robot]
-  where_clause += ' and suspected_bot = true' if params[:suspect]
-  where_clause += ' and suspected_bot = true' if params[:suspect]
+  where_clause = "(user_ip like '#{@searchtext}%%' or user_agent like '%%#{@searchtext}%%')" if @searchtext and @searchtext.length>0
+  if @human or @robot or @suspect
+    where_clause +=" and (false"
+    where_clause += ' or confirmed_human = true' if @human
+    where_clause += ' or confirmed_bot = true' if @robot
+    where_clause += ' or suspected_bot = true' if @suspect
+    where_clause +=")"
+  end
+  
   order_clause = 'access_count desc' 
-  order_clause = 'suspicious_access_count desc' if params[:suspicious]
-  @blocks = UserAgent.where(where_clause).order(order_clause)
+  order_clause = 'suspicious_access_count desc' if params[:findform] and params[:findform][:sort_order]=="suspicious hits"
+  @fullblocks = UserAgent.where(where_clause).order(order_clause)
   count  = ActiveRecord::Base.connection.execute(" select count(id) as count from user_agents; ")
   humans  = ActiveRecord::Base.connection.execute(" select count(id) as count from user_agents where confirmed_human = true; ")
   robots  = ActiveRecord::Base.connection.execute(" select count(id) as count from user_agents where confirmed_bot = true; ")
+  suspects  = ActiveRecord::Base.connection.execute(" select count(id) as count from user_agents where suspected_bot = true; ")
   @humans = humans.first["count"] if humans and humans.count>0
   @robots = robots.first["count"] if robots and robots.count>0
+  @suspects = suspects.first["count"] if suspects and suspects.count>0
   @count = count.first["count"] if count and count.count>0
+  @blocks = @fullblocks.paginate(per_page: 40, page: params[:page])
+
 end
 
 def delete

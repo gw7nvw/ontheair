@@ -32,7 +32,8 @@ class ChallengesController < ApplicationController
       # Send the validated human back to their original destination
       redirect_to session.delete(:challenge_return_to)
     else
-      render_trap
+      show
+      render 'show'
     end
   end
 

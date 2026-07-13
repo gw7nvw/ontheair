@@ -55,7 +55,7 @@ class AssetsController < ApplicationController
       end
     elsif datasource == 'capad' then
 
-      item = Capad.find_by_sql [ "select * from capad where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), wkb_geometry)" ]
+      item = Capad.find_by_sql [ "select ST_Multi(wkb_geometry) as wkb_geometry, pa_id, name from capad where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), wkb_geometry)" ]
 
       puts item.to_json
 
@@ -66,7 +66,7 @@ class AssetsController < ApplicationController
         @item.old_code = item.first.pa_id.to_s
       end
     elsif datasource == 'vk_state_parks' then
-      item = VkStatePark.find_by_sql [ "select * from vk_state_park where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), boundary)" ]
+      item = VkStatePark.find_by_sql [ "select st_multi(boundary) as boundary, name, unique_name from vk_state_park where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), boundary)" ]
 
       puts item.to_json
 

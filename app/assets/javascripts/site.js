@@ -82,6 +82,15 @@ var site_green_circle;
 var site_yellow_circle;
 var site_docland_styles=[];
 
+const HTTP_STATUS = {
+  200: "OK",
+  201: "Created",
+  400: "Bad Request",
+  403: "Forbidden",
+  404: "Not Found",
+  500: "Internal Server Error"
+};
+
 Array.prototype.remove = function() {
     var what, a = arguments, L = a.length, ax;
     while (L && this.length) {
@@ -422,6 +431,7 @@ function site_set_map_filters(filter, list) {
 
 function site_add_layers() {
         map_add_raster_layer('OpenHikingMap', 'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png', 'osm', 0, 23, "CC OpenHikingMap, OpenStreetMap", "https://wiki.openstreetmap.org/wiki/OpenHikingMap", 0, 18);
+        map_add_raster_layer('Sentinel 2 Imagery', 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg', 'osm', 0, 23, "CC EOX GmbH", "https://eox.at/2025/03/sentinel-2-cloudless-2024/", 0, 18);
         //map_add_raster_layer('NZTM Topo 2019', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
         //map_add_raster_layer('NZTM Topo 2019', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11, "CC LINZ", "https://www.linz.govt.nz/copyright");
         map_add_raster_layer('NZTM Topo 2019', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375,15, "CC LINZ", "https://www.linz.govt.nz/copyright", 6, 15);
@@ -822,11 +832,11 @@ function linkHandler(entity_name) {
            }
          }
          if(thrownError=="error") {
-           document.getElementById("page_status").innerHTML = 'Error: '+jqXHR.status;
+           document.getElementById("page_status").innerHTML = 'Error: '+(HTTP_STATUS[jqXHR.status] || '')+'['+jqXHR.status+']';
            document.body.classList.remove("loading");
            BootstrapDialog.show({
              title: "Loading",
-             message: $('<div id="page_status2">Error: '+jqXHR.status+'</div>'),
+             message: $('<div id="page_status2">Error: '+(HTTP_STATUS[jqXHR.status] || '')+'['+jqXHR.status+']</div>'),
              size: "size-small"
            });
 
