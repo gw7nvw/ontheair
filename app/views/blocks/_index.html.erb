@@ -115,7 +115,7 @@ $(function () {
         <td><%= block.suspected_bot %></td> 
         <td><%= block.confirmed_bot %></td> 
         <td><%= block.access_count %></td> 
-        <td><%= 1.0*(block.js_count/block.access_count) %></td> 
+        <td><%= (1.0*block.js_count/block.access_count).round(2) %></td> 
         <td><%= block.suspicious_access_count %></td>
         <td><%= block.user_agent %></td>
       </tr>

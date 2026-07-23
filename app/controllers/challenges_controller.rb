@@ -47,19 +47,22 @@ class ChallengesController < ApplicationController
   def render_trap
     request_ip = request.remote_ip
     user_agent = request.user_agent || 'Unknown'
+    record = UserAgent.find_or_create_by!(user_agent: user_agent, user_ip: request_ip)
 
     # Instantly tag them as a malicious bot in the DB
     # You can add a boolean column like `is_blocked: true` to your user_agents table
-    UserAgent.where(user_ip: request_ip, user_agent: user_agent).update_all(
-      confirmed_bot: true,
-      updated_at: Time.now
-    )
+    ActiveRecord::Base.connection.execute("update user_agents set confirmed_bot = true where user_ip = '#{request_ip}' and user_agent = '#{user_agent}' " )
+#    UserAgent.where(user_ip: request_ip, user_agent: user_agent).update_all(
+#      confirmed_bot: true,
+#      updated_at: Time.now
+#    )
+    Rails.logger.warn "!!! BOT HIT TRAP - BLOCKING "
 
     # Force clear their session so they lose any state
     reset_session
 
     # Render a lightweight 404 or send them straight to a static error layout
-    render text: "Not Found", status: :not_found
+    render text: "Forbidden", status: :forbidden
   end
 end
 

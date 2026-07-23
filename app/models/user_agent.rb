@@ -23,7 +23,6 @@ class UserAgent < ActiveRecord::Base
     html_inc = (request_type == :html) ? 1 : 0
     js_inc   = (request_type == :js) ? 1 : 0
 
-logger.info "RECORD TIME: #{record.updated_at.to_i.to_s}, cutoff: #{cutoff_time.to_i.to_s}"
     if record.updated_at < cutoff_time
       logger.info "EXPUNGING OLD RECORD !!!!!!"
       # Window expired: Reset counters and bring timestamp to now

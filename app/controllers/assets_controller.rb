@@ -6,7 +6,7 @@ class AssetsController < ApplicationController
   include ApplicationHelper
   include AssetGisTools
 
-  before_action :signed_in_user, only: %i[edit update create new map_associate associations add_wish remove_wish rate]
+  before_action :signed_in_user, only: %i[edit update create new map_associate associations add_wish remove_wish rate map_associate map_find_poly map_apply_poly]
 
   def associations
     @asset=Asset.find_by(code: params[:id].gsub('_','/'))
@@ -199,6 +199,13 @@ class AssetsController < ApplicationController
   end
 
   def index_prep
+    #do not allow bots to peruse all pages or use filters
+    if request.env['bot'] == 'suspected_bot' or request.env['bot'] == 'confirmed_bot'
+      params.slice!(:controller, :action)
+      flash[:warning]="Your IP address has been flagged as a suspected automated bot. You can only access pages permitted by our robots ploicy. Search / filter will be disabled. Sign in, or click on the Spots link and complete the challenge to confirm that you are human."
+      @limit = 40
+    end
+
     dxcc = params[:dxcc][:prefix] if params[:dxcc]
     dxcc = @current_dxcc if !dxcc
     @dxcc_selected = dxcc
@@ -279,7 +286,13 @@ class AssetsController < ApplicationController
   end
 
   def show
-    @newlink = AssetWebLink.new
+    #do not allow bots to peruse all pages or use filters
+    if request.env['bot'] == 'suspected_bot' or request.env['bot'] == 'confirmed_bot'
+      @bot = true
+      flash[:warning]="Your IP address has been flagged as a suspected automated bot. You can only access pages permitted by our robots ploicy. Search / filter will be disabled. Sign in, or click on the Spots link and complete the challenge to confirm that you are human."
+      params.slice!(:controller, :action, :id)
+    end
+
     code = (params[:id] || '').tr('_', '/')
     code = code.upcase
     @asset = Asset.find_by(code: code)
@@ -291,26 +304,29 @@ class AssetsController < ApplicationController
         return true
       end
     end
-    @newlink.asset_code = @asset.safecode
     @comments = Comment.for_asset(code)
-    ratings = Rating.where(asset_code: @asset.code)
-    @rating_count = ratings.count
-    nice_scores = ratings.map{|r| r.nice_score}
-    accessibility_scores = ratings.map{|r| r.accessibility_score}
-    if @rating_count>0 then
-      @nice_score = nice_scores.sum(0.0)/nice_scores.size
-      @accessibility_score = accessibility_scores.sum(0.0)/accessibility_scores.size
-    else
-      @nice_score = 0
-      @accessibility_score = 0
+    if !@bot
+      @newlink = AssetWebLink.new
+      @newlink.asset_code = @asset.safecode
+      ratings = Rating.where(asset_code: @asset.code)
+      @rating_count = ratings.count
+      nice_scores = ratings.map{|r| r.nice_score}
+      accessibility_scores = ratings.map{|r| r.accessibility_score}
+      if @rating_count>0 then
+        @nice_score = nice_scores.sum(0.0)/nice_scores.size
+        @accessibility_score = accessibility_scores.sum(0.0)/accessibility_scores.size
+      else
+        @nice_score = 0
+        @accessibility_score = 0
+      end
+      if current_user
+        @myrating = Rating.find_by(user_id: current_user.id, asset_code: @asset.code) 
+        @myrating = Rating.new(user_id: current_user.id, asset_code: @asset.code) if !@myrating
+      else
+        @myrating = Rating.new
+      end
+      @wishlist = Wishlist.find_by(user_id: current_user.id, asset_code: @asset.code) if current_user
     end
-    if current_user
-      @myrating = Rating.find_by(user_id: current_user.id, asset_code: @asset.code) 
-      @myrating = Rating.new(user_id: current_user.id, asset_code: @asset.code) if !@myrating
-    else
-      @myrating = Rating.new
-    end
-    @wishlist = Wishlist.find_by(user_id: current_user.id, asset_code: @asset.code) if current_user
   end
 
   def edit

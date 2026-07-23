@@ -32,6 +32,7 @@ class User < ActiveRecord::Base
 
   VALID_EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i
   validate :email_is_valid
+  validates :email, uniqueness: true, allow_blank: true
   has_secure_password
 
   VALID_PHONE_REGEX = /\A\+[1-9]\d{1,14}\z/i
@@ -1509,6 +1510,68 @@ class User < ActiveRecord::Base
   def self.add_all_callsigns
     us = User.all
     us.each(&:add_callsigns)
+  end
+
+  def self.import_from_pnp(filename)
+    fails = []
+    raw_data = File.read(filename)
+    raw_struct = JSON.parse(raw_data)
+    data_struct  = raw_struct[2]
+    users = data_struct["data"]
+
+    users.each do |pnp_u|
+      callsign = pnp_u["user_callsign"].strip.upcase
+      callsign = User.remove_call_suffix(callsign)
+      callsign = callsign.strip
+      email = pnp_u["user_email"].strip.downcase
+      next if callsign == 'ZL2OZ'
+      if !callsign or callsign=="" then
+        puts "Invalid callsign"
+        next
+      end
+      puts ":#{callsign}:"
+      ota_u = User.find_by(callsign: callsign)
+ 
+      ota_u = User.find_by(email: email) if !ota_u
+      if ota_u then
+        puts "Matched #{callsign} with #{ota_u.callsign}" 
+        if callsign != ota_u.callsign then
+          puts "DO NIT MATCH. Use (N/y)?"
+          id = gets
+          if id[0] !="y" and id[0] != "Y" then 
+             ota_u = nil
+          end
+        end
+      end
+      if !ota_u
+        ota_u = User.new
+        puts "Creating new user for  #{callsign} "
+        ota_u.callsign =  callsign.strip.upcase
+        if !ota_u.valid_callsign?
+          puts "#{callsign} is not a valid call .... !!!!!!!!!!!!!!!!!!!!!"
+          id = gets
+          next
+        end
+        ota_u.email =  email
+        ota_u.password = 'dummy'  
+        ota_u.password_confirmation = 'dummy'  
+      end
+      ota_u.pnp_APIKey = pnp_u["user_APIKey"].strip 
+      ota_u.pnp_username = pnp_u["user_name"].strip
+      if ota_u.activated != true then
+        ota_u.pnp_imported = true
+      end
+      if !ota_u.email then 
+        ota_u.email=email
+      end
+      res = ota_u.save
+      if !res
+        puts ota_u.errors.to_json
+        puts pnp_u.to_json
+        fails+=[pnp_u]
+        id = gets
+      end
+    end
   end
 
   private

@@ -40,6 +40,12 @@ class StaticPagesController < ApplicationController
   end
 
   def home
+    #do not allow bots to peruse all pages or use filters
+    if request.env['bot'] == 'suspected_bot' or request.env['bot'] == 'confirmed_bot'
+      params.slice!(:page, :controller, :action)
+      flash[:warning]="Your IP address has been flagged as a suspected automated bot. You can only access pages permitted by our robots ploicy. Search / filter will be disabled. Sign in, or click on the Spots link and complete the challenge to confirm that you are human."
+    end
+
     spots
     ack_time = current_user.hide_news_at if current_user
     ack_time ||= '1900-01-01'
@@ -115,7 +121,6 @@ class StaticPagesController < ApplicationController
     @start_date = params[:start_date] if params[:start_date]
     @end_date = params[:end_date] if params[:end_date]
     @this_dxcc = params[:dxcc][:prefix] if params[:dxcc]
-    puts "DXCC:#{@this_dxcc.to_s}:"
     @activator = params[:activator].upcase if params[:activator] 
     @reference = params[:reference].upcase if params[:reference]
     @programme = params[:programme][:name] if params[:programme]
@@ -125,9 +130,7 @@ class StaticPagesController < ApplicationController
     @start_date = 24.hours.ago.to_date if !@start_date
     @end_date = Time.now.to_date if !@end_date
     @this_dxcc=@current_country if !@this_dxcc
-    puts "DXCC:#{@this_dxcc.to_s}:"
     @dxcc="All" if !@this_dxcc
-    puts "DXCC:#{@this_dxcc.to_s}:"
     @activator="*" if !@activator or @activator.strip==""
     @reference="*" if !@reference or @reference.strip==""
     @programme="All" if !@programme

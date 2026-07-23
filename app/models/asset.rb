@@ -135,7 +135,7 @@ class Asset < ActiveRecord::Base
 
   # add region - done directly in database so safe as an after-save callback
   def add_state
-    location ? (region = State.find_by_sql ["select id, code, name from states where ST_Within(ST_GeomFromText('" + location.as_text + %q{', 4326), "boundary");}]) : (logger.error 'ERROR: place without location. Name: ' + name + ', id: ' + id.to_s)
+    location ? (region = State.find_by_sql ["select id, code, name, dxcc from states where ST_Within(ST_GeomFromText('" + location.as_text + %q{', 4326), "boundary");}]) : (logger.error 'ERROR: place without location. Name: ' + name + ', id: ' + id.to_s)
     if id && region && (region.count > 0) && (self.region != region.first.code)
       logger.debug 'updating state to ' + region.first.to_json
       ActiveRecord::Base.connection.execute("update assets set state='" + region.first.code + "' where id=" + id.to_s)
@@ -181,6 +181,11 @@ class Asset < ActiveRecord::Base
     AssetPhotoLink.where(asset_code: code)
   end
 
+  #count of contacts
+  def contact_count
+    Contact.where("asset1_codes && ARRAY[?]::varchar[] OR asset2_codes && ARRAY[?]::varchar[]", code, code).count
+  end
+  
   # all contacts referring to this asset
   def contacts
     Contact.find_by_sql ["select * from contacts c where '" + code + "' = ANY(asset1_codes) or '" + code + "' = ANY(asset2_codes);"]
@@ -188,6 +193,11 @@ class Asset < ActiveRecord::Base
 
   def geology
     VolcanicField.find_by(code: field_code)
+  end
+
+  # count of logs
+  def log_count
+    Log.find_by_sql ["asset_codes && ARRAY[?]::varchar[]", code].count
   end
 
   # all logs referring to this asset
@@ -243,13 +253,15 @@ class Asset < ActiveRecord::Base
   def traditional_owners
     trad_owners=nil
     if (!!NzTribalLand rescue false) then
-      buffer = 5000 # say in or near if we are withing this distance of boundary (meters)
+      buffer = 5000 # say in or near if we are within this distance of boundary (meters)
       if type.has_boundary && area && (area > 0)
-        tos1 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.boundary, tl.wkb_geometry) "]
-        tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.boundary,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
+        tos1 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.boundary_quite_simplified, tl.boundary_quite_simplified) "]
+#        tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.boundary,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
+        tos2 = NzTribalLand.find_by_sql [ "SELECT tl.id, tl.name, tl.ogc_fid FROM nz_tribal_lands tl JOIN assets a ON a.id = #{id} WHERE ST_DWithin( ST_Transform(a.boundary_quite_simplified, 3857), ST_Transform(tl.boundary_quite_simplified, 3857), #{buffer} / cos(radians(ST_Y(a.location)))); " ]
       else
-        tos1 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.location, tl.wkb_geometry) "]
-        tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.location,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
+        tos1 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.location, tl.boundary_quite_simplified) "]
+#        tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.location,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
+        tos2 = NzTribalLand.find_by_sql [ "SELECT tl.id, tl.name, tl.ogc_fid FROM nz_tribal_lands tl JOIN assets a ON a.id = #{id} WHERE ST_DWithin( ST_Transform(a.location, 3857), ST_Transform(tl.boundary_quite_simplified, 3857), #{buffer} / cos(radians(ST_Y(a.location)))); " ]
   
       end
       ids1 = tos1.map(&:id)
@@ -393,7 +405,18 @@ class Asset < ActiveRecord::Base
   end
 
   def first_activated
-    cs = Contact.find_by_sql [' select * from contacts where ? = ANY(asset1_codes) or ? = ANY(asset2_codes) or ? = ANY(asset1_codes) or ? = ANY(asset2_codes)order by date, time limit 1 ', code, code, old_code, old_code]
+#    cs = Contact.find_by_sql [' select * from contacts where ? = ANY(asset1_codes) or ? = ANY(asset2_codes) or ? = ANY(asset1_codes) or ? = ANY(asset2_codes)order by date, time limit 1 ', code, code, old_code, old_code]
+     cs = Contact.find_by_sql ['
+        (SELECT * FROM contacts WHERE ?::varchar = ANY(asset1_codes) ORDER BY date, time LIMIT 1)
+        UNION ALL
+        (SELECT * FROM contacts WHERE ?::varchar = ANY(asset2_codes) ORDER BY date, time LIMIT 1)
+        UNION ALL
+        (SELECT * FROM contacts WHERE ?::varchar = ANY(asset1_codes) ORDER BY date, time LIMIT 1)
+        UNION ALL
+        (SELECT * FROM contacts WHERE ?::varchar = ANY(asset2_codes) ORDER BY date, time LIMIT 1)
+        ORDER BY date, time 
+        LIMIT 1; ', code, code, old_code, old_code]
+
     if cs && (cs.count > 0)
       c = cs.first
       c = c.reverse if c.asset2_codes.include?(code)
@@ -426,15 +449,19 @@ class Asset < ActiveRecord::Base
   # DETAILS OF ACTIVATIONS, CHASES ETC FOR THIS ASSET
   ############################################################
   def activation_count
-    logs = self.logs
-    count = 0
-    logs.each do |log|
-      count += 1 if log.contacts.count > 0
-    end
-    count
+    Log.where("asset_codes && ARRAY[?]::varchar[]", code)
+       .where("EXISTS (SELECT 1 FROM contacts WHERE contacts.log_id = logs.id)")
+       .count
+
+#    logs = self.logs
+#    count = 0
+#    logs.each do |log|
+#      count += 1 if log.contacts.count > 0
+#    end
+#    count
   end
 
-  def activators
+  def activators_old
     if old_code and old_code.length>0 then
       cals1 = Contact.where('? = ANY(asset1_codes) or ? = ANY(asset1_codes)', code, old_code)
       cals2 = Contact.where('? = ANY(asset2_codes) or ? = ANY(asset2_codes)', code, old_code)
@@ -442,12 +469,17 @@ class Asset < ActiveRecord::Base
       cals1 = Contact.where('? = ANY(asset1_codes)', code)
       cals2 = Contact.where('? = ANY(asset2_codes)', code)
     end
-    callsigns1 = cals1.map { |cal| User.find_by_callsign_date(cal.callsign1, cal.date).try(:callsign) }
-    callsigns2 = cals2.map { |cal| User.find_by_callsign_date(cal.callsign2, cal.date).try(:callsign) }
-    callsigns = callsigns1 + callsigns2
-    User.where(callsign: callsigns).order(:callsign)
+    ids1 = cals1.map { |cal| User.find_by_callsign_date(cal.callsign1, cal.date).try(:id) }
+    ids2 = cals2.map { |cal| User.find_by_callsign_date(cal.callsign2, cal.date).try(:id) }
+    ids = ids1 + ids2
+    User.where(id: ids).order(:callsign)
   end
 
+  def activators
+    # For activators: asset1 -> callsign1, asset2 -> callsign2
+    fetch_associated_users(primary_callsign: :callsign1, secondary_callsign: :callsign2)
+  end
+  
   def external_activators
     cals = ExternalActivation.where(summit_code: code)
     callsigns = cals.map { |cal| cal.callsign if cal }
@@ -459,7 +491,7 @@ class Asset < ActiveRecord::Base
     users.uniq.sort_by(&:callsign)
   end
 
-  def chasers
+  def chasers_old
     if old_code and old_code.length>0 then
       cals = Contact.where('? = ANY(asset1_codes) or ? = ANY(asset1_codes)', code, old_code)
       cals2 = Contact.where('? = ANY(asset2_codes) or ? = ANY(asset2_codes)', code, old_code)
@@ -471,6 +503,11 @@ class Asset < ActiveRecord::Base
     callsigns2 = cals2.map { |cal| User.find_by_callsign_date(cal.callsign1, cal.date).try(:callsign) }
     callsigns = callsigns1 + callsigns2
     User.where(callsign: callsigns).order(:callsign)
+  end
+
+  def chasers
+    # For chasers: asset1 -> callsign2, asset2 -> callsign1
+    fetch_associated_users(primary_callsign: :callsign2, secondary_callsign: :callsign1)
   end
 
   def external_chasers
@@ -597,7 +634,9 @@ class Asset < ActiveRecord::Base
 
   # Asset list (assets we contain)
   def contains_assets
-    Asset.find_by_sql [" select a.* from asset_links al inner join assets a on a.code=al.contained_code where al.containing_code = '#{code}' and a.is_active=true "]
+    Asset.joins("INNER JOIN asset_links al ON assets.code = al.contained_code")
+       .where(al: { containing_code: code }, assets: { is_active: true })
+       .order(:asset_type, :code)
   end
 
   # Asset type list (assets we contain)
@@ -1030,6 +1069,73 @@ class Asset < ActiveRecord::Base
     newcode
   end
 
+  # Produce lists of contained and contains names
+  # A generic, reusable method to pull and format names from any array of foreign IDs
+  def formatted_names_from_array(array_column_name, target_model_name, place_type)
+    ids = public_send(array_column_name)
+    return "" if ids.blank?
+
+    klass = target_model_name.to_s.classify.constantize
+
+    # 1. Fetch all raw names matching the IDs in a single query
+    all_names = klass.where(id: ids).pluck(:name)
+
+    # 2. Separate valid names from blank/unnamed ones (nil, empty, or spaces)
+    named, unnamed = all_names.partition { |name| name.present? && !name.match(/^\s*$/) }
+
+    # 3. Clean, capitalise, and deduplicate the valid names
+    formatted_names = named.map { |name| name.gsub(/\b\w+/) { |word| word.capitalize } }.uniq
+
+    # 4. Build the base string
+    result = formatted_names.join('; ')
+  
+    separator = "" 
+    separator = ' and ' if formatted_names.any? and unnamed.any?
+ 
+    # 5. Add the "unnamed" suffix if any blank entries were found
+    if unnamed.any?
+      suffix = "#{unnamed.count} unnamed #{place_type}"
+      # If there were valid names, append with a semicolon; otherwise, capitalize the start
+      result = result.present? ? "#{result};#{separator}#{suffix}" : suffix.strip.capitalize
+    end
+
+    result
+#  rescue NameError
+#    ""
+  end
+
+  def formatted_capad_names_from_array(array_column_name, target_model_name, place_type)
+    ids = public_send(array_column_name)
+    return "" if ids.blank?
+
+    klass = target_model_name.to_s.classify.constantize
+
+    # 1. Fetch all raw names matching the IDs in a single query
+    all_names = klass.where(pa_id: ids).pluck(:name)
+
+    # 2. Separate valid names from blank/unnamed ones (nil, empty, or spaces)
+    named, unnamed = all_names.partition { |name| name.present? && !name.match(/^\s*$/) }
+
+    # 3. Clean, capitalise, and deduplicate the valid names
+    formatted_names = named.map { |name| name.gsub(/\b\w+/) { |word| word.capitalize } }.uniq
+
+    # 4. Build the base string
+    result = formatted_names.join('; ')
+  
+    separator = "" 
+    separator = ' and ' if formatted_names.any? and unnamed.any?
+ 
+    # 5. Add the "unnamed" suffix if any blank entries were found
+    if unnamed.any?
+      suffix = "#{unnamed.count} unnamed #{place_type}"
+      # If there were valid names, append with a semicolon; otherwise, capitalize the start
+      result = result.present? ? "#{result};#{separator}#{suffix}" : suffix.strip.capitalize
+    end
+
+    result
+#  rescue NameError
+#    ""
+  end
   def self.get_pnp_parkid(lat, long)
     sql = <<-SQL
       SELECT  
@@ -1471,4 +1577,46 @@ ORDER BY id;
         ":username=>'#{dbuser}', :password=>'#{password}')")
     eval("Custom_#{identifier}.connection")
   end
+private
+
+#used by activators and chasers to get user ids from contacts via user_callsign and date
+def fetch_associated_users(primary_callsign:, secondary_callsign:)
+  # 1. Build an array of the codes we are searching for
+  search_codes = [code, old_code].reject(&:blank?)
+  return User.none if search_codes.empty?
+
+  # 2. Build the dynamic UNION query swapping columns based on the parameters passed
+  union_query = <<~SQL
+    (SELECT #{primary_callsign} AS callsign, date FROM contacts WHERE asset1_codes && ARRAY[?::varchar])
+    UNION
+    (SELECT #{secondary_callsign} AS callsign, date FROM contacts WHERE asset2_codes && ARRAY[?::varchar])
+  SQL
+
+  # Execute the query to isolate the correct callsign/date pairs
+  lookup_pairs = Contact.find_by_sql([union_query, search_codes, search_codes])
+                        .map { |c| [c.callsign, c.date] }
+                        .reject { |callsign, _date| callsign.blank? }
+
+  return User.none if lookup_pairs.empty?
+
+  # 3. Generate the bulk dynamic SQL clauses for the user_callsigns lookup
+  sql_clauses = []
+  sql_values = []
+
+  lookup_pairs.each do |callsign, date|
+    sql_clauses << "(callsign = ? AND from_date <= ? AND (to_date IS NULL OR to_date >= ?))"
+    sql_values.concat([callsign, date, date])
+  end
+
+  # 4. Get all valid user_ids using your (callsign, from_date, to_date) composite index
+  user_ids = UserCallsign.where(sql_clauses.join(" OR "), *sql_values)
+                         .pluck(:user_id)
+                         .compact
+                         .uniq
+
+  return User.none if user_ids.empty?
+
+  # 5. Bulk-fetch the final User records sorted cleanly by callsign
+  User.where(id: user_ids).order(:callsign)
+end
 end

@@ -10,7 +10,8 @@ sudo cp -r /home/mbriggs/rails_projects/hota-2.2/* /var/www/html/hota-dev/
 sudo rm -r /var/www/html/hota-dev/public/system
 sudo cp -r  /tmp/system /var/www/html/hota-dev/public/
 sudo cp -r  /tmp/assets.* /var/www/html/hota-dev/public/assets
-sudo cp -r  /tmp/sites.* /var/www/html/hota-dev/public/assets
+sudo cp  dev-env-production.rb /var/www/html/hota-dev/config/environments/production.rb
+sudo cp  dev-initialzers.rb /var/www/html/hota-dev/config/initializers/dev-initialzers.rb
 sudo chmod -R a+rw /var/www/html/hota-dev/log/*
 sudo chmod -R a+rw /var/www/html/hota-dev/public/system
 sudo chmod -R a+rw /var/www/html/hota-dev/public/assets

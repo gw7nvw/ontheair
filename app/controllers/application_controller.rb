@@ -226,6 +226,10 @@ class ApplicationController < ActionController::Base
   end
 
   def determine_country
+    @current_host = request.host
+    if @current_host.match('dev.')
+      logger.debug "!!!!!!!!!!!!!!!!!!!!HERE!!!!!!!!!!!!!!!!!!!!!!"
+    end
     if params[:dxcc].present? and params[:dxcc].class.to_s=="String"
       # 1. Absolute Highest Priority: The user just explicitly chose a country via an action/link
       @current_country=params[:dxcc].upcase
@@ -239,10 +243,10 @@ class ApplicationController < ActionController::Base
       session[:dxcc] = @current_country 
     else
       # 4. Fall back to the domain name if no session exists (or if it's an empty session)
-      @current_country = case request.host
+      @current_country = case @current_host
                          when /.*\.nz$/
                            'ZL'
-                         when /.*\.com\.au$/
+                         when /.*\.org$/
                            'VK'
                          else
                            'ZL' # Default fallback

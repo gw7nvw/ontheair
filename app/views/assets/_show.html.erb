@@ -97,27 +97,28 @@
     </div>
   <% end %>
 
-  <% if true #@asset.country == 'ZL' %>
-    <% if @asset.public_access==false %>
-      <div class="erow" id="publicaccess" style='color:#bb0000'>
-        <div class="rowtitle" style='color:#bb0000'><%= "Public access to AZ" %></div>
-        <div class="rowtext" >
-          None known <%= link_to image_tag("/assets/info.png"), ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
-          <small><i><%= link_to '(what does this mean?)', ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></i></small>
-        </div>
+  <% if @asset.country == 'ZL' then access_info = ACCESS_INFO else access_info = VK_ACCESS_INFO end %>
+  <% if @asset.public_access==false %>
+    <div class="erow" id="publicaccess" style='color:#bb0000'>
+      <div class="rowtitle" style='color:#bb0000'><%= "Public access to AZ" %></div>
+      <div class="rowtext" >
+        None known <%= link_to image_tag("/assets/info.png"), access_info , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
+        <small><i><%= link_to '(what does this mean?)', access_info , remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></i></small>
       </div>
-    <% end %>
+    </div>
+  <% end %>
   
-    <% if @asset.public_access==true %>
-      <div class="erow" id="publicaccess" style="color:#00bb00">
-        <div class="rowtitle" style="color:#00bb00"><%= "Public access to AZ" %></div>
-        <div class="rowtext">
-          Yes <%= link_to image_tag("/assets/info.png"), ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
-          <small><i><%= link_to '(what does this mean?)', ACCESS_INFO , remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></i></small>
-        </div>
+  <% if @asset.public_access==true %>
+    <div class="erow" id="publicaccess" style="color:#00bb00">
+      <div class="rowtitle" style="color:#00bb00"><%= "Public access to AZ" %></div>
+      <div class="rowtext">
+        Yes <%= link_to image_tag("/assets/info.png"), access_info , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
+        <small><i><%= link_to '(what does this mean?)', access_info , remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></i></small>
       </div>
-    <% end %>
-
+    </div>
+  <% end %>
+    
+  <% if !@bot %>
     <% if @asset.public_access==true %>
       <% if @asset.access_road_ids !=nil then %>
         <div class="erow" id="roadids">
@@ -125,16 +126,7 @@
           <div class="rowtext" style="color:#00bb00"> 
             Via public road(s): 
             <span style="color:#333">
-              <% unnamed_road=0 %>
-              <% road_names=[] %>
-              <% @asset.access_road_ids.each do |rid| %>
-                <% r=Road.find_by(id: rid) %>
-                <% if r and r.name and r.name.length>0 %>
-                  <% road_names+=[r.name.downcase.titlecase]%>
-                <% else unnamed_road+=1 end %>
-              <% end %>
-              <% if unnamed_road>0 then road_names+=[unnamed_road.to_s+" unnamed road(s)"] end%>
-              <%= road_names.uniq.join('; ') %>
+              <%= @asset.formatted_names_from_array("access_road_ids", "Road", "roads") %>
             </span>
           </div>
         </div>
@@ -146,18 +138,7 @@
           <div class="rowtext" style="color:#00bb00"> 
             Via DOC track(s): 
             <span style="color:#333">
-              <% unnamed_track=0 %>
-              <% track_names=[] %>
-              <% @asset.access_track_ids.each do |rid| %>
-                <% r=DocTrack.find_by(id: rid) %>
-                <% if r and r.name and r.name.length>0 %>
-                  <% track_names+=[r.name.downcase.titlecase]%>
-                <% else %>
-                  <% unnamed_track+=1 %>
-                <% end %>
-              <% end %>
-              <% if unnamed_track>0 then track_names+=[unnamed_track.to_s+" unnamed track(s)"] end %>
-              <%= track_names.uniq.join('; ') %>
+              <%= @asset.formatted_names_from_array("access_track_ids", "DocTrack", "tracks") %>
             </span>
           </div>
         </div>
@@ -169,12 +150,7 @@
           <div class="rowtext" style="color:#00bb00"> 
             Via park(s): 
             <span style="color:#333">
-              <% park_names=[] %>
-              <% @asset.access_park_ids.each do |rid| %>
-                <% r=Asset.find_by(id: rid) %>
-                <% park_names+=[r.name] %>
-              <% end %>
-              <%= park_names.uniq.join('; ') %>
+              <%= @asset.formatted_names_from_array("access_park_ids", "Asset", "parks") %>
             </span>
           </div>
         </div>
@@ -186,12 +162,7 @@
           <div class="rowtext" style="color:#00bb00"> 
             Via park(s): 
             <span style="color:#333">
-              <% park_names=[] %>
-              <% @asset.access_capad_park_ids.each do |rid| %>
-                <% r=Capad.find_by(pa_id: rid) %>
-                <% park_names+=[(r.name||"").titlecase+" "+(r.capad_type||"").titlecase] %>
-              <% end %>
-              <%= park_names.uniq.join('; ') %>
+              <%= @asset.formatted_capad_names_from_array("access_capad_park_ids", "Capad", "parks") %>
             </span>
           </div>
         </div>
@@ -202,12 +173,7 @@
           <div class="rowtext" style="color:#00bb00"> 
             Via state park(s): 
             <span style="color:#333">
-              <% park_names=[] %>
-              <% @asset.access_vk_state_park_ids.each do |rid| %>
-                <% r=VkStatePark.find_by(id: rid) %>
-                <% park_names+=[(r.name||"").titlecase] %>
-              <% end %>
-              <%= park_names.uniq.join('; ') %>
+              <%= @asset.formatted_names_from_array("access_vk_state_park_ids", "VkStatePark", "parks") %>
             </span>
           </div>
         </div>
@@ -222,7 +188,7 @@
         </div>
       <% end %>
     <% end %>
-  <% end %>
+  <% end %> 
 
   <% if @asset.road_distance and @asset.road_distance>0 %>
     <div class="erow" id="name">
@@ -298,13 +264,15 @@
     </div>
   <% end %>
 
-  <% if @asset.traditional_owners %>
-    <div class="erow" id="trad_owner">
-      <div class="rowtitle">Traditional owners</div>
-      <div class="rowtext"> 
-        <%=@asset.traditional_owners %>
+  <% if !@bot %>
+    <% if @asset.traditional_owners %>
+      <div class="erow" id="trad_owner">
+        <div class="rowtitle">Traditional owners</div>
+        <div class="rowtext"> 
+          <%=@asset.traditional_owners %>
+        </div>
       </div>
-    </div>
+    <% end %>
   <% end %>
 
   <div class="erow" id="location">
@@ -399,221 +367,224 @@
     </div>
   </div>
 
-  <%= form_for @myrating, remote: true, url: '/assets/'+@asset.safecode+'/rate', :html => {:name => 'ratingform'} do |f| %>  
+  <% if !@bot %>
+    <%= form_for @myrating, remote: true, url: '/assets/'+@asset.safecode+'/rate', :html => {:name => 'ratingform'} do |f| %>  
 
-    <div class="erow">
-      <div class="sectiontitle_bold"><%=if @rating_count>0 then @rating_count.to_s+" " else "" end %>Ratings:</div>&nbsp;
-    </div>
-    <% if signed_in? %>
-      <%= link_to "("+(if @myrating.id then "Edit" else "Add" end)+" yours)", '#', class: 'link_to', :id => 'edit', :onclick => "showratings(); return(false)"%>
-    <%end%>
-     
-    <% if @rating_count == 0 %>
-      <i>No-one has rated this location - be the first!</i>
-    <% end %>
-    <div class="erow">
-      <div class="rowtitle"><%= "Nice Location:" %></div>
-      <div class="rowtext"> 
-        <% @nice_score.times do %> <img src="/assets/gold-star.png"> <% end %><% (9-@nice_score).times do %> <img src="/assets/grey-star.png"> <% end %>
+      <div class="erow">
+        <div class="sectiontitle_bold"><%=if @rating_count>0 then @rating_count.to_s+" " else "" end %>Ratings:</div>&nbsp;
       </div>
-    </div>
-    <% if signed_in? %>
-      <div class="erow" id="showratings1" style="display:none">
-        <div class="rowtitle"></div>
-        <div class="rowtext" style="width:242px"><%= f.text_field :nice_score, id: 'nice_score', type: 'range', min: "1", max: "9", value: @myrating.nice_score %></div>
+      <% if signed_in? %>
+        <%= link_to "("+(if @myrating.id then "Edit" else "Add" end)+" yours)", '#', class: 'link_to', :id => 'edit', :onclick => "showratings(); return(false)"%>
+      <%end%>
+       
+      <% if @rating_count == 0 %>
+        <i>No-one has rated this location - be the first!</i>
+      <% end %>
+      <div class="erow">
+        <div class="rowtitle"><%= "Nice Location:" %></div>
+        <div class="rowtext"> 
+          <% @nice_score.times do %> <img src="/assets/gold-star.png"> <% end %><% (9-@nice_score).times do %> <img src="/assets/grey-star.png"> <% end %>
+        </div>
       </div>
-    <% end %>
-    <div class="erow">
-      <div class="rowtitle"><%= "Easy Access:" %></div>
-      <div class="rowtext"> 
-        <% @accessibility_score.times do %> <img src="/assets/gold-star.png"> <% end %><% (9-@accessibility_score).times do %> <img src="/assets/grey-star.png"> <% end %>
+      <% if signed_in? %>
+        <div class="erow" id="showratings1" style="display:none">
+          <div class="rowtitle"></div>
+          <div class="rowtext" style="width:242px"><%= f.text_field :nice_score, id: 'nice_score', type: 'range', min: "1", max: "9", value: @myrating.nice_score %></div>
+        </div>
+      <% end %>
+      <div class="erow">
+        <div class="rowtitle"><%= "Easy Access:" %></div>
+        <div class="rowtext"> 
+          <% @accessibility_score.times do %> <img src="/assets/gold-star.png"> <% end %><% (9-@accessibility_score).times do %> <img src="/assets/grey-star.png"> <% end %>
+        </div>
       </div>
-    </div>
-    <% if signed_in? %>
-      <div class="erow" id="showratings2" style="display:none">
-        <div class="rowtitle"></div>
-        <div class="rowtext" style="width:242px"><%= f.text_field :accessibility_score, id: 'accessibility_score', type: 'range', min: "1", max: "9", value: @myrating.accessibility_score %></div>
-      </div>
-    <% end %>
+      <% if signed_in? %>
+        <div class="erow" id="showratings2" style="display:none">
+          <div class="rowtitle"></div>
+          <div class="rowtext" style="width:242px"><%= f.text_field :accessibility_score, id: 'accessibility_score', type: 'range', min: "1", max: "9", value: @myrating.accessibility_score %></div>
+        </div>
+      <% end %>
   
-    <% if signed_in? %>
-      <div class="erow" id="showratings3" style="display:none">
-        <%= f.submit 'Rate', class: "btn btn-small btn-primary btn-hightlight" %> 
-        <% if @myrating and @myrating.id %>
-          <%=  link_to "Delete", '/assets/'+@asset.safecode+'/derate', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('derate')" %>
-        <% end %>
-      </div>
-    <% end %>
-  <% end %>
-
-  <div class="erow">
-    <div class="hrline">
-      <hr noshade size="4">
-    </div>
-  </div>
-
-  <div class="erow">
-    <div class="sectiontitle_bold">Links:</div>&nbsp;        
-    <% if write_access? %>
-      <%=  link_to "(Edit)", '#', class: 'link_to', :id => 'edit', :onclick => "editlinks(); return(false)"%>
-    <%end%>
-  </div>
-
-  <div id="showlinks">
-    <% @asset.web_links.each do |awl| %>
-      <div class="erow" id="name">
-        <div class="rowtitle"><%= awl.web_link_class.display_name %></div>
-        <div class="rowtext"><%= link_to awl.url, awl.url, :target=>"_blank"%></div>
-      </div>
-    <% end %>
-  </div>
-
-  <% if write_access? then %>
-    <div id="editlinks" style="display:none">
-      <%= form_for @newlink, remote: true, :html => {:name => 'linkform'} do |f| %>
-        <table>
-          <% @asset.web_links.each do |awl| %>
-            <tr> 
-              <td><%= awl.web_link_class.display_name %></td>
-              <td><%= link_to awl.url, awl.url, :target=>"_blank"%></td>
-              <td><%=  link_to "Delete", '/asset_web_links/'+awl.id.to_s+'/delete', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('delete')" %></td>
-            </tr>
+      <% if signed_in? %>
+        <div class="erow" id="showratings3" style="display:none">
+          <%= f.submit 'Rate', class: "btn btn-small btn-primary btn-hightlight" %> 
+          <% if @myrating and @myrating.id %>
+            <%=  link_to "Delete", '/assets/'+@asset.safecode+'/derate', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('derate')" %>
           <% end %>
-
-          <tr>
-            <td>
-              <%= f.hidden_field :asset_code %>
-              <%= f.collection_select( :link_class, WebLinkClass.all.order(:name), :name, :display_name) %>
-            </td>
-            <td> <%=f.text_field :url %></td>
-            <td> <%= f.submit 'Add', class: "btn btn-small btn-primary btn-hightlight" %> </td>
-          </tr>
-        </table>
+        </div>
       <% end %>
-    </div>
-  <% end %>
-
-  <div class="erow">
-    <div class="hrline">
-      <hr noshade size="4">
-    </div>
-  </div>
-
-  <div class="sectiontitle_bold">Chased by:</div>
-  <div class="erow" id="chased_by">
-    <% if not @asset.chasers_including_external or (@asset.chasers_including_external and @asset.chasers_including_external.count==0) then %>
-      <i>No-one has chased this place yet. Be the first!</i><br/>
-    <% end %>
-    <% count = 0 
-       chasers = @asset.chasers_including_external 
-       callsigns = chasers.map { |chaser| chaser.callsign }
-       chase_count = callsigns.count
-       if current_user and callsigns.include?(current_user.callsign) then  %>
-         <%=link_to current_user.callsign, '/users/'+current_user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp;
-     <%  callsigns = callsigns - [current_user.callsign] 
-         chase_count-=1
-       end
-       callsigns = callsigns[0..39]
-       chase_count -= 40 %>
-    <% callsigns.each do |callsign| %>
-      <%=link_to callsign, '/users/'+callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp;
     <% end %>
 
-    <% if chase_count>0 then %> <%= "... and #{chase_count.to_s} more" %> <% end %>
-  </div> 
-
-  <div class="sectiontitle_bold">Activated by:</div>
-  <div class="erow" id="activated_by">
-    <% if not @asset.activators_including_external or (@asset.activators_including_external and @asset.activators_including_external.count==0) then %>
-      <i>No-one has activated this place yet. Be the first!</i><br/>
-    <% end %>
-    <% @asset.activators_including_external.each do |user| %>
-      <%=link_to user.callsign, '/users/'+user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp;
-    <% end %>
-  </div> 
-
-  <div class="sectiontitle_bold">Logged here:</div>
-  <div class="erow">
-    <% if signed_in? %>
-      <% if @asset.logs and @asset.logs.count>0 then %>
-        <b><%=@asset.activation_count.to_s+" Activations "%><%=link_to "(View)", '/logs/?asset='+@asset.safecode+"&user=ALL", remote: true,  :id => 'user', :onclick => "linkHandler('logs')" %></b>
-      <% end %>
-      <% if @asset.contacts and @asset.contacts.count>0 then %>
-        <b><%=@asset.contacts.count.to_s+" Contacts "%><%=link_to "(View)", '/contacts/?asset='+@asset.safecode+"&user=ALL", remote: true,  :id => 'user', :onclick => "linkHandler('contact')" %></b>
-      <% end %>
-    <% else %>
-      <% if @asset.logs and @asset.logs.count>0 then %>
-        <%=@asset.activation_count.to_s+" Activations "%>
-      <% end %>
-      <% if @asset.contacts and @asset.contacts.count>0 then %>
-        <%=@asset.contacts.count.to_s+" Contacts "%>
-      <% end %>
-      <p><i>Sign in to view logs and cantacts</i></p>
-    <% end %>
-  </div>
-
-  <% if write_access? %>
-    <%=  link_to "Add Contacts", '/logs/new?asset1='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
-    <%=  link_to "Add Spot", '/posts/new?topic_id='+SPOT_TOPIC.to_s+'&code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
-    <%=  link_to "Add Alert", '/posts/new?topic_id='+ALERT_TOPIC.to_s+'&code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
-    <% if @wishlist %>
-      <%=  link_to "Remove from wishlist", '/assets/'+@asset.safecode+'/remove_wish', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('dewish')" %>
-    <% else %>
-      <%=  link_to "Add to wishlist", '/assets/'+@asset.safecode+'/add_wish', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('wish')" %>
-    <% end %>
-  <% end %>
-
-  <div class="erow">
-    <div class="hrline">
-      <hr noshade size="4">
-    </div>
-  </div>
-
-  <div class="sectiontitle_bold" style="margin-bottom: 4px">Photos of this place</div>
-  <div class="erow">
-    <% if @asset.photos.count==0 %>
-      <p><i>No photos have been uploaded. </i></p>
-    <% end %>
-    <div class="photo-bar" id="photo_box">
-      <div style="width:1000%">
-        <% @asset.photos.each do |photo| %>
-          <span>
-            <% if @asset.hutbagger_link then %>
-              <%=link_to (image_tag(photo.link_url.gsub(/large/,'small'))), @asset.hutbagger_link.url, :class => "photo", :target=>"_blank"%>
-            <% else %>
-              <%=link_to (image_tag(photo.photo.image.url(:thumb))), '/photos/'+photo.photo_id.to_s, :class => "photo", :remote=>true%>
-            <% end %>
-          </span>
-        <% end %>
-      </div>
-    </div>
-  </div>
-  <div class="erow">
-    <% if write_access? then %>
-      <%=link_to "Add Photo", '/photos/new?asset='+@asset.safecode+'&topic_id='+PHOTO_TOPIC.to_s, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('photo')" %>
-    <% end %>
-  </div>
-
-  <% @asset.contains_classes.each do |parent_class| %>
     <div class="erow">
       <div class="hrline">
         <hr noshade size="4">
       </div>
     </div>
+  
+    <div class="erow">
+      <div class="sectiontitle_bold">Links:</div>&nbsp;        
+      <% if write_access? %>
+        <%=  link_to "(Edit)", '#', class: 'link_to', :id => 'edit', :onclick => "editlinks(); return(false)"%>
+      <%end%>
+    </div>
 
-    <div class="sectiontitle_bold"><%=parent_class.pluralize.capitalize%></div>
-    <table>
-      <% @asset.contains_assets.select{|ac| ac.asset_type==parent_class}.each do |parent| %>
-        <tr>
-          <td>
-            <%=link_to parent.codename, '/assets/'+parent.safecode, remote: true,  :id => 'parent'+parent.safecode, :onclick => "linkHandler('parent')"   %>
-          </td>
-        </tr>
+    <div id="showlinks">
+      <% @asset.web_links.each do |awl| %>
+        <div class="erow" id="name">
+          <div class="rowtitle"><%= awl.web_link_class.display_name %></div>
+          <div class="rowtext"><%= link_to awl.url, awl.url, :target=>"_blank"%></div>
+        </div>
       <% end %>
-    </table>
+    </div>
+  
+    <% if write_access? then %>
+      <div id="editlinks" style="display:none">
+        <%= form_for @newlink, remote: true, :html => {:name => 'linkform'} do |f| %>
+          <table>
+            <% @asset.web_links.each do |awl| %>
+              <tr> 
+                <td><%= awl.web_link_class.display_name %></td>
+                <td><%= link_to awl.url, awl.url, :target=>"_blank"%></td>
+                <td><%=  link_to "Delete", '/asset_web_links/'+awl.id.to_s+'/delete', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('delete')" %></td>
+              </tr>
+            <% end %>
+  
+            <tr>
+              <td>
+                <%= f.hidden_field :asset_code %>
+                <%= f.collection_select( :link_class, WebLinkClass.all.order(:name), :name, :display_name) %>
+              </td>
+              <td> <%=f.text_field :url %></td>
+              <td> <%= f.submit 'Add', class: "btn btn-small btn-primary btn-hightlight" %> </td>
+            </tr>
+          </table>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="erow">
+      <div class="hrline">
+        <hr noshade size="4">
+      </div>
+    </div>
+  
+    <div class="sectiontitle_bold">Chased by:</div>
+    <div class="erow" id="chased_by">
+      <% if not @asset.chasers_including_external or (@asset.chasers_including_external and @asset.chasers_including_external.count==0) then %>
+        <i>No-one has chased this place yet. Be the first!</i><br/>
+      <% end %>
+      <% count = 0 
+         chasers = @asset.chasers_including_external 
+         callsigns = chasers.map { |chaser| chaser.callsign }
+         chase_count = callsigns.count
+         if current_user and callsigns.include?(current_user.callsign) then  %>
+           <%=link_to current_user.callsign, '/users/'+current_user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp; <%
+           callsigns = callsigns - [current_user.callsign] 
+           chase_count-=1 
+         end 
+         callsigns = callsigns[0..39]
+         chase_count -= 40  %>
+      <% callsigns.each do |callsign| %>
+        <%=link_to callsign, '/users/'+callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp;
+      <% end %>
+
+      <% if chase_count>0 then %> <%= "... and #{chase_count.to_s} more" %> <% end %>
+    </div> 
+
+    <div class="sectiontitle_bold">Activated by:</div>
+    <div class="erow" id="activated_by">
+      <% if not @asset.activators_including_external or (@asset.activators_including_external and @asset.activators_including_external.count==0) then %>
+        <i>No-one has activated this place yet. Be the first!</i><br/>
+      <% end %>
+      <% @asset.activators_including_external.each do |user| %>
+        <%=link_to user.callsign, '/users/'+user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp;
+      <% end %>
+    </div> 
+  
+    <div class="sectiontitle_bold">Logged here:</div>
+    <div class="erow">
+      <% if signed_in? %>
+        <% if @asset.logs and @asset.logs.count>0 then %>
+          <b><%=@asset.activation_count.to_s+" Activations "%><%=link_to "(View)", '/logs/?asset='+@asset.safecode+"&user=ALL", remote: true,  :id => 'user', :onclick => "linkHandler('logs')" %></b>
+        <% end %>
+        <% if @asset.contact_count>0 then %>
+          <b><%=@asset.contact_count.to_s+" Contacts "%><%=link_to "(View)", '/contacts/?asset='+@asset.safecode+"&user=ALL", remote: true,  :id => 'user', :onclick => "linkHandler('contact')" %></b>
+        <% end %>
+      <% else %>
+        <% if @asset.logs and @asset.logs.count>0 then %>
+          <%=@asset.activation_count.to_s+" Activations "%>
+        <% end %>
+        <% if @asset.contact_count>0 then %>
+          <%=@asset.contact_count.to_s+" Contacts "%>
+        <% end %>
+        <p><i>Sign in to view logs and cantacts</i></p>
+      <% end %>
+    </div>
+
+    <% if write_access? %>
+      <%=  link_to "Add Contacts", '/logs/new?asset1='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+      <%=  link_to "Add Spot", '/posts/new?topic_id='+SPOT_TOPIC.to_s+'&code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+      <%=  link_to "Add Alert", '/posts/new?topic_id='+ALERT_TOPIC.to_s+'&code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+      <% if @wishlist %>
+        <%=  link_to "Remove from wishlist", '/assets/'+@asset.safecode+'/remove_wish', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('dewish')" %>
+      <% else %>
+        <%=  link_to "Add to wishlist", '/assets/'+@asset.safecode+'/add_wish', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('wish')" %>
+      <% end %>
+    <% end %>
+  
+    <div class="erow">
+      <div class="hrline">
+        <hr noshade size="4">
+      </div>
+    </div>
+  
+    <div class="sectiontitle_bold" style="margin-bottom: 4px">Photos of this place</div>
+    <div class="erow">
+      <% if @asset.photos.count==0 %>
+        <p><i>No photos have been uploaded. </i></p>
+      <% end %>
+      <div class="photo-bar" id="photo_box">
+        <div style="width:1000%">
+          <% @asset.photos.each do |photo| %>
+            <span>
+              <% if @asset.hutbagger_link then %>
+                <%=link_to (image_tag(photo.link_url.gsub(/large/,'small'))), @asset.hutbagger_link.url, :class => "photo", :target=>"_blank"%>
+              <% else %>
+                <%=link_to (image_tag(photo.photo.image.url(:thumb))), '/photos/'+photo.photo_id.to_s, :class => "photo", :remote=>true%>
+              <% end %>
+            </span>
+        <% end %>
+        </div>
+      </div>
+    </div>
+    <div class="erow">
+      <% if write_access? then %>
+        <%=link_to "Add Photo", '/photos/new?asset='+@asset.safecode+'&topic_id='+PHOTO_TOPIC.to_s, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('photo')" %>
+      <% end %>
+    </div>
+ 
+    <% grouped_contained_assets = @asset.contains_assets.group_by(&:asset_type).sort %> 
+    <% grouped_contained_assets.each do |asset_type, assets| %>
+      <div class="erow">
+        <div class="hrline">
+          <hr noshade size="4">
+        </div>
+      </div>
+  
+      <div class="sectiontitle_bold"><%=asset_type.pluralize.capitalize%></div>
+      <table>
+        <% assets.each do |parent| %>
+          <tr>
+            <td>
+              <%=link_to parent.codename, "/assets/#{parent.safecode}", remote: true,  :id => "parent-#{parent.safecode}", :onclick => "linkHandler('parent')"   %>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    <% end %>
+  
   <% end %>
-
-
+  
   <div class="erow">
     <div class="hrline">
       <hr noshade size="4">
@@ -652,34 +623,37 @@
   </div>
 </div>
 
-<script>
-  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
-  place_init('<%=@asset.location%>',  0, site_purple_star);
-  <% if @asset.boundary_simple then %>
-    place_init('<%=@asset.boundary_simple%>',  1,site_highlight_polygon);
-  <% end %>
-  <% if @asset.az_boundary_simple then %>
-    place_init('<%=@asset.az_boundary_simple%>',  1,site_az_style);
-  <% end %>
+<% if !@bot %>
 
-  function editlinks() {
-    if (document.getElementById('showlinks').style.display=="none") {
-      document.getElementById('showlinks').style.display="block";
-      document.getElementById('editlinks').style.display="none";
-    } else {
-      document.getElementById('showlinks').style.display="none";
-      document.getElementById('editlinks').style.display="block";
+  <script>
+    document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+    place_init('<%=@asset.location%>',  0, site_purple_star);
+    <% if @asset.boundary_simple then %>
+      place_init('<%=@asset.boundary_simple%>',  1,site_highlight_polygon);
+    <% end %>
+    <% if @asset.az_boundary_simple then %>
+      place_init('<%=@asset.az_boundary_simple%>',  1,site_az_style);
+  <% end %>
+  
+    function editlinks() {
+      if (document.getElementById('showlinks').style.display=="none") {
+        document.getElementById('showlinks').style.display="block";
+        document.getElementById('editlinks').style.display="none";
+      } else {
+        document.getElementById('showlinks').style.display="none";
+        document.getElementById('editlinks').style.display="block";
+      }
     }
-  }
-  function showratings() {
-    if (document.getElementById('showratings1').style.display=="none") {
-      document.getElementById('showratings1').style.display="block";
-      document.getElementById('showratings2').style.display="block";
-      document.getElementById('showratings3').style.display="block";
-    } else {
-      document.getElementById('showratings1').style.display="none";
-      document.getElementById('showratings2').style.display="none";
-      document.getElementById('showratings3').style.display="none";
+    function showratings() {
+      if (document.getElementById('showratings1').style.display=="none") {
+        document.getElementById('showratings1').style.display="block";
+        document.getElementById('showratings2').style.display="block";
+        document.getElementById('showratings3').style.display="block";
+      } else {
+        document.getElementById('showratings1').style.display="none";
+        document.getElementById('showratings2').style.display="none";
+        document.getElementById('showratings3').style.display="none";
+      }
     }
-  }
-</script>
+  </script>
+<% end %>

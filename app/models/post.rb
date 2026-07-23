@@ -79,8 +79,11 @@ class Post < ActiveRecord::Base
   end
 
   def add_map_image
+    return if defined?(UAT_ENV)
     international = false
+    logger.debug "HERE!!!"
     if location == nil
+      logger.debug "HERE LOC NIL!!!"
       if asset_codes
         point_loc = nil
         poly_loc = nil
@@ -90,11 +93,22 @@ class Post < ActiveRecord::Base
           a = asset[:asset] if asset
 #           a = Asset.find_by(code: ac)
           if a then
+            logger.debug "HERE GOT A!!!"
             international=true if a.class.to_s!='Asset' 
-            if a.type.has_boundary
-              poly_loc = { x: a.x, y: a.y } if a.location
-            elsif a.location
-              point_loc = { x: a.x, y: a.y }
+            international=true if a.country!='ZL'
+            logger.debug "HERE international=#{international}!!!"
+            if international then
+              if a.type.has_boundary
+                poly_loc = { x: a.location.x, y: a.location.y } if a.location
+              elsif a.location
+                point_loc = { x: a.location.x, y: a.location.y }
+              end
+            else
+              if a.type.has_boundary
+                poly_loc = { x: a.x, y: a.y } if a.location
+              elsif a.location
+                point_loc = { x: a.x, y: a.y }
+              end
             end
           end
         end
@@ -304,14 +318,12 @@ class Post < ActiveRecord::Base
 
       #        if debug then
         puts 'Sending SPOT to WWFF'
-        puts payloadspot
       #        end
 
         req.body = payloadspot.to_json
         begin
           res = http.request(req)
           puts 'DEBUG: WWFF response'
-          puts res.body.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
           wspots = JSON.parse(res.body)
           
         rescue StandardError
@@ -319,7 +331,6 @@ class Post < ActiveRecord::Base
           result = false
           messages = 'Failed to contact WWFF server'
         else
-          puts wspots
           success = wspots["success"]
           errormsg = wspots["error"]
           if !success
@@ -336,7 +347,6 @@ class Post < ActiveRecord::Base
           end
         end
       else
-        puts 'Invalid WWFF code: ' + a_code
         messages = 'Invalid WWFF code: ' + a_code + '; '
         result = false
       end
@@ -380,7 +390,6 @@ class Post < ActiveRecord::Base
 
         #        if debug then
         puts 'Sending SPOT to POTA'
-        puts payloadspot
         #        end
 
         #        req = Net::HTTP::Get.new("#{url.path}?".concat(payloadspot.collect { |k,v| "#{k}=#{CGI::escape(v.to_s)}" }.join('&')), 'Content-Type' => 'application/json' )
@@ -442,7 +451,6 @@ class Post < ActiveRecord::Base
 
       #        if debug then
       puts 'Sending SPOT to LLOTA'
-      puts payloadspot
       #        end
 
       if !debug
@@ -497,8 +505,6 @@ class Post < ActiveRecord::Base
         messages = 'Failed to contact HEMA server'
       else
         messages = 'Sent spot to HEMA; '
-        puts response
-        puts response.body
       end
     end
     { result: result, messages: messages }
@@ -547,7 +553,6 @@ class Post < ActiveRecord::Base
 
         if debug
           puts 'Sending SPOT to SOTA'
-          puts payloadspot
         end
 
         req = Net::HTTP::Get.new("#{url.path}?"+(payloadspot.collect { |k, v| "#{k}=#{CGI.escape(v.to_s)}" }.join('&')), 'Content-Type' => 'application/json', 'Authorization' => 'bearer ' + access_token, 'id_token' => id_token, 'connection' => 'keep-alive', 'User-Agent' => 'ontheair.nz' )
@@ -560,7 +565,6 @@ class Post < ActiveRecord::Base
         else
           messages = 'Sent spot to SOTA; '
           puts 'DEBUG: SOTA response'
-          puts res.body
         end
       else
         puts 'Invalid SOTA code: ' + a_code
@@ -613,8 +617,6 @@ class Post < ActiveRecord::Base
           messages = 'Failed to contact PnP server'
         else
           messages = 'Sent to PnP; '
-          puts response
-          puts response.body
         end
       end
     end
@@ -623,7 +625,6 @@ class Post < ActiveRecord::Base
       code = code.delete('[')
       pnp_class = Asset.get_pnp_class_from_code(code)
       if pnp_class && (pnp_class != '')
-        puts description
         params = { 'actClass' => pnp_class, 'actCallsign' => (callsign || updated_by_name), 'actSite' => code, 'mode' => mode.strip, 'freq' => freq.strip, 'comments' => PostsHelper.convert_to_text(description.to_s), 'userID' => 'ZLOTA', 'APIKey' => '4DDA205E08D2' }
         puts 'sending spot to PnP'
         uri = URI('http://parksnpeaks.org/api/SPOT' + dbtext)
@@ -637,8 +638,6 @@ class Post < ActiveRecord::Base
           messages = 'Failed to contact PnP server'
         else
           messages = 'Sent to PnP; '
-          puts response
-          puts response.body
         end
       end
     end

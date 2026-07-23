@@ -15,7 +15,7 @@ class StatesController < ApplicationController
     ds = State.find_by_sql [%q{ select id, dxcc, name, code, pnp_code, ST_Simplify("boundary",0.002) as boundary from states where pnp_code = '} + params[:id] + "';"] if !ds or ds.count==0
     if !ds  or ds.count==0
       flash[:error] = 'State not found'
-      redirect_to '/'
+      redirect_to '/' and return
     else
       @state = ds.first
       @assets_by_class = []

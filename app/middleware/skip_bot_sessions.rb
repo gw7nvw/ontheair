@@ -31,11 +31,13 @@ class SkipBotSessions
             )
           end
 
-          unless current_path.start_with?('/signin') || current_path.start_with?('/sessions') || current_path.start_with?('/challenge') or current_path.start_with?('/assets/application.')
+          unless current_path.start_with?('/signin') || current_path.start_with?('/sessions') || current_path=='/challenge' || current_path.start_with?('/challenge/verify') || current_path.start_with?('/assets/application.')
           # 3. Check if they are a confirmed bot
             if ua_record.confirmed_human? 
+              env['bot']="confirmed_human"
               # Do nothign and stop checks
             elsif ua_record.confirmed_bot?
+              env['bot']="confirmed_bot"
               # Keep updating the timestamp so active attackers stay locked out indefinitely
               ua_record.touch 
               
@@ -44,10 +46,14 @@ class SkipBotSessions
   
             # 4. Check if they are already a suspect
             elsif ua_record.suspected_bot?
-              Rails.logger.warn "!!! BLACKLIST SUSPECT: Known suspected bot returned again #{current_path}"
-               # server them challenge page withot wasting time on redirect
-               env['PATH_INFO'] = '/challenge'
-               current_path  = '/challenge'
+              env['bot']="suspected_bot"
+              #allow only access to robots.txt list of pages, challenge them otherwise
+              unless current_path.start_with?('/assets') or current_path.start_with?('/signin') or current_path=='/'
+                Rails.logger.warn "!!! BLACKLIST SUSPECT: Known suspected bot returned again to #{current_path}"
+                # server them challenge page withot wasting time on redirect
+                env['PATH_INFO'] = '/challenge'
+                current_path  = '/challenge'
+              end
     
             # 5. check if they are unknown status, nut have hit our triggers
             elsif ua_record.suspicious_access_count > CHALLENGE_THRESHOLD || (ua_record.access_count>10 && (1.0*ua_record.js_count/ua_record.access_count)<=0.3)
@@ -75,7 +81,7 @@ class SkipBotSessions
   
     # B. Pass request down to Rails to execute controllers
     status, headers, response = @app.call(env)
-
+  
     # D. Track the access count in the database
     begin
       unless current_path.start_with?('/api') 

@@ -12,7 +12,7 @@
 
 #specific posts
   ACCESS_INFO="/posts/831/"
-
+  VK_ACCESS_INFO="/posts/16843/"
 #mutex locks
   SCHED_LOCK = 1
 

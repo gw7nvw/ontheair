@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20260712002710) do
+ActiveRecord::Schema.define(version: 20260723041914) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -300,9 +300,12 @@ ActiveRecord::Schema.define(version: 20260712002710) do
   end
 
   add_index "contacts", ["asset1_classes"], :name => "idx_contacts_asset1_classes"
+  add_index "contacts", ["asset1_codes"], :name => "idx_contacts_asset1_codes_gin"
   add_index "contacts", ["asset2_classes"], :name => "idx_contacts_asset2_classes"
+  add_index "contacts", ["asset2_codes"], :name => "idx_contacts_asset2_codes_gin"
   add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"
   add_index "contacts", ["callsign2"], :name => "index_contacts_on_callsign2"
+  add_index "contacts", ["date", "time"], :name => "idx_contacts_date_time"
   add_index "contacts", ["date"], :name => "index_contacts_on_date"
   add_index "contacts", ["log_id"], :name => "contacts_log_id_idx"
   add_index "contacts", ["user1_id"], :name => "contacts_user1id_idx"
@@ -698,10 +701,13 @@ ActiveRecord::Schema.define(version: 20260712002710) do
   end
 
   create_table "nz_tribal_lands", primary_key: "ogc_fid", force: true do |t|
-    t.spatial "wkb_geometry", limit: {:srid=>4326, :type=>"multi_polygon"}
-    t.decimal "id",                                                         precision: 10, scale: 0
-    t.string  "name",         limit: 80
+    t.spatial "wkb_geometry",              limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.decimal "id",                                                                      precision: 10, scale: 0
+    t.string  "name",                      limit: 80
     t.string  "country"
+    t.spatial "boundary_quite_simplified", limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial "boundary_simplified",       limit: {:srid=>4326, :type=>"multi_polygon"}
+    t.spatial "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
   end
 
   add_index "nz_tribal_lands", ["wkb_geometry"], :name => "nz_tribal_lands_wkb_geometry_geom_idx", :spatial => true
@@ -1000,6 +1006,9 @@ ActiveRecord::Schema.define(version: 20260712002710) do
     t.boolean  "push_include_external"
     t.string   "dxcc"
     t.string   "baselayer"
+    t.string   "pnp_APIKey"
+    t.boolean  "pnp_imported",                    default: false
+    t.string   "pnp_username"
   end
 
   add_index "users", ["callsign"], :name => "index_users_on_callsign"

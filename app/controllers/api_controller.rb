@@ -641,6 +641,7 @@ class ApiController < ApplicationController
   def pnp_verifyuser
     if params[:user] and params[:pin] then
       user=User.find_by(callsign: params[:user].upcase, pin: params[:pin].upcase)
+      user=User.find_by(callsign: params[:user].upcase, pnp_APIKey: params[:pin].upcase) if !user
     end
 
     if user then 
@@ -661,23 +662,25 @@ class ApiController < ApplicationController
     valid = false
   
     if params[:userID] && params[:APIKey]
-      user = User.find_by(callsign: params[:userID].upcase)
-      if user && user.pin.casecmp(params[:APIKey]).zero?
+      user=User.find_by(callsign: params[:userID].upcase, pin: params[:APIKey].upcase) 
+      user=User.find_by(callsign: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase) if !user
+
+      if user && (user.activated || user.pnp_imported) 
         valid = true
       else
         # authenticate via PnP
         # if not a local user, or is a local user and have allowed PnP logins
         # if !user or (user and user.allow_pnp_login==true) then
-        if user && (user.allow_pnp_login == true)
-          params = { 'actClass' => 'WWFF', 'actCallsign' => 'test', 'actSite' => 'test', 'mode' => 'SSB', 'freq' => '7.095', 'comments' => 'Test', 'userID' => params[:userID], 'APIKey' => params[:APIKey] }
-          res = send_spot_to_pnp(params, '/DEBUG')
-          if res.body.match('Success')
-            valid = true
-            puts 'AUTH: SUCCESS authenticated via PnP'
-          else
-            puts 'AUTH: FAILED authentication via PnP'
-          end
-        end
+ #       if user && (user.allow_pnp_login == true)
+ #         params = { 'actClass' => 'WWFF', 'actCallsign' => 'test', 'actSite' => 'test', 'mode' => 'SSB', 'freq' => '7.095', 'comments' => 'Test', 'userID' => params[:userID], 'APIKey' => params[:APIKey] }
+ #         res = send_spot_to_pnp(params, '/DEBUG')
+ #         if res.body.match('Success')
+ #           valid = true
+ #           puts 'AUTH: SUCCESS authenticated via PnP'
+ #         else
+ #           puts 'AUTH: FAILED authentication via PnP'
+ #         end
+ #       end
       end
     end
     valid

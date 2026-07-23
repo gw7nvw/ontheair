@@ -88,6 +88,7 @@ const HTTP_STATUS = {
   400: "Bad Request",
   403: "Forbidden",
   404: "Not Found",
+  422: "Unprocessable (or login expired)",
   500: "Internal Server Error"
 };
 
@@ -346,6 +347,8 @@ function site_polygon_style_function(feature, resoluton) {
   if(feature.get('asset_type')=="llota lake")  return site_lake_style;
   if(feature.get('asset_type')=="park")  return site_docland_style_function(feature, resoluton);
   if(feature.get('asset_type')=="pota park")  return site_pota_style;
+  if(feature.get('asset_type')=="sanpcpa park")  return site_pota_style;
+  if(feature.get('asset_type')=="krmnpa park")  return site_wwff_style;
   if(feature.get('asset_type')=="wwff park")  return site_wwff_style;
 }
 
@@ -371,6 +374,8 @@ function site_points_style_function(feature, resoluton) {
   if(feature.get('asset_type')=="park")  return site_park_point_style;
   if(feature.get('asset_type')=="pota park")  return site_pota_point_style;
   if(feature.get('asset_type')=="wwff park")  return site_wwff_point_style;
+  if(feature.get('asset_type')=="sanpcpa park")  return site_pota_point_style;
+  if(feature.get('asset_type')=="krmnpa park")  return site_wwff_point_style;
 }
 
 
@@ -431,7 +436,7 @@ function site_set_map_filters(filter, list) {
 
 function site_add_layers() {
         map_add_raster_layer('OpenHikingMap', 'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png', 'osm', 0, 23, "CC OpenHikingMap, OpenStreetMap", "https://wiki.openstreetmap.org/wiki/OpenHikingMap", 0, 18);
-        map_add_raster_layer('Sentinel 2 Imagery', 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg', 'osm', 0, 23, "CC EOX GmbH", "https://eox.at/2025/03/sentinel-2-cloudless-2024/", 0, 18);
+        map_add_raster_layer('Sentinel 2 Imagery', 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg', 'osm', 0, 23, "CC EOX GmbH", "https://cloudless.eox.at/license-non-commercial", 0, 18);
         //map_add_raster_layer('NZTM Topo 2019', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
         //map_add_raster_layer('NZTM Topo 2019', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11, "CC LINZ", "https://www.linz.govt.nz/copyright");
         map_add_raster_layer('NZTM Topo 2019', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375,15, "CC LINZ", "https://www.linz.govt.nz/copyright", 6, 15);

@@ -9,7 +9,7 @@ User-agent: DuckDuckBot
 # Step 3: Grant access ONLY to the home page and the /assets tree
 Allow: /assets/
 Allow: /assets
-Allow: /
+Allow: /$
 
 # Step 4: Block absolutely everything else on the domain
 Disallow: /

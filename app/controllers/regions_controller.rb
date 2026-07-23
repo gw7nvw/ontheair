@@ -11,11 +11,11 @@ class RegionsController < ApplicationController
   def show
     @section = params[:section]
     ds = Region.find_by_sql [%q{ select id, dxcc, state_code, name, sota_code, sota_code, ST_Simplify("boundary",0.002) as boundary from regions where sota_code = '} + params[:id] + "';"]
-    if ds
+    if ds and ds.count>0
       @region = ds.first
     else
       flash[:error] = 'Region not found'
-      redirect_to '/'
+      redirect_to '/' and return
     end
     @assets_by_class = []
     AssetType.all.order(:name).each do |at|

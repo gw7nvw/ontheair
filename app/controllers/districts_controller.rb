@@ -11,11 +11,11 @@ class DistrictsController < ApplicationController
   def show
     @section = params[:section]
     ds = District.find_by_sql [%q{ select id, name, region_code, district_code, ST_Simplify("boundary",0.002) as boundary from districts where district_code = '} + params[:id] + "';"]
-    if ds
+    if ds and ds.count>0
       @district = ds.first
     else
       flash[:error] = 'District not found'
-      redirect_to '/'
+      redirect_to '/' and return
     end
     @assets_by_class = []
     AssetType.all.order(:name).each do |at|
