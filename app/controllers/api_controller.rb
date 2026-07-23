@@ -371,6 +371,17 @@ class ApiController < ApplicationController
     render json: res.to_json 
   end
 
+  def pnp_gridsquare
+    lat = params[:lat]
+    long = params[:long]
+
+    a=Asset.new
+    a.location="point(#{long} #{lat})"
+    name = a.maidenhead
+
+    render text: name
+  end
+
   def pnp_shiresid
     lat = params[:lat]
     long = params[:long]
@@ -383,6 +394,24 @@ class ApiController < ApplicationController
     render text: name
   end
  
+  def pnp_summitid
+    lat = params[:lat]
+    long = params[:long]
+
+    res = Asset.get_pnp_summitid(lat, long)
+
+    logger.debug res.to_json
+    if res and res.count>0
+      res=res.first 
+      puts res.to_s 
+      name = "(#{res["code"]}) #{res["name"].gsub(',',';')}"  
+    else
+      name = "Currently not within a summit AZ" 
+    end
+
+    render text: name
+  end
+
   def pnp_parkid
     lat = params[:lat]
     long = params[:long]

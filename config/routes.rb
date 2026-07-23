@@ -157,7 +157,9 @@ match '/api/SPOT', to: 'api#pnp_spot',    via:'post'
 match '/api/CLOSE/:lat/:long', to: 'api#pnp_close',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
 match '/api/CLOSE/:lat/:long/:dummy', to: 'api#pnp_close',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
 match '/api/SHIRESID/:lat/:long', to: 'api#pnp_shiresid',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
+match '/api/GRIDSQUARE/:lat/:long', to: 'api#pnp_gridsquare',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
 match '/api/PARKID/:lat/:long', to: 'api#pnp_parkid',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
+match '/api/SUMMITID/:lat/:long', to: 'api#pnp_summitid',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
 match '/api/WITHIN/:lat/:long', to: 'api#pnp_within',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
 match '/api/parkid/:lat/:long', to: 'api#pnp_parkid',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
 match '/api/CALLSIGN', to: 'api#pnp_callsign',    via:'get'

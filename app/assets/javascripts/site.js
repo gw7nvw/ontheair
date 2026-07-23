@@ -83,6 +83,7 @@ var site_yellow_circle;
 var site_docland_styles=[];
 
 const HTTP_STATUS = {
+  0: "No Internet Connection",
   200: "OK",
   201: "Created",
   400: "Bad Request",

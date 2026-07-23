@@ -1087,7 +1087,7 @@ class Asset < ActiveRecord::Base
     formatted_names = named.map { |name| name.gsub(/\b\w+/) { |word| word.capitalize } }.uniq
 
     # 4. Build the base string
-    result = formatted_names.join('; ')
+    result = formatted_names.sort.join('; ')
   
     separator = "" 
     separator = ' and ' if formatted_names.any? and unnamed.any?
@@ -1120,7 +1120,7 @@ class Asset < ActiveRecord::Base
     formatted_names = named.map { |name| name.gsub(/\b\w+/) { |word| word.capitalize } }.uniq
 
     # 4. Build the base string
-    result = formatted_names.join('; ')
+    result = formatted_names.sort.join('; ')
   
     separator = "" 
     separator = ' and ' if formatted_names.any? and unnamed.any?
@@ -1136,6 +1136,32 @@ class Asset < ActiveRecord::Base
 #  rescue NameError
 #    ""
   end
+
+  def self.get_pnp_summitid(lat, long)
+    sql = <<-SQL
+      SELECT  
+          a.code as id,
+          a.code, 
+          a.name,
+          a.asset_type as class,
+          at.pnp_class as award
+        FROM assets a
+        INNER JOIN asset_types at ON at.name = a.asset_type
+        WHERE is_active = true and minor is not true AND (
+           ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), boundary) 
+           OR ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), az_boundary)
+        )
+        AND (asset_type='summit' OR asset_type='hump') 
+        ORDER BY area LIMIT 1; 
+    SQL
+
+    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
+    sanitized_sql = sanitize_sql_array([sql, { lat: lat, long: long }])
+
+    # 3. Pull raw string text directly from the execution block
+    connection.select_all(sanitized_sql)
+  end
+
   def self.get_pnp_parkid(lat, long)
     sql = <<-SQL
       SELECT  

@@ -1,0 +1,41 @@
+name: Automated Backblaze Code Backup
+
+# Trigger this workflow automatically on every single push to your main branch
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Download the code repository inside the runner container
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches all branches and full history
+
+      # 2. Bundle the entire project (including the hidden .git history directory)
+      - name: Create Tar Bundle
+        run: |
+          tar -czf repository_backup.tar.gz .
+
+      # 3. Install the official Backblaze CLI tool natively on the runner
+      - name: Install Backblaze CLI
+        run: |
+          sudo curl -L https://github.com -o /usr/local/bin/b2
+          sudo chmod +x /usr/local/bin/b2
+
+      # 4. Authenticate and Upload to your ontheair-backups bucket
+      - name: Upload Backup to Backblaze
+        env:
+          B2_KEY_ID: ${{ secrets.B2_KEY_ID }}
+          B2_APP_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+        run: |
+          b2 authorize-account "$B2_KEY_ID" "$B2_APP_KEY"
+          
+          # Generate a clean timestamped filename for Backblaze
+          FILENAME="git_backup_$(date +'%Y-%m-%d_%H%M%S').tar.gz"
+          
+          b2 upload-file ontheair-backups repository_backup.tar.gz "$FILENAME"
+
