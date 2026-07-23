@@ -18,7 +18,7 @@ jobs:
       # 2. Bundle the entire project (including the hidden .git history directory)
       - name: Create Tar Bundle
         run: |
-          tar -czf repository_backup.tar.gz .
+          tar --exclude='repository_backup.tar.gz' -czf repository_backup.tar.gz .
 
       # 3. Install the official Backblaze CLI tool natively on the runner
       - name: Install Backblaze CLI
