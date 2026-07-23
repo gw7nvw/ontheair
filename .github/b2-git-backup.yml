@@ -35,7 +35,7 @@ jobs:
           b2 authorize-account "$B2_KEY_ID" "$B2_APP_KEY"
           
           # Generate a clean timestamped filename for Backblaze
-          FILENAME="git_backup_$(date +'%Y-%m-%d_%H%M%S').tar.gz"
+          FILENAME="git_backup_master_branch.tar.gz"
           
           b2 upload-file ontheair-backups repository_backup.tar.gz "$FILENAME"
 
