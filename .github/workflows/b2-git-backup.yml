@@ -18,7 +18,7 @@ jobs:
       # 2. Bundle the entire project (including the hidden .git history directory)
       - name: Create Tar Bundle
         run: |
-          tar --exclude='repository_backup.tar.gz' -czf repository_backup.tar.gz .
+          tar -czf /tmp/repository_backup.tar.gz .
 
       # 3. Install the official Backblaze CLI tool natively on the runner
       - name: Install Backblaze CLI
@@ -37,5 +37,5 @@ jobs:
           # Generate a clean timestamped filename for Backblaze
           FILENAME="git_backup_master_branch.tar.gz"
           
-          b2 upload-file ontheair-backups repository_backup.tar.gz "$FILENAME"
+          b2 upload-file ontheair-backups /tmp/repository_backup.tar.gz "$FILENAME"
 
