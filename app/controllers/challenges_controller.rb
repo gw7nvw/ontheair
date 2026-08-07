@@ -19,8 +19,7 @@ class ChallengesController < ApplicationController
       
       # Reset the suspicious tracker counters in the database for this IP
       request_ip = request.remote_ip
-      user_agent = request.user_agent || 'Unknown'
-      UserAgent.where(user_ip: request_ip, user_agent: user_agent).update_all(
+      UserAgent.where(user_ip: request_ip).update_all(
         access_count: 0,
         suspicious_access_count: 0,
         suspected_bot: false,
@@ -46,17 +45,16 @@ class ChallengesController < ApplicationController
 
   def render_trap
     request_ip = request.remote_ip
-    user_agent = request.user_agent || 'Unknown'
-    record = UserAgent.find_or_create_by!(user_agent: user_agent, user_ip: request_ip)
+    record = UserAgent.find_or_create_by!(user_ip: request_ip)
 
     # Instantly tag them as a malicious bot in the DB
     # You can add a boolean column like `is_blocked: true` to your user_agents table
-    ActiveRecord::Base.connection.execute("update user_agents set confirmed_bot = true where user_ip = '#{request_ip}' and user_agent = '#{user_agent}' " )
+    ActiveRecord::Base.connection.execute("update user_agents set confirmed_bot = true where user_ip = '#{request_ip}' " )
 #    UserAgent.where(user_ip: request_ip, user_agent: user_agent).update_all(
 #      confirmed_bot: true,
 #      updated_at: Time.now
 #    )
-    Rails.logger.warn "!!! BOT HIT TRAP - BLOCKING "
+    Rails.logger.info "!!! BOT HIT TRAP - BLOCKING "
 
     # Force clear their session so they lose any state
     reset_session

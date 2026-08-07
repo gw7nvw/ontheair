@@ -18,7 +18,7 @@ module SessionsHelper
     flush_old_tokens(user)
     request_ip = request.remote_ip
     user_agent = request.user_agent || 'Unknown'
-    UserAgent.where(user_ip: request_ip, user_agent: user_agent).update_all(
+    UserAgent.where(user_ip: request_ip).update_all(
         access_count: 0,
         suspicious_access_count: 0,
         suspected_bot: false,

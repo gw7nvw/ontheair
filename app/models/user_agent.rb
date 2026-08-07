@@ -1,10 +1,9 @@
 class UserAgent < ActiveRecord::Base
 
-  validates :user_agent, uniqueness: { scope: :user_ip }
   WINDOW_SECONDS = 86400
 
   # A safe, atomic way to increment the hits without race conditions
-  def self.track(ua_string, ip_addr, suspicious = 0, request_type)
+  def self.track(ip_addr, suspicious = 0, request_type)
 
     if suspicious>0
        logger.info "SUSPISCIOUS!!!!!"
@@ -12,10 +11,10 @@ class UserAgent < ActiveRecord::Base
 
     # Use Rails 4upsert equivalent logic (Find or create, then increment atomically)
     begin
-    record = find_or_create_by!(user_agent: ua_string, user_ip: ip_addr)
+    record = find_or_create_by!(user_ip: ip_addr)
     rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
       # 2. If a concurrent request created it first, catch the error and fetch it
-      record = find_by!(user_agent: ua_string, user_ip: ip_addr)
+      record = find_by!(user_ip: ip_addr)
     end
     current_time = Time.now
     cutoff_time = current_time - WINDOW_SECONDS

@@ -100,7 +100,6 @@ $(function () {
       <th>Hits</th>
       <th>JS ratio</th>
       <th>Suspect hits</th>
-      <th>User Agent</th>
     </tr>
     <% @blocks.each do |block| %>
       <tr>
@@ -117,7 +116,6 @@ $(function () {
         <td><%= block.access_count %></td> 
         <td><%= (1.0*block.js_count/block.access_count).round(2) %></td> 
         <td><%= block.suspicious_access_count %></td>
-        <td><%= block.user_agent %></td>
       </tr>
     <% end %>
   </table>

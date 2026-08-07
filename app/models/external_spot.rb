@@ -5,9 +5,10 @@ MAX_SPOT_LIFETIME = 60
 
 # typed: false
 class ExternalSpot < ActiveRecord::Base
-  validate :record_is_unique
   before_save :before_save_actions
+  validate :record_is_unique
   after_save :create_consolidated_spot
+
 
   def before_save_actions
      self.comments=self.comments[0..254] if self.comments
@@ -52,8 +53,12 @@ class ExternalSpot < ActiveRecord::Base
   end
 
   def record_is_unique
-    dup = ExternalSpot.find_by(attributes.except('id', 'created_at', 'updated_at', 'epoch'))
-    errors.add(:id, 'Record is duplicate') if dup
+    dup = ExternalSpot.where(
+      time: self.time, 
+      activatorCallsign: self.activatorCallsign
+    ).exists?
+    full_dup = ExternalSpot.where(attributes.except('id', 'created_at', 'updated_at', 'epoch')).exists? if dup
+    errors.add(:id, 'Record is duplicate') if full_dup
   end
 
   def self.delete_old_spots

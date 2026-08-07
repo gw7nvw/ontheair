@@ -9,7 +9,7 @@ def index
   @searchtext=params[:searchtext]
 
   where_clause = 'true'
-  where_clause = "(user_ip like '#{@searchtext}%%' or user_agent like '%%#{@searchtext}%%')" if @searchtext and @searchtext.length>0
+  where_clause = "user_ip like '#{@searchtext}%%'" if @searchtext and @searchtext.length>0
   if @human or @robot or @suspect
     where_clause +=" and (false"
     where_clause += ' or confirmed_human = true' if @human

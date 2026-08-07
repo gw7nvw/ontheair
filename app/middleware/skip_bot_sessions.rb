@@ -15,13 +15,13 @@ class SkipBotSessions
     begin
       unless current_path.start_with?('/api') 
         # 1. Fetch the exact tracking record upfront
-        ua_record = UserAgent.find_by(user_ip: ip_address, user_agent: user_agent)
+        ua_record = UserAgent.find_by(user_ip: ip_address)
 
         if ua_record
           # 2. AUTO-HEAL: The window expired! Reset their record so a human can try again.
           if  ua_record.updated_at < BLOCK_PERIOD.minutes.ago
             ua_record.update_columns(
-              request_count: 0,
+              access_count: 0,
               js_count: 0,
               suspicious_access_count: 0,
               confirmed_bot: false,
@@ -40,8 +40,7 @@ class SkipBotSessions
               env['bot']="confirmed_bot"
               # Keep updating the timestamp so active attackers stay locked out indefinitely
               ua_record.touch 
-              
-              Rails.logger.warn "!!! BLACKLIST BLOCKED: Confirmed bot tried to access #{current_path}"
+              Rails.logger.info "!!! BLACKLIST BLOCKED: Confirmed bot tried to access #{current_path}"
               return [403, { 'Content-Type' => 'text/plain' }, ["Access Denied.\nYour IP has been blacklisted by this site's anti-bot protection. You can clear this by going to https://ontheair.nz/signin and signing in or by waiting 24 hours before trying again.\n"]]
   
             # 4. Check if they are already a suspect
@@ -49,7 +48,7 @@ class SkipBotSessions
               env['bot']="suspected_bot"
               #allow only access to robots.txt list of pages, challenge them otherwise
               unless current_path.start_with?('/assets') or current_path.start_with?('/signin') or current_path=='/'
-                Rails.logger.warn "!!! BLACKLIST SUSPECT: Known suspected bot returned again to #{current_path}"
+                Rails.logger.info "!!! BLACKLIST SUSPECT: Known suspected bot returned again to #{current_path}"
                 # server them challenge page withot wasting time on redirect
                 env['PATH_INFO'] = '/challenge'
                 current_path  = '/challenge'
@@ -93,8 +92,7 @@ class SkipBotSessions
         is_js_request = env['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest' || current_path.end_with?('.js')
         request_type  = is_js_request ? :js : :html
 
-        ua_record = UserAgent.track(user_agent, ip_address, suspicious, request_type)
-        Rails.logger.info "AGENT: #{ua_record.to_json}"
+        ua_record = UserAgent.track(ip_address, suspicious, request_type)
       end
     rescue => e
       # Prevent a database tracking failure from crashing your entire website

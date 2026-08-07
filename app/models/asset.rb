@@ -253,30 +253,35 @@ class Asset < ActiveRecord::Base
   def traditional_owners
     trad_owners=nil
     if (!!NzTribalLand rescue false) then
-      buffer = 5000 # say in or near if we are within this distance of boundary (meters)
-      if type.has_boundary && area && (area > 0)
-        tos1 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.boundary_quite_simplified, tl.boundary_quite_simplified) "]
-#        tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.boundary,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
-        tos2 = NzTribalLand.find_by_sql [ "SELECT tl.id, tl.name, tl.ogc_fid FROM nz_tribal_lands tl JOIN assets a ON a.id = #{id} WHERE ST_DWithin( ST_Transform(a.boundary_quite_simplified, 3857), ST_Transform(tl.boundary_quite_simplified, 3857), #{buffer} / cos(radians(ST_Y(a.location)))); " ]
-      else
-        tos1 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.location, tl.boundary_quite_simplified) "]
-#        tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.location,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
-        tos2 = NzTribalLand.find_by_sql [ "SELECT tl.id, tl.name, tl.ogc_fid FROM nz_tribal_lands tl JOIN assets a ON a.id = #{id} WHERE ST_DWithin( ST_Transform(a.location, 3857), ST_Transform(tl.boundary_quite_simplified, 3857), #{buffer} / cos(radians(ST_Y(a.location)))); " ]
-  
-      end
-      ids1 = tos1.map(&:id)
-      ids2 = tos2.map(&:id)
-      if ids2 && (ids2.count > 0)
-        names = []
-        if ids1.sort != ids2.sort
-          tos2.each { |t| names.push(t['name']) }
-          trad_owners = 'In or near ' + names.join(', ') + ' country'
+      begin
+        buffer = 5000 # say in or near if we are within this distance of boundary (meters)
+        if type.has_boundary && area && (area > 0)
+          tos1 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.boundary_quite_simplified, tl.boundary_quite_simplified) "]
+  #        tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.boundary,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
+          tos2 = NzTribalLand.find_by_sql [ "SELECT tl.id, tl.name, tl.ogc_fid FROM nz_tribal_lands tl JOIN assets a ON a.id = #{id} WHERE ST_DWithin( ST_Transform(a.boundary_quite_simplified, 3857), ST_Transform(tl.boundary_quite_simplified, 3857), #{buffer} / cos(radians(ST_Y(a.location)))); " ]
         else
-          tos1.each { |t| names.push(t['name']) }
-          trad_owners = names.join(', ') + ' country'
+          tos1 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.location, tl.boundary_quite_simplified) "]
+  #        tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.location,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
+          tos2 = NzTribalLand.find_by_sql [ "SELECT tl.id, tl.name, tl.ogc_fid FROM nz_tribal_lands tl JOIN assets a ON a.id = #{id} WHERE ST_DWithin( ST_Transform(a.location, 3857), ST_Transform(tl.boundary_quite_simplified, 3857), #{buffer} / cos(radians(ST_Y(a.location)))); " ]
+  
         end
-      else
-        trad_owners = nil
+        ids1 = tos1.map(&:id)
+        ids2 = tos2.map(&:id)
+        if ids2 && (ids2.count > 0)
+          names = []
+          if ids1.sort != ids2.sort
+            tos2.each { |t| names.push(t['name']) }
+            trad_owners = 'In or near ' + names.join(', ') + ' country'
+          else
+            tos1.each { |t| names.push(t['name']) }
+            trad_owners = names.join(', ') + ' country'
+          end
+        else
+          trad_owners = nil
+        end
+        rescue
+        logger.error "Error processing traditional owners query"
+        trad_owners=nil
       end
     end
     trad_owners

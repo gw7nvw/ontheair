@@ -228,7 +228,7 @@ module AssetGisTools
 
   def add_buffered_activation_zone
     calc_az_radius=az_radius                             #asset radius if specified
-    calc_az_radius = 0.001*self.type.dist_buffer if !az_radius #type radius if not
+    calc_az_radius = 0.001*(self.type.dist_buffer||0) if !az_radius #type radius if not
     calc_az_radius=0 if calc_az_radius==nil              #0 otherwise
 
     if self.type.has_boundary and area and area>0 then

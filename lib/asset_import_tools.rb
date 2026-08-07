@@ -909,6 +909,44 @@ class Asset
     end
   end 
 
+  def add_vk_capad_park_by_id(id)
+    puts "#{self.code} #{self.state} #{self.name}"
+    cs = Capad.where("pa_id like '#{id}'")
+    if cs.count==1
+      #just assign it
+      self.boundary = get_capad_boundary(cs.first.pa_id)
+      self.old_code = cs.first.pa_id
+      self.save
+    elsif cs.count>1
+      #select from list
+      puts "Asset: "+self.name
+      count=0
+      puts "Found: "
+      cs.each do |c| puts (count=count+1).to_s+" "+c.name+" "+c.pa_id.to_s+" Area: "+c.shape_area.to_s+" "+c.capad_type; end
+      puts "Select match number or enter to skip:"
+      id = gets
+      if id.to_i>0 then
+        c=cs[id.to_i-1]
+        self.old_code = c.pa_id
+        self.boundary = get_capad_boundary(c.pa_id)
+        self.save
+        puts "assigned "+c.name+" to "+self.name
+      end
+    else
+      puts "No matches found"
+    end
+    #check if point is within polygon
+    a = Asset.find_by("ST_contains(boundary, location) and id=#{self.id}") 
+    if !a then
+      puts "POINT does not lie within new boundary POLYGON"
+      location = self.calc_location
+      if location
+        puts "Updating location"
+        self.location = location
+        self.save
+      end
+    end
+  end
 
   def find_vk_capad_park(ignore=false)
     puts "CAPAD PARK ---------------------------------------------"

@@ -15,7 +15,7 @@ class Api2Controller < ApplicationController
 
   # API: ======================================================================================
   # API:
-  # API: /api2/users/verify   -  Retrieve latest spots
+  # API: /api2/users/verify   -  Check user's login is correct
   # API:       Parameters:
   # API:         userID     - user's login callsign 
   # API:         APIKey     - user's PIN or PnP APIKEY

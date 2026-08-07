@@ -12,7 +12,7 @@ module ApplicationHelper
     request = ActionDispatch::Request.new(auth.env)
     ip_address = request.remote_ip
     user_agent = request.user_agent || 'Unknown'
-    UserAgent.where(user_ip: ip_address, user_agent: user_agent).update_all(
+    UserAgent.where(user_ip: ip_address).update_all(
       request_count: 0,
       suspicious_access_count: 0,
       confirmed_bot: false,
