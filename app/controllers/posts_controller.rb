@@ -40,12 +40,12 @@ class PostsController < ApplicationController
 
     if msgs then
       #handle pnp style spots by dropping 2nd parameter
-      if pnp_classes.include?(msgs[1])
+      if pnp_classes.include?(msgs[1].upcase)
         msgs=[msgs[0]]+msgs[2..-1] 
       end
 
       callsign = msgs[0].upcase
-      callsign = sub_callsign if callsign == '!'
+      callsign = user.callsign if callsign == '!' or callsign == '$'
       asset_code = msgs[1].upcase
       if asset_code.include?('/') || asset_code.include?('-')
         logger.debug 'DEBUG: asset code appears to be complete'
@@ -96,8 +96,8 @@ class PostsController < ApplicationController
         comments=comments.gsub("/dnl","").gsub("/DNL","")
         @post.do_not_lookup = true
       end
-      if (posttype == 'spot') && ((asset_type == 'SOTA') || (asset_type == 'summit'))
-        puts 'DEBUG: sending to SOTA'
+      if (posttype == 'spot') && ((asset_type == 'SOTA') || (asset_type == 'summit')) && !user
+        puts 'DEBUG: forwarding non-user spot to SOTA'
         result = @post.send_to_sota(debug, acctnumber, callsign, a_code, freq, mode, comments + ' (ontheair.nz)')
         puts 'DEBUG: ' + result.to_s
       end
