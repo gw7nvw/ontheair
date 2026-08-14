@@ -722,6 +722,7 @@ class ApiController < ApplicationController
       pnp_alert[:alID] = alert.id
       if alert.code.kind_of?(Array) then  codes = alert.code else codes = [alert.code] end
       pnp_alert[:WWFFID] = codes.first
+      pnp_alert[:actSiteID] = codes.first
       pnp_alert[:allAssetCodes] = codes
       pnp_alert[:CallSign] = alert.activatingCallsign
       pnp_alert[:Class] = alert.programme  

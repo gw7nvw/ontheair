@@ -16,6 +16,12 @@ do_export_assets:
   args:
   description: Runs the perform method in ExportAssets monthly
 
+do_export_sitemaps:
+  every: 2592000s
+  class: ExportSitemaps
+  args:
+  description: Runs the perform method in ExportSitemaps monthly
+
 do_tidy_user_agents:
   every: 2591000s
   class: TidyUserAgentsJob

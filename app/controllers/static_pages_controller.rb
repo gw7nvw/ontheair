@@ -187,18 +187,20 @@ class StaticPagesController < ApplicationController
   end
 
   def alerts
+    daysago = 1
+    daysago = params[:daysago].to_i if params[:daysago]
     @zone = 'OC'
     @zone = params[:zone] if params[:zone]
     zone_query = " and continent = '#{@zone}' " if @zone != 'all'
 
-    hota_alerts = Post.find_by_sql [ " select p.*, i.id as item_id from posts p inner join items i on i.item_id=p.id and i.topic_id=1 and i.item_type='post' and ((p.referenced_date + interval '1 hours' * duration::numeric) > '#{(Time.now - 1.days).strftime("%Y-%m-%d %H:%M")}' or p.referenced_date > '#{(Time.now - 1.days).strftime("%Y-%m-%d %H:%M")}')" ]
+    hota_alerts = Post.find_by_sql [ " select p.*, i.id as item_id from posts p inner join items i on i.item_id=p.id and i.topic_id=1 and i.item_type='post' and ((p.referenced_date + interval '1 hours' * duration::numeric) > '#{(Time.now - daysago.days).strftime("%Y-%m-%d %H:%M")}' or p.referenced_date > '#{(Time.now - daysago.days).strftime("%Y-%m-%d %H:%M")}')" ]
 
     @all_alerts = ExternalAlert.import_hota_alerts(hota_alerts)
     if @zone && (@zone != 'all')
       @all_alerts = @all_alerts.select { |alert| DxccPrefix.continent_from_call(alert[:activatingCallsign]) == @zone }
     end
 
-    @all_alerts += ExternalAlert.find_by_sql [ " select * from external_alerts where (starttime >'#{Time.now - 1.days}' or (starttime + interval '1 hours' * duration::numeric) >'#{Time.now - 1.days}') #{zone_query} order by starttime desc " ] 
+    @all_alerts += ExternalAlert.find_by_sql [ " select * from external_alerts where (starttime >'#{Time.now - daysago.days}' or (starttime + interval '1 hours' * duration::numeric) >'#{Time.now - daysago.days}') #{zone_query} order by starttime desc " ] 
     if @all_alerts then @all_alerts = @all_alerts.sort_by { |hsh| hsh[:starttime].to_s }.reverse! end
 
 

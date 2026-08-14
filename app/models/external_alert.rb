@@ -187,7 +187,7 @@ def self.import_hota_alerts(alerts)
       dxccs = DxccPrefix.find_by(prefix: dxcc)
       continent = dxccs.continent
     end
-    ext_alert=ExternalAlert.new(id: -alert.item_id, starttime: alert.referenced_date, duration: alert.duration, activatingCallsign: alert.callsign, code: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: 'ZLOTA', dxcc: dxcc, continent: continent)
+    ext_alert=ExternalAlert.new(id: -alert.item_id, starttime: alert.referenced_time, duration: alert.duration, activatingCallsign: alert.callsign, code: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: 'ZLOTA', dxcc: dxcc, continent: continent)
     all_alerts+=[ext_alert] 
   end 
   all_alerts

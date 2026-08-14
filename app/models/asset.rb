@@ -1424,8 +1424,8 @@ ORDER BY id;
   # Create a pnp_format list of assets given the input filters
   # dxccs is an array of dxcc_prefix vallues
   # where_query is a where clause to append - muust start with AND
-  def Asset.generate_pnp_sites(dxccs, pnp_class_filter)
-    assets = ActiveRecord::Base.connection.select_all ( %Q{
+  def Asset.generate_pnp_sites(dxccs, pnp_class_filter, file: nil)
+    sql = %Q{
 WITH CombinedLinks AS (
   -- 1. Gather raw direction maps AND true mutual equivalents directly from the tables
   select 
@@ -1538,11 +1538,46 @@ SELECT
 FROM ProcessedAssets
 ORDER BY id;
 
-} )
-  json_res = assets.map { |row| JSON.parse(row['asset_json']) }
-  json_res
-  end
+} 
+  raw_conn = ActiveRecord::Base.connection.raw_connection
 
+  # --- USE CASE 1: BULK FILE STREAMING MODE ---
+  if file.present?
+    file.write("[\n")
+    is_first_row = true
+
+    ActiveRecord::Base.transaction do
+      raw_conn.send_query(sql)
+      raw_conn.set_single_row_mode
+      while (res = raw_conn.get_result)
+        res.each_row do |row|
+          if is_first_row
+            is_first_row = false
+          else
+            file.write(",\n")
+          end
+          file.write("  " + row[0])
+        end
+      end
+    end
+    file.write("\n]\n")
+    return nil # No data returned to Ruby memory
+
+  # --- USE CASE 2: DYNAMIC API MODE (LEGACY FALLBACK) ---
+  else
+    json_res = []
+    ActiveRecord::Base.transaction do
+      raw_conn.send_query(sql)
+      raw_conn.set_single_row_mode
+      while (res = raw_conn.get_result)
+        res.each_row do |row|
+          json_res << JSON.parse(row[0])
+        end
+      end
+    end
+    return json_res
+  end
+end
 
   #################################################################
   # Imprting assets from externally sourced tables

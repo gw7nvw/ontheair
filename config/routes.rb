@@ -97,7 +97,7 @@ get "lakes", to: 'assets#index', defaults: {type: 'lake'}
 
 get "proxy" => "proxy#get", :as => "proxy"
 
-match '/sitemap.xml', to: 'sitemaps#index', via: 'get', as: "sitemap", defaults: { format: "xml" }
+#match '/sitemap.xml', to: 'sitemaps#index', via: 'get', as: "sitemap", defaults: { format: "xml" }
 
 resources :sessions, only: [:new, :create, :destroy]
 # resources :qsl, only: [:show] #not currently active

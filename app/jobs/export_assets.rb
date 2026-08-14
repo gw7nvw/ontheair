@@ -1,67 +1,99 @@
 module ExportAssets
-
+  require 'csv'
   @queue = :ota_scheduled
   def self.perform
-     export_zlota
+     export_zlota_assets
      export_pnp
   end
 
-  def self.export_zlota
-    puts "SCHED JOB: Exporting assets"
-    ats=AssetType.where(is_zlota: true)
-    assets = Asset.find_by_sql [ "select id, name, code, ST_X(location) as x, ST_Y(location) as y, asset_type from assets where is_active=true and minor=false and asset_type in (#{ats.map{|at| "'"+at.name+"'"}.join(", ")}) order by code asc; "]
-    polo_assets = Asset.find_by_sql [ "select a.code as reference, (case a.is_active when true then 'active' else  'inactive' end) as status, a.name, concat('ZLOTA - ',a.asset_type) as program, 'ZL' as dxcc, a.region as state, d.name as county, 'OC' as continent,  ST_Y(a.location) as latitude, ST_X(a.location) as longitude, '170' as dxccEnum from assets a left join districts d on d.district_code=a.district where minor=false and asset_type in (#{ats.map{|at| "'"+at.name+"'"}.join(", ")}) order by code asc; "]
-    #write csv
-    csvfile=asset_to_csv(assets).gsub('""','')
-    f = File.open('public/assets/assets.csv', 'w') do |file|
-      file.write(csvfile)
-    end
+  def self.export_zlota_assets
+    # Using the optimized subselect query
+    sql = <<-SQL
+      SELECT id, name, code, ST_X(location) as x, ST_Y(location) as y, asset_type 
+      FROM assets 
+      WHERE is_active = true 
+        AND minor = false 
+        AND asset_type IN (SELECT name FROM asset_types WHERE is_zlota = true)
+      ORDER BY code ASC
+    SQL
 
-    csvfile=asset_to_csv(polo_assets).gsub('""','')
-    f = File.open('public/assets/polo_assets.csv', 'w') do |file|
-      file.write(csvfile)
-    end
-
-    jsonfile=assets.map{|a| a.attributes}.to_json
-    f = File.open('public/assets/assets.json', 'w') do |file|
-      file.write(jsonfile)
-    end
-
+    export_to_zlota_csv(sql)
+    export_to_zlota_json(sql)
   end
+
   def self.export_pnp
     puts "SCHED JOB: Exporting SITES"
     dxccs=['ZL','VK']
 
-    assets = Asset.generate_pnp_sites(dxccs, "")
-
-    jsonfile=assets.to_json
-    f = File.open('public/assets/sites.json', 'w') do |file|
-      file.write(jsonfile)
+    # Open the target file stream first
+    File.open('public/assets/sites.json', 'wb') do |file|
+      # Pass the open file stream handle directly into the method
+      Asset.generate_pnp_sites(dxccs, "", file: file)
     end
   end
 
-  def self.asset_to_polo_csv(items)
-    
-  end
+  private
 
-  def self.asset_to_csv(items)
-    require 'csv'
-    csvtext = ''
-    if items && items.first
-      columns = []
-      items.first.attributes.each_pair do |name, _value|
-        if !name.include?('password') && !name.include?('digest') && !name.include?('token') && !name.include?('_link') && name!='id' then columns << name end
-      end
-      csvtext << columns.to_csv
-      items.each do |item|
-        fields = []
-        item.attributes.each_pair do |name, value|
-          if !name.include?('password') && !name.include?('digest') && !name.include?('token') && !name.include?('_link') && name!='id' then fields << value end
+  def self.export_to_zlota_csv(sql)
+    File.open('public/assets/assets.csv', 'wb') do |file|
+      header = ['ID', 'Name', 'Code', 'Longitude', 'Latitude', 'Asset Type']
+      file.write(CSV.generate_line(header))
+
+      raw_conn = ActiveRecord::Base.connection.raw_connection
+
+      # 2. A transaction block is mandatory for cursor streaming
+      ActiveRecord::Base.transaction do
+        # 3. Use send_query to pass the SQL statement safely
+        raw_conn.send_query(sql)
+        
+        # 4. Put the connection into single-row streaming mode
+        raw_conn.set_single_row_mode
+        
+        # 5. Extract results line-by-line out of the connection socket stream
+        while (res = raw_conn.get_result)
+          res.each_row do |row|
+            # row is guaranteed to be a raw array: ["123", "Asset", ...]
+            file.write(CSV.generate_line(row))
+          end
         end
-        csvtext << fields.to_csv
       end
     end
-    csvtext
   end
 
+  def self.export_to_zlota_json(sql)
+    File.open('public/assets/assets.json', 'w') do |file|
+      file.write("[\n")
+      is_first = true
+
+      raw_conn = ActiveRecord::Base.connection.raw_connection
+
+      ActiveRecord::Base.transaction do
+        raw_conn.send_query(sql)
+        raw_conn.set_single_row_mode
+        while (res = raw_conn.get_result)
+          res.each_row do |row|
+  
+            if is_first
+              is_first = false
+            else
+              file.write(",\n")
+            end
+  
+            # Construct raw hash directly from array indices to minimize string allocations
+            asset_hash = {
+              id:          row[0].to_i,
+              name:        row[1],
+              code:        row[2],
+              longitude:   row[3].to_f ? row[3].to_f : nil,
+              latitude:    row[4].to_f ? row[4].to_f : nil,
+              asset_type:  row[5]
+            }
+  
+            file.write("  " + JSON.fast_generate(asset_hash))
+          end
+        end
+        file.write("\n]\n")
+      end
+    end
+  end
 end

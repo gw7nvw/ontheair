@@ -1512,6 +1512,33 @@ class User < ActiveRecord::Base
     us.each(&:add_callsigns)
   end
 
+  def self.import_pnp_phone_nos(filename)
+    require 'csv'
+
+    CSV.foreach(filename, headers: true) do |row|
+      pnp_user = row.to_hash
+      puts pnp_user['user_callsign']
+      if !pnp_user['user_telephone'].blank?
+        user = User.find_by(callsign: pnp_user['user_callsign'].upcase.strip)
+        if user 
+          puts "Matched"
+          if user.acctnumber.blank? 
+            puts "Adding phone"
+            if !user.update_column(:acctnumber, pnp_user['user_telephone'])
+              puts "Failed to save phone no #{pnp_user['user_telephone']} for user #{user.callsign}"
+            end
+          else
+            puts "User already has phone no"
+          end
+        end
+      end
+    end
+  end
+          
+          
+          
+
+
   def self.import_from_pnp(filename)
     fails = []
     raw_data = File.read(filename)

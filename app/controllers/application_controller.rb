@@ -227,9 +227,6 @@ class ApplicationController < ActionController::Base
 
   def determine_country
     @current_host = request.host
-    if @current_host.match('dev.')
-      logger.debug "!!!!!!!!!!!!!!!!!!!!HERE!!!!!!!!!!!!!!!!!!!!!!"
-    end
     if params[:dxcc].present? and params[:dxcc].class.to_s=="String"
       # 1. Absolute Highest Priority: The user just explicitly chose a country via an action/link
       @current_country=params[:dxcc].upcase
