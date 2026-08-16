@@ -287,7 +287,7 @@
     <% end %>
     <% round = 4 %>
     <% proj = 'WGS' %>
-    <% if @asset.location.x and @asset.location.y %>
+    <% if @asset.location and @asset.location.x and @asset.location.y %>
       <div class="rowtext"> <%= proj+": "+@asset.location.x.round(round).to_s+", "+@asset.location.y.round(round).to_s %><% if @asset.altitude and @asset.altitude>0 %><%=" (alt: "+@asset.altitude.to_s+"m)"%> <% end %> </div>
     <% end %>
 

@@ -36,7 +36,7 @@ class Asset < ActiveRecord::Base
     self.reload
     add_activation_zone(true)
     add_az_area(true)
-#    add_links
+    add_links
     add_state if !state or state.blank?
   end
 
