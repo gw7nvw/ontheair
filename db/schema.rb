@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20260723041914) do
+ActiveRecord::Schema.define(version: 20260816195403) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -368,6 +368,7 @@ ActiveRecord::Schema.define(version: 20260723041914) do
     t.string  "dxcc_enum"
     t.boolean "is_active"
     t.string  "iso_code"
+    t.string  "sms_gateway"
   end
 
   create_table "email_blacklists", force: true do |t|
@@ -440,6 +441,8 @@ ActiveRecord::Schema.define(version: 20260723041914) do
     t.string   "altM"
     t.boolean  "is_pnp"
   end
+
+  add_index "external_spots", ["time", "activatorCallsign"], :name => "idx_external_spots_time_activator"
 
   create_table "geological_eons", force: true do |t|
     t.string   "name"
@@ -710,6 +713,7 @@ ActiveRecord::Schema.define(version: 20260723041914) do
     t.spatial "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
   end
 
+  add_index "nz_tribal_lands", ["boundary_quite_simplified"], :name => "idx_tribal_lands_boundary_quite_simplified", :spatial => true
   add_index "nz_tribal_lands", ["wkb_geometry"], :name => "nz_tribal_lands_wkb_geometry_geom_idx", :spatial => true
 
   create_table "parks", force: true do |t|
@@ -913,7 +917,6 @@ ActiveRecord::Schema.define(version: 20260723041914) do
   end
 
   create_table "user_agents", force: true do |t|
-    t.text     "user_agent",                          null: false
     t.integer  "access_count",            default: 0, null: false
     t.text     "user_ip",                             null: false
     t.boolean  "suspected_bot"
@@ -926,7 +929,7 @@ ActiveRecord::Schema.define(version: 20260723041914) do
     t.boolean  "confirmed_human"
   end
 
-  add_index "user_agents", ["user_ip", "user_agent"], :name => "index_user_agents_on_user_ip_and_user_agent", :unique => true
+  add_index "user_agents", ["user_ip"], :name => "index_user_agents_on_user_ip"
 
   create_table "user_callsigns", force: true do |t|
     t.integer  "user_id"
@@ -936,6 +939,8 @@ ActiveRecord::Schema.define(version: 20260723041914) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "user_callsigns", ["callsign", "from_date", "to_date"], :name => "idx_user_callsigns_lookup"
 
   create_table "user_tokens", force: true do |t|
     t.string   "remember_token"

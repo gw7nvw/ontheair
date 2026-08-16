@@ -556,6 +556,8 @@ class Api2Controller < ApplicationController
   # API:
   # API: /api2/countries/index - Get countries data 
   # API:       Parameters:
+  # API:         iso_code            - filter by ISO code
+  # API:         prefix              - filter by DXCC prefix
   # API:       Returns:  
   # API:         name                - country name
   # API:         prefix              - DXCC prefix used for this country
@@ -563,9 +565,15 @@ class Api2Controller < ApplicationController
   # API:         continent           - 2-letter code for continent
   # API:         itu_zone            - ITU zone
   # API:         cq_zone             - CQ zone
-  
+  # API:         sms_gateway         - SMS gateay phone number (if any) 
   def pnp_countries_index
-    res = DxccPrefix.all
+    if params[:iso_code]
+      res = DxccPrefix.where(iso_code: params[:iso_code])
+    elsif params[:prefix]
+      res = DxccPrefix.where(prefix: params[:prefix])
+    else
+      res = DxccPrefix.all
+    end
 
     render json: res.to_json
   end
