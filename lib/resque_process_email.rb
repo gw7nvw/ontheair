@@ -121,6 +121,7 @@ class EmailReceive
           return(false)
         end
 
+        msgs=msgs[2..-1]
         # should check a password here
         if validated_user
           if validated_user.upcase != sub_callsign

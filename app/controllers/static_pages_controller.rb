@@ -51,7 +51,7 @@ class StaticPagesController < ApplicationController
     ack_time ||= '1900-01-01'
     @static_page = true
     @dxcc = @current_country
-    @asset_type_filter = "('all', 'silo', 'sanpcpa park', 'krmnpa park')" if @dxcc=='ZL'
+    @asset_type_filter = "('all', 'silo', 'sanpcpa park', 'krmnpa park', 'illw lighthouse')" if @dxcc=='ZL'
     @asset_type_filter = "('park', 'lake', 'lighthouse', 'island', 'hut', 'volcano', 'all')" if @dxcc=="VK"
     @site_title_unquoted = "... On The Air"
     @site_title_unquoted = "ZL "+@site_title_unquoted if @current_country=='ZL'
