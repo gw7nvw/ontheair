@@ -2,6 +2,73 @@
 
 # typed: false
 module AssetImportTools
+
+  def Asset.import_illw(dxccs=['AU','NZ'], update = false)
+    urls = ['https://wllw.org/index.php/en/', 'https://wllw.org/index.php/en/list-page-2', 'https://wllw.org/index.php/en/list-3']
+
+    urls.each do |url|
+      result  = open(url).read
+      table_count = get_table_count(result)
+      for count in 1..table_count do
+        table = get_table(result,count)
+        headers = get_row(table, 0)
+        heading = get_clean_text(get_col(headers, 2))
+        if heading == "LIGHTHOUSE NAME"
+         row_count=get_row_count(table)
+         for row_no in 1..row_count
+           row = get_row(table, row_no)
+           namecell = get_col(row,2)
+           code = get_clean_text(get_col(row,6))
+           next if !code or (not dxccs.include?(code[0..1]))
+           if !namecell or namecell.match("line-through") or namecell.upcase.match('DELETED')
+             puts "DELETED: #{get_clean_text(get_col(row,2))}"
+             code = get_clean_text(get_col(row,6))
+             a=Asset.find_by(code: code)
+             if a
+               a.is_active=false
+               a.valid_to = Time.now if a.valid_to.blank?
+               a.save
+               puts "Retiring #{code}"
+             end
+             next
+           end
+           name = get_clean_text(get_col(row,2))
+           if name and name.match(',')
+             description = (name.split(',')[1..-1]).join(',')
+             name=name.split(',')[0]
+           end
+           
+           dxcc = get_clean_text(get_col(row,3))
+           continent = get_clean_text(get_col(row,4))
+           loc_url = get_col(row,5)
+           loc = extract_lat_long(loc_url)
+           if !loc then
+             puts " ************************ MISSING **************************"
+             puts loc_url
+             puts " ************************ MISSING **************************"
+           end
+           if loc
+             puts ">>>>>> #{name} #{dxcc} #{continent} #{code} #{loc[:long]} #{loc[:lat]}" 
+             a=Asset.find_by(code: code)
+             next if a and update==false
+             a=Asset.new if !a
+             a.asset_type="illw lighthouse"
+             a.is_active=true
+             a.name = name
+             a.country = dxcc
+             a.code = code
+             a.location="POINT(#{loc[:long]} #{loc[:lat]})" 
+
+             if !a.save
+               put "ERROR saving #{a.to_json}"
+             end
+           end
+         end 
+        end 
+      end
+    end
+  end
+
   def Asset.import_vk_pota(update = true, redraw = false, silent=false, resume_at = nil)
     need_resume = true if resume_at != nil
     urls = ['https://api.pota.app/park/grids/-43/143/-39/149/0', 'https://api.pota.app/park/grids/-39/113/-11/155/0']
@@ -1233,5 +1300,151 @@ class Asset
       find_vk_state_park if !boundary
     end
   end
+
+end
+private
+
+  def get_table(body,id)
+    this_table=nil
+    tables=body.split('<table')
+    this_table = tables[id] if tables and tables.count>=id
+    this_table=this_table.split('</table>')[0] if this_table
+    this_table
+  end
+
+  def get_row(body,number)
+    rows=body.split('<tr>') if body
+    row=rows[number] if rows
+    row=row.split('</tr>')[0] if row
+  end
+
+  def get_col(body,number)
+    rows=body.split(/<td(?:.*?)>/) if  body
+    row=rows[number] if rows
+    row=row.split('</td>')[0] if row
+  end
+
+  def get_table_count(body)
+    body.scan("<table").length if body
+  end
+  def get_row_count(body)
+    body.scan("<tr").length if body
+  end
+  def get_col_count(body)
+    body.scan("<td").length if body
+  end
+  def get_clean_text(body)
+    body.gsub(/<[^>]*>/, '').gsub(/\r/,'').gsub(/\n/,'').gsub('&nbsp;','').strip if body
+  end
+# Helper method to convert Degrees, Minutes, Seconds (DMS) or Degrees with decimals + Hemispheres to Decimal Degrees
+def dms_to_decimal(degrees, minutes, seconds, hemisphere)
+  dd = degrees.to_f + (minutes.to_f / 60.0) + (seconds.to_f / 3600.0)
+  dd = -dd if ['S', 'W'].include?(hemisphere&.upcase)
+  dd.round(6)
 end
 
+# Decodes a standard Geohash string into [latitude, longitude] using pure Ruby
+def decode_geohash(geohash)
+  base32 = "0123456789bcdefghjkmnpqrstuvwxyz"
+  
+  # Set up initial global bounding boxes
+  lat_range = [-90.0, 90.0]
+  lon_range = [-180.0, 180.0]
+  
+  is_lon = true # Geohash bit sequences always alternate, starting with Longitude
+
+  geohash.downcase.each_char do |char|
+    char_index = base32.index(char)
+    return nil if char_index.nil? # Handle unexpected format corruption gracefully
+
+    # Read each character's 5 constituent spatial bits (from highest 16 down to 1)
+    [16, 8, 4, 2, 1].each do |mask|
+      target_range = is_lon ? lon_range : lat_range
+      midpoint = (target_range[0] + target_range[1]) / 2.0
+
+      # Bitwise AND evaluation isolates bounds placement
+      if (char_index & mask) != 0
+        target_range[0] = midpoint # Upper half
+      else
+        target_range[1] = midpoint # Lower half
+      end
+      
+      is_lon = !is_lon # Alternate axes for the next bit step
+    end
+  end
+
+  # Return the midpoint of the final calculated bounding box
+  lat = ((lat_range[0] + lat_range[1]) / 2.0).round(6)
+  lon = ((lon_range[0] + lon_range[1]) / 2.0).round(6)
+  
+  [lat, lon]
+end
+
+def extract_lat_long(url_string)
+  return nil if !url_string
+  # Clean and decode URL to handle %20, %27, etc.
+  decoded_url = CGI.unescape(url_string)
+# 2. SANITISATION PASS: Normalise all layout quirks to safe ASCII/Standard symbols
+  decoded_url.gsub!('º', '°')   # Masculine Ordinal (Degree with line under it)
+  decoded_url.gsub!(/[‘’′´]/, "'") # Curly single quotes and true typographic primes
+  decoded_url.gsub!(/[“”″]/, '"') # Curly double quotes and double typographic primes
+  decoded_url.gsub!("°'", '°')   # Empty seconds
+  # Fix Scenario 1 Part A: Missing a degree sign entirely before minutes (e.g., 41.2013N -> 41.2013°N)
+  # Looks for a decimal group sitting right against an orientation letter
+  decoded_url.gsub!(/(\d+\.\d+)([NSnsEWew])/, '\1°\2')
+
+  # Fix Scenario 1 Part B: Missing a minute symbol but has a degree symbol (e.g., 80°36E -> 80°36'E)
+  # Looks for a degree sign, numbers, and an immediate orientation character
+  decoded_url.gsub!(/(°\s*\d+)([NSnsEWew])/, '\1\'\2')
+
+  # 1. Match standard Google Maps decimal path style: /@51.0482625,2.3653362
+  if decoded_url =~ /@(-?\d+\.\d+),(-?\d+\.\d+)/
+    return { lat: $1.to_f.round(6), long: $2.to_f.round(6), format: 'Google Path' }
+  end
+
+  # 2. Match Bing Maps style: cp=47.721172~-3.952910
+  if decoded_url =~ /cp=(-?\d+\.\d+)~(-?\d+\.\d+)/
+    return { lat: $1.to_f.round(6), long: $2.to_f.round(6), format: 'Bing Query' }
+  end
+
+  # 3. Match Google Maps DMS style: 51°01'N 2°06'E
+  # Supports optional seconds if present in other URLs
+#  dms_regex = /(\d+)°(\d+)?(?:'(\d+)?")?([NSns])\s+(\d+)°(\d+)?(?:'(\d+)?")?([EWew])/
+#dms_regex = /(\d+)°\s*(?:(\d+)')?(?:(\d+)")?\s*([NSns])\s+(\d+)°\s*(?:(\d+)')?(?:(\d+)")?\s*([EWew])/
+ dms_regex = /(\d+)°\s*(?:(\d+(?:\.\d+)?)')?(?:(\d+)")?\s*([NSns])\s+(\d+)°\s*(?:(\d+(?:\.\d+)?)')?(?:(\d+)")?\s*([EWew])/
+
+  if match = decoded_url.match(dms_regex)
+    lat_deg, lat_min, lat_sec, lat_hemi = match[1], match[2], match[3], match[4]
+    lng_deg, lng_min, lng_sec, lng_hemi = match[5], match[6], match[7], match[8]
+
+    lat = dms_to_decimal(lat_deg, lat_min, lat_sec, lat_hemi)
+    long = dms_to_decimal(lng_deg, lng_min, lng_sec, lng_hemi)
+    return { lat: lat, long: long, format: 'Google DMS' }
+  end
+
+  # 4. Match Google Maps Decimals with Direction style: 50.8681°N 1.5826°E
+  decimal_dir_regex = /(-?\d+\.\d+)°([NSns])\s+(-?\d+\.\d+)°([EWew])/
+  if match = decoded_url.match(decimal_dir_regex)
+    lat_val, lat_hemi = match[1].to_f, match[2].upcase
+    lng_val, lng_hemi = match[3].to_f, match[4].upcase
+
+    lat = ['S', 'W'].include?(lat_hemi) ? -lat_val : lat_val
+    long = ['S', 'W'].include?(lng_hemi) ? -lng_val : lng_val
+    return { lat: lat.round(6), long: long.round(6), format: 'Google Decimal+Direction' }
+  end
+  # 5. Match space-separated raw decimal style: /place/-54.871461 -68.08318/
+  if decoded_url =~ /place\/(-?\d+\.\d+)[\s,]+(-?\d+\.\d+)/
+    return { lat: $1.to_f.round(6), long: $2.to_f.round(6), format: 'Google Space-Separated Decimal' }
+  end
+  # 6. Pure Ruby Geohash Match Pattern (e.g. cp=r6xtn47pbhp1)
+  if decoded_url =~ /cp=([0-9b-hjkmnp-z]{4,12})/i
+    geohash_str = $1
+    lat_lon = decode_geohash(geohash_str)
+    
+    if lat_lon
+      return { lat: lat_lon[0], long: lat_lon[1], format: "Bing Geohash (Pure Ruby)" }
+    end
+  end
+
+  nil # Return nil if no patterns match
+end

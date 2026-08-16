@@ -18,8 +18,11 @@ class ConsolidatedSpot < ActiveRecord::Base
       if reference  then
         dxccs = DxccPrefix.find_by("'#{reference}' like concat(iso_code,'-%%') or '#{reference}' like concat(iso_code,'LL-%%')")
         dxccs = DxccPrefix.find_by("'#{reference}' like concat(prefix,'FF-%%') or '#{reference}' like concat(prefix,'/%%') or '#{reference}' like concat(prefix,'_/%%')") if !dxccs
+
         #VK SIOTA
         dxccs = DxccPrefix.find_by(prefix: 'VK') if !dxccs and reference.match(/^VK-.*/)
+        #ILLW
+        dxccs = DxccPrefix.find_by("'#{reference}' like concat(iso_code,'0%%')") if !dxccs 
         self.dxcc = dxccs.prefix if dxccs
         self.continent = dxccs.continent_code if dxccs
       end 
@@ -28,8 +31,8 @@ class ConsolidatedSpot < ActiveRecord::Base
 
   def self.delete_old_spots
     #keepng spots for a year
-    oneweekago=Time.at(Time.now.to_i - 60 * 60 * 24 * 365).in_time_zone('UTC').to_s
-    ActiveRecord::Base.connection.execute("delete from consolidated_spots where updated_at < '#{oneweekago}'")
+    oneyearago=Time.at(Time.now.to_i - 60 * 60 * 24 * 365).in_time_zone('UTC').to_s
+    ActiveRecord::Base.connection.execute("delete from consolidated_spots where updated_at < '#{oneyearago}'")
   end
 
   def continent

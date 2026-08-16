@@ -21,6 +21,7 @@ class Asset < ActiveRecord::Base
   HEMA_ASSET_URL = 'http://www.hema.org.uk/fullSummit.jsp?summitKey='
   LLOTA_ASSET_URL = 'https://llota.app/list/ref/'
   SIOTA_ASSET_URL = 'https://www.silosontheair.com/silos/#'
+  ILLW_ASSET_URL = 'https://illw.net'
 
   ################################################################
   # Pre- and Post save callbacks
@@ -767,6 +768,16 @@ class Asset < ActiveRecord::Base
             asset[:type] = 'summit'
             asset[:title] = 'SOTA'
             asset[:pnp_class] = 'SOTA'
+          elsif (thecode = code.match(ILLW_REGEX))
+            # ILLW
+            logger.debug 'ILLW'
+            asset[:name] = code
+            asset[:url] = ILLW_ASSET_URL
+            asset[:external] = true
+            asset[:code] = thecode.to_s
+            asset[:type] = 'illw lighthouse'
+            asset[:title] = 'ILLW'
+            asset[:pnp_class] = 'ILLW'
           end
           assets.push(asset) if asset[:code]
           # if code provided

@@ -372,6 +372,7 @@ function site_points_style_function(feature, resoluton) {
   if(feature.get('asset_type')=="silo")  return site_silos_style;
   if(feature.get('asset_type')=="volcano")  return site_volcano_style;
   if(feature.get('asset_type')=="lighthouse")  return site_beacon_style;
+  if(feature.get('asset_type')=="illw lighthouse")  return site_beacon_style;
   if(feature.get('asset_type')=="park")  return site_park_point_style;
   if(feature.get('asset_type')=="pota park")  return site_pota_point_style;
   if(feature.get('asset_type')=="wwff park")  return site_wwff_point_style;
