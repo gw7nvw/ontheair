@@ -12,7 +12,7 @@ class ExternalAlert < ActiveRecord::Base
       reference = code if code
       if reference  then
         dxccs = DxccPrefix.find_by("'#{reference}' like concat(iso_code,'-%%') or '#{reference}' like concat(iso_code,'LL-%%')")
-        dxccs = DxccPrefix.find_by("'#{reference}' like concat(prefix,'FF-%%') or '#{reference}' like concat(prefix,'-%%') or '#{reference}' like concat(prefix,'/%%')") if !dxccs
+        dxccs = DxccPrefix.find_by("'#{reference}' like concat(prefix,'FF-%%') or '#{reference}' like concat(prefix,'-%%') or '#{reference}' like concat(prefix,'_/%%')") if !dxccs
 
         self.dxcc = dxccs.prefix if dxccs
         self.continent = dxccs.continent_code if dxccs
