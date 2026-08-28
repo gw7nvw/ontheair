@@ -553,6 +553,7 @@ class Post < ActiveRecord::Base
 
         if debug
           puts 'Sending SPOT to SOTA'
+          puts payloadspot.to_json
         end
 
         req = Net::HTTP::Get.new("#{url.path}?"+(payloadspot.collect { |k, v| "#{k}=#{CGI.escape(v.to_s)}" }.join('&')), 'Content-Type' => 'application/json', 'Authorization' => 'bearer ' + access_token, 'id_token' => id_token, 'connection' => 'keep-alive', 'User-Agent' => 'ontheair.nz' )

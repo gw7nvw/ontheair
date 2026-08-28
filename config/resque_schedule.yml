@@ -23,8 +23,12 @@ do_export_sitemaps:
   description: Runs the perform method in ExportSitemaps monthly
 
 do_tidy_user_agents:
-  every: 2591000s
+  cron: 40 1 * * *
   class: TidyUserAgentsJob
   args:
-  description: Runs the perform method in TidyUserAgentsJob monthly-ish
+  description: Runs the perform method in TidyUserAgentsJob  daily
 
+do_export_bad_ips:
+  cron: 50 1 * * *
+  class: ExportBadIpsJob
+  description: Exports malicious IPs to /tmp/bad_ips.txt for ipset processing

@@ -254,16 +254,64 @@ class User < ActiveRecord::Base
       at_list = asset_type.split(',').map { |at| "'" + at.strip + "'" }.join(',')
     end
 
-    #codes1 = Contact.find_by_sql [' select distinct(asset1_codes) as asset1_codes from (select unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where ((user1_id=' + id.to_s + ' and ' + qrp_query1 + ') or (user2_id=' + id.to_s + ' and ' + qrp_query2 + "))) as c inner join assets a on a.code = c.asset1_codes where a.is_active=true and #{minor_query} and a.asset_type in (" + at_list + '); ']
-    codes1 = Contact.find_by_sql [' select distinct(asset1_codes) as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where ((user1_id=' + id.to_s + ' and ' + qrp_query1 + ') or (user2_id=' + id.to_s + ' and ' + qrp_query2 + "))) as c inner join assets a on a.code = c.asset1_codes where a.valid_from<c.time and (a.valid_to is null or a.valid_to>c.time) and #{minor_query} and a.asset_type in (" + at_list + '); ']
-    #codes2 = Contact.find_by_sql [' select distinct(asset2_codes) as asset1_codes from (select unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where ((user1_id=' + id.to_s + ' and ' + qrp_query1 + ') or (user2_id=' + id.to_s + ' and ' + qrp_query2 + "))) as c inner join assets a on a.code = c.asset2_codes where a.is_active=true and #{minor_query} and a.asset_type in (" + at_list + '); ']
-    codes2 = Contact.find_by_sql [' select distinct(asset2_codes) as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where ((user1_id=' + id.to_s + ' and ' + qrp_query1 + ') or (user2_id=' + id.to_s + ' and ' + qrp_query2 + "))) as c inner join assets a on a.code = c.asset2_codes where a.valid_from<c.time and (a.valid_to is null or a.valid_to>c.time) and #{minor_query} and a.asset_type in (" + at_list + '); ']
+    # Get internal data
+    sql = []
+    sql << "
+       SELECT DISTINCT(asset1_codes) AS asset_code 
+       FROM  
+         (
+           (
+             SELECT 
+               time, 
+               UNNEST(asset1_classes) AS asset1_classes, 
+               UNNEST(asset1_codes) AS asset1_codes 
+             FROM contacts 
+             WHERE 
+               (
+                 (user1_id=#{id} AND #{qrp_query1}) 
+               OR 
+                 (user2_id=#{id} AND #{qrp_query2})
+               )
+           ) 
+         UNION
+           (
+           SELECT 
+               time, 
+               UNNEST(asset2_classes) AS asset1_classes, 
+               UNNEST(asset2_codes) AS asset1_codes 
+             FROM contacts 
+             WHERE 
+               (
+                 (user1_id=#{id} AND #{qrp_query1}) 
+               OR 
+                 (user2_id=#{id} AND #{qrp_query2})
+               )
+           )
+         ) as c
+       INNER JOIN assets a ON a.code = c.asset1_codes 
+       WHERE a.valid_from<c.time 
+       AND (a.valid_to is null OR a.valid_to>c.time) 
+       AND #{minor_query} 
+       AND a.asset_type IN (#{at_list})
+    "
+
+
+    # 2. Conditionally append external data
     if include_external == true
-      codes3 = ExternalChase.find_by_sql [" select concat(summit_code) as summit_code from external_chases where user_id='#{id}' and asset_type in (" + at_list + ');']
-      codes4 = ExternalActivation.find_by_sql [" select concat(summit_code) as summit_code from external_activations where user_id='#{id}' and asset_type in (" + at_list + ');']
+      sql << "SELECT summit_code AS asset_code FROM external_chases WHERE user_id='#{id}' AND asset_type in (#{at_list})"
+      sql << "SELECT summit_code AS asset_code FROM external_activations WHERE user_id='#{id}' AND asset_type in (#{at_list})"
     end
-    codes = [codes1.map(&:asset1_codes).join(','), codes2.map(&:asset1_codes).join(','), codes3.map(&:summit_code).join(','), codes4.map(&:summit_code).join(',')].join(',').split(',').uniq
-    codes.reject(&:empty?)
+
+    # 3. Combine the blocks with UNION and wrap them in an outer DISTINCT.
+    combined_sql = "
+      SELECT DISTINCT asset_code 
+      FROM (
+        #{sql.join(' UNION ')}
+      ) subquery 
+      WHERE asset_code IS NOT NULL AND asset_code != ''
+    "
+
+    codes =  ActiveRecord::Base.connection.select_rows(combined_sql).flatten
   end
 
   ###########################################################################################
@@ -321,15 +369,43 @@ class User < ActiveRecord::Base
     else
       at_list = asset_type.split(',').map { |at| "'" + at.strip + "'" }.join(',')
     end
-    #codes1 = Contact.find_by_sql [' select distinct(asset1_codes' + date_query + ') as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id=' + id.to_s + ' and ' + qrp_query1 + ') as c inner join assets a on a.code = c.asset1_codes where a.asset_type in (' + at_list + ") and a.is_active=true and #{minor_query}; "]
-    codes1 = Contact.find_by_sql [' select distinct(asset1_codes' + date_query + ') as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user2_id=' + id.to_s + ' and ' + qrp_query1 + ') as c inner join assets a on a.code = c.asset1_codes where a.asset_type in (' + at_list + ") and a.valid_from<c.time and (a.valid_to is null or a.valid_to>c.time) and #{minor_query}; "]
-    #codes2 = Contact.find_by_sql [' select distinct(asset2_codes' + date_query + ') as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id=' + id.to_s + ' and ' + qrp_query2 + ') as c inner join assets a on a.code = c.asset2_codes where a.asset_type in (' + at_list + ") and a.is_active=true and #{minor_query}; "]
-    codes2 = Contact.find_by_sql [' select distinct(asset2_codes' + date_query + ') as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user1_id=' + id.to_s + ' and ' + qrp_query2 + ') as c inner join assets a on a.code = c.asset2_codes where a.asset_type in (' + at_list + ") and a.valid_from<c.time and (a.valid_to is null or a.valid_to>c.time) and #{minor_query}; "]
+
+    # 1. Get internal data
+    sql = []
+    sql << "
+      SELECT DISTINCT(asset1_codes#{date_query}) AS asset_code 
+      FROM  (
+        (
+          SELECT time, UNNEST(asset1_codes) AS asset1_codes 
+          FROM contacts 
+          WHERE user2_id=#{id} AND #{qrp_query1}
+        ) UNION (
+          SELECT time, UNNEST(asset2_codes) AS asset1_codes 
+          FROM contacts 
+          WHERE user1_id=#{id} AND #{qrp_query2}
+        ) 
+      ) as c 
+      INNER JOIN assets a ON a.code = c.asset1_codes 
+      WHERE a.asset_type IN (#{at_list}) 
+        AND a.valid_from<c.time 
+        AND (a.valid_to is null or a.valid_to>c.time) 
+        AND #{minor_query}"
+
+    # 2. optionally add external data
     if include_external == true
-      codes3 = ExternalChase.find_by_sql [' select concat(summit_code' + date_query_ext + ") as summit_code from external_chases where user_id='#{id}' and asset_type in (" + at_list + ');']
+      sql << "SELECT CONCAT(summit_code#{date_query_ext}) as asset_code from external_chases where user_id='#{id}' and asset_type in (#{at_list})"
     end
-    codes = [codes1.map(&:asset1_codes).join(','), codes2.map(&:asset1_codes).join(','), codes3.map(&:summit_code).join(',')].join(',').split(',').uniq
-    codes.reject(&:empty?)
+
+    # 3. Combine the blocks with UNION and wrap them in an outer DISTINCT.
+    combined_sql = "
+      SELECT DISTINCT asset_code 
+      FROM (
+        #{sql.join(' UNION ')}
+      ) subquery 
+      WHERE asset_code IS NOT NULL AND asset_code != ''
+    "
+
+    codes =  ActiveRecord::Base.connection.select_rows(combined_sql).flatten
   end
 
   ###########################################################################################
@@ -393,24 +469,63 @@ class User < ActiveRecord::Base
       at_list = asset_type.split(',').map { |at| "'" + at.strip + "'" }.join(',')
     end
 
-    #codes1 = Contact.find_by_sql [' select distinct(asset1_codes' + date_query + ') as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id=' + id.to_s + ' and ' + qrp_query1 + ') as c inner join assets a on a.code = c.asset1_codes where a.asset_type in (' + at_list + ") and a.is_active=true and #{minor_query}; "]
-    codes1 = Contact.find_by_sql [' select distinct(asset1_codes' + date_query + ') as asset1_codes from (select time, unnest(asset1_classes) as asset1_classes, unnest(asset1_codes) as asset1_codes from contacts where user1_id=' + id.to_s + ' and ' + qrp_query1 + ') as c inner join assets a on a.code = c.asset1_codes where a.asset_type in (' + at_list + ") and a.valid_from<c.time and (a.valid_to is null or a.valid_to>c.time) and #{minor_query}; "]
-    #codes2 = Contact.find_by_sql [' select distinct(asset2_codes' + date_query + ') as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id=' + id.to_s + ' and ' + qrp_query2 + ') as c inner join assets a on a.code = c.asset2_codes where a.asset_type in (' + at_list + ") and a.is_active=true and #{minor_query}; "]
-    codes2 = Contact.find_by_sql [' select distinct(asset2_codes' + date_query + ') as asset1_codes from (select time, unnest(asset2_classes) as asset2_classes, unnest(asset2_codes) as asset2_codes from contacts where user2_id=' + id.to_s + ' and ' + qrp_query2 + ') as c inner join assets a on a.code = c.asset2_codes where a.asset_type in (' + at_list + ") and a.valid_from<c.time and (a.valid_to is null or a.valid_to>c.time) and #{minor_query}; "]
-    if include_external == true
-      codes3 = ExternalActivation.find_by_sql [' select concat(summit_code' + date_query_ext + ") as summit_code from external_activations where user_id='#{id}' and asset_type in (" + at_list + ');']
+    # 1. Get internal data
+    sql = []
+    # a: chaser-reported activations
+    if result_type != 'only_activator'
+      sql << "
+        SELECT DISTINCT(asset1_codes#{date_query}) AS asset_code 
+        FROM  (
+            SELECT time, UNNEST(asset2_codes) AS asset1_codes 
+            FROM contacts 
+            WHERE user2_id=#{id} AND #{qrp_query2}
+        ) as c 
+        INNER JOIN assets a ON a.code = c.asset1_codes 
+        WHERE a.asset_type IN (#{at_list}) 
+          AND a.valid_from<c.time 
+          AND (a.valid_to is null or a.valid_to>c.time) 
+          AND #{minor_query}"
     end
-    case result_type
-    when 'all'
-      codes = [codes1.map(&:asset1_codes).join(','), codes2.map(&:asset1_codes).join(','), codes3.map(&:summit_code).join(',')].join(',').split(',').uniq
-    when 'only_activator'
-      codes = [codes1.map(&:asset1_codes).join(','), codes3.map(&:summit_code).join(',')].join(',').split(',').uniq
-    when 'orphan_activations'
-      codes1_arr = codes1.map(&:asset1_codes)
-      codes2_arr = codes2.map(&:asset1_codes)
-      codes = codes2_arr - codes1_arr
+
+    # b: activator-reported activations
+    sql << "
+      SELECT DISTINCT(asset1_codes#{date_query}) AS asset_code 
+      FROM  (
+          SELECT time, UNNEST(asset1_codes) AS asset1_codes 
+          FROM contacts 
+          WHERE user1_id=#{id} AND #{qrp_query1}
+      ) as c 
+      INNER JOIN assets a ON a.code = c.asset1_codes 
+      WHERE a.asset_type IN (#{at_list}) 
+        AND a.valid_from<c.time 
+        AND (a.valid_to is null or a.valid_to>c.time) 
+        AND #{minor_query}"
+
+
+    # c: optionally add external data
+    if include_external == true and result_type != 'orphan_activations'
+      sql << "SELECT CONCAT(summit_code#{date_query_ext}) AS asset_code FROM external_activations WHERE user_id='#{id}' AND asset_type IN (#{at_list})"
     end
-    codes.reject(&:empty?)
+
+    if result_type == 'orphan_activations'
+      combined_sql = "
+        SELECT DISTINCT asset_code 
+        FROM (
+          #{sql.join(' EXCEPT ')}
+        ) subquery 
+        WHERE asset_code IS NOT NULL AND asset_code != ''
+      "
+    else
+      combined_sql = "
+        SELECT DISTINCT asset_code 
+        FROM (
+          #{sql.join(' UNION ')}
+        ) subquery 
+        WHERE asset_code IS NOT NULL AND asset_code != ''
+      "
+    end
+
+    codes =  ActiveRecord::Base.connection.select_rows(combined_sql).flatten
   end
 
   ###########################################################################################
@@ -438,40 +553,51 @@ class User < ActiveRecord::Base
 
     minor_query = params[:include_minor] == true ? 'true' : 'a.minor is not true'
 
-    qual_codes = Log.find_by_sql ["
-      select distinct concat(als.asset_codes, ' ', #{date_query}) as asset_codes from
+    sql = []
+    sql << "
+      SELECT DISTINCT CONCAT(als.asset_codes, ' ', #{date_query}) AS asset_code FROM
         (
-          select date,
-            unnest(asset_codes) as asset_codes,
-            unnest(asset_classes) as asset_classes,
-            unnest(qualified) as qualified
-          from logs
-          where user1_id=#{id}
-            and asset_classes @> ARRAY['#{params[:asset_type]}'::varchar]
-        ) as als
-      inner join assets a on a.code=als.asset_codes
-      where als.asset_classes='#{params[:asset_type]}'
-        and als.qualified=true
-        and #{minor_query};
-    "]
-# and '#{params[:asset_type]}'=ANY(asset_classes)
-# and asset_classes @> ARRAY['#{params[:asset_type]}'::varchar]
-    qual_codes2 = []
+          SELECT 
+            date,
+            UNNEST(asset_codes) AS asset_codes,
+            UNNEST(asset_classes) AS asset_classes,
+            UNNEST(qualified) AS qualified
+          FROM logs
+          WHERE user1_id=#{id}
+            AND asset_classes @> ARRAY['#{params[:asset_type]}'::varchar]
+        ) AS als
+      INNER JOIN assets a ON a.code=als.asset_codes
+      WHERE als.asset_classes='#{params[:asset_type]}'
+        AND als.qualified=true
+        AND #{minor_query}
+    "
+
+    #2 optionally include external data
     if params[:include_external]
       at = AssetType.find_by(name: params[:asset_type])
 
-      qual_codes2 = ExternalActivation.find_by_sql ["
-          select distinct concat(summit_code, ' ', " + date_query + ") as summit_code
-          from external_activations
-          where user_id='#{id}'
-            and qso_count>=#{at.min_qso}
-            and asset_type='#{params[:asset_type]}';
-         "]
+      sql << "
+          SELECT DISTINCT CONCAT(summit_code, ' ', " + date_query + ") AS asset_code
+          FROM external_activations
+          WHERE user_id='#{id}'
+            AND qso_count>=#{at.min_qso}
+            AND asset_type='#{params[:asset_type]}'
+         "
     end
+    
+   
+    # 3. Combine the blocks with UNION and wrap them in an outer DISTINCT.
+    combined_sql = "
+      SELECT DISTINCT asset_code 
+      FROM (
+        #{sql.join(' UNION ')}
+      ) subquery 
+      WHERE asset_code IS NOT NULL AND asset_code != ''
+    "
 
-    result_codes = qual_codes.map(&:asset_codes)
-    result_codes += qual_codes2.map(&:summit_code)
-    result_codes.uniq.map { |rc| rc.split(' ')[0] }
+    codes =  ActiveRecord::Base.connection.select_rows(combined_sql).flatten
+ 
+    codes.map { |rc| rc.split(' ')[0] }
   end
 
   ###########################################################################################
@@ -650,15 +776,86 @@ class User < ActiveRecord::Base
     # list of all ZLOTA asset types
     ats = AssetType.where(keep_score: true)
     at_list = ats.map { |at| "'" + at.name + "'" }.join(',')
-
+    sql = []
+    dis_sql = []
     # contacts where I'm in ZLOTA
-    contacts1 = Contact.find_by_sql ["select (time::date || ' ' || split_part(asset1_code,' ', 1) || ' ' || split_part(asset2_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset1_codes) as asset1_code, unnest(c1.asset1_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user1_id=" + id.to_s + ') as foo where asset1_class in (' + at_list + '); ']
-    contacts2 = Contact.find_by_sql ["select (time::date || ' ' || split_part(asset1_code, ' ', 1) || ' ' || split_part(asset2_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset2_codes) as asset1_code, unnest(c1.asset2_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset1_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user2_id=" + id.to_s + ') as foo where asset1_class in (' + at_list + '); ']
+#            c1.id AS id, 
+#            c1.user1_id AS user1_id, 
+#            c1.user2_id AS user2_id, 
+
+   sql << "
+     SELECT 
+       (c.time::date || ' ' || split_part(unnested.asset1_code, ' ', 1) || ' ' || split_part(unnested.asset2_code, ' ', 1)) AS asset_code
+     FROM contacts c
+     CROSS JOIN LATERAL (
+       SELECT 
+         c.asset1_codes[i] AS asset1_code,
+         c.asset1_classes[i] AS asset1_class,
+         a1.asset2_code
+       FROM generate_series(1, array_upper(c.asset1_codes, 1)) AS i
+       CROSS JOIN UNNEST(c.asset2_codes) AS a1(asset2_code)
+     ) AS unnested
+     WHERE c.user1_id = #{id}
+       AND unnested.asset1_class IN (#{at_list})"
+
+   sql << "
+     SELECT 
+       (c.time::date || ' ' || split_part(unnested.asset1_code, ' ', 1) || ' ' || split_part(unnested.asset2_code, ' ', 1)) AS asset_code
+     FROM contacts c
+     CROSS JOIN LATERAL (
+       SELECT 
+         c.asset2_codes[i] AS asset1_code,
+         c.asset2_classes[i] AS asset1_class,
+         a1.asset2_code
+       FROM generate_series(1, array_upper(c.asset2_codes, 1)) AS i
+       CROSS JOIN UNNEST(c.asset1_codes) AS a1(asset2_code)
+     ) AS unnested
+     WHERE c.user2_id = #{id}
+       AND unnested.asset1_class IN (#{at_list})"
+
     # contacts where other party  ZLOTA (reverse code order so my loc first
     # to avoid double-counting ZLOTA-ZLOTA
-    contacts3 = Contact.find_by_sql ["select (time::date || ' ' || split_part(asset2_code,' ', 1) || ' ' || split_part(asset1_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset1_codes) as asset1_code, unnest(c1.asset1_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset2_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user2_id=" + id.to_s + ') as foo where asset1_class in (' + at_list + '); ']
-    contacts4 = Contact.find_by_sql ["select (time::date || ' ' || split_part(asset2_code, ' ', 1) || ' ' || split_part(asset1_code, ' ', 1)) as asset1_code from (select c1.time as time, c1.date as date, c1.id as id, c1.user1_id as user1_id, c1.user2_id as user2_id, unnest(c1.asset2_codes) as asset1_code, unnest(c1.asset2_classes) as asset1_class, asset2_code from contacts c1 join (select id, unnest(asset1_codes) as asset2_code from contacts) c2 on c2.id=c1.id where c1.user1_id=" + id.to_s + ') as foo where asset1_class in (' + at_list + '); ']
-    (contacts1 + contacts2 + contacts3 + contacts4).map(&:asset1_code).uniq
+   sql << "
+     SELECT 
+       (c.time::date || ' ' || split_part(unnested.asset2_code, ' ', 1) || ' ' || split_part(unnested.asset1_code, ' ', 1)) AS asset_code
+     FROM contacts c
+     CROSS JOIN LATERAL (
+       SELECT 
+         c.asset1_codes[i] AS asset1_code,
+         c.asset1_classes[i] AS asset1_class,
+         a1.asset2_code
+       FROM generate_series(1, array_upper(c.asset1_codes, 1)) AS i
+       CROSS JOIN UNNEST(c.asset2_codes) AS a1(asset2_code)
+     ) AS unnested
+     WHERE c.user2_id = #{id}
+       AND unnested.asset1_class IN (#{at_list})"
+
+   sql << "
+     SELECT 
+       (c.time::date || ' ' || split_part(unnested.asset2_code, ' ', 1) || ' ' || split_part(unnested.asset1_code, ' ', 1)) AS asset_code
+     FROM contacts c
+     CROSS JOIN LATERAL (
+       SELECT 
+         c.asset2_codes[i] AS asset1_code,
+         c.asset2_classes[i] AS asset1_class,
+         a1.asset2_code
+       FROM generate_series(1, array_upper(c.asset2_codes, 1)) AS i
+       CROSS JOIN UNNEST(c.asset1_codes) AS a1(asset2_code)
+     ) AS unnested
+     WHERE c.user1_id = #{id}
+       AND unnested.asset1_class IN (#{at_list})"
+
+   # 3. Combine the blocks with UNION and wrap them in an outer DISTINCT.
+    combined_sql = "
+      SELECT DISTINCT asset_code 
+      FROM (
+        #{sql.join(' UNION ')}
+      ) subquery 
+      WHERE asset_code IS NOT NULL AND asset_code != ''
+    "
+
+    codes =  ActiveRecord::Base.connection.select_rows(combined_sql).flatten
+
   end
 
   ##################################################################################

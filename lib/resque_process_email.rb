@@ -132,6 +132,7 @@ class EmailReceive
           puts 'PIN does not match'
           return(false)
         end
+        acctnumber=user.acctnumber
       elsif subject && subject['You have a new SMS']
         via = 'SMS'
         puts 'DEBUG SMS'

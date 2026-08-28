@@ -217,17 +217,19 @@ class Contact < ActiveRecord::Base
 
   # update asset#_classes arrays to show asset type for all asset#_codes - in order
   def update_classes
+    self.asset1_codes=self.asset1_codes.uniq
     asset1_classes = []
     asset1_codes.each do |code|
       asset = Asset.assets_from_code(code)
-      asset1_classes.push(asset.first[:type]) if asset && asset.count.positive?
+      if asset && asset.count.positive? then asset1_classes.push(asset.first[:type]) else asset1_classes.push('invalid') end
     end
     self.asset1_classes = asset1_classes
 
+    self.asset2_codes=self.asset2_codes.uniq
     asset2_classes = []
     asset2_codes.each do |code|
       asset = Asset.assets_from_code(code)
-      asset2_classes.push(asset.first[:type]) if asset && asset.count.positive?
+      if asset && asset.count.positive? then asset2_classes.push(asset.first[:type]) else asset2_classes.push('invalid') end
     end
     self.asset2_classes = asset2_classes
   end
