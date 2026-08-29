@@ -1,0 +1,461 @@
+# frozen_string_literal: true
+
+# typed: false
+class AssetsController < ApplicationController
+  include PostsHelper
+  include ApplicationHelper
+  include AssetGisTools
+
+  before_action :signed_in_user, only: %i[edit update create new map_associate associations add_wish remove_wish rate map_associate map_find_poly map_apply_poly]
+
+  def associations
+    @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+    if @asset.nil?
+      flash[:error] = 'Sorry - ' + code + ' does not exist in our database'
+      redirect_to '/assets'
+      return true
+    else
+      @newchild=AssetLink.new
+      @newchild.contained_code=@asset.code
+      @newparent=AssetLink.new
+      @newparent.containing_code=@asset.code
+    end
+  end
+  def map_associate
+    @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+    @item = Asset.new if !@item
+    if @asset.nil?
+      flash[:error] = 'Sorry - ' + code + ' does not exist in our database'
+      redirect_to '/assets'
+      return true
+    end
+    @datasources=['capad','vk_state_parks','vk_hydro']
+  end
+
+  def map_find_poly
+    @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+    @datasources=['capad','vk_state_parks','vk_hydro']
+    a = params[:asset]
+    x = a[:x]
+    y = a[:y]
+    location = a[:location]
+    datasource = params[:ds][:datasource]
+    puts "DATASOURCE: #{datasource}"
+    if datasource == 'vk_hydro' then
+
+      item = VkLake.find_by_sql [ "select * from vk_lakes where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), wkb_geometry)" ]
+
+      puts item.to_json
+
+      @item = Asset.new
+      if item and item.count>0
+        @item.boundary = item.first.wkb_geometry 
+        @item.name = item.first.name
+        @item.old_code = item.first.objectid.to_s
+      end
+    elsif datasource == 'capad' then
+
+      item = Capad.find_by_sql [ "select ST_Multi(wkb_geometry) as wkb_geometry, pa_id, name from capad where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), wkb_geometry)" ]
+
+      puts item.to_json
+
+      @item = Asset.new
+      if item and item.count>0
+        @item.boundary = item.first.wkb_geometry 
+        @item.name = item.first.name
+        @item.old_code = item.first.pa_id.to_s
+      end
+    elsif datasource == 'vk_state_parks' then
+      item = VkStatePark.find_by_sql [ "select st_multi(boundary) as boundary, name, unique_name from vk_state_park where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), boundary)" ]
+
+      puts item.to_json
+
+      @item = Asset.new
+      if item and item.count>0
+        @item.boundary = item.first.boundary 
+        @item.name = item.first.name
+        @item.old_code = item.first.unique_name
+      end
+    end
+    render 'map_associate'
+  end
+
+  def map_apply_poly
+    if signed_in? && current_user.is_modifier
+    @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+    @datasources=['capad','vk_state_parks','vk_hydro']
+    @item = Asset.new
+  
+    if @asset then
+      @asset.boundary = params[:boundary]
+      @asset.old_code = params[:old_code]
+      puts @asset.to_json
+      @asset.save
+      @asset.reload
+      @asset.save
+    end
+    render 'map_associate'
+    else
+      flash[:error] = 'You do not have permissions to create a new asset'
+      redirect_to '/assets'
+    end
+  end
+        
+  
+    
+
+  def rate
+    show
+
+    user = current_user
+    if user 
+      if @asset
+        rating = Rating.find_by(user_id: current_user.id, asset_code: @asset.code)
+        if rating
+          rating.assign_attributes(rating_params) 
+        else
+          rating = Rating.new(rating_params) if !rating
+        end
+ 
+        rating.user_id = current_user.id
+        rating.asset_code = @asset.code
+     
+        if rating.save
+          flash[:success] = "Rated"
+        else
+          flash[:error] = "Could not add your rating"
+        end
+      else
+        flash[:error] = "Could not find the specified location"
+      end
+    end
+    show
+    render 'show'    
+  end
+
+
+  def derate
+    show
+
+    user = current_user
+    if user 
+      if @asset
+        ratings = Rating.where(user_id: current_user.id, asset_code: @asset.code)
+        if ratings
+          success = ratings.destroy_all
+          if success then 
+            flash[:success] = "Rating removed"
+          else
+            flash[:error] = "Could not delete your rating"
+          end
+        else
+          flash[:error] = "Failed to find your rating"
+        end
+      else
+        flash[:error] = "Could not find the specified location"
+      end
+    end
+    show
+    render 'show'    
+  end
+
+
+  def add_wish
+    show
+
+    user = current_user
+    if user 
+      if @asset
+        wish = Wishlist.create(user_id: user.id, asset_code: @asset.code)
+        if wish then
+          flash[:success] = "Added to your wishlist"
+        else
+          flash[:error] = "Failed to add to your wishlist"
+        end
+      end
+    end
+    show
+    render 'show'    
+  end
+
+  def remove_wish
+    show
+
+    user = current_user
+    if user and @asset 
+      wishes = Wishlist.where(user_id: user.id, asset_code: @asset.code)
+      if wishes.destroy_all
+        flash[:success] = "Removed from your wishlist"
+      else
+        flash[:error] = "Failed to remove from your wishlist"
+      end
+    end
+    if params[:referring] == "wishlist" then
+      redirect_to '/users/'+user.callsign+"/wishlist"
+    else
+      show
+      render 'show'    
+    end
+  end
+
+  def index_prep
+    #do not allow bots to peruse all pages or use filters
+    if request.env['bot'] == 'suspected_bot' or request.env['bot'] == 'confirmed_bot'
+      params.slice!(:controller, :action)
+      flash[:warning]="Your IP address has been flagged as a suspected automated bot. You can only access pages permitted by our robots ploicy. Search / filter will be disabled. Sign in, or click on the Spots link and complete the challenge to confirm that you are human."
+      @limit = 40
+    end
+
+    dxcc = params[:dxcc][:prefix] if params[:dxcc]
+    dxcc = @current_dxcc if !dxcc
+    @dxcc_selected = dxcc
+
+    whereclause = 'true'
+
+    whereclause = 'is_active is true' unless params[:active]
+
+    whereclause += ' and minor is not true' if params[:minor]
+    whereclause += " and country = '#{dxcc}'" if dxcc
+    asset_type = params[:type]
+
+    if params[:asset_type] && params[:asset_type][:name] && (params[:asset_type][:name] != '') && (params[:asset_type][:name] != 'all')
+      asset_type = params[:asset_type][:name]
+    end
+
+    whereclause += " and asset_type = '" + asset_type + "'" if asset_type
+
+    asset_type = 'all' if !asset_type || (asset_type == '')
+    @asset_type = AssetType.find_by(name: safe_param(asset_type))
+
+    @searchtext = safe_param(params[:searchtext] || '')
+    unless @limit
+      if params[:searchtext] && (params[:searchtext] != '')
+        @limit = 500 # 100
+        whereclause = whereclause + " and (unaccent(lower(name)) like '%%" + @searchtext.downcase + "%%' or lower(code) like '%%" + @searchtext.downcase + "%%' or lower(old_code) like '%%" + @searchtext.downcase + "%%')"
+      else
+        @limit = 500 # 20
+      end
+    end
+
+    @fullassets = Asset.find_by_sql ['select id,name,code,asset_type,url,is_active,safecode,category,minor,district,region,altitude,location,description from assets where id in (select id from assets where ' + whereclause + " order by name limit #{@limit}) order by name"]
+    @assets = @fullassets.paginate(per_page: 40, page: params[:page])
+    counts = Asset.find_by_sql ['select count(id) as id from assets where ' + whereclause]
+    # @count=0;
+    @count = counts && counts.first ? counts.first.id : 0
+  end
+
+  def index
+    if params[:id] then redirect_to '/assets/' + params[:id].tr('/', '_')
+    else
+
+      @limit = 30_000 if request.path.match('gpx') || request.path.match('csv')
+
+      index_prep
+      respond_to do |format|
+        format.html
+        format.js
+        format.csv { send_data asset_to_csv(@fullassets), filename: "assets-#{Date.today}.csv" }
+        format.gpx { send_data asset_to_gpx(@fullassets), filename: "assets-#{Date.today}.gpx" }
+      end
+    end
+  end
+
+  def refresh_pota
+    if signed_in?
+      a = Asset.find_by(safecode: params[:id])
+      if a && (a.asset_type == 'pota park')
+        ExternalActivation.update_pota_activation(a)
+      end
+    else
+      flash[:error] = 'You must be signed in to do this'
+    end
+    redirect_to '/assets/' + params[:id]
+  end
+
+  def refresh_sota
+    if signed_in?
+      a = Asset.find_by(safecode: params[:id])
+      if a && (a.asset_type == 'summit')
+        ExternalActivation.update_sota_activation(a)
+      end
+    else
+      flash[:error] = 'You must be signed in to do this'
+    end
+
+    redirect_to '/assets/' + params[:id]
+  end
+
+  def show
+    #do not allow bots to peruse all pages or use filters
+    if request.env['bot'] == 'suspected_bot' or request.env['bot'] == 'confirmed_bot'
+      @bot = true
+      flash[:warning]="Your IP address has been flagged as a suspected automated bot. You can only access pages permitted by our robots ploicy. Search / filter will be disabled. Sign in, or click on the Spots link and complete the challenge to confirm that you are human."
+      params.slice!(:controller, :action, :id)
+    end
+
+    code = (params[:id] || '').tr('_', '/')
+    code = code.upcase
+    @asset = Asset.find_by(code: code)
+    if @asset.nil?
+      @asset = Asset.find_by(old_code: code)
+      if @asset.nil?
+        flash[:error] = 'Sorry - ' + code + ' does not exist in our database'
+        redirect_to '/assets'
+        return true
+      end
+    end
+    @comments = Comment.for_asset(code)
+    if !@bot
+      @newlink = AssetWebLink.new
+      @newlink.asset_code = @asset.safecode
+      ratings = Rating.where(asset_code: @asset.code)
+      @rating_count = ratings.count
+      nice_scores = ratings.map{|r| r.nice_score}
+      accessibility_scores = ratings.map{|r| r.accessibility_score}
+      if @rating_count>0 then
+        @nice_score = nice_scores.sum(0.0)/nice_scores.size
+        @accessibility_score = accessibility_scores.sum(0.0)/accessibility_scores.size
+      else
+        @nice_score = 0
+        @accessibility_score = 0
+      end
+      if current_user
+        @myrating = Rating.find_by(user_id: current_user.id, asset_code: @asset.code) 
+        @myrating = Rating.new(user_id: current_user.id, asset_code: @asset.code) if !@myrating
+      else
+        @myrating = Rating.new
+      end
+      @wishlist = Wishlist.find_by(user_id: current_user.id, asset_code: @asset.code) if current_user
+    end
+  end
+
+  def edit
+    if signed_in? && current_user.is_modifier
+      @referring = params[:referring] if params[:referring]
+
+      unless (@asset = Asset.where(code: params[:id].tr('_', '/')).first)
+        flash[:error] = 'Asset not found'
+        redirect_to '/assets'
+      end
+    else
+      flash[:error] = 'You do not have permissions to create a new asset'
+      redirect_to '/assets'
+    end
+  end
+
+  def new
+    if signed_in? && current_user.is_modifier
+      @asset = Asset.new
+    else
+      flash[:error] = 'You do not have permissions to create a new asset'
+      redirect_to '/assets'
+    end
+  end
+
+  def create
+    if signed_in? && current_user.is_modifier
+      @asset = Asset.new(asset_params)
+
+      convert_location_params(params[:asset][:x], params[:asset][:y])
+      @asset.boundary=make_multipolygon(params[:asset][:boundary]) if params[:asset][:boundary]
+
+      @asset.createdBy_id = current_user.id
+      @asset.region = @asset.add_region unless @asset.region
+      if @asset.code.nil? || (@asset.code == '') then @asset.code = Asset.get_next_code(@asset.asset_type, @asset.region) end
+      if @asset.save
+        @asset.reload
+        flash[:success] = 'Success!'
+        if params[:referring] == 'index'
+          index_prep
+          render 'index'
+        else
+          redirect_to '/assets/' + @asset.safecode
+        end
+      else
+        render 'new'
+      end
+    else
+      flash[:error] = 'You do not have permissions to create a new asset'
+      redirect_to '/assets'
+    end
+  end
+
+  def update
+    do_not_cache()
+
+    if signed_in? && current_user.is_modifier
+      if params[:delete]
+        asset = Asset.find_by_id(params[:id])
+        if asset
+          als = AssetLink.where(contained_code: asset.code)
+          als.destroy_all
+          als = AssetLink.where(containing_code: asset.code)
+          als.destroy_all
+          als = AssetWebLink.where(asset_code: asset.code)
+          als.destroy_all
+        end
+
+        if asset && asset.destroy
+          index_prep
+          flash[:success] = 'Asset deleted, id:' + params[:id]
+          redirect_to '/assets'
+        else
+          edit
+          flash[:error] = 'Failed to delete asset, id:' + params[:id]
+          render 'edit'
+        end
+      elsif !@asset = Asset.find_by_id(params[:id])
+        flash[:error] = 'Asset not found: ' + params[:id]
+
+        # tried to update a nonexistant asset
+        redirect_to '/assets'
+      else
+
+        @asset.assign_attributes(asset_params)
+        convert_location_params(params[:asset][:x], params[:asset][:y])
+        @asset.boundary=make_multipolygon(params[:asset][:boundary]) if params[:asset][:boundary]
+
+        # assign a asset
+        @asset.createdBy_id = current_user.id
+
+        if @asset.save
+          flash[:success] = 'Asset details updated'
+          # Handle a successful update.
+          if params[:referring] == 'index'
+            index_prep
+            render 'index'
+          else
+            redirect_to '/assets/' + @asset.safecode
+          end
+        else
+          render 'edit'
+        end
+      end
+    else
+      flash[:error] = 'You do not have permissions to update an asset'
+      redirect_to '/assets'
+    end
+  end
+
+  private
+
+  def asset_params
+    params.require(:asset).permit(:id, :name, :description, :altitude, :is_active, :is_nzart, :minor, :is_doc, :park_id, :asset_type, :code, :valid_from, :valid_to, :az_radius, :points, :public_access, :region, :district, :field_code, :country)
+  end
+
+  def rating_params
+    params.require(:rating).permit(:asset_code, :drive_up_access, :track_access, :accessibility_score, :nice_score)
+  end
+
+  def convert_location_params(x, y)
+    if x.to_f>360 or x.to_f<-360 or y.to_f>90 or y.to_f<-90  then src_srs=2193 else src_srs=4326 end
+    # convert to WGS84 (EPSG4326) for database
+    fromproj = RGeo::CoordSys::Proj4.create(src_srs)
+    toproj   = RGeo::CoordSys::Proj4.create(4326)
+
+    xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, x.to_f, y.to_f)
+
+    params[:location] = xyarr[0].to_s + ' ' + xyarr[1].to_s
+    @asset.location = 'POINT(' + params[:location] + ')'
+  end
+end

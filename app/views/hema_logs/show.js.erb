@@ -1,0 +1,4 @@
+if ((window.history.pushState!=null) && (site_back!=true)) window.history.pushState(null, '', '/hema_logs/<%=params[:id].to_s%>?<%=raw(@parameters)%>');
+$('#right_panel').html("<%= escape_javascript(render(:partial => 'hema_logs/show')).html_safe %>");
+
+

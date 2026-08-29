@@ -1,0 +1,375 @@
+<script> 
+  reset_map_controllers();
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
+</script>
+
+<div id="actionbar" class="span7">
+  <div id="crumbs">
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    &nbsp;--&gt;&nbsp;
+    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    &nbsp;--&gt;&nbsp;
+    <b><%= @user.callsign.upcase %></b>
+  </div>
+
+  <div id="controls">
+    <% if current_user and (current_user.is_admin or current_user.id == @user.id) %>
+      <%=  link_to "Edit", '/users/'+@user.callsign+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
+    <% end %>
+    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%=render 'map_controls'%>
+  </div>
+</div>
+
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+
+  <div class="sectiontitle" id="page_title">
+    <b> <%=@user.callsign.upcase %> </b> <a href="https://qrz.com/db/<%=@user.callsign.upcase %>" target="_blank"> <img src="https://static.qrz.com/static/qrz/qrz_com.svgz" border="1" height="25" width="25" alt="QRZ"> </a> <a href="https://www.hamqth.com/<%=@user.callsign.upcase %>" target="_blank"> <img src="https://www.hamqth.com/images/hamqth_125x125.png" border="1" height="25" width="25" alt="HamQTH"> </a>  <img src="/assets/external-link-symbol.png"><br/>
+    <br/>
+  </div>
+
+  <div class="erow" id="user_status">
+    <% if @user.activated then %>
+      <% if @user.read_only then %>
+        <i>Restricted user. Contact admin@ontheair if you require full access  </i>
+      <% else %>
+        <i>Registered user  </i>
+        <% if @user.is_modifier then %>
+           <i> - authorised to edit location data </i>
+        <% else %>
+           <i> - not authorised to edit location data </i>
+        <% end %>
+      <% end %>
+    <% else %>
+      <i> Not a registered user </i>
+    <% end %>
+  </div>
+
+  <div class="erow" id="realname">
+    <%= if @user.firstname then @user.firstname.capitalize else "" end+" "+if @user.lastname then @user.lastname.capitalize else "" end %><br/>
+  </div>
+
+  <div class="erow" id="home_qth">
+    Home QTH: <%= @user.home_qth %>
+  </div>
+
+  <div class="erow" id="timezonename">
+    Timezone: <%= @user.timezonename %>
+  </div>
+
+  <div class="erow" id="logs_pota">
+    Logs to POTA: <%= if @user.logs_pota==false then "No" else "Yes" end %>
+  </div>
+
+  <div class="erow" id="logs_wwff">
+    Logs to WWFF: <%= if @user.logs_wwff==false then "No" else "Yes" end %>
+  </div>
+
+  <% if(signed_in? and ((@user.id==@current_user.id) or (@current_user.is_admin))) %>
+    <% provider = @user.email.split('@')[1] if @user.email %>
+    <% providers = EmailBlacklist.all.map{|eb| eb.email_provider} %>
+
+    <div class="erow" id="email">
+      Email: <%= @user.email %>
+    </div>
+    <% if providers.include?(provider) %>
+      <p style="color:red"><i>Due to their email rejection policies, we are unable to accept accounts with this email provider.  Please enter another email provider, or remove this email address</i></p>
+    <% end %>
+    <div class="erow">
+      <div class="hrline">
+        <hr noshade size="4">
+      </div>
+    </div>
+
+    <div class="erow"><div class="sectiontitle">
+      Remote account access (logging apps, InReach, etc)
+    </div></div>
+    <div class="erow"><i><small>PIN is for access to the SPOT/ALERT gateway from inreach/email, and for access to your account from logging and spotting apps. . PIN rules: any 4-character combination of letters and numbers. No spaces or extended characters. InReach may send messages containing your PIN across the internet as unencrypted plain-text or display them to others with access to your InReach web portal. Do not reuse PINs you use elsewhere.<br/></small></i></div>
+
+    <div class="erow" id="PIN">
+      PIN: <%= @user.pin %>
+    </div>
+
+    <div class="erow">
+      <div class="hrline">
+        <hr noshade size="4">
+      </div>
+    </div>
+
+    <div class="sectiontitle">
+      SMS gateway and SOTAwatch spotting
+    </div>
+
+    <div class="erow"><i><small>If you wish to use a mobile phone for spotting / alerting (useful in limited coverage where data service is unreliable), you need to register your mobile phone number here.  If you wish your SOTA spots to be forwarded to SOTAwatch, then this must be the same mobile phone number that you have registered with SOTAwatch<br/></small></i></div>
+
+
+    <div class="erow" id="acctnumber">
+      Mobile no.: <%= @user.acctnumber %>
+    </div>
+
+    <div class="erow">
+      <div class="hrline">
+        <hr noshade size="4">
+      </div>
+    </div>
+
+    <div class="erow"><div class="sectiontitle">
+      Pushover Config (spot / alert notifications to your mobile device)
+    </div></div>
+
+    <div class="erow"><i><small>Use of our Notifications service requires you to install the pushover app on your mobile device, to hold a pushover account, and to have added an application for 'ontheair' to your pushover account. See User's Guide (under the Info menu) for details of how to set this up.  Pushover will charge a 1-off fee for this service after the initial free trial period.<br/></small></i></div>
+    
+    <div class="erow" id="notif_app">
+      Pushover App token : <%= @user.push_app_token %>
+    </div>
+
+    <div class="erow" id="notif_user">
+      Pushover User token : <%= @user.push_user_token %>
+    </div>
+
+    <div class="erow" id="push_comments">
+      Notifications include comments: <%= if @user.push_include_comments==true then "Yes" else "No" end %>
+    </div>
+
+    <div class="erow" id="push_map">
+      Notifications include map: <%= if @user.push_include_map==true then "Yes" else "No" end %>
+    </div>
+
+    <%=  link_to "Test Notifications", '/users/'+@user.callsign+"/test_notification", class: "btn btn-small btn-primary", remote: true,  :id => 'test_noti', :onclick => "linkHandler('test_noti')"  %>
+ 
+  <%end%>
+
+  <div class="erow">
+    <div class="hrline">
+      <hr noshade size="4">
+    </div>
+  </div>
+
+  <div class="erow">
+    <h2>Callsigns</h2>
+    <%= form_for(@callsign, remote: true, url: callsigns_path) do |f| %> 
+      <table id="callsign_table">
+        <tr> 
+          <th>Callsign</th>
+          <th>From</th>
+          <th>To</th>
+          <th></th>
+        </tr>
+  
+        <% @user.callsigns.each do |c| %>
+          <tr>    
+            <td><%=c.callsign%></td>
+            <td><%=if c.from_date then c.from_date.to_date end%></td>
+            <td><%=if c.to_date then c.to_date.to_date else "present" end%></td>
+            <td>
+              <% if signed_in? and (current_user.id==@user.id or current_user.is_admin) then %>
+                <%=  link_to "Edit", '/callsigns/'+c.id.to_s+"/edit", class: "btn btn-small btn-primary", remote: true,  :id => 'edit_call', :onclick => "linkHandler('edit_call')"  %>
+                <%=  link_to "Delete", '/callsigns/'+c.id.to_s+"/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_call', :onclick => "linkHandler('delete_call')", data: {confirm: "Delete callsign?  This will remove this callsign from the system and you will lose any associated points/contacts.  Use 'Edit' and enter an 'End date' if you wish to retire this callsign and retain past contacts. Really delete?"}  %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+  
+        <% if signed_in? and (current_user.id==@user.id or current_user.is_admin) then %>
+          <tr>
+            <%= f.hidden_field :user_id %>
+            <td>
+              <%= f.text_field :callsign %>
+            </td>
+            <td>
+              <%= f.date_field :from_date %>
+            </td>
+            <td>
+              <%= f.date_field :to_date %>
+            </td>
+            <td>
+              <%= f.submit 'Add', id:"user_callsign_submit", class: "btn btn-small btn-primary btn-hightlight" %>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    <% end %>
+  </div>
+  <div class="erow">
+    <div class="hrline">
+      <hr noshade size="4">
+    </div>
+  </div>
+
+  <% if current_user and (@user==current_user or current_user.is_admin or current_user.group_admin) then %>
+    <h2>Mail</h2>
+    <p>Select the topics for which you would like to receive emails of any new posts</p>
+    <table id="mail_table">
+      <tr>
+        <th>Topic</th>
+        <th>Email</th>
+        <th>Notification</th>
+      </tr>
+      <tr>
+        <% topic=Topic.find_by_id(SPOT_TOPIC) %>
+        <td> SPOTS* </td>
+        <td> <% if topic.subscribed(@user) then  %>
+          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_spot', :onclick => "linkHandler('delete_spot')"  %> 
+        <% else %> 
+          No&nbsp;<%=  link_to "Add*", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small", remote: true,  :id => 'add_spot', :onclick => "linkHandler('add_spot')", title: "Sending large numbers of SPOT emails is the single biggest cost to running ontheair.nz.  Please consider installing the pushover app and using notifications instead. See the last section of the user's guide for details"  %>
+        <% end %></td>
+        <td> <% if @user.push_include_external then  %>
+          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=external&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_external', :onclick => "linkHandler('delete_external')"  %>
+        <% else %>
+          No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=external&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'add_external', :onclick => "linkHandler('add_external')"  %>
+        <% end %></td>
+      </tr>
+      <tr>
+        <% topic=Topic.find_by_id(ALERT_TOPIC) %>
+        <td> ALERTS </td>
+        <td> <% if topic.subscribed(@user) then  %>
+          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'delete__alert', :onclick => "linkHandler('delete_alert')"  %> 
+        <% else %> 
+          No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'add_alert', :onclick => "linkHandler('add_alert')"  %>
+        <% end %></td>
+        <td> <% if topic.subscribed_notification(@user) then %>
+          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'delete__alert', :onclick => "linkHandler('delete_alert')"  %> 
+        <% else %> 
+          No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'add_alert', :onclick => "linkHandler('add_alert')"  %>
+        <% end %></td>
+      </tr>
+      <tr>
+        <% topic=Topic.find_by_id(NEWS_TOPIC) %>
+        <td> NEWS </td>
+        <td> <% if topic.subscribed(@user) then  %>
+          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'delete__news', :onclick => "linkHandler('delete_news')"  %> 
+        <% else %> 
+          No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'add_news', :onclick => "linkHandler('add_news')"  %>
+        <% end %></td>
+        <td> <% if topic.subscribed_notification(@user) then %>
+          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'delete__news', :onclick => "linkHandler('delete_news')"  %> 
+        <% else %> 
+          No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'add_news', :onclick => "linkHandler('add_news')"  %>
+        <% end %></td>
+      </tr>
+    </table>
+
+<small><i><b>*</b>Sending large numbers of SPOT emails is the single biggest cost to running ontheair.nz.  Please consider installing the pushover app and using notifications instead. See the last section of the user's guide for details.  <br/>
+Please note that spot <b>emails</b> are limited to only spots posted at ontheair.nz.  Spot <b>notifications</b> will include all spots for all programmes that match your filter criteria irrespective of where they are posted</i></small>
+    <% if @user.push_include_external %>
+    <% 
+      @continents=Continent.where("name != 'all'")
+      @bands=Band.all.order(:min_frequency)
+      @modes=[ 'AM', 'CW','DATA','FM','FT4','FT8','SSB']
+      @programmes=[ 'HEMA', 'POTA', 'SOTA', 'SiOTA', 'WWFF', 'ZLOTA']
+      %>
+    <div class="erow">
+      <div class="hrline">
+        <hr noshade size="4">
+      </div>
+    </div>
+
+    <h2>Spot Notification Filtering</h2>
+    <small><i>The following are the filters applied to spots before they are forwarded to your mobile device via pushover notifications.  Select one or more search terms in each field, or leave blank to include all.<br><b>Note</b>: we do not allow all spots from all continents to be forwarded as the overhead is too high.  At least one filter must be specified</i></small>
+    <%= form_tag "/users/#{@user.callsign}/set_external", method: "get", :remote => true, :style => 'margin-bottom: 0px' do %>
+    <% filter = @user.push_external_filter %>
+      <table id="external_table">
+        <tr>
+          <th>Programme</th>
+          <th><span title="Two-letter codes: OC, EU, NA, SA, AF, AS, AN">Continent</span></th>
+          <th>Mode</th>
+          <th>Band</th>
+          <th>Actions</th>
+        </tr>
+        <tr>
+          <td><%=select_tag :programme, options_for_select(@programmes, filter[:programme]), {multiple: true, include_blank: "All"}%></td>
+          <td><%=select_tag :continent, options_from_collection_for_select(@continents, "code", "name", {selected: filter[:continent]}), {multiple: true, include_blank: "All"}%></td>
+          <td><%=select_tag :mode, options_for_select(@modes, filter[:mode]), {multiple: true, include_blank: "All"}%></td>
+          <td><%=select_tag :band, options_from_collection_for_select(@bands, "meter_band", "meter_band", {selected: filter[:band]}), {multiple: true, include_blank: "All"}%></td>
+          <td rowspan=4><%= submit_tag "Update filters", :id => "update", :onclick => "submitHandler('Updating...');", :class => "btn btn-small" %></td>
+        </tr>
+        <tr>
+          <td colspan=4> <b>AND</b> <small>Enter comma separated list of partial callsigns / references to match below, using * as a wildcard, or leave blank if additional filtering not needed</td>
+        </tr>
+        <tr>
+          <td>Activator callsign</td>
+          <td colspan=3><%= text_field_tag :callsign, (filter[:callsign]||"").gsub("%","*")%></td>
+        </tr>  
+        <tr>
+          <td>Site reference</td>
+          <td colspan=3><%= text_field_tag :reference, (filter[:reference]||"").gsub("%","*")%></td>
+        </tr>  
+      </table>
+    <% end %>
+    <% end %>
+
+    <div class="erow">
+      <div class="hrline">
+        <hr noshade size="4">
+      </div>
+    </div>
+  <% end %>
+
+  <div class="erow" id="awards_box">
+    <h2>Awards</h2>
+    <% if signed_in? %>
+      <%=link_to "Show awards", '/users/'+@user.callsign+'/awards', remote: true,  :id => 'awards_link', :onclick => "linkHandler('awards_link')"  %> 
+    <% else %>
+      <i>Sign in to see awards</i>
+    <% end %>
+  </div>
+
+  <div class="erow">
+    <div class="hrline">
+      <hr noshade size="4">
+    </div>
+  </div>
+
+  <div class="erow" id="stats_box">
+    <h2>Statistics and mapping</h2>
+    <% if signed_in? %>
+      <%=link_to "Show statistics and mapping", '/users/'+@user.callsign+'/stats', remote: true,  :id => 'stats_link', :onclick => "linkHandler('stats_link')"  %> 
+    <% else %>
+      <i>Sign in to see statistics and mapping</i>
+    <% end %>
+  </div>
+
+  <div class="erow">
+    <div class="hrline">
+      <hr noshade size="4">
+    </div>
+  </div>
+
+  <div class="erow" id="logs_box">
+    <h2>Logs</h2>
+    <% if signed_in? %>
+      <%=link_to "Show "+@user.logs.count.to_s+" logs", '/logs?user='+@user.callsign, remote: true,  :id => 'logs_link', :onclick => "linkHandler('logs_link')"  %> 
+    <% else %>
+      <i>Sign in to see <%=@user.logs.count.to_s%> logs</i>
+    <% end %>
+  </div>
+
+  <div class="erow">
+    <div class="hrline">
+      <hr noshade size="4">
+    </div>
+  </div>
+
+  <div class="erow" id="contacts_box">
+    <h2>Contacts</h2>
+    <% if signed_in? %>
+      <%=link_to "Show "+@user.contacts.count.to_s+" contacts", '/contacts?user='+@user.callsign, remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')"  %> 
+    <% else %>
+      <i>Sign in to see <%=@user.contacts.count.to_s%> contacts</i>
+    <% end %>
+  </div>
+
+  <div class="erow">
+    <div class="hrline">
+      <hr noshade size="4">
+    </div>
+  </div>
+
+</div>
+
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>

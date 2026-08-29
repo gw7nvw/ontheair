@@ -1,0 +1,61 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+   document.title = '... On The Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Alerts</b>
+</div>
+   <div id="controls">   
+     <% if write_access?  %>
+       <%=  link_to "Add Alert", "/posts/new?topic_id="+ALERT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+     <% end %>
+     <%=render 'map_controls'%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <% as=AdminSettings.first %>
+
+  <%= render 'flash' %>
+  <h2>Going portable - Alerts</h2>
+  <p>
+  <% new_parameters=@parameters.gsub(/zone=[A-Za-z]+/,'') %>
+  <% if @zone=='all' then %>
+    <b>Showing all DXCCs</b>.  <i>Show only: 
+      <% Continent.all.each do |cont| %>
+        <%=link_to cont.name, "/alerts?#{raw(new_parameters)}&zone=#{cont.code}", remote: true, id: "add",   :onclick => "linkHandler('add')"%>,
+      <% end %>
+    </i>
+  <% else %>
+    <b>Showing <%=Continent.name_from_code(@zone)%></b> alerts.  <i><%=link_to "Show All DXCC", "/alerts?#{raw(new_parameters)}&zone=all", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+  <% end %>
+  ||
+  <% new_class_parameters=@parameters.gsub(/class=[A-Za-z]+/,'')%>
+  <% if @class and @class.length>0 then %>
+    <b>Showing class <%=@class%></b> only.  <i><%=link_to "Show All Classes", "/alerts?#{raw(new_class_parameters)}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+  <% else %>
+    <b>Showing all classes</b>. <i>Show only 
+       <%=link_to  @site_name, "/alerts?#{new_class_parameters}&class=ZLOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "SOTA", "/alerts?#{new_class_parameters}&class=SOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "POTA", "/alerts?#{new_class_parameters}&class=POTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "WWFF", "/alerts?#{new_class_parameters}&class=WWFF", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+    </i>
+  <% end %>
+  </p>
+  <%= render 'alert_list' %>
+
+</div>
+<script>
+document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+if ($(window).width() < 960) {
+        site_smaller_map();
+      }
+</script>
+

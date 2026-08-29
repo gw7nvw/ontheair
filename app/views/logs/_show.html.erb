@@ -1,0 +1,151 @@
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=link_to "Logs", '/logs', :remote => true,  :onclick => "linkHandler('logs')" %>
+     &nbsp;--&gt;&nbsp;
+     <%= @log.id.to_s %>
+   </div>
+   <div id="controls">
+     <% if write_access? and @log.id and (@log.user1_id==current_user.id or current_user.is_admin) then %>
+       <% location = @log.get_most_accurate_location 
+          if !location or !location[:asset] then 
+            loc_asset=@log.asset_codes.first.gsub('/','_') if @log.asset_codes.count>0
+          else
+            loc_asset = location[:asset]
+            if loc_asset then loc_asset_safecode=loc_asset.safecode end
+          end 
+          if loc_asset then 
+       %>
+          
+     <%=  link_to "Who Chased Me?", "/contacts?user=#{@log.callsign1}&whochased=#{loc_asset_safecode}&date=#{@log.date.strftime("%Y-%m-%d")}", class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('whochasedme')"%>
+       <% end %>
+       
+       <%=  link_to ":as Markdown", '/logs/'+@log.id.to_s+'.txt', class: "btn btn-small btn-primary", :blank => true%>
+       <%=  link_to "Edit", '/logs/'+@log.id.to_s+'/edit', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('edit')"%>
+       <%=  link_to "Download", '/logs/'+@log.id.to_s+'.adi', class: "btn btn-small btn-primary"%>
+     <% end %>
+     <%=  link_to "Index", '/logs/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
+     <%=render 'map_controls'%>   
+  </div>
+</div>
+
+<div id="right_scroll">
+  <div class="fullform">
+    <%= render 'flash' %>
+    <%= render 'shared/error_messages' %>
+ 
+ 
+    <div class="erow"><div class="sectiontitle_bold">Your Details:</div></div>
+      <table style="table-layout: fixed" id="your_details_table">
+        <tr>
+          <td class="td-l">Callsign</td>
+          <td colspan=2 class="td-d"> <%=@log.callsign1 %></td>
+          <td class="td-l">Date:</td>
+          <td colspan=2 class="td-d"> 
+             <% if signed_in? then %><%= @log.localdate(current_user)%> <% else %> <%= @log.localdate(nil)%><% end %> 
+          </td>
+
+          <td class="td-l">QRP?</td>
+          <td class="td-d"> <%= if @log.is_qrp1 then "Yes" else "No" end%></td>
+        </tr>
+        <tr>
+          <td class="td-l">Timezone:</td>
+          <td colspan=2 class="td-d"><%= if current_user then current_user.timezonename else Timezone.find_by(name: 'UTC').name end %></td>
+          <td class="td-l">Power:</td>
+          <td colspan=2 class="td-d"> <%= @log.power1%></td>
+
+          <td class="td-l">Portable?</td>
+          <td class="td-d"> <%= if @log.is_portable1 then "Yes" else "No" end %></td>
+        </tr>
+        <tr>
+          <td class="td-l">Location</td>
+          <td colspan=2 class="td-d"> <%= @log.loc_desc1%></td>
+          <td>
+          </td>
+          <td colspan=4 class="td-d">
+            <ul style="list-style-type:none;padding:0;margin:0;">
+              <% if @log.asset_codes.count>0 then %>
+                <% @log.asset_codes.each do |cal|%>
+                  <li>
+                    <%links=Asset.assets_from_code(cal)%>
+                    <% links.each do |link| %>
+                      <% if link[:external] then %>
+                        <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
+                      <% else %>
+                        <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                      <% end %>
+                    <% end %>
+                  </li>
+                <% end %>
+              <% end %>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+    </div>
+
+    <table id="contacts_table">
+      <tr>
+        <th></th>
+        <th>Time</th>
+        <th>Callsign</th>
+        <th>QRP?</th>
+        <th>Portable?</th>
+        <th>Mode</th>
+        <th>Freq</th>
+        <th>Name</th>
+        <th>Location</th>
+        <th>RST Sent</th>
+        <th>RST Rec'd</th>
+      </tr>
+      <%contacts=Contact.find_by_sql [ " select * from contacts where log_id = "+@log.id.to_s+" order by time asc ;" ] %>
+      <% contacts.each do |contact| %>
+        <tr>
+          <td><%=link_to 'View', '/contacts/'+contact.id.to_s, :remote => true,  :onclick => "linkHandler('index')"%></td>
+          <td> <%= if contact.time then contact.localtime(current_user) else '' end %> <%=contact.localtimezone(current_user) %></td>
+          <td><span title="<%=DxccPrefix.name_from_call(contact.callsign2)%>"> <%=link_to contact.callsign2, '/users/'+contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler('user')"  %> </span></td>
+          <td> <%= if contact.is_qrp2 then "Yes" else "No" end%></td>
+          <td> <%= if contact.is_portable2 then "Yes" else "No" end%></td>
+          <td> <%= contact.mode %> </td>
+          <td> <%= if contact.frequency then '%.3f' % contact.frequency else '' end%> </td>
+          <td> <%= contact.name2 %></td>
+          <td>  <ul style="list-style-type:none;padding:0;margin:0;">
+            <% if contact.asset2_codes.count>0 then %>
+              <% contact.asset2_codes.each do |cal|%>
+                <li>
+                  <%links=Asset.assets_from_code(cal)%>
+                  <% links.each do |link| %>
+                    <% if link[:external] then %>
+                      <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
+                    <% else %>
+                      <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                    <% end %>
+                  <% end %>
+                </li>
+              <% end %>
+            <% else %>
+              <%= contact.loc_desc2 %>
+            <% end %>
+          </ul></td>
+          <td> <%= contact.signal2 %></td>
+          <td> <%= contact.signal1 %></td>
+ 
+        </tr>
+      <% end %> 
+    </table>
+  </div>
+</div>
+
+<script>
+  closeAllHandlers();
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+  place_init('<%=@log.location1%>', 0, site_green_circle);
+  <% @log.contacts.each do |contact| %>
+    place_init('<%=contact.location2%>', 1, site_red_circle);
+  <% end %>
+</script>

@@ -1,0 +1,9 @@
+      <% if (flash[:error] or flash[:warning] or flash[:success] or flash[:info]) %>
+         <% flash.each do |key, value| %>
+           <% if value %> <div class="alert alert-<%= key %>"><%= value %></div> <% end %>
+         <% end %>
+      <% end %>
+
+      <!-- clear flash as if we use partials it won't clear itself -->
+      <% flash[:error] = flash[:warning] = flash[:success] =  flash[:info] = nil %>
+

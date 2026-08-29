@@ -1,0 +1,28 @@
+<div class="alert_bar">
+  <b><%= link_to 'Active Alerts', "/alerts?#{raw(@parameters)}", remote: true, id: "add",   :onclick => "linkHandler('add')"%>:</b>
+  <% count = 0 %>
+  <% @all_alerts.sort_by(&:activatingCallsign).each do |alert| %>
+     <% if Time.now > alert.starttime.to_time and Time.now < alert.starttime.to_time + alert.duration.to_f*3600 %>
+       <% count += 1 %>
+       <% codes=alert[:code] %>
+       <% if codes.kind_of?(Array)==false then codes=[codes] end %>
+       <% case alert[:programme]
+          when "POTA"
+            bcol="#006400"
+          when "SOTA"
+            bcol="#8B008B"
+          when "HEMA"
+            bcol="#FF1493"
+          when "WWFF"
+            bcol="#556B2F"
+          when "ZLOTA"
+            bcol="#8B0000"
+          else
+            bcol="#FF8C00"
+          end
+       %>
+       <span class="bubble1" style="background: <%= bcol %> !important"><%= alert[:activatingCallsign] %>@<%= codes.join(',') %></span>
+     <% end %>
+  <% end %>
+  <% if count == 0 %> <b>None</b> <% end %>
+</div>

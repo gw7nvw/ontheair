@@ -1,0 +1,56 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+   document.title = '... On the Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>WWFF Logs</b>
+     </div>
+   <div id="controls">
+     <% if @resubmit==true %>
+     <%=  link_to "Hide Submitted", '/wwff_logs/?user='+@user.callsign+'&resubmit=false', class: "btn btn-small btn-primary", remote: true, :id => 'resubmit', :onclick => "linkHandler('resubmit')" %>
+     <% else %>
+     <%=  link_to "Show Submitted", '/wwff_logs/?user='+@user.callsign+'&resubmit=true', class: "btn btn-small btn-primary", remote: true, :id => 'resubmit', :onclick => "linkHandler('resubmit')" %>
+     <% end %>
+     <%=render 'map_controls'%>
+   </div>
+</div>
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <table> 
+    <tr>
+      <th>Park</th>
+      <th>WWFF Code</th>
+      <th>Contacts</th> 
+      <th></th>
+    </tr>
+    <% logdays=@user.wwff_logs(@resubmit) %>
+    <% if logdays then logdays.sort_by!{|hsh| hsh[:date]}.reverse! end%>
+    <% logdays.each do |logday| %>
+      <tr>
+        <td><%=logday[:park][:name]%></td>
+        <td><%=logday[:park][:wwffpark]%></td>
+        <td><%=logday[:contacts].count%></td>
+        <% 
+           submitted_to_wwff=true
+           logday[:contacts].each do |c| 
+             if !c.submitted_to.include?('WWFF') then submitted_to_wwff=false end 
+           end
+        %>
+
+        <td><%=if !submitted_to_wwff then  link_to "Submit Log", '/wwff_logs/'+logday[:park][:wwffpark]+"?user="+@user.callsign+"&resubmit="+@resubmit.to_s, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" else link_to "Resend Log", '/wwff_logs/'+logday[:park][:wwffpark]+"?user="+@user.callsign+"&resubmit="+@resubmit.to_s, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" end%></td>
+      </tr>
+    <% end%>
+  </table>
+</div>
+
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>

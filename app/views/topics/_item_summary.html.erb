@@ -1,0 +1,8 @@
+              <% if item.end_item then%>
+                <small>
+                      <%=if item.end_item.updated_at > item.end_item.created_at then " last update by " else " last post by " end %>
+                      <%= link_to item.end_item.updated_by_name, '/users/'+item.end_item.updated_by_name %>  
+                      <%=time_ago_in_words(item.end_item.updated_at)+" ago"%>
+                </small>
+             <% end %>
+

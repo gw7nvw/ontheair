@@ -1,0 +1,20 @@
+<% if @user and @user.errors.any? then @item=@user end %>
+<% if @asset and @asset.errors.any? then @item=@asset end %>
+<% if @callsign and @callsign.errors.any? then @item=@callsign end %>
+<% if @comment and @comment.errors.any? then @item=@comment end %>
+<% if @log and @log.errors.any? then @item=@log end %>
+<% if @contact and @contact.errors.any? then @item=@contact end %>
+<% if @award and @award.errors.any? then @item=@award end %>
+
+<% if @item&.errors&.any? %>
+    <div id="error_explanation" class="erow">
+      <div class="alert alert-error">
+        The form contains <%= pluralize(@item.errors.count, "error") %>.
+      </div>
+      <ul>
+      <% @item.errors.full_messages.each do |msg| %>
+        <li>* <%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+<% end %>

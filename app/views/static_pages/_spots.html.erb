@@ -1,0 +1,149 @@
+<% params='/spots?'+raw(@parameters)%>
+
+<script>
+   try {
+   refreshInterval = setTimeout(function(){
+     //only if we're still on spots page
+     if(document.getElementById('spots')) {
+       $.ajax({
+         beforeSend: function (xhr){
+           xhr.setRequestHeader("Content-Type","application/javascript");
+           xhr.setRequestHeader("Accept","text/javascript");
+         },
+         type: "GET",
+         timeout: 20000,
+         url: "<%=params%>",
+//         url: `/spots?<%=raw(@parameters)%>`,
+         complete: function(jqXHR, thrownError) {
+           /* complete also fires when error ocurred, so only clear if no error has been shown */
+           if(thrownError=="timeout" || thrownError=="error") {
+             document.getElementById('retrieved').innerHTML="<p><b>TIMED OUT</b></p>";
+           }
+         }
+       });
+     };
+  }, 60000); /* time in milliseconds (ie 60 seconds)*/
+  }
+  catch(err) {
+  } 
+  finally {
+  }
+</script>
+<script>
+   //reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+   //document.title = '... On The Air'
+   //document.getElementById('logo').innerHTML='... On The Air'
+
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Spots</b>
+   </div>
+   <div id="controls">
+     <%=  link_to "History", '/spots/history', remote: true,  :id => 'spots_history', :onclick => "linkHandler('spots_history')", class: "btn btn-small btn-primary" %>
+
+     <% if write_access?  %>
+       <%=  link_to "Add Spot", "/posts/new?topic_id="+SPOT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+     <% end %>
+     <%=render 'map_controls'%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <% as=AdminSettings.first %>
+  <% if as and as.last_spot_read then 
+       last_spot_read=as.last_spot_read.in_time_zone(@tz.name).strftime("%H:%M:%S") 
+       if as.last_spot_read<5.minutes.ago then stale=true end
+     else 
+       last_spot_read="Unknown" 
+       stale=true
+     end %>
+  <% if stale==true
+      #Need to put a set a lock flag here to prevent parallel execution of this (resulting in 2 workers)
+      #Should really do this in controller ...
+      unlocked = ActiveRecord::Base.connection.execute("SELECT pg_try_advisory_lock( #{SCHED_LOCK} );")
+      if unlocked and unlocked.values and unlocked.values.first and unlocked.values.first.first=='t' then
+        puts "UNLOCKED"
+        begin
+          sch_running=system('ps -ef | grep ota_schedule | grep resqu | grep -v grep')
+          if sch_running==false then
+             success=system('RAILS_ENV=production nohup bundle exec rake environment resque:work QUEUE=ota_scheduled > log/redisch.log & echo $! > /tmp/schedule.pid')
+             if !success then 
+               flashlocal="Error: process to retrieve remote spots failed and we could not restart it"
+               flashlocaltype='error' 
+             else
+               flashlocal="Success: process to retrieve remote spots failed but we successfully restarted it. Remote spots will show on the next refresh"
+               flashlocaltype='success'
+             end
+          end
+        rescue
+          puts "ERROR: failed in scheduler process check"
+        end
+        #And release lock
+        ActiveRecord::Base.connection.execute("SELECT pg_advisory_unlock( #{SCHED_LOCK} );")
+      end
+     end
+  %>
+  <%= render 'flash' %>
+  <% if flashlocal then %>
+    <div class="alert alert-<%= flashlocaltype %>"><%= flashlocal %></div>
+  <% end%>
+  <h2>Spotted portable - Spots</h2>
+  <span id="spots"></span>
+     <p><span <%=if stale then raw("style='color: #900'") end%> >Last updated: <%=last_spot_read%> (<%=@tz.name%>)</span> - <span id="retrieved">Retrieved at <%=Time.now.in_time_zone(@tz.name).strftime("%H:%M:%S")%> (<%=@tz.name%>)</span><i>&nbsp;<%=  link_to "Refresh Now", '/spots?'+raw(@parameters), remote: true,  :onclick => "linkHandler('refresh_link')"%> </i></p>
+  <p>
+  <% new_parameters=@parameters.gsub(/zone=[A-Za-z]+/,'') %>
+  <% puts ":#{@zone}:" %>
+  <% if @zone=='all' then %>
+    <b>Showing all DXCCs</b>.  <i>Show only: 
+      <% Continent.all.each do |cont| %>
+        <%=link_to cont.name, "/spots?#{raw(new_parameters)}&zone=#{cont.code}", remote: true, id: "add",   :onclick => "linkHandler('add')"%>,
+      <% end %>
+    </i>
+  <% else %>
+    <b>Showing <%=Continent.name_from_code(@zone)%></b> spots.  <i><%=link_to "Show All DXCC", "/spots?#{raw(new_parameters)}&zone=all", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+  <% end %>
+  ||
+  <% new_class_parameters=@parameters.gsub(/class=[A-Za-z]+/,'')%>
+  <% if @class and @class.length>0 then %>
+    <b>Showing class <%=@class%></b> only.  <i><%=link_to "Show All Classes", "/spots?#{raw(new_class_parameters)}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+  <% else %>
+    <b>Showing all classes</b>. <i>Show only 
+       <%=link_to  @site_name, "/spots?#{new_class_parameters}&class=ZLOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "SOTA", "/spots?#{new_class_parameters}&class=SOTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "POTA", "/spots?#{new_class_parameters}&class=POTA", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "WWFF", "/spots?#{new_class_parameters}&class=WWFF", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+    </i>
+  <% end %>  
+  ||
+  <% new_mode_parameters=@parameters.gsub(/mode=[A-Za-z]+/,'') %>
+  <% if @mode and @mode.length>0 then %>
+    <b>Showing mode <%=@mode%></b> only.  <i><%=link_to "Show All Modes", "/spots?#{raw(new_mode_parameters)}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
+  <% else %>
+    <b>Showing all modes</b>. <i>Show only 
+       <%=link_to "AM", "/spots?#{raw(new_mode_parameters)}&mode=AM", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "CW", "/spots?#{raw(new_mode_parameters)}&mode=CW", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "FM", "/spots?#{raw(new_mode_parameters)}&mode=FM", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "FT4", "/spots?#{raw(new_mode_parameters)}&mode=FT4", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "FT8", "/spots?#{raw(new_mode_parameters)}&mode=FT8", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=link_to "SSB", "/spots?#{raw(new_mode_parameters)}&mode=SSB", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+  <% end %> 
+  </i></p>
+  <%= render 'alert_summary' %>
+  <h2>Spots</h2>
+  <%= render 'spot_list' %>
+
+</div>
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+  
+  if ($(window).width() < 960) {
+    site_smaller_map();
+  }
+</script>
+

@@ -1,0 +1,84 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+   document.title = '... On The Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=link_to "Spots", '/spots', remote: true,  :id => 'spots', :onclick => "linkHandler('spots')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>History</b>
+   </div>
+   <div id="controls">
+     <%=  link_to "Current", '/spots', remote: true,  :id => 'spots_current', :onclick => "linkHandler('spots_current')", class: "btn btn-small btn-primary" %>
+     <%=render 'map_controls'%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <h2>Spot History</h2>
+  <%= form_tag '/spots/history', :name => 'history', :remote => true, :method => 'get' %>
+    <table>
+      <tr>
+        <th> Start date </th> 
+        <th> End date </th> 
+        <th> DXCC </th>
+        <th> Activator </th> 
+        <th> Programme </th> 
+        <th> Reference </th> 
+      </tr>
+      <tr>
+        <td>
+           <input id="start_date" name="start_date" type="date" value='<%=@start_date%>'/>
+        </td>
+        <td>
+           <input id="start_date" name="end_date" type="date" value='<%=@end_date%>'/>
+        </td>
+        <td>
+          <% dxccs = DxccPrefix.where(is_active: true).order(:name) %>
+          <% dxcc_names = ['All'] + dxccs.map{|dxcc| dxcc.prefix} %> 
+          <%= collection_select(:dxcc, :prefix, dxcc_names, :to_s, :to_s, {selected: @this_dxcc}) %>
+        </td>
+        <td>
+           <input id="activator" name="activator" type="text" value='<%=@activator%>'/>
+        </td>
+        <% ats =  AssetType.find_by_sql [ "select distinct pnp_class from asset_types order by pnp_class;" ]%>
+        <td>
+          <%= collection_select(:programme, :name, ats, :pnp_class, :pnp_class,{selected: @programme}) %>
+        </td>
+        <td>
+           <input id="reference" name="reference" type="text" value='<%=@reference%>'/>
+        </td>
+      </tr>
+      <tr>
+        <td colspan=6>
+          <%= submit_tag "Find", :id => "find", :onclick => "submitHandler('Finding ...');" %>
+        </td>
+      </tr>
+    </table>
+  </form>
+          
+  <h2>Spots</h2>
+    <i>
+      Your search returned <%=@spot_count.to_s%> spots.
+      <% if @spot_count>200 then %>
+        Displaying only the first 200. Please restrict your search and try again.
+      <% end %>
+    </i>
+  <%= render 'spot_list' %>
+
+</div>
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+  
+  if ($(window).width() < 960) {
+    site_smaller_map();
+  }
+</script>
+

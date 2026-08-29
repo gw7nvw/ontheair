@@ -1,0 +1,16 @@
+ <div class="bordered_box">
+   <div class="box_header">
+      <p><div class="sectiontitle">--&gt Sub-Topic: <%= link_to @subtopic.name, '/topics/'+@subtopic.id.to_s, remote: true, :onclick => "linkHandler('home')"%></div>
+      </p>
+      <p>
+      <%= link_to @subtopic.owner.callsign, '/users/'+@subtopic.owner.callsign %>
+      <% if current_user and (current_user.id==@subtopic.created_by_id or current_user.is_admin) then %>
+        <u><i><%=  link_to "Edit", '/topics/'+@subtopic.id.to_s+'/edit', remote: true, :onclick => "linkHandler('home')"%></i></u>
+        <u><i><%= link_to "Delete", '/topics/'+@subtopic.id.to_s+'/delete', confirm: "Delete topic: Are you sure?", remote: true, :onclick => "linkHandler('home')" %></i></u>
+      <% end %>
+      </p>
+   </div>
+   <div class="box_contents">
+      <div class="sectiontext"><%=raw (@subtopic.description).gsub(/(?<=<style type=\"text\/css\">).+(?=<\/style>)/m,'')%></div>
+   </div>
+ </div>

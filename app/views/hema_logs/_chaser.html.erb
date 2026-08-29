@@ -1,0 +1,97 @@
+<div class="fullform">
+  <div id="actionbar" class="span7">
+     <div id="crumbs">
+       <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+       &nbsp;--&gt;&nbsp;
+       <%=link_to "HEMA Logs", '/hema_logs/?'+@parameters, remote: true,  :id => 'index', :onclick => "linkHandler('home')" %>
+       &nbsp;--&gt;&nbsp;
+       <b>CHASER</b>
+     </div>
+  
+     <div id="controls">
+       <%=link_to "Index", '/hema_logs/?'+@parameters, class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+       <%=render 'map_controls'%>
+     </div>
+  </div>
+  
+  <div id="right_scroll">
+    <br/>
+    <br/>
+    <div class="erow">
+      <%= render 'flash' %>
+    </div>
+    <%= hidden_field_tag(:referring, @referring) %>
+    <div class="erow">
+      <p>Please check that the following log is correct, enter your HEMA credentials and click the <b>Submit</b> button to upload it to HEMA. The upload process takes 2-3 seconds per log entry, so please be patient.</p>
+      <br/>
+    </div>
+  
+    <%= form_tag '/hema_logs/chaser/submit?' + if @user then "user="+@user.callsign+"&" else "" end + if @resubmit then "resubmit=true" else "" end, :name => 'sendlog', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+      <div class="erow">
+        <div class="rowtitle">HEMA Username:</div>
+        <div class="rowtext">
+          <input type="text" name="hema_user" id="hema_user"/>
+        </div>
+      </div>
+      <div class="erow">
+        <div class="rowtitle">HEMA Password:</div>
+        <div class="rowtext">
+          <input type="password" name="hema_pass" id="hema_pass"/>
+        </div>
+      </div>
+  
+      <%= submit_tag "Submit", id: "submit", class: "btn btn-small btn-primary btn-hightlight", :onclick => "submitHandler('Uploading ...');"%>
+  
+      <%= link_to "Cancel", '/hema_logs?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
+    </form>
+  
+    <div class="erow">
+      <div class="hrline">
+        <hr noshade size="4">
+      </div>
+    </div>
+  
+    <div class='erow'>
+      <table id="contacts_table">
+        <tr>
+          <th>Time</th>
+          <th>Date</th>
+          <th>Callsign</th>
+          <th>Mode</th>
+          <th>Freq</th>
+          <th>Location</th>
+          <th>RST Sent</th>
+          <th>RST Rec'd</th>
+        </tr>
+
+        <% @chaser_contacts.each do |contact| %>
+          <tr>
+            <td> <%= if contact.time then contact.localtime(current_user) else '' end %> <%=contact.localtimezone(current_user) %> </td>
+            <td> <%= if contact.time then contact.localdate(current_user) else '' end %> </td>
+            <td> <span title="<%= DxccPrefix.name_from_call(contact.callsign2) %>"> <%= contact.callsign2 %> </span> </td>
+            <td> <%= contact.mode %> </td>
+            <td> <%= if contact.frequency then '%.3f' % contact.frequency else '' end%> </td>
+            <td>  
+              <% if contact.asset2_codes.count>0 then %>
+                <% contact.asset2_codes.each do |cal|%>
+                  <%=cal+" "%>
+                <% end %>
+              <% else %>
+                <%= contact.loc_desc2 %>
+              <% end %>
+            </td>
+            <td> <%= contact.signal2 %></td>
+            <td> <%= contact.signal1 %></td>
+          </tr>
+        <% end %>
+      </table>
+      <br/>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+  reset_map_controllers(); 
+</script>
+

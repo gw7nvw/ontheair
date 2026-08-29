@@ -1,0 +1,13 @@
+<div id="right_scroll">
+  <h2>Topics</h2>
+ <br/>
+  <% if @indextopics %>
+    <% count=0%>
+    <% @indextopics.each do |topic| %>
+      <% if not topic.parent_topic then %>
+        <%=render :partial => 'topics/topic_index_level',  :locals => {:topic => topic, :level => 0} %> 
+      <% end %>
+      <% count += 1 %>
+    <% end %>
+  <% end %>
+</div>

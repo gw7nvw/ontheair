@@ -1,0 +1,212 @@
+# frozen_string_literal: true
+
+# typed: false
+class District < ActiveRecord::Base
+  require 'csv'
+
+  def self.import(filename)
+    District.destroy_all
+    CSV.foreach(filename, headers: true) do |row|
+      place = row.to_hash
+      puts place['TA2021_V1_00'], place['TA2021_V1_00_NAME'], (place['WKT'] || '').length
+      if place && place['WKT']
+        ActiveRecord::Base.connection.execute("insert into districts (id, name, boundary) values ('" + place['TA2021_V1_00'] + "','" + place['TA2021_V1_00_NAME'].gsub("'", "''") + "',ST_GeomFromText('" + place['WKT'] + "',4326));")
+      end
+    end; true
+  end
+
+  def self.import_vk(filename)
+    CSV.foreach(filename, headers: true) do |row|
+      place = row.to_hash
+      if place && place['WKT']
+        ActiveRecord::Base.connection.execute("insert into districts (dxcc, district_code, name, boundary) values ('VK', '" + place['lga_code'] + "','" + place['LGA_NAME25'].gsub("'", "''") + "',ST_GeomFromText('" + place['WKT'] + "',4326));")
+      end
+    end; true
+  end
+
+  def self.add_regions
+    District.all.each do |district|
+      regions = Region.find_by_sql [' select r.id, r.sota_code from districts d inner join regions r on ST_Within(ST_PointOnSurface(d.boundary), r.boundary) where d.id = ' + district.id.to_s]
+      if regions && regions.count.positive?
+        ActiveRecord::Base.connection.execute("update districts set region_code='" + regions.first.sota_code + "' where id=" + district.id.to_s + ';')
+      end
+      # HACK: as Invers fails to match
+      if district.name == 'Invercargill City'
+        ActiveRecord::Base.connection.execute("update districts set region_code='SL' where id=" + district.id.to_s + ';')
+      end
+    end; true
+  end
+
+  def self.add_states
+    District.all.each do |district|
+      states = State.find_by_sql [' select r.id, r.code from districts d inner join states r on ST_Within(ST_PointOnSurface(d.boundary), r.boundary) where d.id = ' + district.id.to_s]
+      if states && states.count.positive?
+        ActiveRecord::Base.connection.execute("update districts set state_code='" + states.first.code + "' where id=" + district.id.to_s + ';')
+      end
+    end; true
+  end
+
+  def self.add_district_codes
+    District.all.order(:id).each do |district|
+      dc = district.dxcc + '-' + district.name.split(' ').first[0] + district.name.split(' ').last[0]
+      index = 0
+      free = false
+      while free == false
+        index += 1
+        dup = District.where(district_code: dc + index.to_s)
+        free = true if !dup || dup.count.zero?
+      end
+      dcs = dc + index.to_s
+      ActiveRecord::Base.connection.execute("update districts set district_code='" + dcs + "' where id=" + district.id.to_s + ';')
+    end
+    true
+  end
+
+  def self.add_simple_boundaries
+    ActiveRecord::Base.connection.execute('update districts set boundary_simplified=ST_Simplify("boundary",0.002) where boundary_simplified is null;')
+    ActiveRecord::Base.connection.execute('update districts set boundary_very_simplified=ST_Simplify("boundary",0.02) where boundary_very_simplified is null;')
+    ActiveRecord::Base.connection.execute('update districts set boundary_quite_simplified=ST_Simplify("boundary",0.0002) where boundary_quite_simplified is null;')
+  end
+
+  def region_name
+    name = ''
+    r = Region.find_by(sota_code: region_code)
+    name = r.name.gsub('Region', '') if r
+    name
+  end
+
+  def assets(dxcc = 'ZL', at_date = Time.now)
+    Asset.find_by_sql [" select * from assets where country='#{dxcc}' and district='#{district_code}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') "]
+  end
+
+  def assets_by_type(type, dxcc = 'ZL', at_date = Time.now)
+    Asset.find_by_sql [" select * from assets where country = '#{dxcc}' and district='#{district_code}' and asset_type='#{type}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') "]
+  end
+
+  def self.get_assets_with_type(dxcc = 'ZL', region = nil, at_date = Time.now)
+    region_query = ""
+    if region
+      region_query = " and a.region = '#{region}'"
+      region_query2 = " and d.region_code = '#{region}'"
+    end
+    Contact.find_by_sql [" select name, type, code_count, site_list from (select a.is_active as is_active, a.minor as minor, d.district_code as name, a.asset_type as type, count(distinct(a.code)) as code_count, array_agg(a.code) as site_list from districts d inner join assets a on a.district=d.district_code where a.minor is not true and (a.valid_from is null or a.valid_from<='#{at_date}') and ((a.valid_to is null and a.is_active=true) or a.valid_to>='#{at_date}') and a.country='#{dxcc}' and d.dxcc='#{dxcc}' #{region_query} #{region_query2} group by d.district_code, a.asset_type, a.is_active, a.minor) as foo; "]
+  end
+
+  def self.get_pnp_shiresid(lat, long)
+    sql = <<-SQL
+      SELECT 
+        CONCAT('(',substr(district_code,4),') ', name, ' [', district_code,']') AS name 
+        FROM districts 
+        WHERE ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), boundary); 
+    SQL
+
+    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
+    sanitized_sql = sanitize_sql_array([sql, { lat: lat, long: long }])
+
+    # 3. Pull raw string text directly from the execution block
+    connection.select_all(sanitized_sql)
+  end
+
+  def self.get_pnp2_districts(lat, long)
+    sql = <<-SQL
+      SELECT 
+       district_code as "districtID",
+       a.name,
+       CASE WHEN a.district_code LIKE 'VK%%' THEN
+          substr(a.district_code,4)
+       ELSE
+          null
+       END as "shireID",
+       a.region_code as "regionID",
+       s.pnp_code as "stateID",
+       a.dxcc as "dxccPrefix",
+       d.iso_code as "countryID",
+       d.continent_code as "continentID"
+    FROM districts a
+    JOIN dxcc_prefixes d ON a.dxcc = d.prefix
+    JOIN states s ON s.code = a.state_code
+    WHERE ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), a.boundary)
+    LIMIT 1;
+    SQL
+
+    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
+    sanitized_sql = sanitize_sql_array([sql, { lat: lat, long: long }])
+
+    # 3. Pull raw string text directly from the execution block
+    connection.select_all(sanitized_sql)
+  end
+  def self.generate_pnp2_sites(dxccs)
+
+    sql = <<-SQL
+      SELECT 
+       district_code as "districtID",
+       a.name,
+       ST_X(ST_Centroid(a.boundary))::varchar as "longitude",
+       ST_Y(ST_Centroid(a.boundary))::varchar as "latitude",
+       CASE WHEN a.district_code LIKE 'VK%%' THEN
+          substr(a.district_code,4)
+       ELSE
+          null
+       END as "shireID",
+       a.region_code as "regionID",
+       s.pnp_code as "stateID",
+       a.dxcc as "dxccPrefix",
+       d.iso_code as "countryID",
+       d.continent_code as "continentID"
+    FROM districts a
+    JOIN dxcc_prefixes d ON a.dxcc = d.prefix
+    JOIN states s ON s.code = a.state_code
+    WHERE a.dxcc IN (:dxccs) 
+    ORDER BY a.district_code
+    SQL
+
+    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
+    sanitized_sql = sanitize_sql_array([sql, { dxccs: dxccs }])
+
+    # 3. Pull raw string text directly from the execution block
+    connection.select_all(sanitized_sql)
+
+  end
+
+  def self.generate_pnp_sites(dxccs)
+
+    sql = <<-SQL
+      SELECT 
+       'Shires' as "Award",
+       null as "Location",
+       CASE WHEN a.district_code LIKE 'VK%%' THEN
+          substr(a.district_code,4)
+       ELSE
+          a.district_code
+       END as "ID",
+       a.name as "Name",
+       ST_X(ST_Centroid(a.boundary))::varchar as "Longitude",
+       ST_Y(ST_Centroid(a.boundary))::varchar as "Latitude",
+       CASE WHEN a.district_code LIKE 'VK%%' THEN
+          substr(a.district_code,4)
+       ELSE
+          a.district_code
+       END as "ShireID",
+       null as "ContainedBy",
+       null as "Contains",
+       a.region_code as "Region",
+       d.continent_code as "Continent",
+       a.dxcc as "Country",
+       a.district_code as "District",
+       s.pnp_code as "State",
+       'SHIRE' as "Class"
+    FROM districts a
+    JOIN dxcc_prefixes d ON a.dxcc = d.prefix
+    JOIN states s ON s.code = a.state_code
+    WHERE a.dxcc IN (:dxccs) 
+    ORDER BY a.district_code
+    SQL
+
+    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
+    sanitized_sql = sanitize_sql_array([sql, { dxccs: dxccs }])
+
+    # 3. Pull raw string text directly from the execution block
+    connection.select_all(sanitized_sql)
+  end
+
+end

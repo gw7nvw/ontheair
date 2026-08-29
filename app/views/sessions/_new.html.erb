@@ -1,0 +1,39 @@
+<script> 
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+</script>
+
+<div class="fullform">
+  <%= form_for(:session, url: sessions_path) do |f| %>
+    <div id="actionbar" class="span7">
+       <div id="crumbs">
+         <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+         &nbsp;--&gt;&nbsp;
+         <b>Sign In</b>
+       </div>
+
+       <div id="controls">
+          <%= link_to "Forgotten Password", new_password_reset_path, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('forgot')" %>
+          <%=render 'map_controls'%>
+       </div>
+    </div>
+
+    <div id="right_scroll">
+      <%= hidden_field_tag(:referring, @referring) %>
+      <%= render 'flash' %>
+      <%= render 'shared/error_messages' %>
+
+      <div class="sectiontitle">Callsign</div>
+      <%= f.text_field :email %>
+
+      <div class="sectiontitle">Password</div>
+      <%= f.password_field :password %>
+      <%= f.submit "Sign in", id: "submit", class: "btn btn-small btn-primary btn-highlight" %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+    document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>
+

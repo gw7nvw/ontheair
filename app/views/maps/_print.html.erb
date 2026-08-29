@@ -1,0 +1,41 @@
+<div class="erow">
+  <p>Select paper size:</p>
+</div>
+<script> 
+   var paperwidths=[];
+   var paperheights=[];
+
+   <% @papersize.each do |p| %>
+     paperwidths[<%=p.id%>]=<%=p.width%>;
+     paperheights[<%=p.id%>]=<%=p.height%>;
+   <% end %>
+</script>
+
+<div class="erow">
+  <%= form_tag '/print', :remote=> true, :id => "thelink", :name=> 'printform', :method=> 'post'%>
+    <div class="erow">
+       <%= select_tag( "size", options_from_collection_for_select(@papersize,"id","name"), :onchange => 'updateDimensions()') %></div> 
+    <div class="erow">
+      <p>Or enter dimensions in pixels (width, height)</p>
+    </div>
+    <div class="erow">
+      <div class="half"> <input type="text" name="pix_width" value=<%=@papersize[0].width%> /> </div>
+      <div class="half"> <input type="text" name="pix_height" value=<%=@papersize[0].height%> /> </div>
+    </div>
+    <div class="erow">
+      <p>Filename</p>
+    </div>
+    <div class="erow">
+      <input type="text" name="filename" value=<%=Time.new.strftime("map_%Y%d%m_%H%M")%> /> 
+    </div>
+
+    <%= submit_tag "Download Image", class: "btn btn-small btn-primary", :style => 'margin-left:17px;', name: "print", onclick: "printmap('png')", id:  "print" %>
+    <p>A new window will open and the map will be loaded at the specified size.  Once this is complete, the file will be saved to your computer.  Large sizes may take a long time to download.</p>
+    <p>Once the image has downloaded you can print it by opening it locally on your computer. Printing directly from the browser will only produce low-resulition images</p>
+   <p>If the image does not save automatically, right-click on the image and select 'Save Image As'</p>
+    <%= submit_tag "Download PGW", class: "btn btn-small btn-primary", :style => 'margin-left:17px;', name: "pgw", onclick: "printmap('pgw')", id:  "pgw" %>
+    <%= submit_tag "Download PRJ", class: "btn btn-small btn-primary", :style => 'margin-left:17px;', name: "prj", onclick: "printmap('prj')", id:  "prj" %>
+   <p>If you wish to use this map on GIS or mapping software, you may want to download the georeferenging informaton using the buttons above.  All maps saved are in NZTM2000 (EPSG:2193) projection. Note: To work all files must have the same name, e.g. mymap.png, mymap.pgw  and mymap.prj</p>
+   </form> 
+</div>
+

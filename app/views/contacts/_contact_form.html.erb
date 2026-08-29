@@ -1,0 +1,62 @@
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=  link_to  "Contacts:", '/contacts', remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %>
+     &nbsp;--&gt;&nbsp;
+     <%if @contact.id%> 
+       <b><%=link_to @contact.id.to_s, '/contacts/'+@contact.id.to_s, remote: true, :id => 'contact', :onclick => "linkHandler('contact')" %>
+       &nbsp;--&gt;&nbsp;
+       <b>Edit</b>
+     <% else %>
+        <b>New</b>
+     <% end %>
+   </div>
+   <div id="controls">
+      <%=  link_to "Cancel", '/spots', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+      <%=render 'map_controls'%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <div class="fullform">
+    <%= hidden_field_tag(:referring, @referring) %>
+    <%= render 'flash' %>
+    <%= render 'shared/error_messages' %>
+  
+    <%= form_for @contact, remote: true, :html => {:name => 'contactform'} do |f| %>
+      <table class="tight">
+        <tr><td>My Call</td><td><%= f.text_field :callsign1 %></td></tr>
+        <tr><td>Activator Call</td><td><%= f.text_field :callsign2 %></td></tr>
+        <tr><td>Activating</td><td><%= f.text_field :asset2_codes, readonly: true %></td></tr>
+        <tr><td>Date</td><td><%= f.date_field :date %></td></tr>
+        <tr><td>Time</td><td><%= f.time_field :time %></td></tr>
+        <tr><td>Freq (MHz)</td><td><%= f.text_field :frequency %></td></tr>
+        <tr><td>Mode</td><td><%= f.text_field :mode %></td></tr>
+        <tr><td>QRP?</td><td> <%= f.check_box :is_qrp2%></td></tr>
+        <tr><td>/P?</td><td> <%= f.check_box :is_portable2%></td></tr>
+        <tr><td>RS(T) sent</td><td> <%= f.text_field :signal1 %></td></tr>
+        <tr><td>RS(T) recd</td><td> <%= f.text_field :signal2 %></td></tr>
+        <tr><td>Comments</td><td><%= f.text_area :comments1 %></td></tr>
+      </table>
+      <div class="erow">
+        <%= f.submit @submit_button, id: "submit", class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Saving ...');" %>
+        <%  if(@submit_button == "Save Changes" and current_user) %>
+          <%= f.submit "Delete", confirm: "Delete contact: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+
+
+<script>
+    document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+    reset_map_controllers(); 
+    deactivate_all_click();
+    place_init('<%=@contact.location1%>', '', site_green_star);
+    map_add_feature_from_wkt('<%=@contact.location2%>','EPSG:4326',site_red_star);
+
+</script>
+

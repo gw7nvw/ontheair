@@ -1,0 +1,4 @@
+if ((window.history.pushState!=null) && (site_back!=true)) window.history.pushState(null, '', '/comments/<%=params[:id]%>/edit?<%=raw(@parameters)%>');
+$('#right_panel').html("<%= escape_javascript(render(:partial => 'comments/edit')).html_safe %>");
+
+

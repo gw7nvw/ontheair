@@ -1,0 +1,222 @@
+# typed: false
+require 'resque/server'
+
+Ontheair::Application.routes.draw do
+#resque
+mount Resque::Server.new, at: "/resque"
+
+#static pages
+root 'static_pages#home'
+match '/results',   to: 'static_pages#results',   via: 'get'
+match '/recent',   to: 'static_pages#recent',   via: 'get'
+match '/spots/history',   to: 'static_pages#spot_history',   via: 'get'
+match '/spots',   to: 'static_pages#spots',   via: 'get'
+match '/alerts',   to: 'static_pages#alerts',   via: 'get'
+match '/alerts/:id/delete',   to: 'static_pages#delete_alert',   via: 'get'
+match '/admin_stats',   to: 'static_pages#admin_stats',   via: 'get'
+match '/ack_news',   to: 'static_pages#ack_news',   via: 'get'
+match '/dxcc/:dxcc',   to: 'static_pages#dxcc',   via: 'get'
+
+resources :blocks, only: [:index]
+get 'blocks/:id/delete', to: 'blocks#delete'
+get 'blocks/reset', to: 'blocks#reset'
+get 'blocks/:id/human', to: 'blocks#human'
+get 'blocks/:id/robot', to: 'blocks#robot'
+resources :asset_links, only: [:create]
+get 'asset_links/:id/delete', to: 'asset_links#delete'
+
+resources :asset_web_links, only: [:create]
+get 'asset_web_links/:id/delete', to: 'asset_web_links#delete'
+
+resources :assets, only: [:index, :show, :edit, :new, :create, :update]
+match "/assets/:id/associations", :to => "assets#associations", :via => "get"
+match "/assets/:id/map_associate", :to => "assets#map_associate", :via => "get"
+match "/assets/:id/find_poly", :to => "assets#map_find_poly", :via => "get"
+match "/assets/:id/apply_poly", :to => "assets#map_apply_poly", :via => "post"
+match "/assets/:id/rate", to: "assets#rate", via: "post"
+match "/assets/:id/derate", to: "assets#derate", via: "get"
+match "/assets/:id/rate", to: "assets#rate", via: "patch"
+match "/assets/:id/add_wish", to: "assets#add_wish", via: "get"
+match "/assets/:id/remove_wish", to: "assets#remove_wish", via: "get"
+
+get 'assets/:id/refresh_sota', to: 'assets#refresh_sota'
+get 'assets/:id/refresh_pota', to: 'assets#refresh_pota'
+
+resources :awards, only: [:index, :show, :edit, :new, :create, :update]
+
+resources :callsigns, only: [:create, :edit, :update]
+get 'callsigns/:id/delete', to: 'callsigns#delete'
+patch 'callsigns/:id', to: 'callsigns#update'
+
+resources :comments
+get 'comments/:id/delete', to: 'comments#delete'
+
+resources :contacts, only: [:index, :show, :new, :create]
+match "/contacts/:id/editlog", :to => "logs#editcontact", :via => "get"
+match "/contacts/:id/confirm", :to => "contacts#confirm", :via => "get"
+match "/contacts/:id/refute", :to => "contacts#refute", :via => "get"
+
+get  '/challenge',          to: 'challenges#show',   as: :challenge
+get  '/challenge/verify',   to: 'challenges#verify', as: :challenge_verify
+get  '/challenge/node/:id', to: 'challenges#trap',   as: :challenge_trap
+
+resources :districts, only: [:index, :show]
+
+match "/hema_logs/chaser/submit", :to => "hema_logs#submit_chaser", :as => "hema_submit_chaser_log", :via => "get"
+match "/hema_logs/chaser", :to => "hema_logs#chaser", :as => "hema_chaser_log", :via => "get"
+resources :hema_logs, only: [:index, :show]
+match "/hema_logs/:id/submit", :to => "hema_logs#submit", :as => "hema_send_log", :via => "get"
+match "/hema_logs/:id/delete", :to => "hema_logs#delete", :as => "hema_delete_log", :via => "get"
+match "/hema_logs/:id/finalise", :to => "hema_logs#finalise", :as => "hema_finalise_log", :via => "get"
+
+#controller no longer used - delete handled in photos
+#get 'images/:id/delete', to: 'images#delete'
+
+get 'logs/upload', to: 'logs#upload' #log uploads
+post 'logs/upload', to: 'logs#savefile' #log uploads
+resources :logs
+get 'logs/:id/delete', to: 'logs#delete'
+match "/logs/:id/save", :to => "logs#save", :as => "log_save_data", :via => "post" #spreadsheet editor
+match "/logs/:id/load", :to => "logs#load", :as => "log_load_data", :via => "get" #spreadsheet editor
+
+#maps
+match 'layerswitcher', to: "maps#layerswitcher", via: 'get'
+match 'updatelayers', to: "maps#updatelayers", via: 'get'
+match '/legend', to: "maps#legend", via: 'get'
+
+#asset class redirects
+get "humps", to: 'assets#index', defaults: {type: 'hump'}
+get "lighthouses", to: 'assets#index', defaults: {type: 'lighthouse'}
+get "wwff", to: 'assets#index', defaults: {type: 'wwff park'}
+get "pota", to: 'assets#index', defaults: {type: 'pota park'}
+get "summits", to: 'assets#index', defaults: {type: 'summit'}
+get "parks", to: 'assets#index', defaults: {type: 'park'}
+get "islands", to: 'assets#index', defaults: {type: 'island'}
+get "huts", to: 'assets#index', defaults: {type: 'hut'}
+get "lakes", to: 'assets#index', defaults: {type: 'lake'}
+
+get "proxy" => "proxy#get", :as => "proxy"
+
+#match '/sitemap.xml', to: 'sitemaps#index', via: 'get', as: "sitemap", defaults: { format: "xml" }
+
+resources :sessions, only: [:new, :create, :destroy]
+# resources :qsl, only: [:show] #not currently active
+
+resources :users
+get 'users/:id/assets', to: 'users#assets'
+get 'users/:id/wishlist', to: 'users#wishlist'
+get 'users/:id/test_notification', to: 'users#test_notification'
+get 'users/:id/awards', to: 'users#awards'
+get 'users/:id/stats', to: 'users#stats'
+get 'users/:id/region_progress', to: 'users#region_progress'
+get 'users/:id/district_progress', to: 'users#district_progress'
+get 'users/:id/p2p', to: 'users#p2p'
+get 'users/:id/add', to: 'users#add'
+get 'users/:id/delete', to: 'users#delete'
+get 'users/:id/set_external', to: 'users#update_external'
+match '/signup',  to: 'users#new',         via: 'get'
+
+post 'posts/sms', to: 'posts#sms'
+get 'posts/sms', to: 'posts#sms'
+resources :posts, only: [:new, :create, :show, :edit, :update]
+get 'posts/:id/delete', to: 'posts#delete'
+
+resources :photos, only: [:new, :create, :show, :edit, :update]
+get 'photos/:id/delete', to: 'photos#delete'
+
+resources :topics, only: [:index, :new, :create, :show, :edit, :update]
+
+#match '/queries/asset', to: 'queries#asset',    via:'get'
+resources :query, only: [:index]
+match '/query_location', to: 'query#location',    via:'get'
+
+resources :api, only: [:index]
+match '/api/assets', to: 'api#asset',    via:'get'
+match '/api/assettypes', to: 'api#assettype',    via:'get'
+match '/api/assetlinks', to: 'api#assetlink',    via:'get'
+match '/api/logs', to: 'api#logs_post',    via:'post'
+match '/api/spots', to: 'api#spot_post',    via:'post'
+match '/api/spots', to: 'api#spot',    via:'get'
+match '/api/alerts', to: 'api#alert',    via:'get'
+match '/api/VERIFYUSER/:user/:pin', to: 'api#pnp_verifyuser',    via:'get'
+match '/api/ALL', to: 'api#pnp_all',    via:'get'
+match '/api/ALL/:id', to: 'api#pnp_all',    via:'get'
+match '/api/VK', to: 'api#pnp_vk',    via:'get'
+match '/api/VK/:id', to: 'api#pnp_vk',    via:'get'
+match '/api/DELETE/SPOT/:callsign/:pin', to: 'api#pnp_delete_spot',    via:'get'
+match '/api/CHECK/SPOTS', to: 'api#pnp_check_spots',    via:'get'
+match '/api/ALERTS', to: 'api#pnp_alerts',    via:'get'
+match '/api/ALERT', to: 'api#pnp_post_alert',    via:'post'
+match '/api/ALERT', to: 'api#pnp_post_alert',    via:'post'
+match '/api/CHECK', to: 'api#pnp_check',    via:'get'
+match '/api/SITES/CHECK', to: 'api#pnp_check',    via:'get'
+match '/api/SITES/:id', to: 'api#pnp_sites_by_class',    via:'get'
+match '/api/SITES', to: 'api#pnp_sites',    via:'get'
+match '/api/GETUSERKEY/:callsign/:pin', to: 'api#pnp_getuserkey',    via:'get'
+match '/api/SPOT', to: 'api#pnp_spot',    via:'post'
+match '/api/CLOSE/:lat/:long', to: 'api#pnp_close',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
+match '/api/CLOSE/:lat/:long/:dummy', to: 'api#pnp_close',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
+match '/api/SHIRESID/:lat/:long', to: 'api#pnp_shiresid',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
+match '/api/GRIDSQUARE/:lat/:long', to: 'api#pnp_gridsquare',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
+match '/api/PARKID/:lat/:long', to: 'api#pnp_parkid',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
+match '/api/SUMMITID/:lat/:long', to: 'api#pnp_summitid',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
+match '/api/WITHIN/:lat/:long', to: 'api#pnp_within',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
+match '/api/parkid/:lat/:long', to: 'api#pnp_parkid',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
+match '/api/CALLSIGN', to: 'api#pnp_callsign',    via:'get'
+match '/api/USERS', to: 'api#pnp_callsign',    via:'get'
+match '/api2/users/verify', to: 'api2#pnp_users_verify',    via:'get'
+match '/api2/users/index', to: 'api2#pnp_users_index',    via:'get'
+match '/api2/spots/index', to: 'api2#pnp_spots_index',    via:'get'
+match '/api2/spots/check', to: 'api2#pnp_spots_check',    via:'get'
+match '/api2/spots/create', to: 'api2#pnp_spots_create',    via:'get'
+match '/api2/spots/create', to: 'api2#pnp_spots_create',    via:'post'
+match '/api2/alerts/index', to: 'api2#pnp_alerts_index',    via:'get'
+match '/api2/alerts/create', to: 'api2#pnp_alerts_create',    via:'get'
+match '/api2/alerts/delete', to: 'api2#pnp_alerts_delete',    via:'get'
+match '/api2/alerts/delete', to: 'api2#pnp_alerts_delete',    via:'delete'
+match '/api2/sites/check', to: 'api2#pnp_sites_check',    via:'get'
+match '/api2/sites/index', to: 'api2#pnp_sites_index',    via:'get'
+match '/api2/sites/nearby', to: 'api2#pnp_sites_nearby',    via:'get'
+match '/api2/sites/within', to: 'api2#pnp_sites_within',    via:'get'
+match '/api2/districts/index', to: 'api2#pnp_districts_index',    via:'get'
+match '/api2/districts/within', to: 'api2#pnp_districts_within',    via:'get'
+match '/api2/regions/index', to: 'api2#pnp_regions_index',    via:'get'
+match '/api2/states/index', to: 'api2#pnp_states_index',    via:'get'
+match '/api2/countries/index', to: 'api2#pnp_countries_index',    via:'get'
+match '/api2/continents/index', to: 'api2#pnp_continents_index',    via:'get'
+match '/api2/logs/create', to: 'api2#pnp_logs_create',    via:'get'
+match '/api2/logs/create', to: 'api2#pnp_logs_create',    via:'post'
+resources :sota_logs
+
+resources :llota_logs
+match "/llota_logs/:id/download", :to => "llota_logs#download", :as => "download_llota", :via => "get"
+
+resources :pota_logs
+match "/pota_logs/:id/send", :to => "pota_logs#send_email", :as => "send_log", :via => "get"
+match "/pota_logs/:id/download", :to => "pota_logs#download", :as => "download_log", :via => "get"
+
+resources :wwff_logs
+match "/wwff_logs/:id/send", :to => "wwff_logs#send_email", :as => "wwff_send_log", :via => "get"
+match "/wwff_logs/:id/download", :to => "wwff_logs#download", :as => "wwff_download_log", :via => "get"
+
+resources :vkassets
+
+resources :regions
+resources :states
+
+resources :geology, only: [:index, :show]
+
+match '/sessions', to: 'static_pages#home',    via:'get'
+match '/signin',  to: 'sessions#new',         via: 'get'
+match '/signout', to: 'sessions#destroy',     via: 'delete'
+
+resources :password_resets, only: [:new, :create, :edit, :update]
+get "password_resets/new"
+get "password_resets/edit"
+get "password_reset/new"
+get "password_reset/edit"
+
+
+
+end
+

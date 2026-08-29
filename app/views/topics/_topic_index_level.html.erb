@@ -1,0 +1,27 @@
+        <% if topic then %>
+        <div class="erow"><div class="sectiontitle">
+          &gt; <%= link_to topic.name, '/topics/'+topic.url%><br/>
+        </div></div>
+        <div class="indent">
+          <% if (topic.items.count>0)  %>
+              <% count=0 %>
+                 <% item=topic.items[count] %>
+                 <% while item and item.item_type=="topic" %>
+                   <% count=count+1 %>
+                   <% item=topic.items[count] %>
+                 <% end %>
+              <% if item then %> 
+                <%=render :partial => 'topics/item_summary',  :locals => {:item => item} %>
+              <% end %>
+              <% topic.items.each do |item| %>
+                <% if item.item_type=="topic" then %>
+                  <%=render :partial => 'topics/topic_index_level',  :locals => {:topic => item.end_item, :level => level+1} %> 
+            
+                <% end %>
+              <% end %>
+          <% end %>
+         </div>
+         <% end %>
+
+
+

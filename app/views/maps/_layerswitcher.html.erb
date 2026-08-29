@@ -1,0 +1,65 @@
+<div id="basemap">
+<h2>Basemap</h2>
+  <ul style="list-style-type:none;padding:0;margin:0;">
+    <% @maplayers.each do |m| %>
+      <li>
+         <% if @baselayer and @baselayer==m.name then checked=true else checked=false end %>
+        <%=check_box_tag m.id.to_s, "1", checked, :onclick => "BootstrapDialog.closeAll();site_select_maplayer('"+m.name+"', '"+m.baseurl+"', '"+m.basemap+"', "+m.minzoom.to_s+", "+m.maxzoom.to_s+", ["+m.extent.to_s+"]);setTimeout(() => {site_mapLayers(true); }, 1000);"%>
+        <%=m.name%>
+      </li>
+    <% end %>
+  </ul>
+</div>
+<div id="region_layers">
+<h2>Boundaries</h2>
+  <ul style="list-style-type:none;padding:0;margin:0;">
+    <li>
+      <% if @territorylayers and @territorylayers.include?("district") then checked=true else checked=false end %>
+      <%=check_box_tag "Districts", "1", checked, :onclick => "site_toggle_district_layer()"%>
+      <%="Districts"%>
+    </li>
+    <li>
+      <% if @territorylayers and @territorylayers.include?("region") then checked=true else checked=false end %>
+      <%=check_box_tag "Regions", "1", checked, :onclick => "site_toggle_region_layer()"%>
+      <%="Regions"%>
+    </li>
+    <li>
+      <% if @territorylayers and @territorylayers.include?("geology") then checked=true else checked=false end %>
+      <%=check_box_tag "Geology", "1", checked, :onclick => "site_toggle_geology_layer()"%>
+      <%="Geology"%>
+    </li>
+  </ul>
+</div>
+<div id="point_layers">
+  <h2>Point Layers</h2>
+  <ul style="list-style-type:none;padding:0;margin:0;">
+    <% AssetType.where("name != 'all'").order(:pnp_class, :name).each do |a| %>
+      <% if a.has_location then %>
+        <li>
+          <% if @pointlayers and @pointlayers.include?(a.name) then checked=true else checked=false end %>
+          <%=check_box_tag a.id.to_s, "1", checked, :onclick => "site_toggle_vector_layers('point','"+a.name+"')"%>
+          <%=(if a.pnp_class=='ZLOTA' then 'ZLOTA ' else "" end)+a.display_name%>
+        </li>
+      <% end %>
+    <% end %>
+  </ul>
+  <%=  link_to "Apply", '#', class: "btn btn-small btn-primary", :onclick => "site_refresh_layer('point');site_mapLayers(false);return(false);" %>
+</div>
+
+
+<div id="polygon_layers">
+  <h2>Polygon Layers</h2>
+  <ul style="list-style-type:none;padding:0;margin:0;">
+    <% AssetType.where("name != 'all'").order(:pnp_class, :name).each do |a| %>
+      <% if a.has_boundary then %>
+        <li>
+          <% if @polygonlayers and @polygonlayers.include?(a.name) then checked=true else checked=false end %>
+          <%=check_box_tag a.id.to_s, "1", checked, :onclick => "site_toggle_vector_layers('polygon','"+a.name+"')"%>
+          <%=(if a.pnp_class=='ZLOTA' then 'ZLOTA ' else "" end)+a.display_name%>
+        </li>
+      <% end %>
+    <% end %>
+  </ul>
+  <%=  link_to "Apply", '#', class: "btn btn-small btn-primary", :onclick => "site_refresh_layer('polygon');site_mapLayers(false);return(false);" %>
+</div>
+

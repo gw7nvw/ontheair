@@ -1,0 +1,10 @@
+Hello <%= @authlist.name %>
+
+Thankyou for submitting a comment on routeguides.co.nz.  Click on the following link to authenticate this email address and have your messages appear immediately.
+
+<%= edit_address_auth_url(@authlist.auth_token, email: @authlist.address) %>
+
+If you do not reply then your comment will not appear until it has been approved by a moderator.
+
+If you did not add a comment on this site, then it is safe to ignore this email.  
+

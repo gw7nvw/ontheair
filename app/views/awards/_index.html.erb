@@ -1,0 +1,95 @@
+<script>
+   closeAllHandlers();
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+   document.title = '... On the Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+</script>
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Awards</b>
+     </div>
+   <div id="controls">
+       <% if signed_in? and current_user.is_admin  then %>
+            <%=  link_to "Add", '/awards/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+       <% end %>
+       <%=render 'map_controls'%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <h2>Awards</h2>
+   <table class="cleanskin1" id="award_table">
+    <% if @awards then @awards.each do |award| %>
+      <tr>
+        <td>
+          <% if current_user and current_user.is_admin %>
+            <span title="Click to edit row"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/awards/'+award.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+          <% end %>
+          <%= link_to award.name, '/awards/'+award.id.to_s, remote: true, :id => 'award_link_'+award.id.to_s, :onclick => "linkHandler('award_link_"+award.id.to_s+"')" %>
+        </td>
+        <td>
+          <% if award.count_based then %>
+             <% details=[] %>
+             <% AwardThreshold.order(:threshold).reverse.each do |t| %>
+               <% recipients = AwardUserLink.find_by_sql [ "select count(id) as id from award_user_links where award_id=#{award.id.to_s} and threshold=#{t.threshold.to_s}; " ] %>
+               <% if recipients.count>0 and recipients.first.id>0 then %>
+                  <%details.push(t.name.capitalize+": "+recipients.first.id.to_s)%>
+               <% end %>
+             <% end %> 
+             <% if details.count and details.count>0 then %>
+               <%=details.join(", ") %>
+             <% end %>
+          <% end %>
+          <% if award.all_district then %>
+            <% details=[] %>
+            <% districts=District.all %>
+            <% districts.order(:name).each do |district| %>
+             <% recipients = AwardUserLink.find_by_sql [ "select count(id) as id from award_user_links where award_id=#{award.id.to_s} and linked_id=#{district.id.to_s}; " ] %>
+               <% if recipients.count>0 and recipients.first.id>0 then %>
+                  <%details.push(district.name.capitalize+": "+recipients.first.id.to_s)%>
+               <% end %>
+             <% end %>
+             <% if details.count and details.count>0 then %>
+               <%=details.join(", ") %>
+             <% end %>
+          <% end %>
+          <% if award.all_region then %>
+            <% details=[] %>
+            <% districts=Region.all %>
+            <% districts.order(:name).each do |district| %>
+             <% recipients = AwardUserLink.find_by_sql [ "select count(id) as id from award_user_links where award_id=#{award.id.to_s} and linked_id=#{district.id.to_s}; " ] %>
+               <% if recipients.count>0 and recipients.first.id>0 then %>
+                  <%details.push(district.name.capitalize+": "+recipients.first.id.to_s)%>
+               <% end %>
+             <% end %>
+             <% if details.count and details.count>0 then %>
+               <%=details.join(", ") %>
+             <% end %>
+          <% end %>
+          <% if award.all_programme then %>
+             <% recipients = AwardUserLink.find_by_sql [ "select count(id) as id from award_user_links where award_id=#{award.id.to_s}; " ] %>
+             <% if recipients.count>0 and recipients.first.id>0 then %>
+                <%details.push(district.name.capitalize+": "+recipients.first.id.to_s)%>
+             <% end %>
+             <% if details.count and details.count>0 then %>
+               <%="Recipients: "+details.join(", ") %>
+             <% end %>
+          <% end %>
+
+
+
+
+        </td>
+      </tr>
+    <% end end %>
+  </table>
+</div>
+
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>

@@ -1,0 +1,62 @@
+<script>
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+   document.title = <%= raw(@site_title) %>
+   document.getElementById('logo').innerHTML = <%= raw(@site_title) %>
+$(function () {
+  $('#right_panel .pagination a').on('click', function () {
+    $.getScript(this.href+"&sortby=<%=@sortby%>");
+    return false;
+  });
+});
+
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     Home
+     &nbsp;--&gt;&nbsp;
+     <b>Confirmaton</b>
+   </div>
+   <div id="controls">
+     <%=render 'map_controls'%>
+   </div>
+</div>
+
+<div id="right_scroll">
+    <h2>Security Verification</h2>
+    <p class="text-muted" style="margin-bottom: 30px;">
+      Our system noticed unusual activity from your network. Please click the <strong>visible green word</strong> below to verify you are a human.
+    </p>
+
+    <div class="challenge-matrix" style="line-height: 2.5; margin: 20px 0; word-wrap: break-word;">
+      <%
+        # 1. Words array to randomize anchor text so bots can't match text strings
+        words = %w[Verify Continue Proceed Connect Access Accept Confirm Allow Submit Enter Go Pass OK]
+
+        # 2. Build the array of 49 fake links and 1 real link
+        links = Array.new(49) { { path: challenge_trap_path(id: SecureRandom.hex(4)), is_real: false } }
+        links << { path: challenge_verify_path(id: @verification_token), is_real: true }
+
+        # 3. Shuffle the array to randomize the physical location of the real link
+        links.shuffle!
+      %>
+
+      <% links.each do |link| %>
+        <% display_word = words.sample %>
+        <% if link[:is_real] %>
+          <!-- THE REAL LINK: Stands out vividly to human eyes -->
+          <%= link_to display_word, link[:path], remote: true, style: "color: #22c55e; font-weight: bold; font-size: 16px; margin: 0 8px; text-decoration: underline;" %>
+        <% else %>
+          <!-- THE FAKE LINKS: Match your body background color perfectly (assumed white #ffffff here) -->
+          <!-- We shrink the font size to 1px so they don't alter the layout flow for humans -->
+          <a href="<%= link[:path] %>" tabindex="-1" aria-hidden="true" style="color: #ffffff; font-size: 1px; margin: 0 8px; text-decoration: none; cursor: default;"><%= display_word %></a>
+        <% end %>
+      <% end %>
+    </div>
+<script>
+document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+site_smaller_map();
+
+</script>
+

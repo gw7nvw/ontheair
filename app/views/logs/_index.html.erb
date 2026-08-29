@@ -1,0 +1,73 @@
+<script>
+   closeAllHandlers();
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+   document.title = '... On the Air'
+   document.getElementById('logo').innerHTML='... On The Air'
+
+$(function () {
+  $('#right_panel .pagination a').on('click', function () {
+    $.getScript(this.href);
+    return false;
+  });
+})
+
+</script>
+ 
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Logs</b>
+     <% if @user then %>&nbsp;--&gt;&nbsp;<b><%= @user.callsign %></b><% end %>
+     <% if @asset then %>&nbsp;--&gt;&nbsp;<b><%= @asset.codename %></b>
+       <% elsif @assetcode then %>&nbsp;--&gt;&nbsp;<b><%= @assetcode %></b>
+       <% elsif @all then %>&nbsp;--&gt;&nbsp;<b>All</b>
+       <% elsif @class then %>&nbsp;--&gt;&nbsp;<b><%= @class.capitalize.pluralize %></b>
+     <% end %>
+     </div>
+   <div id="controls">
+       <% if write_access?  %>
+            <% if current_user.is_admin then %>
+              <%=  link_to "View All", '/logs?user=all', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('all')" %>
+            <% end %>
+            <%=  link_to "Upload Log", '/logs/upload', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('upload')" %>
+            <%=  link_to "Add Log", '/logs/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+       <% end %>
+       <% if signed_in? and ((@user and current_user.id==@user.id) or current_user.is_admin) %>
+          <% 
+            parmtext=""
+            params.each do |k, v|
+              parmtext+="&"+k.to_s+"="+v.to_s
+            end
+            if parmtext!="" then parmtext[0]="?" end
+          %>
+           <%=  link_to "Download", '/contacts.csv'+parmtext, class: "btn btn-small btn-primary"%>
+       <% end %>
+       <%=render 'map_controls'%>
+   </div>
+</div>
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <%= form_tag '/logs', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+    <br/>
+    <div class="rowtitle">Show logs from (location code):</div>
+    <div class="rowtext">
+      <input type="text" id="asset" name="asset" value='<%=@assetcode%>'/>
+      <input type="hidden" id="user" name="user" value='<%=@callsign%>'/>
+    </div>
+    <div class="buttonshort">
+      <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+      <%=  link_to "Clear", '/logs', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
+
+    </div>
+  </form>
+
+  <%= render 'list' %>
+</div>
+
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>
+

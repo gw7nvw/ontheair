@@ -1,0 +1,9 @@
+ <div class="bordered_box">
+   <div class="box_header">
+      <p><%=@contact.title%> <i><%=link_to "View", "http://"+@contact.url, class: 'link_to'%>
+      <% if current_user and current_user.is_admin then %>
+        <%= link_to "Delete", '/hota/'+@contact.id.to_s+'/delete', confirm: "Delete post: Are you sure?", class: 'link_to' %>
+      <% end %>
+      </i> </p>
+  </div>
+ </div>
