@@ -40,6 +40,7 @@
 /public/packs-test
 .eslintcache
 /public/assets
+/public/system/
 # /test/vcr_cassettes
 test/vcr_cassettes/local_only/*
 
