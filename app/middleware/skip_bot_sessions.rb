@@ -13,7 +13,7 @@ class SkipBotSessions
     ip_address = env['REMOTE_ADDR']
 
     begin
-      unless current_path.start_with?('/api') 
+      unless current_path.start_with?('/api') or current_path.start_with?('/posts/sms') 
         # 1. Fetch the exact tracking record upfront
         ua_record = UserAgent.find_by(user_ip: ip_address)
 
@@ -83,7 +83,7 @@ class SkipBotSessions
   
     # D. Track the access count in the database
     begin
-      unless current_path.start_with?('/api') 
+      unless current_path.start_with?('/api') or current_path.start_with?('/posts/sms')
         # C. check for suspicious activties
         # redirects to login:
         suspicious = (status == 302 && headers['Location']&.include?('/signin') ? 1 : 0)
