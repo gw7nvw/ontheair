@@ -1,0 +1,1255 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://api-db2.sota.org.uk/api/spots/epoch
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - 'ontheair.nz [v3.0] (contact: admin@ontheair.nz)'
+      Host:
+      - api-db2.sota.org.uk
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - text/plain; charset=utf-8
+      Server:
+      - Rocket
+      Permissions-Policy:
+      - interest-cohort=()
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      Access-Control-Allow-Origin:
+      - "*"
+      Access-Control-Allow-Methods:
+      - POST, GET, DELETE, OPTIONS
+      Access-Control-Allow-Headers:
+      - Authorization, id_token, Content-type
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Content-Length:
+      - '36'
+      Date:
+      - Thu, 27 Aug 2026 06:24:56 GMT
+      Set-Cookie:
+      - DO-LB="ChMxMC4xMzEuMTA1LjE2MDo4MDAwEJWc4iM="; Max-Age=300; Path=/; HttpOnly;
+        SameSite=Lax
+      Cache-Control:
+      - private
+    body:
+      encoding: UTF-8
+      string: 7b8f3c3d-b089-4cbe-9f29-073dd33b2d99
+  recorded_at: Thu, 27 Aug 2026 06:24:56 GMT
+- request:
+    method: get
+    uri: https://api-db2.sota.org.uk/api/spots/50/all/all
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - 'ontheair.nz [v3.0] (contact: admin@ontheair.nz)'
+      Host:
+      - api-db2.sota.org.uk
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Server:
+      - Rocket
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      Permissions-Policy:
+      - interest-cohort=()
+      Access-Control-Allow-Origin:
+      - "*"
+      Access-Control-Allow-Methods:
+      - POST, GET, DELETE, OPTIONS
+      Access-Control-Allow-Headers:
+      - Authorization, id_token, Content-type
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Content-Length:
+      - '21120'
+      Date:
+      - Thu, 27 Aug 2026 06:24:57 GMT
+      Set-Cookie:
+      - DO-LB="ChIxMC4xMzEuMTI0Ljk3OjgwMDAQlpziIw=="; Max-Age=300; Path=/; HttpOnly;
+        SameSite=Lax
+      Cache-Control:
+      - private
+    body:
+      encoding: ASCII-8BIT
+      string: !binary |-
+        W3siaWQiOjM3OTAwMywidGltZVN0YW1wIjoiMjAyNi0wOC0yN1QwNjoxNDowNC4yODA5ODdaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJNME1aQi9QIiwiYWN0aXZhdG9yTmFtZSI6Ik1hdHRoZXciLCJjYWxsc2lnbiI6Ik0wTVpCIiwiY29tbWVudHMiOiJbc290bC5hc10iLCJmcmVxdWVuY3kiOjcuMTIsIm1vZGUiOiIiLCJzdW1taXRDb2RlIjoiRy9TQi0wMTAiLCJzdW1taXROYW1lIjoiSG91c2Vkb24gSGlsbCIsIkFsdE0iOjI2OCwiQWx0RnQiOjg4MCwicG9pbnRzIjoxLCJ1c2VySUQiOjQ2MzQzLCJ0eXBlIjoiUVJUIiwibGF0aXR1ZGUiOjU1LjU4Nzk0Nzg0NTQ1ODk4NCwibG9uZ2l0dWRlIjotMi4xNTY3NDcxMDI3Mzc0MjY4LCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3OTAwMiwidGltZVN0YW1wIjoiMjAyNi0wOC0yN1QwNTo1Mzo1NS40NjA3MjlaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJEQzhZWi9QIiwiYWN0aXZhdG9yTmFtZSI6Ik1pY2hhZWwiLCJjYWxsc2lnbiI6IkRDOFlaIiwiY29tbWVudHMiOiJRUlQiLCJmcmVxdWVuY3kiOjE0LjA0LCJtb2RlIjoiQ1ciLCJzdW1taXRDb2RlIjoiRE0vQk0tMTM1Iiwic3VtbWl0TmFtZSI6Ikhlc3NlbGJlcmciLCJBbHRNIjo2ODksIkFsdEZ0IjoyMjYwLCJwb2ludHMiOjYsInVzZXJJRCI6MzQ2NjcsInR5cGUiOiJRUlQiLCJsYXRpdHVkZSI6NDkuMDY4OTAxMDYyMDExNzIsImxvbmdpdHVkZSI6MTAuNTI1NjAwNDMzMzQ5NjEsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc5MDAxLCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI3VDA1OjUxOjAxLjEzNzYzMloiLCJhY3RpdmF0b3JDYWxsc2lnbiI6Ik0wTVpCL1AiLCJhY3RpdmF0b3JOYW1lIjoiTWF0dGhldyIsImNhbGxzaWduIjoiTTBNWkIiLCJjb21tZW50cyI6Iltzb3RsLmFzXSIsImZyZXF1ZW5jeSI6Ny4wNzQsIm1vZGUiOiJEQVRBIiwic3VtbWl0Q29kZSI6IkcvU0ItMDEwIiwic3VtbWl0TmFtZSI6IkhvdXNlZG9uIEhpbGwiLCJBbHRNIjoyNjgsIkFsdEZ0Ijo4ODAsInBvaW50cyI6MSwidXNlcklEIjo0NjM0MywidHlwZSI6Ik5PUk1BTCIsImxhdGl0dWRlIjo1NS41ODc5NDc4NDU0NTg5ODQsImxvbmdpdHVkZSI6LTIuMTU2NzQ3MTAyNzM3NDI2OCwiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5OTksInRpbWVTdGFtcCI6IjIwMjYtMDgtMjdUMDU6NDk6MDIuMjk5MzMxWiIsImFjdGl2YXRvckNhbGxzaWduIjoiREM4WVovUCIsImFjdGl2YXRvck5hbWUiOiJNaWNoYWVsIiwiY2FsbHNpZ24iOiJSQk5IT0xFIiwiY29tbWVudHMiOiJbUkJOSG9sZV0gYXQgRVMyUlIgMjAgV1BNIDI4IGRCIFNOUiIsImZyZXF1ZW5jeSI6MTQuMDQsIm1vZGUiOiJDVyIsInN1bW1pdENvZGUiOiJETS9CTS0xMzUiLCJzdW1taXROYW1lIjoiSGVzc2VsYmVyZyIsIkFsdE0iOjY4OSwiQWx0RnQiOjIyNjAsInBvaW50cyI6NiwidXNlcklEIjoxOTM0NCwidHlwZSI6bnVsbCwibGF0aXR1ZGUiOjQ5LjA2ODkwMTA2MjAxMTcyLCJsb25naXR1ZGUiOjEwLjUyNTYwMDQzMzM0OTYxLCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk5OCwidGltZVN0YW1wIjoiMjAyNi0wOC0yN1QwNTo0NzowMi4zNjcyNTBaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJNME1aQi9QIiwiYWN0aXZhdG9yTmFtZSI6Ik1hdHRoZXciLCJjYWxsc2lnbiI6IlJCTkhPTEUiLCJjb21tZW50cyI6IltSQk5Ib2xlXSBhdCBFUzJSUiAyNSBXUE0gMjQgZEIgU05SIiwiZnJlcXVlbmN5IjoxNC4wNiwibW9kZSI6IkNXIiwic3VtbWl0Q29kZSI6IkcvU0ItMDEwIiwic3VtbWl0TmFtZSI6IkhvdXNlZG9uIEhpbGwiLCJBbHRNIjoyNjgsIkFsdEZ0Ijo4ODAsInBvaW50cyI6MSwidXNlcklEIjoxOTM0NCwidHlwZSI6bnVsbCwibGF0aXR1ZGUiOjU1LjU4Nzk0Nzg0NTQ1ODk4NCwibG9uZ2l0dWRlIjotMi4xNTY3NDcxMDI3Mzc0MjY4LCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk5NywidGltZVN0YW1wIjoiMjAyNi0wOC0yN1QwNTo0NDowMS43MDQ1MjJaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJEQzhZWi9QIiwiYWN0aXZhdG9yTmFtZSI6Ik1pY2hhZWwiLCJjYWxsc2lnbiI6IlJCTkhPTEUiLCJjb21tZW50cyI6IltSQk5Ib2xlXSBhdCBESzNXVyAyMSBXUE0gMjggZEIgU05SIiwiZnJlcXVlbmN5Ijo3LjAzLCJtb2RlIjoiQ1ciLCJzdW1taXRDb2RlIjoiRE0vQk0tMTM1Iiwic3VtbWl0TmFtZSI6Ikhlc3NlbGJlcmciLCJBbHRNIjo2ODksIkFsdEZ0IjoyMjYwLCJwb2ludHMiOjYsInVzZXJJRCI6MTkzNDQsInR5cGUiOm51bGwsImxhdGl0dWRlIjo0OS4wNjg5MDEwNjIwMTE3MiwibG9uZ2l0dWRlIjoxMC41MjU2MDA0MzMzNDk2MSwiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5OTYsInRpbWVTdGFtcCI6IjIwMjYtMDgtMjdUMDU6NDE6MTUuMDkyMDM1WiIsImFjdGl2YXRvckNhbGxzaWduIjoiTTBNWkIvUCIsImFjdGl2YXRvck5hbWUiOiJNYXR0aGV3IiwiY2FsbHNpZ24iOiJNME1aQiIsImNvbW1lbnRzIjoiW3NvdGwuYXNdIiwiZnJlcXVlbmN5Ijo3LjAzNCwibW9kZSI6IkNXIiwic3VtbWl0Q29kZSI6IkcvU0ItMDEwIiwic3VtbWl0TmFtZSI6IkhvdXNlZG9uIEhpbGwiLCJBbHRNIjoyNjgsIkFsdEZ0Ijo4ODAsInBvaW50cyI6MSwidXNlcklEIjo0NjM0MywidHlwZSI6Ik5PUk1BTCIsImxhdGl0dWRlIjo1NS41ODc5NDc4NDU0NTg5ODQsImxvbmdpdHVkZSI6LTIuMTU2NzQ3MTAyNzM3NDI2OCwiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5OTUsInRpbWVTdGFtcCI6IjIwMjYtMDgtMjdUMDU6NDE6MDEuNTk5MzA1WiIsImFjdGl2YXRvckNhbGxzaWduIjoiTTBNWkIvUCIsImFjdGl2YXRvck5hbWUiOiJNYXR0aGV3IiwiY2FsbHNpZ24iOiJSQk5IT0xFIiwiY29tbWVudHMiOiJbUkJOSG9sZV0gYXQgVzFOVCAyNSBXUE0gOCBkQiBTTlIiLCJmcmVxdWVuY3kiOjcuMDM0LCJtb2RlIjoiQ1ciLCJzdW1taXRDb2RlIjoiRy9TQi0wMTAiLCJzdW1taXROYW1lIjoiSG91c2Vkb24gSGlsbCIsIkFsdE0iOjI2OCwiQWx0RnQiOjg4MCwicG9pbnRzIjoxLCJ1c2VySUQiOjE5MzQ0LCJ0eXBlIjpudWxsLCJsYXRpdHVkZSI6NTUuNTg3OTQ3ODQ1NDU4OTg0LCJsb25naXR1ZGUiOi0yLjE1Njc0NzEwMjczNzQyNjgsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc4OTk0LCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI3VDA1OjI4OjAxLjQ5MDIzMVoiLCJhY3RpdmF0b3JDYWxsc2lnbiI6IkRDOFlaL1AiLCJhY3RpdmF0b3JOYW1lIjoiTWljaGFlbCIsImNhbGxzaWduIjoiUkJOSE9MRSIsImNvbW1lbnRzIjoiW1JCTkhvbGVdIGF0IFM1M0EgMjAgV1BNIDI1IGRCIFNOUiIsImZyZXF1ZW5jeSI6Ny4wMzUsIm1vZGUiOiJDVyIsInN1bW1pdENvZGUiOiJETS9CTS0xMzUiLCJzdW1taXROYW1lIjoiSGVzc2VsYmVyZyIsIkFsdE0iOjY4OSwiQWx0RnQiOjIyNjAsInBvaW50cyI6NiwidXNlcklEIjoxOTM0NCwidHlwZSI6bnVsbCwibGF0aXR1ZGUiOjQ5LjA2ODkwMTA2MjAxMTcyLCJsb25naXR1ZGUiOjEwLjUyNTYwMDQzMzM0OTYxLCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk5MywidGltZVN0YW1wIjoiMjAyNi0wOC0yN1QwNTowMjozNC42OTU3ODBaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJKTzRFTVQvMyIsImFjdGl2YXRvck5hbWUiOiJISVJPTk9SSSIsImNhbGxzaWduIjoiSk80RU1UIiwiY29tbWVudHMiOm51bGwsImZyZXF1ZW5jeSI6Ny4wNDEsIm1vZGUiOiIiLCJzdW1taXRDb2RlIjoiSkEvTUUtMDAxIiwic3VtbWl0TmFtZSI6Ik9vZGFpZ2FoYXJhemFuIChIaW5vZGVnYXRha2UpIiwiQWx0TSI6MTY5NSwiQWx0RnQiOjU1NjEsInBvaW50cyI6MTAsInVzZXJJRCI6NTI0MTMsInR5cGUiOiJRUlQiLCJsYXRpdHVkZSI6MzQuMTg1Mjk4OTE5Njc3NzM0LCJsb25naXR1ZGUiOjEzNi4xMDkyMDcxNTMzMjAzLCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk5MiwidGltZVN0YW1wIjoiMjAyNi0wOC0yN1QwNDo1Mjo0OS40ODA2MjBaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJWSzJXUCIsImFjdGl2YXRvck5hbWUiOiJXYWxsaXMiLCJjYWxsc2lnbiI6IlZLMldQIiwiY29tbWVudHMiOiJUa3MgY2hhc2VycyAiLCJmcmVxdWVuY3kiOm51bGwsIm1vZGUiOiIiLCJzdW1taXRDb2RlIjoiVksyL0NULTAwNyIsInN1bW1pdE5hbWUiOiJNb3VudCBMYW1iaWUiLCJBbHRNIjoxMjkwLCJBbHRGdCI6NDIzMiwicG9pbnRzIjo4LCJ1c2VySUQiOjc2ODgsInR5cGUiOiJRUlQiLCJsYXRpdHVkZSI6LTMzLjQ3MTU5OTU3ODg1NzQyLCJsb25naXR1ZGUiOjE0OS45ODg2MDE2ODQ1NzAzLCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk5MSwidGltZVN0YW1wIjoiMjAyNi0wOC0yN1QwNDo0NDowNy42MTc1MzZaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJWSzJXUCIsImFjdGl2YXRvck5hbWUiOiJXYWxsaXMiLCJjYWxsc2lnbiI6IlZLMldQIiwiY29tbWVudHMiOiJIZXJlIiwiZnJlcXVlbmN5Ijo3LjEzNSwibW9kZSI6IlNTQiIsInN1bW1pdENvZGUiOiJWSzIvQ1QtMDA3Iiwic3VtbWl0TmFtZSI6Ik1vdW50IExhbWJpZSIsIkFsdE0iOjEyOTAsIkFsdEZ0Ijo0MjMyLCJwb2ludHMiOjgsInVzZXJJRCI6NzY4OCwidHlwZSI6bnVsbCwibGF0aXR1ZGUiOi0zMy40NzE1OTk1Nzg4NTc0MiwibG9uZ2l0dWRlIjoxNDkuOTg4NjAxNjg0NTcwMywiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5OTAsInRpbWVTdGFtcCI6IjIwMjYtMDgtMjdUMDQ6NDI6MjcuODE4NDM3WiIsImFjdGl2YXRvckNhbGxzaWduIjoiSlMzVVZMLzMiLCJhY3RpdmF0b3JOYW1lIjoiTWFzYW5vcmkiLCJjYWxsc2lnbiI6IkpTM1VWTCIsImNvbW1lbnRzIjpudWxsLCJmcmVxdWVuY3kiOjE0NC4yMSwibW9kZSI6IlNTQiIsInN1bW1pdENvZGUiOiJKQS9TSS0wNjEiLCJzdW1taXROYW1lIjoiVHN1ZGF5YW1hKE9rdXNoaW1heWFtYSkiLCJBbHRNIjo0MjUsIkFsdEZ0IjoxMzk0LCJwb2ludHMiOjEsInVzZXJJRCI6MTAzNTUxLCJ0eXBlIjpudWxsLCJsYXRpdHVkZSI6MzUuMTcwNzAwMDczMjQyMTksImxvbmdpdHVkZSI6MTM2LjA2ODY5NTA2ODM1OTM4LCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk4OSwidGltZVN0YW1wIjoiMjAyNi0wOC0yN1QwNDozNTowNi44MjY3MTRaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJWSzJXUCIsImFjdGl2YXRvck5hbWUiOiJXYWxsaXMiLCJjYWxsc2lnbiI6IlZLMldQIiwiY29tbWVudHMiOiJRcnYsIFNTQiBuZXh0ICIsImZyZXF1ZW5jeSI6Ny4wMzIsIm1vZGUiOiJDVyIsInN1bW1pdENvZGUiOiJWSzIvQ1QtMDA3Iiwic3VtbWl0TmFtZSI6Ik1vdW50IExhbWJpZSIsIkFsdE0iOjEyOTAsIkFsdEZ0Ijo0MjMyLCJwb2ludHMiOjgsInVzZXJJRCI6NzY4OCwidHlwZSI6bnVsbCwibGF0aXR1ZGUiOi0zMy40NzE1OTk1Nzg4NTc0MiwibG9uZ2l0dWRlIjoxNDkuOTg4NjAxNjg0NTcwMywiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5ODgsInRpbWVTdGFtcCI6IjIwMjYtMDgtMjdUMDQ6MTI6MzkuNjg4MjkxWiIsImFjdGl2YXRvckNhbGxzaWduIjoiVksyV1AiLCJhY3RpdmF0b3JOYW1lIjoiV2FsbGlzIiwiY2FsbHNpZ24iOiJWSzJXUCIsImNvbW1lbnRzIjoiUXJ2ICIsImZyZXF1ZW5jeSI6MTQuMDYsIm1vZGUiOiJDVyIsInN1bW1pdENvZGUiOiJWSzIvQ1QtMDA3Iiwic3VtbWl0TmFtZSI6Ik1vdW50IExhbWJpZSIsIkFsdE0iOjEyOTAsIkFsdEZ0Ijo0MjMyLCJwb2ludHMiOjgsInVzZXJJRCI6NzY4OCwidHlwZSI6bnVsbCwibGF0aXR1ZGUiOi0zMy40NzE1OTk1Nzg4NTc0MiwibG9uZ2l0dWRlIjoxNDkuOTg4NjAxNjg0NTcwMywiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5ODcsInRpbWVTdGFtcCI6IjIwMjYtMDgtMjdUMDQ6MDI6MTUuMzMxMDUyWiIsImFjdGl2YXRvckNhbGxzaWduIjoiVksyV1AiLCJhY3RpdmF0b3JOYW1lIjoiV2FsbGlzIiwiY2FsbHNpZ24iOiJWSzJXUCIsImNvbW1lbnRzIjoiUXJ2ICIsImZyZXF1ZW5jeSI6MTguMDg4LCJtb2RlIjoiQ1ciLCJzdW1taXRDb2RlIjoiVksyL0NULTAwNyIsInN1bW1pdE5hbWUiOiJNb3VudCBMYW1iaWUiLCJBbHRNIjoxMjkwLCJBbHRGdCI6NDIzMiwicG9pbnRzIjo4LCJ1c2VySUQiOjc2ODgsInR5cGUiOm51bGwsImxhdGl0dWRlIjotMzMuNDcxNTk5NTc4ODU3NDIsImxvbmdpdHVkZSI6MTQ5Ljk4ODYwMTY4NDU3MDMsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc4OTg2LCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI3VDAzOjQ5OjQzLjY3NjU0NVoiLCJhY3RpdmF0b3JDYWxsc2lnbiI6IlZLMldQIiwiYWN0aXZhdG9yTmFtZSI6IldhbGxpcyIsImNhbGxzaWduIjoiVksyV1AiLCJjb21tZW50cyI6IlNldHRpbmcgdXAiLCJmcmVxdWVuY3kiOjE4LjA4OCwibW9kZSI6IkNXIiwic3VtbWl0Q29kZSI6IlZLMi9DVC0wMDciLCJzdW1taXROYW1lIjoiTW91bnQgTGFtYmllIiwiQWx0TSI6MTI5MCwiQWx0RnQiOjQyMzIsInBvaW50cyI6OCwidXNlcklEIjo3Njg4LCJ0eXBlIjpudWxsLCJsYXRpdHVkZSI6LTMzLjQ3MTU5OTU3ODg1NzQyLCJsb25naXR1ZGUiOjE0OS45ODg2MDE2ODQ1NzAzLCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk4NSwidGltZVN0YW1wIjoiMjAyNi0wOC0yN1QwMjo1NzoyMS41NTE1NzZaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJKUzNVVkwvMyIsImFjdGl2YXRvck5hbWUiOiJNYXNhbm9yaSIsImNhbGxzaWduIjoiSlMyVE5XIiwiY29tbWVudHMiOiJKQ0MjMjMwNCDml6njgY/mkqTlj47jgZnjgovjgZPjgajjgYzjgYLjgorjgb7jgZnjgIIiLCJmcmVxdWVuY3kiOjcuMTE0LCJtb2RlIjoiU1NCIiwic3VtbWl0Q29kZSI6IkpBL1NJLTA2MSIsInN1bW1pdE5hbWUiOiJUc3VkYXlhbWEoT2t1c2hpbWF5YW1hKSIsIkFsdE0iOjQyNSwiQWx0RnQiOjEzOTQsInBvaW50cyI6MSwidXNlcklEIjo5NTYzMywidHlwZSI6bnVsbCwibGF0aXR1ZGUiOjM1LjE3MDcwMDA3MzI0MjE5LCJsb25naXR1ZGUiOjEzNi4wNjg2OTUwNjgzNTkzOCwiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5ODMsInRpbWVTdGFtcCI6IjIwMjYtMDgtMjdUMDI6MzU6NDUuODI1NTQwWiIsImFjdGl2YXRvckNhbGxzaWduIjoiTjdLT00iLCJhY3RpdmF0b3JOYW1lIjoiVGltIiwiY2FsbHNpZ24iOiJON0tPTSIsImNvbW1lbnRzIjoiW1NPVEEgQWN0aXZhdG9yXSBsYXN0IGNhbGxzIiwiZnJlcXVlbmN5IjoxNDQuMSwibW9kZSI6IkNXIiwic3VtbWl0Q29kZSI6Ilc3Ty9DRS0wMDkiLCJzdW1taXROYW1lIjoiUGF1bGluYSBQZWFrIiwiQWx0TSI6MjQzNCwiQWx0RnQiOjc5ODQsInBvaW50cyI6NiwidXNlcklEIjo0Njk0MiwidHlwZSI6bnVsbCwibGF0aXR1ZGUiOjQzLjY4OTIwMTM1NDk4MDQ3LCJsb25naXR1ZGUiOi0xMjEuMjU0Njk5NzA3MDMxMjUsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc4OTgyLCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI3VDAyOjI2OjQ5LjY2ODU1OFoiLCJhY3RpdmF0b3JDYWxsc2lnbiI6Ik43S09NIiwiYWN0aXZhdG9yTmFtZSI6IlRpbSIsImNhbGxzaWduIjoiTjdLT00iLCJjb21tZW50cyI6IltTT1RBIEFjdGl2YXRvcl0gY3EiLCJmcmVxdWVuY3kiOjcuMDYyNSwibW9kZSI6IkNXIiwic3VtbWl0Q29kZSI6Ilc3Ty9DRS0wMDkiLCJzdW1taXROYW1lIjoiUGF1bGluYSBQZWFrIiwiQWx0TSI6MjQzNCwiQWx0RnQiOjc5ODQsInBvaW50cyI6NiwidXNlcklEIjo0Njk0MiwidHlwZSI6bnVsbCwibGF0aXR1ZGUiOjQzLjY4OTIwMTM1NDk4MDQ3LCJsb25naXR1ZGUiOi0xMjEuMjU0Njk5NzA3MDMxMjUsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc4OTgxLCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI3VDAyOjIyOjU5LjYzNzU3MFoiLCJhY3RpdmF0b3JDYWxsc2lnbiI6Ik43S09NIiwiYWN0aXZhdG9yTmFtZSI6IlRpbSIsImNhbGxzaWduIjoiTjdLT00iLCJjb21tZW50cyI6IltTT1RBIEFjdGl2YXRvcl0gY3EiLCJmcmVxdWVuY3kiOjE4LjA4OCwibW9kZSI6IkNXIiwic3VtbWl0Q29kZSI6Ilc3Ty9DRS0wMDkiLCJzdW1taXROYW1lIjoiUGF1bGluYSBQZWFrIiwiQWx0TSI6MjQzNCwiQWx0RnQiOjc5ODQsInBvaW50cyI6NiwidXNlcklEIjo0Njk0MiwidHlwZSI6bnVsbCwibGF0aXR1ZGUiOjQzLjY4OTIwMTM1NDk4MDQ3LCJsb25naXR1ZGUiOi0xMjEuMjU0Njk5NzA3MDMxMjUsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc4OTgwLCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI3VDAyOjE1OjUwLjI3OTc4OFoiLCJhY3RpdmF0b3JDYWxsc2lnbiI6Ik43S09NIiwiYWN0aXZhdG9yTmFtZSI6IlRpbSIsImNhbGxzaWduIjoiTjdLT00iLCJjb21tZW50cyI6IltTT1RBIEFjdGl2YXRvcl0gY3EiLCJmcmVxdWVuY3kiOjE0LjA2MiwibW9kZSI6IkNXIiwic3VtbWl0Q29kZSI6Ilc3Ty9DRS0wMDkiLCJzdW1taXROYW1lIjoiUGF1bGluYSBQZWFrIiwiQWx0TSI6MjQzNCwiQWx0RnQiOjc5ODQsInBvaW50cyI6NiwidXNlcklEIjo0Njk0MiwidHlwZSI6bnVsbCwibGF0aXR1ZGUiOjQzLjY4OTIwMTM1NDk4MDQ3LCJsb25naXR1ZGUiOi0xMjEuMjU0Njk5NzA3MDMxMjUsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc4OTc5LCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI3VDAyOjAzOjI3LjM5MzE4NFoiLCJhY3RpdmF0b3JDYWxsc2lnbiI6Ik43S09NIiwiYWN0aXZhdG9yTmFtZSI6IlRpbSIsImNhbGxzaWduIjoiTjdLT00iLCJjb21tZW50cyI6IltTT1RBIEFjdGl2YXRvcl0gY3EiLCJmcmVxdWVuY3kiOjE0NC4xLCJtb2RlIjoiQ1ciLCJzdW1taXRDb2RlIjoiVzdPL0NFLTAwOSIsInN1bW1pdE5hbWUiOiJQYXVsaW5hIFBlYWsiLCJBbHRNIjoyNDM0LCJBbHRGdCI6Nzk4NCwicG9pbnRzIjo2LCJ1c2VySUQiOjQ2OTQyLCJ0eXBlIjpudWxsLCJsYXRpdHVkZSI6NDMuNjg5MjAxMzU0OTgwNDcsImxvbmdpdHVkZSI6LTEyMS4yNTQ2OTk3MDcwMzEyNSwiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5NzgsInRpbWVTdGFtcCI6IjIwMjYtMDgtMjdUMDE6MjI6MTIuOTE3MDYwWiIsImFjdGl2YXRvckNhbGxzaWduIjoiVksyV1AiLCJhY3RpdmF0b3JOYW1lIjoiV2FsbGlzIiwiY2FsbHNpZ24iOiJWSzJXUCIsImNvbW1lbnRzIjoiUXJ0LCBtb3ZlIHRvIG5leHQgc3VtbWl0ICIsImZyZXF1ZW5jeSI6bnVsbCwibW9kZSI6IiIsInN1bW1pdENvZGUiOiJWSzIvQ1QtMDAyIiwic3VtbWl0TmFtZSI6Ik1vdW50IFRyaWNrZXR0IiwiQWx0TSI6MTM3MSwiQWx0RnQiOjQ0OTgsInBvaW50cyI6OCwidXNlcklEIjo3Njg4LCJ0eXBlIjoiUVJUIiwibGF0aXR1ZGUiOi0zMy44MzMwOTkzNjUyMzQzNzUsImxvbmdpdHVkZSI6MTQ5Ljk4NDIwNzE1MzMyMDMsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc4OTc3LCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI3VDAxOjE5OjAxLjg0Njg1NloiLCJhY3RpdmF0b3JDYWxsc2lnbiI6IlZLMldQIiwiYWN0aXZhdG9yTmFtZSI6IldhbGxpcyIsImNhbGxzaWduIjoiUkJOSE9MRSIsImNvbW1lbnRzIjoiW1JCTkhvbGVdIGF0IFpMM1ggMTkgV1BNIDE2IGRCIFNOUiIsImZyZXF1ZW5jeSI6MTQuMDU5OSwibW9kZSI6IkNXIiwic3VtbWl0Q29kZSI6IlZLMi9DVC0wMDIiLCJzdW1taXROYW1lIjoiTW91bnQgVHJpY2tldHQiLCJBbHRNIjoxMzcxLCJBbHRGdCI6NDQ5OCwicG9pbnRzIjo4LCJ1c2VySUQiOjE5MzQ0LCJ0eXBlIjpudWxsLCJsYXRpdHVkZSI6LTMzLjgzMzA5OTM2NTIzNDM3NSwibG9uZ2l0dWRlIjoxNDkuOTg0MjA3MTUzMzIwMywiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5NzYsInRpbWVTdGFtcCI6IjIwMjYtMDgtMjdUMDE6MDA6MjIuMjI1MDk4WiIsImFjdGl2YXRvckNhbGxzaWduIjoiVksyV1AiLCJhY3RpdmF0b3JOYW1lIjoiV2FsbGlzIiwiY2FsbHNpZ24iOiJWSzJXUCIsImNvbW1lbnRzIjoiQ2FsbGluZyBub3cgIiwiZnJlcXVlbmN5Ijo3LjE0NCwibW9kZSI6IkNXIiwic3VtbWl0Q29kZSI6IlZLMi9DVC0wMDIiLCJzdW1taXROYW1lIjoiTW91bnQgVHJpY2tldHQiLCJBbHRNIjoxMzcxLCJBbHRGdCI6NDQ5OCwicG9pbnRzIjo4LCJ1c2VySUQiOjc2ODgsInR5cGUiOm51bGwsImxhdGl0dWRlIjotMzMuODMzMDk5MzY1MjM0Mzc1LCJsb25naXR1ZGUiOjE0OS45ODQyMDcxNTMzMjAzLCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk3NSwidGltZVN0YW1wIjoiMjAyNi0wOC0yN1QwMDo1NzowMi4wMDgwMzRaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJWSzJXUCIsImFjdGl2YXRvck5hbWUiOiJXYWxsaXMiLCJjYWxsc2lnbiI6IlJCTkhPTEUiLCJjb21tZW50cyI6IltSQk5Ib2xlXSBhdCBWSzNSQVNBIDE5IFdQTSA0IGRCIFNOUiIsImZyZXF1ZW5jeSI6Ny4wMzIxLCJtb2RlIjoiQ1ciLCJzdW1taXRDb2RlIjoiVksyL0NULTAwMiIsInN1bW1pdE5hbWUiOiJNb3VudCBUcmlja2V0dCIsIkFsdE0iOjEzNzEsIkFsdEZ0Ijo0NDk4LCJwb2ludHMiOjgsInVzZXJJRCI6MTkzNDQsInR5cGUiOm51bGwsImxhdGl0dWRlIjotMzMuODMzMDk5MzY1MjM0Mzc1LCJsb25naXR1ZGUiOjE0OS45ODQyMDcxNTMzMjAzLCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk3NCwidGltZVN0YW1wIjoiMjAyNi0wOC0yN1QwMDo0Njo0Ni4xMDEyMTRaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJWSzJXUCIsImFjdGl2YXRvck5hbWUiOiJXYWxsaXMiLCJjYWxsc2lnbiI6IlZLMldQIiwiY29tbWVudHMiOiJRcnYsIFNTQiBuZXh0ICIsImZyZXF1ZW5jeSI6Ny4wMzIsIm1vZGUiOiJDVyIsInN1bW1pdENvZGUiOiJWSzIvQ1QtMDAyIiwic3VtbWl0TmFtZSI6Ik1vdW50IFRyaWNrZXR0IiwiQWx0TSI6MTM3MSwiQWx0RnQiOjQ0OTgsInBvaW50cyI6OCwidXNlcklEIjo3Njg4LCJ0eXBlIjpudWxsLCJsYXRpdHVkZSI6LTMzLjgzMzA5OTM2NTIzNDM3NSwibG9uZ2l0dWRlIjoxNDkuOTg0MjA3MTUzMzIwMywiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5NzMsInRpbWVTdGFtcCI6IjIwMjYtMDgtMjdUMDA6MTQ6MzEuMzMwODQ5WiIsImFjdGl2YXRvckNhbGxzaWduIjoiVksyV1AiLCJhY3RpdmF0b3JOYW1lIjoiV2FsbGlzIiwiY2FsbHNpZ24iOiJWSzJXUCIsImNvbW1lbnRzIjoiU2V0dGluZyB1cCIsImZyZXF1ZW5jeSI6Ny4wMzIsIm1vZGUiOiJDVyIsInN1bW1pdENvZGUiOiJWSzIvQ1QtMDAyIiwic3VtbWl0TmFtZSI6Ik1vdW50IFRyaWNrZXR0IiwiQWx0TSI6MTM3MSwiQWx0RnQiOjQ0OTgsInBvaW50cyI6OCwidXNlcklEIjo3Njg4LCJ0eXBlIjpudWxsLCJsYXRpdHVkZSI6LTMzLjgzMzA5OTM2NTIzNDM3NSwibG9uZ2l0dWRlIjoxNDkuOTg0MjA3MTUzMzIwMywiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5NzIsInRpbWVTdGFtcCI6IjIwMjYtMDgtMjZUMjM6MjQ6MTYuMTA2NzYzWiIsImFjdGl2YXRvckNhbGxzaWduIjoiN04xSUNBLzAiLCJhY3RpdmF0b3JOYW1lIjoiS291IiwiY2FsbHNpZ24iOiI3TjFJQ0EiLCJjb21tZW50cyI6IltTT1RBIEFjdGl2YXRvcl0gamNjMDkwNiIsImZyZXF1ZW5jeSI6Ny4wMDQsIm1vZGUiOiJDVyIsInN1bW1pdENvZGUiOiJKQS9OTi0wNzYiLCJzdW1taXROYW1lIjoiS2lyaWdhbWluZSAoS3VydW1heWFtYSkiLCJBbHRNIjoxOTI1LCJBbHRGdCI6NjMxNiwicG9pbnRzIjoxMCwidXNlcklEIjo5NDg0OCwidHlwZSI6bnVsbCwibGF0aXR1ZGUiOjM2LjEwMjkwMTQ1ODc0MDIzNCwibG9uZ2l0dWRlIjoxMzguMTk2NzAxMDQ5ODA0NywiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5NzEsInRpbWVTdGFtcCI6IjIwMjYtMDgtMjZUMjM6MTc6MDEuNTUxNTUwWiIsImFjdGl2YXRvckNhbGxzaWduIjoiQUk2WEciLCJhY3RpdmF0b3JOYW1lIjoiRGFuIiwiY2FsbHNpZ24iOiJBSTZYRyIsImNvbW1lbnRzIjoiW1NPVEEgQWN0aXZhdG9yXSBRUlQgVFUgQ0hBU0VSUyAiLCJmcmVxdWVuY3kiOjEwLjAsIm1vZGUiOiJDVyIsInN1bW1pdENvZGUiOiJXNi9OUy0xMTUiLCJzdW1taXROYW1lIjoiR3Jhbml0ZSBDaGllZiIsIkFsdE0iOjI3NDUsIkFsdEZ0Ijo5MDA2LCJwb2ludHMiOjgsInVzZXJJRCI6MTI1NjQsInR5cGUiOm51bGwsImxhdGl0dWRlIjozOS4xOTgyMDAyMjU4MzAwOCwibG9uZ2l0dWRlIjotMTIwLjI4NjkwMzM4MTM0NzY2LCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk3MCwidGltZVN0YW1wIjoiMjAyNi0wOC0yNlQyMzoxNjo0Ni45ODIwMzFaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJBSTZYRyIsImFjdGl2YXRvck5hbWUiOiJEYW4iLCJjYWxsc2lnbiI6IkFJNlhHIiwiY29tbWVudHMiOiJbU09UQSBBY3RpdmF0b3JdICIsImZyZXF1ZW5jeSI6MTAuMTEzLCJtb2RlIjoiQ1ciLCJzdW1taXRDb2RlIjoiVzYvTlMtMTE1Iiwic3VtbWl0TmFtZSI6IkdyYW5pdGUgQ2hpZWYiLCJBbHRNIjoyNzQ1LCJBbHRGdCI6OTAwNiwicG9pbnRzIjo4LCJ1c2VySUQiOjEyNTY0LCJ0eXBlIjpudWxsLCJsYXRpdHVkZSI6MzkuMTk4MjAwMjI1ODMwMDgsImxvbmdpdHVkZSI6LTEyMC4yODY5MDMzODEzNDc2NiwiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5NjksInRpbWVTdGFtcCI6IjIwMjYtMDgtMjZUMjM6MDU6NDAuMDk0NDA0WiIsImFjdGl2YXRvckNhbGxzaWduIjoiN04xSUNBLzAiLCJhY3RpdmF0b3JOYW1lIjoiS291IiwiY2FsbHNpZ24iOiI3TjFJQ0EiLCJjb21tZW50cyI6IltTT1RBIEFjdGl2YXRvcl0gIiwiZnJlcXVlbmN5IjoxNDQuMDU4LCJtb2RlIjoiQ1ciLCJzdW1taXRDb2RlIjoiSkEvTk4tMDc2Iiwic3VtbWl0TmFtZSI6IktpcmlnYW1pbmUgKEt1cnVtYXlhbWEpIiwiQWx0TSI6MTkyNSwiQWx0RnQiOjYzMTYsInBvaW50cyI6MTAsInVzZXJJRCI6OTQ4NDgsInR5cGUiOm51bGwsImxhdGl0dWRlIjozNi4xMDI5MDE0NTg3NDAyMzQsImxvbmdpdHVkZSI6MTM4LjE5NjcwMTA0OTgwNDcsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc4OTY4LCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI2VDIzOjA1OjA5LjMzMzYzMFoiLCJhY3RpdmF0b3JDYWxsc2lnbiI6IkFJNlhHIiwiYWN0aXZhdG9yTmFtZSI6IkRhbiIsImNhbGxzaWduIjoiQUk2WEciLCJjb21tZW50cyI6IltTT1RBIEFjdGl2YXRvcl0gIiwiZnJlcXVlbmN5IjoxMC4xMTMsIm1vZGUiOiJDVyIsInN1bW1pdENvZGUiOiJXNi9OUy0xMTUiLCJzdW1taXROYW1lIjoiR3Jhbml0ZSBDaGllZiIsIkFsdE0iOjI3NDUsIkFsdEZ0Ijo5MDA2LCJwb2ludHMiOjgsInVzZXJJRCI6MTI1NjQsInR5cGUiOm51bGwsImxhdGl0dWRlIjozOS4xOTgyMDAyMjU4MzAwOCwibG9uZ2l0dWRlIjotMTIwLjI4NjkwMzM4MTM0NzY2LCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk2NywidGltZVN0YW1wIjoiMjAyNi0wOC0yNlQyMjo1NzoyMS4yMDQ3NDRaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJBSTZYRyIsImFjdGl2YXRvck5hbWUiOiJEYW4iLCJjYWxsc2lnbiI6IkFJNlhHIiwiY29tbWVudHMiOiJbU09UQSBBY3RpdmF0b3JdICIsImZyZXF1ZW5jeSI6MTQuMDYyNSwibW9kZSI6IkNXIiwic3VtbWl0Q29kZSI6Ilc2L05TLTExNSIsInN1bW1pdE5hbWUiOiJHcmFuaXRlIENoaWVmIiwiQWx0TSI6Mjc0NSwiQWx0RnQiOjkwMDYsInBvaW50cyI6OCwidXNlcklEIjoxMjU2NCwidHlwZSI6bnVsbCwibGF0aXR1ZGUiOjM5LjE5ODIwMDIyNTgzMDA4LCJsb25naXR1ZGUiOi0xMjAuMjg2OTAzMzgxMzQ3NjYsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc4OTY2LCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI2VDIyOjU2OjI2LjQwMjI2MVoiLCJhY3RpdmF0b3JDYWxsc2lnbiI6IjdOMUlDQS8wIiwiYWN0aXZhdG9yTmFtZSI6IktvdSIsImNhbGxzaWduIjoiN04xSUNBIiwiY29tbWVudHMiOiJbU09UQSBBY3RpdmF0b3JdICIsImZyZXF1ZW5jeSI6MjguMDU4LCJtb2RlIjoiQ1ciLCJzdW1taXRDb2RlIjoiSkEvTk4tMDc2Iiwic3VtbWl0TmFtZSI6IktpcmlnYW1pbmUgKEt1cnVtYXlhbWEpIiwiQWx0TSI6MTkyNSwiQWx0RnQiOjYzMTYsInBvaW50cyI6MTAsInVzZXJJRCI6OTQ4NDgsInR5cGUiOm51bGwsImxhdGl0dWRlIjozNi4xMDI5MDE0NTg3NDAyMzQsImxvbmdpdHVkZSI6MTM4LjE5NjcwMTA0OTgwNDcsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc4OTY1LCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI2VDIyOjU1OjAyLjM0MDYzMFoiLCJhY3RpdmF0b3JDYWxsc2lnbiI6IjdOMUlDQS8wIiwiYWN0aXZhdG9yTmFtZSI6IktvdSIsImNhbGxzaWduIjoiUkJOSE9MRSIsImNvbW1lbnRzIjoiW1JCTkhvbGVdIGF0IEpOMUlMSyAyMCBXUE0gMjUgZEIgU05SIiwiZnJlcXVlbmN5IjoyMS4wNTgxLCJtb2RlIjoiQ1ciLCJzdW1taXRDb2RlIjoiSkEvTk4tMDc2Iiwic3VtbWl0TmFtZSI6IktpcmlnYW1pbmUgKEt1cnVtYXlhbWEpIiwiQWx0TSI6MTkyNSwiQWx0RnQiOjYzMTYsInBvaW50cyI6MTAsInVzZXJJRCI6MTkzNDQsInR5cGUiOm51bGwsImxhdGl0dWRlIjozNi4xMDI5MDE0NTg3NDAyMzQsImxvbmdpdHVkZSI6MTM4LjE5NjcwMTA0OTgwNDcsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc4OTY0LCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI2VDIyOjQ5OjA3LjIyMDI1NVoiLCJhY3RpdmF0b3JDYWxsc2lnbiI6IkFJNlhHIiwiYWN0aXZhdG9yTmFtZSI6IkRhbiIsImNhbGxzaWduIjoiQUk2WEciLCJjb21tZW50cyI6IltTT1RBIEFjdGl2YXRvcl0gIiwiZnJlcXVlbmN5Ijo3LjA2MTUsIm1vZGUiOiJDVyIsInN1bW1pdENvZGUiOiJXNi9OUy0xMTUiLCJzdW1taXROYW1lIjoiR3Jhbml0ZSBDaGllZiIsIkFsdE0iOjI3NDUsIkFsdEZ0Ijo5MDA2LCJwb2ludHMiOjgsInVzZXJJRCI6MTI1NjQsInR5cGUiOm51bGwsImxhdGl0dWRlIjozOS4xOTgyMDAyMjU4MzAwOCwibG9uZ2l0dWRlIjotMTIwLjI4NjkwMzM4MTM0NzY2LCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk2MywidGltZVN0YW1wIjoiMjAyNi0wOC0yNlQyMjo0MTo1Mi4zMzE1NjFaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiI3TjFJQ0EvMCIsImFjdGl2YXRvck5hbWUiOiJLb3UiLCJjYWxsc2lnbiI6IjdOMUlDQSIsImNvbW1lbnRzIjoiW1NPVEEgQWN0aXZhdG9yXSAiLCJmcmVxdWVuY3kiOjIxLjA1OCwibW9kZSI6IkNXIiwic3VtbWl0Q29kZSI6IkpBL05OLTA3NiIsInN1bW1pdE5hbWUiOiJLaXJpZ2FtaW5lIChLdXJ1bWF5YW1hKSIsIkFsdE0iOjE5MjUsIkFsdEZ0Ijo2MzE2LCJwb2ludHMiOjEwLCJ1c2VySUQiOjk0ODQ4LCJ0eXBlIjpudWxsLCJsYXRpdHVkZSI6MzYuMTAyOTAxNDU4NzQwMjM0LCJsb25naXR1ZGUiOjEzOC4xOTY3MDEwNDk4MDQ3LCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk2MiwidGltZVN0YW1wIjoiMjAyNi0wOC0yNlQyMTo1NzowMS42MTA3MzZaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJXQjJGVVYiLCJhY3RpdmF0b3JOYW1lIjoiTUlLRSIsImNhbGxzaWduIjoiUkJOSE9MRSIsImNvbW1lbnRzIjoiW1JCTkhvbGVdIGF0IFc2WVggMTkgV1BNIDE4IGRCIFNOUiIsImZyZXF1ZW5jeSI6MTQuMDYzLCJtb2RlIjoiQ1ciLCJzdW1taXRDb2RlIjoiVzdZL1RULTE2MSIsInN1bW1pdE5hbWUiOiJTaWduYWwgTW91bnRhaW4iLCJBbHRNIjoyMzU2LCJBbHRGdCI6NzczMCwicG9pbnRzIjo0LCJ1c2VySUQiOjE5MzQ0LCJ0eXBlIjpudWxsLCJsYXRpdHVkZSI6NDMuODQ4ODk5ODQxMzA4NTk0LCJsb25naXR1ZGUiOi0xMTAuNTY3MTAwNTI0OTAyMzQsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc4OTYxLCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI2VDIxOjUwOjAzLjY3OTE3N1oiLCJhY3RpdmF0b3JDYWxsc2lnbiI6IldCMkZVViIsImFjdGl2YXRvck5hbWUiOiJNSUtFIiwiY2FsbHNpZ24iOiJSQk5IT0xFIiwiY29tbWVudHMiOiJbUkJOSG9sZV0gYXQgSzdDTyAxOSBXUE0gOCBkQiBTTlIiLCJmcmVxdWVuY3kiOjcuMDMyLCJtb2RlIjoiQ1ciLCJzdW1taXRDb2RlIjoiVzdZL1RULTE2MSIsInN1bW1pdE5hbWUiOiJTaWduYWwgTW91bnRhaW4iLCJBbHRNIjoyMzU2LCJBbHRGdCI6NzczMCwicG9pbnRzIjo0LCJ1c2VySUQiOjE5MzQ0LCJ0eXBlIjpudWxsLCJsYXRpdHVkZSI6NDMuODQ4ODk5ODQxMzA4NTk0LCJsb25naXR1ZGUiOi0xMTAuNTY3MTAwNTI0OTAyMzQsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc4OTYwLCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI2VDIxOjQ3OjA4LjEyMzc1NVoiLCJhY3RpdmF0b3JDYWxsc2lnbiI6IktYNkkiLCJhY3RpdmF0b3JOYW1lIjoiSmVmZnJ5IiwiY2FsbHNpZ24iOiJLWDZJIiwiY29tbWVudHMiOiJSb2Fkc2lkZSBhY3RpdmF0aW9uIGNvbXBsZXRlZC4uLnRueCEiLCJmcmVxdWVuY3kiOjAuMCwibW9kZSI6IkNXIiwic3VtbWl0Q29kZSI6Ilc3Ty9XVi0xMzgiLCJzdW1taXROYW1lIjoiNzYxIiwiQWx0TSI6MjMyLCJBbHRGdCI6NzYxLCJwb2ludHMiOjEsInVzZXJJRCI6NDczNTUsInR5cGUiOiJRUlQiLCJsYXRpdHVkZSI6NDUuMzk3ODAwNDQ1NTU2NjQsImxvbmdpdHVkZSI6LTEyMi42NjcxOTgxODExNTIzNCwiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5NTksInRpbWVTdGFtcCI6IjIwMjYtMDgtMjZUMjE6NDY6MDEuODQ0ODE1WiIsImFjdGl2YXRvckNhbGxzaWduIjoiV0IyRlVWIiwiYWN0aXZhdG9yTmFtZSI6Ik1JS0UiLCJjYWxsc2lnbiI6IlJCTkhPTEUiLCJjb21tZW50cyI6IltSQk5Ib2xlXSBhdCBXQTdMTlcgMTkgV1BNIDE3IGRCIFNOUiIsImZyZXF1ZW5jeSI6MTAuMTEzLCJtb2RlIjoiQ1ciLCJzdW1taXRDb2RlIjoiVzdZL1RULTE2MSIsInN1bW1pdE5hbWUiOiJTaWduYWwgTW91bnRhaW4iLCJBbHRNIjoyMzU2LCJBbHRGdCI6NzczMCwicG9pbnRzIjo0LCJ1c2VySUQiOjE5MzQ0LCJ0eXBlIjpudWxsLCJsYXRpdHVkZSI6NDMuODQ4ODk5ODQxMzA4NTk0LCJsb25naXR1ZGUiOi0xMTAuNTY3MTAwNTI0OTAyMzQsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc4OTU4LCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI2VDIxOjQwOjMyLjk3MTYxMloiLCJhY3RpdmF0b3JDYWxsc2lnbiI6IlZBNkdPSyIsImFjdGl2YXRvck5hbWUiOiJHb2toYW4iLCJjYWxsc2lnbiI6IlZBNkdPSyIsImNvbW1lbnRzIjoiW1NPVEEgQWN0aXZhdG9yXSByZWFkeSB3aXRoIFZBNlRUWCBhbmQgVkE2Q1RUIiwiZnJlcXVlbmN5IjoxNC4zMzcsIm1vZGUiOiJTU0IiLCJzdW1taXRDb2RlIjoiVkU1L1NQLTAwMSIsInN1bW1pdE5hbWUiOiJDeXByZXNzIEhpbGxzIEZpcmUgTG9va291dCIsIkFsdE0iOjEzNzMsIkFsdEZ0Ijo0NTA0LCJwb2ludHMiOjEwLCJ1c2VySUQiOjE4Mjc1LCJ0eXBlIjpudWxsLCJsYXRpdHVkZSI6NDkuNjQ5NzAwMTY0Nzk0OTIsImxvbmdpdHVkZSI6LTEwOS45ODEzOTk1MzYxMzI4MSwiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5NTcsInRpbWVTdGFtcCI6IjIwMjYtMDgtMjZUMjE6Mzc6MDIuODE1OTExWiIsImFjdGl2YXRvckNhbGxzaWduIjoiV0IyRlVWIiwiYWN0aXZhdG9yTmFtZSI6Ik1JS0UiLCJjYWxsc2lnbiI6IlJCTkhPTEUiLCJjb21tZW50cyI6IltSQk5Ib2xlXSBhdCBLMVJBIDE5IFdQTSAxMCBkQiBTTlIiLCJmcmVxdWVuY3kiOjE4LjA5LCJtb2RlIjoiQ1ciLCJzdW1taXRDb2RlIjoiVzdZL1RULTE2MSIsInN1bW1pdE5hbWUiOiJTaWduYWwgTW91bnRhaW4iLCJBbHRNIjoyMzU2LCJBbHRGdCI6NzczMCwicG9pbnRzIjo0LCJ1c2VySUQiOjE5MzQ0LCJ0eXBlIjpudWxsLCJsYXRpdHVkZSI6NDMuODQ4ODk5ODQxMzA4NTk0LCJsb25naXR1ZGUiOi0xMTAuNTY3MTAwNTI0OTAyMzQsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In0seyJpZCI6Mzc4OTU2LCJ0aW1lU3RhbXAiOiIyMDI2LTA4LTI2VDIxOjM2OjUwLjM2MTYwMFoiLCJhY3RpdmF0b3JDYWxsc2lnbiI6IktYNkkiLCJhY3RpdmF0b3JOYW1lIjoiSmVmZnJ5IiwiY2FsbHNpZ24iOiJLWDZJIiwiY29tbWVudHMiOiJCcmllZiAybSBhY3RpdmF0aW9uIiwiZnJlcXVlbmN5IjoxNDQuMSwibW9kZSI6IkNXIiwic3VtbWl0Q29kZSI6Ilc3Ty9XVi0xMzgiLCJzdW1taXROYW1lIjoiNzYxIiwiQWx0TSI6MjMyLCJBbHRGdCI6NzYxLCJwb2ludHMiOjEsInVzZXJJRCI6NDczNTUsInR5cGUiOiJOT1JNQUwiLCJsYXRpdHVkZSI6NDUuMzk3ODAwNDQ1NTU2NjQsImxvbmdpdHVkZSI6LTEyMi42NjcxOTgxODExNTIzNCwiZXBvY2giOiI3YjhmM2MzZC1iMDg5LTRjYmUtOWYyOS0wNzNkZDMzYjJkOTkifSx7ImlkIjozNzg5NTUsInRpbWVTdGFtcCI6IjIwMjYtMDgtMjZUMjE6MzQ6MTUuNzQwODM2WiIsImFjdGl2YXRvckNhbGxzaWduIjoiVkE2R09LIiwiYWN0aXZhdG9yTmFtZSI6Ikdva2hhbiIsImNhbGxzaWduIjoiVkE2R09LIiwiY29tbWVudHMiOiJbU09UQSBBY3RpdmF0b3JdIHJlYWR5IHdpdGggVkE2VFRYIGFuZCBWQTZDVFQiLCJmcmVxdWVuY3kiOjE0LjMyNSwibW9kZSI6IlNTQiIsInN1bW1pdENvZGUiOiJWRTUvU1AtMDAxIiwic3VtbWl0TmFtZSI6IkN5cHJlc3MgSGlsbHMgRmlyZSBMb29rb3V0IiwiQWx0TSI6MTM3MywiQWx0RnQiOjQ1MDQsInBvaW50cyI6MTAsInVzZXJJRCI6MTgyNzUsInR5cGUiOm51bGwsImxhdGl0dWRlIjo0OS42NDk3MDAxNjQ3OTQ5MiwibG9uZ2l0dWRlIjotMTA5Ljk4MTM5OTUzNjEzMjgxLCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk1NCwidGltZVN0YW1wIjoiMjAyNi0wOC0yNlQyMToyNzowMS45NDQzMDdaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJXQjJGVVYiLCJhY3RpdmF0b3JOYW1lIjoiTUlLRSIsImNhbGxzaWduIjoiUkJOSE9MRSIsImNvbW1lbnRzIjoiW1JCTkhvbGVdIGF0IEsxUkEgMTkgV1BNIDkgZEIgU05SIiwiZnJlcXVlbmN5IjoxOC4wOSwibW9kZSI6IkNXIiwic3VtbWl0Q29kZSI6Ilc3WS9UVC0xNjEiLCJzdW1taXROYW1lIjoiU2lnbmFsIE1vdW50YWluIiwiQWx0TSI6MjM1NiwiQWx0RnQiOjc3MzAsInBvaW50cyI6NCwidXNlcklEIjoxOTM0NCwidHlwZSI6bnVsbCwibGF0aXR1ZGUiOjQzLjg0ODg5OTg0MTMwODU5NCwibG9uZ2l0dWRlIjotMTEwLjU2NzEwMDUyNDkwMjM0LCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk1MywidGltZVN0YW1wIjoiMjAyNi0wOC0yNlQyMToxMTowMi40NjE2NjRaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJXQjJGVVYiLCJhY3RpdmF0b3JOYW1lIjoiTUlLRSIsImNhbGxzaWduIjoiUkJOSE9MRSIsImNvbW1lbnRzIjoiW1JCTkhvbGVdIGF0IE5EN0sgMTYgV1BNIDE3IGRCIFNOUiIsImZyZXF1ZW5jeSI6MTQuMDYxOSwibW9kZSI6IkNXIiwic3VtbWl0Q29kZSI6Ilc3WS9UVC0xNjEiLCJzdW1taXROYW1lIjoiU2lnbmFsIE1vdW50YWluIiwiQWx0TSI6MjM1NiwiQWx0RnQiOjc3MzAsInBvaW50cyI6NCwidXNlcklEIjoxOTM0NCwidHlwZSI6bnVsbCwibGF0aXR1ZGUiOjQzLjg0ODg5OTg0MTMwODU5NCwibG9uZ2l0dWRlIjotMTEwLjU2NzEwMDUyNDkwMjM0LCJlcG9jaCI6IjdiOGYzYzNkLWIwODktNGNiZS05ZjI5LTA3M2RkMzNiMmQ5OSJ9LHsiaWQiOjM3ODk1MiwidGltZVN0YW1wIjoiMjAyNi0wOC0yNlQyMTowMzo1Ny40NjkxMzZaIiwiYWN0aXZhdG9yQ2FsbHNpZ24iOiJLRjdMSUwiLCJhY3RpdmF0b3JOYW1lIjoiRGlhbmEiLCJjYWxsc2lnbiI6IktGN0xJTCIsImNvbW1lbnRzIjoiVFUgQ2hhc2VycyA3MyEhIiwiZnJlcXVlbmN5IjoxNC4yNjIsIm1vZGUiOiIiLCJzdW1taXRDb2RlIjoiVzdBL0FXLTAwOSIsInN1bW1pdE5hbWUiOiJQaW5hbCBQZWFrIiwiQWx0TSI6MjM5MywiQWx0RnQiOjc4NDgsInBvaW50cyI6MTAsInVzZXJJRCI6MTAxNDU4LCJ0eXBlIjoiUVJUIiwibGF0aXR1ZGUiOjMzLjI4MjI5OTA0MTc0ODA1LCJsb25naXR1ZGUiOi0xMTAuODIxMTk3NTA5NzY1NjIsImVwb2NoIjoiN2I4ZjNjM2QtYjA4OS00Y2JlLTlmMjktMDczZGQzM2IyZDk5In1d
+  recorded_at: Thu, 27 Aug 2026 06:24:57 GMT
+- request:
+    method: get
+    uri: https://api.pota.app/spot/activator
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - 'ontheair.nz [v3.0] (contact: admin@ontheair.nz)'
+      Host:
+      - api.pota.app
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+      Content-Length:
+      - '3795'
+      Connection:
+      - keep-alive
+      Date:
+      - Thu, 27 Aug 2026 06:24:56 GMT
+      Access-Control-Max-Age:
+      - '86400'
+      X-Amzn-Requestid:
+      - 0fc29300-bf5d-4e11-972b-89a9fcb3921e
+      Access-Control-Allow-Origin:
+      - "*"
+      X-Amz-Apigw-Id:
+      - Cv642F7GiYcEhig=
+      Isbase64encoded:
+      - 'false'
+      X-Amzn-Trace-Id:
+      - Root=1-6a8fd838-5da6b78237f4b3a912102b82;Parent=7babd2b1dba2653c;Sampled=0;Lineage=1:549b2822:0
+      X-Cache:
+      - Hit from cloudfront
+      Via:
+      - 1.1 21f9024a51198e619157d05134c6b824.cloudfront.net (CloudFront)
+      X-Amz-Cf-Pop:
+      - SFO53-P4
+      X-Amz-Cf-Id:
+      - 7mZIumwaYINMiiSgF2xWw1C-kCXFhhaMz5S-SHOzVxb4BCr1QHyjng==
+      Age:
+      - '2'
+    body:
+      encoding: ASCII-8BIT
+      string: '[{"spotId": 55743579, "activator": "M7KOD", "frequency": "14293", "mode":
+        "SSB", "reference": "GB-1012", "parkName": null, "spotTime": "2026-08-27T06:24:51",
+        "spotter": "M7KOD", "comments": "Beam Africa", "source": "Web", "invalid":
+        null, "name": "Great Orme Country Park", "locationDesc": "GB-WLS", "grid4":
+        "IO83", "grid6": "IO83bh", "latitude": 53.332, "longitude": -3.85115, "count":
+        64, "expire": 1799}, {"spotId": 55743576, "activator": "IU1PZC", "frequency":
+        "10115.0", "mode": "CW", "reference": "IT-0803", "parkName": null, "spotTime":
+        "2026-08-27T06:24:25", "spotter": "KM3T-5-#", "comments": "RBN 6 dB 23 WPM
+        via KM3T-5-#", "source": "RBN", "invalid": null, "name": "Fiume Po - tratto
+        vercellese alessandrino Natura 2000", "locationDesc": "IT-PM", "grid4": "JN45",
+        "grid6": "JN45hb", "latitude": 45.0449, "longitude": 8.62075, "count": 11,
+        "expire": 1773}, {"spotId": 55743430, "activator": "I/OK4SU/P", "frequency":
+        "7036.0", "mode": "CW", "reference": "IT-1683", "parkName": null, "spotTime":
+        "2026-08-27T06:01:22", "spotter": "DM6EE-#", "comments": "RBN 11 dB 25 WPM
+        via DM6EE-#", "source": "RBN", "invalid": null, "name": "Lago di Misurina
+        Natura 2000", "locationDesc": "IT-VN", "grid4": "JN66", "grid6": "JN66dn",
+        "latitude": 46.5833, "longitude": 12.2597, "count": 2, "expire": 390}, {"spotId":
+        55743564, "activator": "JE6BPK/6", "frequency": "14044.0", "mode": "", "reference":
+        "JP-1698", "parkName": null, "spotTime": "2026-08-27T06:21:20", "spotter":
+        "JE6BPK", "comments": "TNX QRT", "source": "Web", "invalid": null, "name":
+        "Sefuriraizan Prefectural Nature Park", "locationDesc": "JP-FO", "grid4":
+        "PM53", "grid6": "PM53ek", "latitude": 33.4344, "longitude": 130.389, "count":
+        5, "expire": 1588}, {"spotId": 55743461, "activator": "JG3LUX/P", "frequency":
+        "7041", "mode": "FT8", "reference": "JP-1465", "parkName": null, "spotTime":
+        "2026-08-27T06:07:26", "spotter": "JG3LUX", "comments": "QRT TNX!", "source":
+        "Web", "invalid": null, "name": "Owari Koiki Ryokudo Prefectural Park", "locationDesc":
+        "JP-AI", "grid4": "PM85", "grid6": "PM85lh", "latitude": 35.3011, "longitude":
+        136.956, "count": 3, "expire": 754}, {"spotId": 55743431, "activator": "F4FSZ",
+        "frequency": "7014.0", "mode": "CW", "reference": "FR-16791", "parkName":
+        null, "spotTime": "2026-08-27T06:01:31", "spotter": "F4FSZ", "comments": "QRT
+        TNX", "source": "Web", "invalid": null, "name": "voge et bassigny Biological
+        Reserve", "locationDesc": "FR-GES", "grid4": "JN38", "grid6": "JN38bb", "latitude":
+        48.0557, "longitude": 6.15211, "count": 3, "expire": 399}, {"spotId": 55743565,
+        "activator": "JJ2CJB/P", "frequency": "7041", "mode": "FT8", "reference":
+        "JP-1290", "parkName": null, "spotTime": "2026-08-27T06:21:36", "spotter":
+        "JJ2CJB", "comments": "FT8", "source": "Web", "invalid": null, "name": "Jinba
+        Sagamiko Prefectural Nature Park", "locationDesc": "JP-KN", "grid4": "PM95",
+        "grid6": "PM95np", "latitude": 35.6581, "longitude": 139.154, "count": 4,
+        "expire": 1604}, {"spotId": 55743578, "activator": "Z31PM", "frequency": "14074",
+        "mode": "FT8", "reference": "MK-0001", "parkName": null, "spotTime": "2026-08-27T06:24:46",
+        "spotter": "DM1CHL", "comments": "", "source": "GT", "invalid": null, "name":
+        "Ohrid region World Heritage Site", "locationDesc": "MK-DA,MK-OD,MK-UG", "grid4":
+        "KN01", "grid6": "KN01ie", "latitude": 41.1969, "longitude": 20.7434, "count":
+        10, "expire": 1794}, {"spotId": 55743510, "activator": "JI8LHC/8", "frequency":
+        "7006", "mode": "", "reference": "JP-1015", "parkName": null, "spotTime":
+        "2026-08-27T06:12:08", "spotter": "JI8LHC", "comments": "JCC 0117", "source":
+        "Web", "invalid": null, "name": "Nopporo Sports Prefectural Park", "locationDesc":
+        "JP-HK", "grid4": "QN03", "grid6": "QN03sb", "latitude": 43.0692, "longitude":
+        141.531, "count": 1, "expire": 1036}]'
+  recorded_at: Thu, 27 Aug 2026 06:24:58 GMT
+- request:
+    method: get
+    uri: https://llota.app/api/spots
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - 'ontheair.nz [v3.0] (contact: admin@ontheair.nz)'
+      Host:
+      - llota.app
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 27 Aug 2026 06:24:58 GMT
+      Content-Type:
+      - application/json; charset=utf-8
+      Content-Length:
+      - '2'
+      Connection:
+      - keep-alive
+      Server:
+      - cloudflare
+      Nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      X-Powered-By:
+      - Express
+      Access-Control-Allow-Origin:
+      - https://llota.app
+      Vary:
+      - Origin
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Ratelimit-Policy:
+      - 1000;w=900
+      Ratelimit-Limit:
+      - '1000'
+      Ratelimit-Remaining:
+      - '999'
+      Ratelimit-Reset:
+      - '900'
+      Etag:
+      - W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"
+      X-Cache-Status:
+      - HIT
+      X-Served-By:
+      - llota.app
+      Cf-Cache-Status:
+      - DYNAMIC
+      Report-To:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=dgc8%2FFrdqYcZUdfQU2vo5hQgext85eoKooflR4tP5FmfW%2BQxWVJ5LAADrvu0sLl2Q288%2FPYaZGxIcz%2FsrHKRAzCpvkPr8EunHnkMHQ07gwpGY3f9ahqonJGr1Fc%3D"}]}'
+      Cf-Ray:
+      - a318ff0c29fcd853-MEL
+      Alt-Svc:
+      - h3=":443"; ma=86400
+    body:
+      encoding: UTF-8
+      string: "[]"
+  recorded_at: Thu, 27 Aug 2026 06:24:58 GMT
+- request:
+    method: get
+    uri: https://spots.wwff.co/static/spots.json
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - 'ontheair.nz [v3.0] (contact: admin@ontheair.nz)'
+      Host:
+      - spots.wwff.co
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Server:
+      - openresty
+      Date:
+      - Thu, 27 Aug 2026 06:25:00 GMT
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '26530'
+      Connection:
+      - keep-alive
+      Last-Modified:
+      - Thu, 27 Aug 2026 06:00:01 GMT
+      Etag:
+      - '"67a2-65a010bec9208"'
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - "*"
+      Access-Control-Allow-Methods:
+      - GET, OPTIONS
+      Cache-Control:
+      - public, max-age=60
+      Strict-Transport-Security:
+      - max-age=63072000; preload
+      X-Served-By:
+      - spots.wwff.co
+    body:
+      encoding: UTF-8
+      string: |-
+        [
+            {
+                "id": 138362,
+                "activator": "I/OK4SU/P",
+                "frequency_khz": 7036,
+                "mode": "CW",
+                "reference": "IFF-2508",
+                "reference_name": "Natura 2000 - Lago di Misurina",
+                "remarks": "",
+                "spotter": "I/OK4SU/P",
+                "latitude": 46.58333,
+                "longitude": 12.25972,
+                "spot_time": 1787809670,
+                "spot_time_formatted": "2026-08-27 05:47:50"
+            },
+            {
+                "id": 138361,
+                "activator": "VK3TDK",
+                "frequency_khz": 7135,
+                "mode": "SSB",
+                "reference": "VKFF-0164",
+                "reference_name": "Eurobodalla National Park",
+                "remarks": "[PW]",
+                "spotter": "VK3MLT",
+                "latitude": -36.1029,
+                "longitude": 150.1308,
+                "spot_time": 1787809316,
+                "spot_time_formatted": "2026-08-27 05:41:56"
+            },
+            {
+                "id": 138360,
+                "activator": "VK4DTS",
+                "frequency_khz": 7144,
+                "mode": "SSB",
+                "reference": "VKFF-0216",
+                "reference_name": "K'Gari (Fraser Island) Great Sandy National Park",
+                "remarks": "Qrt",
+                "spotter": "VK4DTS",
+                "latitude": -25.4791,
+                "longitude": 153.11369,
+                "spot_time": 1787808236,
+                "spot_time_formatted": "2026-08-27 05:23:56"
+            },
+            {
+                "id": 138358,
+                "activator": "Z31PM",
+                "frequency_khz": 14074,
+                "mode": "FT8",
+                "reference": "Z3FF-0077",
+                "reference_name": "Ohrid Region (Ohrid and Struga area)",
+                "remarks": "",
+                "spotter": "Z31PM",
+                "latitude": 41.19694,
+                "longitude": 20.74344,
+                "spot_time": 1787807483,
+                "spot_time_formatted": "2026-08-27 05:11:23"
+            },
+            {
+                "id": 138353,
+                "activator": "VK1AO",
+                "frequency_khz": 14044,
+                "mode": "CW",
+                "reference": "VKFF-0608",
+                "reference_name": "Tilligerry National Park",
+                "remarks": "QRT",
+                "spotter": "VK3PF",
+                "latitude": -32.77,
+                "longitude": 151.9559,
+                "spot_time": 1787806039,
+                "spot_time_formatted": "2026-08-27 04:47:19"
+            },
+            {
+                "id": 138349,
+                "activator": "VK1GM",
+                "frequency_khz": 7144,
+                "mode": "SSB",
+                "reference": "VKFF-0608",
+                "reference_name": "Tilligerry National Park",
+                "remarks": "Calling cq ",
+                "spotter": "VK1GM",
+                "latitude": -32.77,
+                "longitude": 151.9559,
+                "spot_time": 1787800882,
+                "spot_time_formatted": "2026-08-27 03:21:22"
+            },
+            {
+                "id": 138342,
+                "activator": "W3KCD",
+                "frequency_khz": 14225,
+                "mode": "SSB",
+                "reference": "KFF-5302",
+                "reference_name": "Cape May Coastal Wetlands",
+                "remarks": "",
+                "spotter": "W3KCD",
+                "latitude": 39.05718,
+                "longitude": -74.82399,
+                "spot_time": 1787797704,
+                "spot_time_formatted": "2026-08-27 02:28:24"
+            },
+            {
+                "id": 138337,
+                "activator": "VA4ADM",
+                "frequency_khz": 7026,
+                "mode": "CW",
+                "reference": "VEFF-0529",
+                "reference_name": "Birds Hill Provincial Park",
+                "remarks": "Re-spotted via RBN",
+                "spotter": "K4PP",
+                "latitude": 50.02758,
+                "longitude": -96.88705,
+                "spot_time": 1787795692,
+                "spot_time_formatted": "2026-08-27 01:54:52"
+            },
+            {
+                "id": 138336,
+                "activator": "VK2HBG/P",
+                "frequency_khz": 7144,
+                "mode": "SSB",
+                "reference": "VKFF-1163",
+                "reference_name": "Bungonia National Park",
+                "remarks": "New park",
+                "spotter": "VK2IO",
+                "latitude": -34.8012,
+                "longitude": 150.0202,
+                "spot_time": 1787795655,
+                "spot_time_formatted": "2026-08-27 01:54:15"
+            },
+            {
+                "id": 138334,
+                "activator": "N7MES",
+                "frequency_khz": 14270,
+                "mode": "SSB",
+                "reference": "KFF-2854",
+                "reference_name": "South Beach",
+                "remarks": "QSY moving up 2",
+                "spotter": "N7MES",
+                "latitude": 44.60519,
+                "longitude": -124.06042,
+                "spot_time": 1787794405,
+                "spot_time_formatted": "2026-08-27 01:33:25"
+            },
+            {
+                "id": 138327,
+                "activator": "N7BBQ",
+                "frequency_khz": 18084,
+                "mode": "CW",
+                "reference": "KFF-3265",
+                "reference_name": "Seaquest",
+                "remarks": "Re-spotted via RBN",
+                "spotter": "VE4DRK",
+                "latitude": 46.30054,
+                "longitude": -122.81741,
+                "spot_time": 1787792097,
+                "spot_time_formatted": "2026-08-27 00:54:57"
+            },
+            {
+                "id": 138314,
+                "activator": "K0BUF",
+                "frequency_khz": 14034.4,
+                "mode": "CW",
+                "reference": "KFF-0064",
+                "reference_name": "Shenandoah",
+                "remarks": "Re-spotted via RBN",
+                "spotter": "K9IMM",
+                "latitude": 38.3045,
+                "longitude": -78.57725,
+                "spot_time": 1787788873,
+                "spot_time_formatted": "2026-08-27 00:01:13"
+            },
+            {
+                "id": 138312,
+                "activator": "WB0RLJ",
+                "frequency_khz": 10118.5,
+                "mode": "CW",
+                "reference": "KFF-4011",
+                "reference_name": "Chalco Hills",
+                "remarks": "Re-spotted via RBN",
+                "spotter": "N2EPE",
+                "latitude": 41.1709,
+                "longitude": -96.1556,
+                "spot_time": 1787787912,
+                "spot_time_formatted": "2026-08-26 23:45:12"
+            },
+            {
+                "id": 138308,
+                "activator": "VK2BYF",
+                "frequency_khz": 7150,
+                "mode": "SSB",
+                "reference": "VKFF-1903",
+                "reference_name": "Cambewarra Range Nature Reserve",
+                "remarks": "Bob still calling here",
+                "spotter": "VK2IO",
+                "latitude": -34.775,
+                "longitude": 150.53841,
+                "spot_time": 1787786142,
+                "spot_time_formatted": "2026-08-26 23:15:42"
+            },
+            {
+                "id": 138296,
+                "activator": "K3MTO",
+                "frequency_khz": 10119,
+                "mode": "CW",
+                "reference": "KFF-1884",
+                "reference_name": "John D. MacArthur Beach",
+                "remarks": "",
+                "spotter": "K3MTO",
+                "latitude": 26.82464,
+                "longitude": -80.04404,
+                "spot_time": 1787781343,
+                "spot_time_formatted": "2026-08-26 21:55:43"
+            },
+            {
+                "id": 138293,
+                "activator": "VE2JCW",
+                "frequency_khz": 14062,
+                "mode": "CW",
+                "reference": "VEFF-2431",
+                "reference_name": "Parc nature du Lac-J\u00e9r\u00f4me",
+                "remarks": "Re-spotted via RBN",
+                "spotter": "N4HAC",
+                "latitude": 45.79861,
+                "longitude": -73.97292,
+                "spot_time": 1787779645,
+                "spot_time_formatted": "2026-08-26 21:27:25"
+            },
+            {
+                "id": 138291,
+                "activator": "W3GTR",
+                "frequency_khz": 21056,
+                "mode": "CW",
+                "reference": "KFF-1572",
+                "reference_name": "Franklin Point",
+                "remarks": "",
+                "spotter": "W3GTR",
+                "latitude": 38.81392,
+                "longitude": -76.51221,
+                "spot_time": 1787779030,
+                "spot_time_formatted": "2026-08-26 21:17:10"
+            },
+            {
+                "id": 138286,
+                "activator": "AF8E",
+                "frequency_khz": 7042.5,
+                "mode": "CW",
+                "reference": "KFF-4527",
+                "reference_name": "Wayne",
+                "remarks": "Re-spotted via RBN",
+                "spotter": "K7EK",
+                "latitude": 39.35979,
+                "longitude": -81.88934,
+                "spot_time": 1787778130,
+                "spot_time_formatted": "2026-08-26 21:02:10"
+            },
+            {
+                "id": 138281,
+                "activator": "K3ES",
+                "frequency_khz": 7049.4,
+                "mode": "CW",
+                "reference": "KFF-1737",
+                "reference_name": "Fort DuPont",
+                "remarks": "Re-spotted via RBN",
+                "spotter": "W8WWV",
+                "latitude": 39.57312,
+                "longitude": -75.58123,
+                "spot_time": 1787777451,
+                "spot_time_formatted": "2026-08-26 20:50:51"
+            },
+            {
+                "id": 138274,
+                "activator": "K4LAS",
+                "frequency_khz": 7255,
+                "mode": "SSB",
+                "reference": "KFF-1308",
+                "reference_name": "Mason Neck",
+                "remarks": "CQ",
+                "spotter": "K4LAS",
+                "latitude": 38.64384,
+                "longitude": -77.19878,
+                "spot_time": 1787776734,
+                "spot_time_formatted": "2026-08-26 20:38:54"
+            },
+            {
+                "id": 138253,
+                "activator": "N9JF",
+                "frequency_khz": 14050.6,
+                "mode": "CW",
+                "reference": "KFF-0375",
+                "reference_name": "Clarence Cannon",
+                "remarks": "",
+                "spotter": "N9JF",
+                "latitude": 39.26605,
+                "longitude": -90.78136,
+                "spot_time": 1787773224,
+                "spot_time_formatted": "2026-08-26 19:40:24"
+            },
+            {
+                "id": 138251,
+                "activator": "KQ4LQO",
+                "frequency_khz": 14222,
+                "mode": "SSB",
+                "reference": "KFF-3056",
+                "reference_name": "Sheldon Lake",
+                "remarks": "Re-spot from web",
+                "spotter": "KQ4LQO",
+                "latitude": 29.87668,
+                "longitude": -95.16836,
+                "spot_time": 1787772936,
+                "spot_time_formatted": "2026-08-26 19:35:36"
+            },
+            {
+                "id": 138250,
+                "activator": "VE1MDF",
+                "frequency_khz": 14074,
+                "mode": "FT8",
+                "reference": "VEFF-0945",
+                "reference_name": "Sandy Lake Park",
+                "remarks": "",
+                "spotter": "VE1MDF",
+                "latitude": 44.73608,
+                "longitude": -63.69488,
+                "spot_time": 1787772892,
+                "spot_time_formatted": "2026-08-26 19:34:52"
+            },
+            {
+                "id": 138249,
+                "activator": "VE3LJW",
+                "frequency_khz": 14276,
+                "mode": "SSB",
+                "reference": "VEFF-4374",
+                "reference_name": "Canal Park (Desjardins)",
+                "remarks": "",
+                "spotter": "VE3LJW",
+                "latitude": 43.26761,
+                "longitude": -79.94131,
+                "spot_time": 1787772163,
+                "spot_time_formatted": "2026-08-26 19:22:43"
+            },
+            {
+                "id": 138243,
+                "activator": "VE9MY",
+                "frequency_khz": 14316,
+                "mode": "SSB",
+                "reference": "VEFF-0099",
+                "reference_name": "Thousand Islands National Park (SLINP)",
+                "remarks": "with VE9GLF",
+                "spotter": "VE2GT",
+                "latitude": 44.34278,
+                "longitude": -76.05094,
+                "spot_time": 1787769168,
+                "spot_time_formatted": "2026-08-26 18:32:48"
+            },
+            {
+                "id": 138239,
+                "activator": "K2CAF",
+                "frequency_khz": 14347,
+                "mode": "SSB",
+                "reference": "KFF-5806",
+                "reference_name": "Fellsmere",
+                "remarks": "QRT",
+                "spotter": "K2CAF",
+                "latitude": 27.8225,
+                "longitude": -80.6717,
+                "spot_time": 1787767755,
+                "spot_time_formatted": "2026-08-26 18:09:15"
+            },
+            {
+                "id": 138235,
+                "activator": "OK1MVA/P",
+                "frequency_khz": 14117,
+                "mode": "SSB",
+                "reference": "OKFF-1979",
+                "reference_name": "PP Oborska luka",
+                "remarks": "",
+                "spotter": "OK1MVA/P",
+                "latitude": 50.4727,
+                "longitude": 15.30324,
+                "spot_time": 1787766548,
+                "spot_time_formatted": "2026-08-26 17:49:08"
+            },
+            {
+                "id": 138233,
+                "activator": "DC4AR",
+                "frequency_khz": 7111,
+                "mode": "SSB",
+                "reference": "DLFF-0128",
+                "reference_name": "Nature Park Th\u00fcringer Wald",
+                "remarks": "",
+                "spotter": "DC4AR",
+                "latitude": 50.73037,
+                "longitude": 10.69382,
+                "spot_time": 1787766275,
+                "spot_time_formatted": "2026-08-26 17:44:35"
+            },
+            {
+                "id": 138229,
+                "activator": "KE2CIE",
+                "frequency_khz": 14337,
+                "mode": "SSB",
+                "reference": "KFF-1540",
+                "reference_name": "Sleepy Hollow",
+                "remarks": "",
+                "spotter": "KE2CIE",
+                "latitude": 42.94095,
+                "longitude": -84.40417,
+                "spot_time": 1787765402,
+                "spot_time_formatted": "2026-08-26 17:30:02"
+            },
+            {
+                "id": 138224,
+                "activator": "KD8IE",
+                "frequency_khz": 14040,
+                "mode": "CW",
+                "reference": "KFF-1941",
+                "reference_name": "Catawba Island",
+                "remarks": "Re-spotted via RBN",
+                "spotter": "VE4DRK",
+                "latitude": 41.57378,
+                "longitude": -82.85617,
+                "spot_time": 1787764768,
+                "spot_time_formatted": "2026-08-26 17:19:28"
+            },
+            {
+                "id": 138220,
+                "activator": "AE7I",
+                "frequency_khz": 144100,
+                "mode": "CW",
+                "reference": "KFF-4496",
+                "reference_name": "Tahoe",
+                "remarks": "QSY",
+                "spotter": "AE7I",
+                "latitude": 39.53712,
+                "longitude": -120.56586,
+                "spot_time": 1787764324,
+                "spot_time_formatted": "2026-08-26 17:12:04"
+            },
+            {
+                "id": 138212,
+                "activator": "OE/DL7PIA",
+                "frequency_khz": 7187,
+                "mode": "SSB",
+                "reference": "OEFF-0352",
+                "reference_name": "Almsee und Umgebung",
+                "remarks": "+ POTA",
+                "spotter": "DL7PIA",
+                "latitude": 47.75487,
+                "longitude": 13.95836,
+                "spot_time": 1787762544,
+                "spot_time_formatted": "2026-08-26 16:42:24"
+            },
+            {
+                "id": 138206,
+                "activator": "DD6FM/P",
+                "frequency_khz": 7098,
+                "mode": "SSB",
+                "reference": "DLFF-0671",
+                "reference_name": "Haardtrand - Auf dem Kirchberg",
+                "remarks": "",
+                "spotter": "DD6FM/P",
+                "latitude": 49.21252,
+                "longitude": 8.00921,
+                "spot_time": 1787761818,
+                "spot_time_formatted": "2026-08-26 16:30:18"
+            },
+            {
+                "id": 138198,
+                "activator": "VY2MG",
+                "frequency_khz": 21293,
+                "mode": "SSB",
+                "reference": "VEFF-0880",
+                "reference_name": "Wood Islands Provincial Park",
+                "remarks": "",
+                "spotter": "VY2MG",
+                "latitude": 45.95098,
+                "longitude": -62.74465,
+                "spot_time": 1787759914,
+                "spot_time_formatted": "2026-08-26 15:58:34"
+            },
+            {
+                "id": 138190,
+                "activator": "M1SDH/P",
+                "frequency_khz": 14327,
+                "mode": "SSB",
+                "reference": "GFF-0262",
+                "reference_name": "Norfolk Coast NL",
+                "remarks": "",
+                "spotter": "M1SDH/P",
+                "latitude": 52.9628,
+                "longitude": 0.87966,
+                "spot_time": 1787759019,
+                "spot_time_formatted": "2026-08-26 15:43:39"
+            },
+            {
+                "id": 138188,
+                "activator": "VE6VC",
+                "frequency_khz": 14074,
+                "mode": "FT8",
+                "reference": "VEFF-0650",
+                "reference_name": "Gooseberry Provincial Recreation Area",
+                "remarks": "",
+                "spotter": "VE6VC",
+                "latitude": 50.91302,
+                "longitude": -114.63402,
+                "spot_time": 1787758711,
+                "spot_time_formatted": "2026-08-26 15:38:31"
+            },
+            {
+                "id": 138184,
+                "activator": "NK8O",
+                "frequency_khz": 14043,
+                "mode": "CW",
+                "reference": "KFF-2488",
+                "reference_name": "Gooseberry Falls",
+                "remarks": "Re-spotted via RBN",
+                "spotter": "K5KHK",
+                "latitude": 47.13916,
+                "longitude": -91.46369,
+                "spot_time": 1787757645,
+                "spot_time_formatted": "2026-08-26 15:20:45"
+            },
+            {
+                "id": 138169,
+                "activator": "LA/DD1LD/P",
+                "frequency_khz": 14242,
+                "mode": "SSB",
+                "reference": "LAFF-0103",
+                "reference_name": "Kristiansand kommuneskog",
+                "remarks": "QRT",
+                "spotter": "LA/DD1LD/P",
+                "latitude": 58.1636,
+                "longitude": 7.96806,
+                "spot_time": 1787755331,
+                "spot_time_formatted": "2026-08-26 14:42:11"
+            },
+            {
+                "id": 138166,
+                "activator": "Z3/HA7NB",
+                "frequency_khz": 7144,
+                "mode": "SSB",
+                "reference": "Z3FF-0067",
+                "reference_name": "Trpejca, makedonski dab (Ohrid)",
+                "remarks": "Cq cq z3ff-0067",
+                "spotter": "Z3/HA7NB",
+                "latitude": 40.96045,
+                "longitude": 20.78381,
+                "spot_time": 1787755066,
+                "spot_time_formatted": "2026-08-26 14:37:46"
+            },
+            {
+                "id": 138165,
+                "activator": "W0MES",
+                "frequency_khz": 14238,
+                "mode": "SSB",
+                "reference": "KFF-1928",
+                "reference_name": "Werner-Boyce Salt Springs",
+                "remarks": "QRT",
+                "spotter": "W0MES",
+                "latitude": 28.32141,
+                "longitude": -82.71853,
+                "spot_time": 1787754850,
+                "spot_time_formatted": "2026-08-26 14:34:10"
+            },
+            {
+                "id": 138157,
+                "activator": "OH8NW/P",
+                "frequency_khz": 18086,
+                "mode": "CW",
+                "reference": "OHFF-1412",
+                "reference_name": "Huhkovuoren p\u00e4hkin\u00e4pensaslehto ja jalopuumetsikk\u00f6",
+                "remarks": "",
+                "spotter": "OH8NW/P",
+                "latitude": 60.45418,
+                "longitude": 22.3391,
+                "spot_time": 1787752825,
+                "spot_time_formatted": "2026-08-26 14:00:25"
+            },
+            {
+                "id": 138144,
+                "activator": "W9DP",
+                "frequency_khz": 14266,
+                "mode": "SSB",
+                "reference": "KFF-4122",
+                "reference_name": "Fall Creek Scenic Overlook",
+                "remarks": "",
+                "spotter": "N9JF",
+                "latitude": 39.78455,
+                "longitude": -91.29677,
+                "spot_time": 1787749822,
+                "spot_time_formatted": "2026-08-26 13:10:22"
+            },
+            {
+                "id": 138141,
+                "activator": "TA1BYS",
+                "frequency_khz": 14265,
+                "mode": "SSB",
+                "reference": "TAFF-0053",
+                "reference_name": "Ulubat Golu (Lake)",
+                "remarks": "Qrt",
+                "spotter": "TA1BYS",
+                "latitude": 40.16977,
+                "longitude": 28.68321,
+                "spot_time": 1787749297,
+                "spot_time_formatted": "2026-08-26 13:01:37"
+            },
+            {
+                "id": 138138,
+                "activator": "DL/SM5YRA/P",
+                "frequency_khz": 14295,
+                "mode": "SSB",
+                "reference": "DLFF-0125",
+                "reference_name": "Nature Park TERRA vita",
+                "remarks": "",
+                "spotter": "DL/SM5YRA/P",
+                "latitude": 52.26816,
+                "longitude": 8.3551,
+                "spot_time": 1787748695,
+                "spot_time_formatted": "2026-08-26 12:51:35"
+            },
+            {
+                "id": 138134,
+                "activator": "OM8HG/P",
+                "frequency_khz": 14226,
+                "mode": "SSB",
+                "reference": "OMFF-0237",
+                "reference_name": "CHA Oravsk\u00e9 hradn\u00e9 bralo",
+                "remarks": "QRT ",
+                "spotter": "OM8HG/P",
+                "latitude": 49.26206,
+                "longitude": 19.3588,
+                "spot_time": 1787747648,
+                "spot_time_formatted": "2026-08-26 12:34:08"
+            },
+            {
+                "id": 138131,
+                "activator": "OK7DA/P",
+                "frequency_khz": 10126,
+                "mode": "CW",
+                "reference": "OKFF-3656",
+                "reference_name": "EVL\tRychlebsk\u00e9 hory - Sokolsk\u00fd hrbet",
+                "remarks": "Re-spot from web",
+                "spotter": "OK7DA",
+                "latitude": 50.25533,
+                "longitude": 17.11316,
+                "spot_time": 1787747467,
+                "spot_time_formatted": "2026-08-26 12:31:07"
+            },
+            {
+                "id": 138130,
+                "activator": "OH2CUB/P",
+                "frequency_khz": 18100,
+                "mode": "FT8",
+                "reference": "OHFF-0163",
+                "reference_name": "Ilmakkiaavan soidensuojelualue",
+                "remarks": "QSY",
+                "spotter": "OH2CUB/P",
+                "latitude": 67.69082,
+                "longitude": 26.71723,
+                "spot_time": 1787747213,
+                "spot_time_formatted": "2026-08-26 12:26:53"
+            },
+            {
+                "id": 138122,
+                "activator": "N4IN",
+                "frequency_khz": 7063,
+                "mode": "CW",
+                "reference": "KFF-1267",
+                "reference_name": "My Old Kentucky Home",
+                "remarks": "Re-spotted via RBN",
+                "spotter": "K3GMQ",
+                "latitude": 37.80709,
+                "longitude": -85.45592,
+                "spot_time": 1787746586,
+                "spot_time_formatted": "2026-08-26 12:16:26"
+            },
+            {
+                "id": 138099,
+                "activator": "VK4MGL",
+                "frequency_khz": 3595,
+                "mode": "CW",
+                "reference": "VKFF-0463",
+                "reference_name": "Springbrook National Park",
+                "remarks": "QRT",
+                "spotter": "VK4MGL",
+                "latitude": -28.1758,
+                "longitude": 153.27921,
+                "spot_time": 1787737614,
+                "spot_time_formatted": "2026-08-26 09:46:54"
+            },
+            {
+                "id": 138096,
+                "activator": "SP5DU/P",
+                "frequency_khz": 14027,
+                "mode": "CW",
+                "reference": "SPFF-2902",
+                "reference_name": "Nature Reserve Fidest",
+                "remarks": "PGA YS05",
+                "spotter": "SP5DU",
+                "latitude": 52.56618,
+                "longitude": 21.48822,
+                "spot_time": 1787736474,
+                "spot_time_formatted": "2026-08-26 09:27:54"
+            },
+            {
+                "id": 138092,
+                "activator": "Z35M/P",
+                "frequency_khz": 14333,
+                "mode": "SSB",
+                "reference": "Z3FF-0001",
+                "reference_name": "Galichica",
+                "remarks": "",
+                "spotter": "Z35M/P",
+                "latitude": 41.01647,
+                "longitude": 20.83894,
+                "spot_time": 1787735816,
+                "spot_time_formatted": "2026-08-26 09:16:56"
+            },
+            {
+                "id": 138093,
+                "activator": "DC5LY",
+                "frequency_khz": 14054,
+                "mode": "CW",
+                "reference": "DLFF-0332",
+                "reference_name": "Stadtwald G\u00f6ttingen Kerstlingr\u00f6derfeld",
+                "remarks": "Re-spotted via RBN",
+                "spotter": "MM9PSY",
+                "latitude": 51.54333,
+                "longitude": 10.03194,
+                "spot_time": 1787735816,
+                "spot_time_formatted": "2026-08-26 09:16:56"
+            },
+            {
+                "id": 138083,
+                "activator": "HB9BIN/P",
+                "frequency_khz": 10126,
+                "mode": "CW",
+                "reference": "HBFF-0362",
+                "reference_name": "Gaelte \u2013 Iffigen Natural Monuments (BE)",
+                "remarks": "Re-spotted via RBN",
+                "spotter": "MM0ZBH",
+                "latitude": 46.38708,
+                "longitude": 7.35214,
+                "spot_time": 1787734436,
+                "spot_time_formatted": "2026-08-26 08:53:56"
+            },
+            {
+                "id": 138081,
+                "activator": "ON4TOR/P",
+                "frequency_khz": 14044,
+                "mode": "CW",
+                "reference": "ONFF-0786",
+                "reference_name": "Bois d'Enghien et de Silly",
+                "remarks": "Re-spotted via RBN",
+                "spotter": "F4GOU",
+                "latitude": 50.63703,
+                "longitude": 3.96885,
+                "spot_time": 1787734369,
+                "spot_time_formatted": "2026-08-26 08:52:49"
+            },
+            {
+                "id": 138077,
+                "activator": "DL8ECA/P",
+                "frequency_khz": 7144,
+                "mode": "SSB",
+                "reference": "DLFF-0069",
+                "reference_name": "Nature Park Hohe Mark",
+                "remarks": "+ WCA DL-02860",
+                "spotter": "DC7WC",
+                "latitude": 51.80055,
+                "longitude": 7.01271,
+                "spot_time": 1787733893,
+                "spot_time_formatted": "2026-08-26 08:44:53"
+            },
+            {
+                "id": 138075,
+                "activator": "OZ4ABH/P",
+                "frequency_khz": 7167,
+                "mode": "SSB",
+                "reference": "OZFF-0088",
+                "reference_name": "Lindet Skov",
+                "remarks": "",
+                "spotter": "OZ4ABH/P",
+                "latitude": 55.13844,
+                "longitude": 8.89419,
+                "spot_time": 1787733662,
+                "spot_time_formatted": "2026-08-26 08:41:02"
+            },
+            {
+                "id": 138066,
+                "activator": "OH3FSR/P",
+                "frequency_khz": 7073,
+                "mode": "SSB",
+                "reference": "OHFF-0933",
+                "reference_name": "Jaakkolan Luonnonsuojelualue",
+                "remarks": "QSY ",
+                "spotter": "OH3FSR/P",
+                "latitude": 61.18396,
+                "longitude": 22.90666,
+                "spot_time": 1787732980,
+                "spot_time_formatted": "2026-08-26 08:29:40"
+            },
+            {
+                "id": 138051,
+                "activator": "OH3FSR",
+                "frequency_khz": 7062,
+                "mode": "SSB",
+                "reference": "OHFF-0933",
+                "reference_name": "Jaakkolan Luonnonsuojelualue",
+                "remarks": "",
+                "spotter": "OH2MFS",
+                "latitude": 61.18396,
+                "longitude": 22.90666,
+                "spot_time": 1787730964,
+                "spot_time_formatted": "2026-08-26 07:56:04"
+            },
+            {
+                "id": 138040,
+                "activator": "OK1DOC/P",
+                "frequency_khz": 10123.9,
+                "mode": "CW",
+                "reference": "OKFF-3124",
+                "reference_name": "EVL\tHousina",
+                "remarks": "Re-spotted via RBN",
+                "spotter": "OH6BG",
+                "latitude": 49.86945,
+                "longitude": 14.03643,
+                "spot_time": 1787729161,
+                "spot_time_formatted": "2026-08-26 07:26:01"
+            },
+            {
+                "id": 138034,
+                "activator": "VK3PF",
+                "frequency_khz": 7000,
+                "mode": "SSB",
+                "reference": "VKFF-6212",
+                "reference_name": "Yinnar Bushland Reserve",
+                "remarks": "QRT",
+                "spotter": "VK3PF",
+                "latitude": -38.3566,
+                "longitude": 146.3992,
+                "spot_time": 1787728421,
+                "spot_time_formatted": "2026-08-26 07:13:41"
+            },
+            {
+                "id": 138031,
+                "activator": "F4FMU/P",
+                "frequency_khz": 7090,
+                "mode": "SSB",
+                "reference": "FFF-0028",
+                "reference_name": "Parc Regional des Marais du Cotentin et du Bessin",
+                "remarks": "POTA FR-8919",
+                "spotter": "F5NZO",
+                "latitude": 49.29899,
+                "longitude": -1.31263,
+                "spot_time": 1787727904,
+                "spot_time_formatted": "2026-08-26 07:05:04"
+            },
+            {
+                "id": 138028,
+                "activator": "F8NUH/P",
+                "frequency_khz": 7011,
+                "mode": "CW",
+                "reference": "FFF-4054",
+                "reference_name": "FORET DE BONNEVAUX",
+                "remarks": "",
+                "spotter": "OM1AX",
+                "latitude": 45.4453,
+                "longitude": 5.16583,
+                "spot_time": 1787727456,
+                "spot_time_formatted": "2026-08-26 06:57:36"
+            },
+            {
+                "id": 138023,
+                "activator": "VK2XWB",
+                "frequency_khz": 7144,
+                "mode": "SSB",
+                "reference": "VKFF-0843",
+                "reference_name": "Gungaderra Grassland Nature Reserve",
+                "remarks": "",
+                "spotter": "VK4SMA",
+                "latitude": -35.2097,
+                "longitude": 149.1228,
+                "spot_time": 1787726746,
+                "spot_time_formatted": "2026-08-26 06:45:46"
+            },
+            {
+                "id": 138019,
+                "activator": "SP6OPZ/1",
+                "frequency_khz": 7144,
+                "mode": "SSB",
+                "reference": "SPFF-2182",
+                "reference_name": "Natura 2000 Ostoja Cedynska",
+                "remarks": "POTA: PL-2012 , PGA: GN06",
+                "spotter": "SP6FRF",
+                "latitude": 52.94026,
+                "longitude": 14.29964,
+                "spot_time": 1787726189,
+                "spot_time_formatted": "2026-08-26 06:36:29"
+            }
+        ]
+  recorded_at: Thu, 27 Aug 2026 06:25:00 GMT
+- request:
+    method: get
+    uri: http://hema.org.uk/spotsMobile.jsp
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - 'ontheair.nz [v3.0] (contact: admin@ontheair.nz)'
+      Host:
+      - hema.org.uk
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 27 Aug 2026 06:24:59 GMT
+      Set-Cookie:
+      - JSESSIONID=8FA9DBDCE98F9E3E43DC40B18F7C4384; Path=/; HttpOnly
+      Content-Type:
+      - text/html;charset=UTF-8
+      Content-Length:
+      - '1106'
+    body:
+      encoding: ASCII-8BIT
+      string: !binary |-
+        CgoKMjcvMDgvMjAyNiAwNjoyND0yNS8wOC8yMDI2IDA4OjQ0OzI3NDA7NUIvVksySkkvUDs1Qi9IQ1ktMDUwO0dlcmFrw7Ntb3V0dGk7MTQuMjg1IChTU0IpOyhIRU1BX0FTU0lTVEFOVCkgOzM0Ljk5ODk7MzMuNjQxNT0yMy8wOC8yMDI2IDEyOjE2OzU0MDg7R0Q0T0ZCL1A7R0QvSEdELTAwNDtDcm9uayBueSBBcnJleSBMYWE7Ny4xMjAgKFNTQik7KEdENE9GQikgUXJ2IG5vdzs1NC4xMzcxOy00LjcxOTQ1PTIzLzA4LzIwMjYgMTE6NDY7NTQzODtHSTBCRkQvUDtHSS9IU1ctMDAyO0N1bGxlbiBIaWxsOzE0LjI4OCAoU1NCKTsoR0kwQkZEKSBBbHNvIFRSLTMwNjYgJiBCL0dpLTAwMzM7NTQuNDA2NDstNy43NDgyPTIzLzA4LzIwMjYgMTE6MDU7NTQ3OTtHRDRPRkIvUDtHRC9IR0QtMDA0O0Nyb25rIG55IEFycmV5IExhYTsxNDUuNDUwIChGTSk7KEdENE9GQikgT3AgIFJpY2hhcmQgY2FsbGluZyBub3c7NTQuMTM3MTstNC43MTk0NT0yMy8wOC8yMDI2IDExOjAyOzU0ODI7RzdMQVMvUDtHL0hTUC0wMjA7T2xkIE1hbiBvZiBNb3c7Ny4xOTUgKFNTQik7KEc3TEFTKSBDYWxsaW5nIGFnbjs1My4xMTU7LTIuMjEzMTc9MjMvMDgvMjAyNiAxMDo1Nzs1NDg3O0dJMEJGRC9QO0dJL0hTVy0wMDI7Q3VsbGVuIEhpbGw7Ny4xMTggKFNTQik7KEdJMEJGRCkgQWxzbyBUUi0zMDY2ICYgQi9HaS0wMDMzOzU0LjQwNjQ7LTcuNzQ4Mj0yMy8wOC8yMDI2IDEwOjI5OzU1MTU7R0kwQkZEL1A7R0kvSFNXLTAwMjtDdWxsZW4gSGlsbDsxNDUuNDc1IChGTSk7KEdJMEJGRCkgQWxzbyBUcmlnIFRSLTMwNjYgJiBCL0dpLTAwMzM7NTQuNDA2NDstNy43NDgyPTIzLzA4LzIwMjYgMTA6Mjg7NTUxNjtNVzBLQ0IvUDtHVy9ITlctMDQ0O01vZWwgRm9kaWFyOzcuMDYwIChTU0IpOyhNMEtDQikgQmFjayBvbiA0MG07NTMuMTk5MzstMy41MzA5Nj0yMy8wOC8yMDI2IDEwOjEyOzU1MzI7TThWT08vUDtHL0hTUC0wMjA7T2xkIE1hbiBvZiBNb3c7Ny4xOTUgKFNTQik7KEc3TEFTKSA7NTMuMTE1Oy0yLjIxMzE3PTIzLzA4LzIwMjYgMTA6MDM7NTU0MTtNVzBLQ0IvUDtHVy9ITlctMDQ0O01vZWwgRm9kaWFyOzE0LjMxMyAoU1NCKTsoTTBLQ0IpIFFzeTs1My4xOTkzOy0zLjUzMDk2PQo=
+  recorded_at: Thu, 27 Aug 2026 06:25:02 GMT
+recorded_with: VCR 6.4.0

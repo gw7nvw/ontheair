@@ -20,7 +20,7 @@ default: &default
   schema_search_path: public, postgis
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   username: ontheair
-  password: littledog
+  password: <%= Rails.application.credentials.dig(:production, :database, :password) %>
   host: localhost
 
 development:
@@ -105,7 +105,7 @@ dem15:
   schema_search_path: public,postgis
   pool: 5
   username: ontheair
-  password: littledog
+  password: <%= Rails.application.credentials.dig(:production, :database, :password) %>
   host: localhost
   database: dem15
 
