@@ -135,7 +135,9 @@ class Item < ActiveRecord::Base
 
   #Schedule delayed sending of emails
   def send_emails
-    Resque.enqueue(SendEmails, self.id)
+    if ENV['RAILS_ENV'] == 'production'
+      Resque.enqueue(SendEmails, self.id)
+    end
   end
 
   # Sends email
@@ -148,7 +150,7 @@ class Item < ActiveRecord::Base
         subs = UserTopicLink.where(topic_id: item.topic_id)
         subs.each do |sub|
           @user = User.find_by_id(sub.user_id)
-          UserMailer.subscriber_mail(item, @user).deliver if sub.mail
+          UserMailer.subscriber_mail(item, @user).deliver_now if sub.mail
           @user.send_notification(summary, item.url, if @user.push_include_comments then item.comments else nil end, if @user.push_include_map then raw_image else nil end) if sub.notification
         end
       end

@@ -42,11 +42,13 @@
 /public/assets
 /public/system/
 # /test/vcr_cassettes
-test/vcr_cassettes/local_only/*
+test/vcr_cassettes/australia_dem/*
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
 /config/credentials/*.key
+/config/keycloak.rb
+/config/keycloak.json
 
 /app/assets/builds/*
 !/app/assets/builds/.keep

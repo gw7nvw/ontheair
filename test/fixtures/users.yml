@@ -31,3 +31,19 @@ zl4dis:
   email: zl4dis@yahoo.com 
   password_digest:  <%= BCrypt::Password.create('dummy', cost: 4) %>
   activated: false
+zl4test:
+  firstname: Matt
+  lastname: Briggs
+  callsign: ZL4TEST
+  email: test@test.net
+  password_digest:  <%= BCrypt::Password.create('dummy', cost: 4) %>
+  activated: true
+  is_admin: true
+  is_modifier: true
+  home_qth: "Alexandra"
+  pin: "1234"
+  acctnumber: "+64271234567"
+  timezone: 1
+  logs_pota: true
+  logs_wwff: true
+

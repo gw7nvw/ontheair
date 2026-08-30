@@ -5,17 +5,17 @@ class ApiController < ApplicationController
   include PostsHelper
 
   require 'rexml/document'
-  require 'asset_import_tools'
+#  require 'asset_import_tools'
 
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token
 
   def index; end
 
   def assettype
     respond_to do |format|
-      format.js { render json: AssetType.all.to_json }
-      format.json { render json: AssetType.all.to_json }
-      format.html { render json: AssetType.all.to_json }
+      format.js { render json: AssetType.all }
+      format.json { render json: AssetType.all }
+      format.html { render json: AssetType.all }
       format.csv { send_data asset_to_csv(AssetType.all), filename: "assettypes-#{Date.today}.csv" }
     end
   end
@@ -26,25 +26,25 @@ class ApiController < ApplicationController
       al=AssetLink.find_by_sql [ " select al.id, al.contained_code, al.containing_code, 1 as overlap from asset_links al inner join asset_links al2 on al.contained_code = al2.containing_code and al.containing_code = al2.contained_code inner join assets a1 on a1.code = al.contained_code inner join assets a2 on a2.code = al.containing_code where a1.is_active = true and a2.is_active = true"]
 
       respond_to do |format|
-        format.js { render json: al.to_json }
-        format.json { render json: al.to_json }
-        format.html { render json: al.to_json }
+        format.js { render json: al }
+        format.json { render json: al }
+        format.html { render json: al }
         format.csv { send_data asset_to_csv(al), filename: "assetlinks-#{Date.today}.csv" }
       end
     elsif params[:id]
       id = params[:id].upcase.tr('_', '/')
       if params[:contained_by_assets]
         respond_to do |format|
-          format.js { render json: AssetLink.where(containing_code: id).to_json }
-          format.json { render json: AssetLink.where(containing_code: id).to_json }
-          format.html { render json: AssetLink.where(containing_code: id).to_json }
+          format.js { render json: AssetLink.where(containing_code: id) }
+          format.json { render json: AssetLink.where(containing_code: id) }
+          format.html { render json: AssetLink.where(containing_code: id) }
           format.csv { send_data asset_to_csv(AssetLink.where(containing_code: id)), filename: "assetlinks-#{Date.today}.csv" }
         end
       else
         respond_to do |format|
-          format.js { render json: AssetLink.where(contained_code: id).to_json }
-          format.json { render json: AssetLink.where(contained_code: id).to_json }
-          format.html { render json: AssetLink.where(contained_code: id).to_json }
+          format.js { render json: AssetLink.where(contained_code: id) }
+          format.json { render json: AssetLink.where(contained_code: id) }
+          format.html { render json: AssetLink.where(contained_code: id) }
           format.csv { send_data asset_to_csv(AssetLink.where(contained_code: id)), filename: "assetlinks-#{Date.today}.csv" }
         end
       end
@@ -52,26 +52,26 @@ class ApiController < ApplicationController
     elsif params[:asset_type] && params[:contained_by_assets]
       assetLinks = AssetLink.find_by_sql [" select al.* from asset_links al inner join assets a on a.code = al.containing_code where a.asset_type='#{params[:asset_type]}'; "]
       respond_to do |format|
-        format.js { render json: assetLinks.to_json }
-        format.json { render json: assetLinks.to_json }
-        format.html { render json: assetLinks.to_json }
+        format.js { render json: assetLinks }
+        format.json { render json: assetLinks }
+        format.html { render json: assetLinks }
         format.csv { send_data asset_to_csv(assetLinks), filename: "assetlinks-#{Date.today}.csv" }
       end
 
     elsif params[:asset_type]
       assetLinks = AssetLink.find_by_sql [" select al.* from asset_links al inner join assets a on a.code = al.contained_code where a.asset_type='#{params[:asset_type]}'; "]
       respond_to do |format|
-        format.js { render json: assetLinks.to_json }
-        format.json { render json: assetLinks.to_json }
-        format.html { render json: assetLinks.to_json }
+        format.js { render json: assetLinks }
+        format.json { render json: assetLinks }
+        format.html { render json: assetLinks }
         format.csv { send_data asset_to_csv(assetLinks), filename: "assetlinks-#{Date.today}.csv" }
       end
 
     else
       respond_to do |format|
-        format.js { render json: AssetLink.all.to_json }
-        format.json { render json: AssetLink.all.to_json }
-        format.html { render json: AssetLink.all.to_json }
+        format.js { render json: AssetLink.all }
+        format.json { render json: AssetLink.all }
+        format.html { render json: AssetLink.all }
         format.csv { send_data asset_to_csv(AssetLink.all), filename: "assetlinks-#{Date.today}.csv" }
       end
     end
@@ -111,37 +111,36 @@ class ApiController < ApplicationController
     @assets = Asset.find_by_sql ['select id, url, asset_type, code, name,location,altitude,minor,is_active,region,created_at, updated_at,old_code,area from assets where ' + whereclause]
 
     respond_to do |format|
-      format.js { render json: @assets.to_json }
-      format.json { render json: @assets.to_json }
-      format.html { render json: @assets.to_json }
+      format.js { render json: @assets }
+      format.json { render json: @assets }
+      format.html { render json: @assets }
       format.csv { send_data asset_to_csv(@assets), filename: "#{base_filename}-#{Date.today}.csv" }
       format.gpx { send_data asset_to_gpx(@assets), filename: "#{base_filename}-#{Date.today}.gpx" }
     end
   end
 
-  def alert
+  def alert_index
     start_time = 1.year.ago
     if params[:start_time] then 
       start_time=params[:start_time].to_time
     end
     
-    alerts=Post.find_by_sql [ "select p.id, p.description as comments, p.referenced_time, p.duration, rtrim(p.site,'; ') as name, UNNEST(p.asset_codes) as reference, CAST(substring(coalesce(freq, '0') from '[0-9.]+') AS NUMERIC)*1000 as frequency, p.mode, p.callsign as activator, p.updated_at as created_time from posts p inner join items i on i.item_type='post' and i.item_id=p.id inner join users u on u.id = p.updated_by_id where i.topic_id=#{ALERT_TOPIC} and p.updated_at>'#{start_time.strftime("%Y-%m-%d %H:%M:%S")}' and ((p.referenced_date + interval '1 hours' * duration::numeric) > '#{(Time.now - 1.days).strftime("%Y-%m-%d %H:%M")}') limit 200;" ]
-
+    alerts=Post.find_by_sql [ "select p.id, p.description as comments, p.referenced_time, p.duration, rtrim(p.site,'; ') as name, UNNEST(p.asset_codes) as reference, CAST(substring(coalesce(freq, '0') from '[0-9.]+') AS NUMERIC)*1000 as frequency, p.mode, p.callsign as activator, p.updated_at as created_time from posts p inner join items i on i.item_type='post' and i.item_id=p.id inner join users u on u.id = p.created_by_id where i.topic_id=#{ALERT_TOPIC} and p.updated_at>'#{start_time.strftime("%Y-%m-%d %H:%M:%S")}' and ((p.referenced_date + interval '1 hours' * duration::numeric) > '#{(Time.now - 1.days).strftime("%Y-%m-%d %H:%M")}') limit 200;" ]
     if params[:zlota_only] then
      orig_alerts=alerts
      alerts=[]
-     orig_alerts.each do |spot|
-       a=Asset.find_by(code: alerts[:reference])
+     orig_alerts.each do |alert|
+       a=Asset.find_by(code: alert[:reference])
        if a and a.type.is_zlota then
-         alerts+=[alerts]
+         alerts+=[alert]
        end
      end
   
     end
     respond_to do |format|
-      format.js { render json: alerts.to_json }
-      format.json { render json: alerts.to_json }
-      format.html { render json: alerts.to_json }
+      format.js { render json: alerts }
+      format.json { render json: alerts }
+      format.html { render json: alerts }
       format.csv { send_data asset_to_csv(alerts), filename: "alerts-#{Time.now.strftime("%Y-%m-%dT%H:%M:%SZ")}.csv" }
     end
   end
@@ -152,7 +151,7 @@ class ApiController < ApplicationController
       start_time=params[:start_time].to_time
     end
     
-    spots=Post.find_by_sql [ "select p.id, p.description as comments, p.referenced_time, rtrim(p.site,'; ') as name, UNNEST(p.asset_codes) as reference, CAST(substring(coalesce(freq, '0') from '[0-9.]+') AS NUMERIC)*1000 as frequency, p.mode, p.callsign as activator, u.callsign as spotter from posts p inner join items i on i.item_type='post' and i.item_id=p.id inner join users u on u.id = p.updated_by_id where i.topic_id=#{SPOT_TOPIC} and p.updated_at>'#{start_time.strftime("%Y-%m-%d %H:%M:%S")}'limit 200;" ]
+    spots=Post.find_by_sql [ "select p.id, p.description as comments, p.referenced_time, rtrim(p.site,'; ') as name, UNNEST(p.asset_codes) as reference, CAST(substring(coalesce(freq, '0') from '[0-9.]+') AS NUMERIC)*1000 as frequency, p.mode, p.callsign as activator, u.callsign as spotter from posts p inner join items i on i.item_type='post' and i.item_id=p.id inner join users u on u.id = p.created_by_id where i.topic_id=#{SPOT_TOPIC} and p.updated_at>'#{start_time.strftime("%Y-%m-%d %H:%M:%S")}'limit 200;" ]
 
     if params[:zlota_only] then
      orig_spots=spots
@@ -166,9 +165,9 @@ class ApiController < ApplicationController
   
     end
     respond_to do |format|
-      format.js { render json: spots.to_json }
-      format.json { render json: spots.to_json }
-      format.html { render json: spots.to_json }
+      format.js { render json: spots }
+      format.json { render json: spots }
+      format.html { render json: spots }
       format.csv { send_data asset_to_csv(spots), filename: "spots-#{Time.now.strftime("%Y-%m-%dT%H:%M:%SZ")}.csv" }
     end
   end
@@ -238,9 +237,9 @@ class ApiController < ApplicationController
       res = { success: false, message: 'Authentication failed!' }
     end
     respond_to do |format|
-      format.js { render json: res.to_json }
-      format.json { render json: res.to_json }
-      format.html { render json: res.to_json }
+      format.js { render json: res }
+      format.json { render json: res }
+      format.html { render json: res }
     end
   end
 
@@ -266,9 +265,9 @@ class ApiController < ApplicationController
   end
 
     respond_to do |format|
-      format.js { render json: res.to_json }
-      format.json { render json: res.to_json }
-      format.html { render json: res.to_json }
+      format.js { render json: res }
+      format.json { render json: res }
+      format.html { render json: res }
     end
   end
 
@@ -338,7 +337,7 @@ class ApiController < ApplicationController
       res.push({Class: "PARKS", LastUpdate: row.max_updated_at.to_i.to_s }) if row.pnp_class=="WWFF" 
     end
 
-    render json: res.to_json 
+    render json: res 
   end
 
   def pnp_close
@@ -362,13 +361,13 @@ class ApiController < ApplicationController
 # END;$BODY$ LANGUAGE sql IMMUTABLE COST 100;
 # COMMENT ON FUNCTION ST_CardinalDirection(float8) IS 'input azimuth in radians; returns N, NW, W, SW, S, SE, E, or NE';
 
-    render json: res.to_json 
+    render json: res 
   end
 
   def pnp_callsign
     res = User.find_by_sql [ %Q{select callsign as "callSign", firstname as name, '' as "alsoKnownAs", '0000-00-00' as "lastDate", '2026-06-01' as "lastUpdateDate" from users where firstname is not null and activated = true and callsign ~ '.[A-Z]+[0-9]+[A-Z]+'} ]
 
-    render json: res.to_json 
+    render json: res 
   end
 
   def pnp_gridsquare
@@ -436,7 +435,7 @@ class ApiController < ApplicationController
     long = params[:long]
 
     res = Asset.get_pnp_within(lat, long)
-    render json: res.to_json 
+    render json: res 
   end
  
 
@@ -455,7 +454,8 @@ class ApiController < ApplicationController
         res = Asset.generate_pnp_sites(dxccs, where_query)
       end
     end
-    render json: res.to_json.gsub('/', '\\/')
+    reaw_json = res.to_json.gsub('/', '\\/')
+    render json: raw_json
   end
 
   #GET SPOTS
@@ -536,7 +536,7 @@ class ApiController < ApplicationController
       res = { success: false, message: 'Authentication failed!' }
     end
     logger.debug res.to_json
-    render json: res.to_json
+    render json: res
   end
 
   #PNP post spot
@@ -625,14 +625,14 @@ class ApiController < ApplicationController
       res = { success: false, message: 'Authentication failed!' }
     end
     logger.debug res.to_json
-    render json: res.to_json
+    render json: res
   end
 
   def pnp_delete_spot
     logger.debug params.to_json
     logger.debug request.raw_post
     res = { success: true, message: "Spot deleted"  }
-    render json: res.to_json
+    render json: res
   end
   def pnp_vk
     params[:zone]='OC'
@@ -643,7 +643,7 @@ class ApiController < ApplicationController
     spots = ConsolidatedSpot.find_by_sql [ "select max(updated_at) as updated_at from consolidated_spots;" ]
     spot=spots.first
     res = [{ActivationsLastUpdate: spot.updated_at.to_i}]
-    render json: res.to_json
+    render json: res
   end
 
   def pnp_alerts
@@ -664,7 +664,7 @@ class ApiController < ApplicationController
     if all_alerts then all_alerts = all_alerts.sort_by { |hsh| hsh[:starttime].to_s }.reverse! end
 
     res = to_pnp_alerts(all_alerts)
-    render json: res.to_json
+    render json: res
   end
 
   def pnp_verifyuser

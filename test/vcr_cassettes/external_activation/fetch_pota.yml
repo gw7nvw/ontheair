@@ -1,0 +1,69 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://api.pota.app/park/activations/Nz-0002?count=all
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - 'ontheair.nz [v3.0] (contact: admin@ontheair.nz)'
+      Host:
+      - api.pota.app
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+      Content-Length:
+      - '994'
+      Connection:
+      - keep-alive
+      Date:
+      - Sat, 29 Aug 2026 05:33:01 GMT
+      Access-Control-Max-Age:
+      - '86400'
+      X-Amzn-Requestid:
+      - b486ea2d-0944-44d5-886c-d249921f488a
+      Access-Control-Allow-Origin:
+      - "*"
+      X-Amz-Apigw-Id:
+      - C2ZKKHGtiYcEllQ=
+      Cache-Control:
+      - public,immutable,max-age=3600
+      Isbase64encoded:
+      - 'false'
+      X-Amzn-Trace-Id:
+      - Root=1-6a926f0d-01c80a6e75900cb82f6c19af;Parent=5b183db456b25835;Sampled=0;Lineage=1:55e68f47:0
+      X-Cache:
+      - Miss from cloudfront
+      Via:
+      - 1.1 23ad473482cbcecf7ea47ad47c955886.cloudfront.net (CloudFront)
+      X-Amz-Cf-Pop:
+      - SFO53-P4
+      X-Amz-Cf-Id:
+      - TgF19qHumw7NbDT2ntjBXT-21mbtJMvaKbeG5t3kbR7XoyFt_p5adg==
+    body:
+      encoding: ASCII-8BIT
+      string: '[{"activeCallsign": "ZL1RDK", "qso_date": "20260102", "totalQSOs":
+        23, "qsosCW": 0, "qsosDATA": 0, "qsosPHONE": 23, "locationDesc": "NZ-AUK"},
+        {"activeCallsign": "ZL2MF", "qso_date": "20251106", "totalQSOs": 23, "qsosCW":
+        0, "qsosDATA": 0, "qsosPHONE": 23, "locationDesc": "NZ-AUK"}, {"activeCallsign":
+        "ZL1SGS", "qso_date": "20251011", "totalQSOs": 12, "qsosCW": 0, "qsosDATA":
+        2, "qsosPHONE": 10, "locationDesc": "NZ-AUK"}, {"activeCallsign": "ZL1BQD",
+        "qso_date": "20240824", "totalQSOs": 48, "qsosCW": 0, "qsosDATA": 48, "qsosPHONE":
+        0, "locationDesc": "NZ-AUK"}, {"activeCallsign": "ZL1HOG", "qso_date": "20220716",
+        "totalQSOs": 10, "qsosCW": 0, "qsosDATA": 0, "qsosPHONE": 10, "locationDesc":
+        "NZ-AUK"}, {"activeCallsign": "ZL1HOG", "qso_date": "20220715", "totalQSOs":
+        27, "qsosCW": 0, "qsosDATA": 0, "qsosPHONE": 27, "locationDesc": "NZ-AUK"},
+        {"activeCallsign": "ZL1BQD", "qso_date": "20220623", "totalQSOs": 55, "qsosCW":
+        9, "qsosDATA": 29, "qsosPHONE": 17, "locationDesc": "NZ-AUK"}]'
+  recorded_at: Sat, 29 Aug 2026 05:33:01 GMT
+recorded_with: VCR 6.4.0

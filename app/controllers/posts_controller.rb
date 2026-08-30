@@ -9,6 +9,8 @@ class PostsController < ApplicationController
   skip_before_action :verify_authenticity_token, only: %i[create update sms]
 
   def sms
+    result="failed"
+
     logger.info params.to_json
     logger.info response.body.to_json
 
@@ -19,7 +21,7 @@ class PostsController < ApplicationController
     puts 'DEBUG SMS'
     body = params[:text]
     lines = body.split(/\r?\n/)
-    msgs = lines[0].split(' ')
+    msgs = lines[0].split
     logger.debug "DEBUG msgs "+msgs.to_json
     if msgs[0].upcase=='ALERT' then
       posttype='alert'
@@ -33,17 +35,18 @@ class PostsController < ApplicationController
 
     # passkey = nil
     acctnumber = params[:from]
-    acctnumber = acctnumber.strip.delete(' ')
-    logger.debug 'DEBUG from number: ' + acctnumber
+    acctnumber = acctnumber&.strip&.delete(' ')
+    logger.debug 'DEBUG from number: #{acctnumber}'
     user = User.find_by(acctnumber: acctnumber)
-    logger.error "ERROR: SMS account not found for " + acctnumber if !user
+    logger.error "ERROR: SMS account not found for #{acctnumber}" if !user
 
-    if msgs then
-      #handle pnp style spots by dropping 2nd parameter
-      if pnp_classes.include?(msgs[1].upcase)
-        msgs=[msgs[0]]+msgs[2..-1] 
-      end
-
+    if msgs && msgs.count>=2 then
+     #handle pnp style spots by dropping 2nd parameter
+     if pnp_classes.include?(msgs[1].upcase)
+       msgs=[msgs[0]]+msgs[2..-1] 
+     end
+      
+     if msgs.count>=4
       callsign = msgs[0].upcase
       callsign = user.callsign if callsign == '!' or callsign == '$'
       asset_code = msgs[1].upcase
@@ -52,11 +55,11 @@ class PostsController < ApplicationController
       else
         logger.debug 'DEBUG: asset code looks like SOTA-spot format'
         asset_suffix = msgs[2]
-        unless asset_suffix.include?('-')
+        unless asset_suffix&.include?('-')
           logger.debug "DEBUG: asset suffix with no '-'"
-          asset_suffix = asset_suffix.gsub(/([a-zA-Z])([0-9])/, '\1-\2')
+          asset_suffix = asset_suffix&.gsub(/([a-zA-Z])([0-9])/, '\1-\2')
         end
-        asset_code = asset_code + '/' + asset_suffix
+        asset_code = asset_code + '/' + asset_suffix if asset_suffix
         msgs=[msgs[0],asset_code]+msgs[3..-1]
         #msgs.delete_at(msgs.length - 1)
         logger.info 'DEBUG: concatenated asset code = ' + asset_code
@@ -70,6 +73,7 @@ class PostsController < ApplicationController
         al_date = Time.now.in_time_zone('UTC').strftime('%Y-%m-%d')
         al_time = Time.now.in_time_zone('UTC').strftime('%H:%M')
       else
+        duration = 1
         al_date = msgs[4]
         al_time = msgs[5]
         comments = msgs[6..-1].join(' ')
@@ -96,10 +100,16 @@ class PostsController < ApplicationController
         comments=comments.gsub("/dnl","").gsub("/DNL","")
         @post.do_not_lookup = true
       end
+      comments = comments.gsub(/\s+/, ' ').strip
+      puts "COMMENTS: #{comments}"
       if (posttype == 'spot') && ((asset_type == 'SOTA') || (asset_type == 'summit')) && !user
         puts 'DEBUG: forwarding non-user spot to SOTA'
-        result = @post.send_to_sota(debug, acctnumber, callsign, a_code, freq, mode, comments + ' (ontheair.nz)')
-        puts 'DEBUG: ' + result.to_s
+        if defined?(Rails) && Rails.env.production?
+          result = @post.send_to_sota(debug, acctnumber, callsign, a_code, freq, mode, comments + ' (ontheair.nz)')
+          puts 'DEBUG: ' + result.to_s
+        else
+          puts "Skipping send_to_sota in non-production environment"
+        end
       end
 
       if user
@@ -112,7 +122,7 @@ class PostsController < ApplicationController
         @post.created_by_id = user.id
         @post.updated_by_id = user.id
         @post.description = comments + ' (via ' + via + ')'
-
+        @post.duration=duration if duration
         @post.referenced_time = (al_date + ' ' + al_time + ' UTC').to_time
         @post.referenced_date = (al_date + ' 00:00:00 UTC').to_time
         @post.updated_at = Time.now
@@ -123,14 +133,14 @@ class PostsController < ApplicationController
                      else
                        SPOT_TOPIC
                      end
-          @post.title = 'SPOT: ' + callsign + ' spotted portable at ' + a_name + '[' + a_code + '] on ' + freq + '/' + mode + ' at ' + Time.now.in_time_zone('Pacific/Auckland').strftime('%Y-%m-%d %H:%M') + 'NZ'
+          @post.title = 'SPOT: ' + callsign + ' spotted portable at ' + a_name + ' [' + a_code + '] on ' + freq + '/' + mode + ' at ' + Time.now.in_time_zone('Pacific/Auckland').strftime('%Y-%m-%d %H:%M') + 'NZ'
         else
           topic_id = if debug
                        TEST_ALERT_TOPIC
                      else
                        ALERT_TOPIC
                      end
-          @post.title = 'ALERT: ' + callsign + ' going portable to ' + a_name + '[' + a_code + '] on ' + freq + '/' + mode + ' at ' + al_date + ' ' + al_time + ' UTC'
+          @post.title = 'ALERT: ' + callsign + ' going portable to ' + a_name + ' [' + a_code + '] on ' + freq + '/' + mode + ' at ' + al_date + ' ' + al_time + ' UTC'
         end
         res = @post.save
         if res
@@ -144,17 +154,19 @@ class PostsController < ApplicationController
           item.item_id = @post.id
           item.save
           item.send_emails
+          result = "success"
         end
         @topic = Topic.find_by_id(topic_id)
-        @post.send_to_all(debug, user, @post.callsign, @post.asset_codes, @post.freq, @post.mode, @post.description, @topic, @post.referenced_date.strftime('%Y-%m-%d'), @post.referenced_time.strftime('%H:%M'), 'UTC')
-      end
-    end
-    respond_to do |format|
-      format.js { render json: {result: "success"}.to_json }
-      format.json { render json: {result: "success"}.to_json }
-      format.html { render json: {result: "success"}.to_json }
-    end
+        if defined?(Rails) && Rails.env.production?
+          @post.send_to_all(debug, user, @post.callsign, @post.asset_codes, @post.freq, @post.mode, @post.description, @topic, @post.referenced_date.strftime('%Y-%m-%d'), @post.referenced_time.strftime('%H:%M'), 'UTC')
+        else
+          puts "Skipping send_to_all in non-production environment"
+        end
 
+      end
+     end
+    end
+    render json: {result: result}
   end
 
   def index

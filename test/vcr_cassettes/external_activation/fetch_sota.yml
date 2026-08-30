@@ -1,0 +1,215 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://sso.sota.org.uk/auth/realms/SOTA/.well-known/openid-configuration
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept:
+      - "*/*"
+      User-Agent:
+      - rest-client/2.1.0 (linux x86_64) ruby/3.4.10p104
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Host:
+      - sso.sota.org.uk
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Length:
+      - '6321'
+      Cache-Control:
+      - no-cache, must-revalidate, no-transform, no-store
+      Content-Type:
+      - application/json;charset=UTF-8
+      Referrer-Policy:
+      - no-referrer
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - ALLOW FROM https://www.google.com
+      X-Xss-Protection:
+      - 1; mode=block
+      Date:
+      - Sat, 29 Aug 2026 04:33:31 GMT
+    body:
+      encoding: UTF-8
+      string: '{"issuer":"https://sso.sota.org.uk/auth/realms/SOTA","authorization_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/auth","token_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/token","introspection_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/token/introspect","userinfo_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/userinfo","end_session_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/logout","frontchannel_logout_session_supported":true,"frontchannel_logout_supported":true,"jwks_uri":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/certs","check_session_iframe":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/login-status-iframe.html","grant_types_supported":["authorization_code","implicit","refresh_token","password","client_credentials","urn:openid:params:grant-type:ciba","urn:ietf:params:oauth:grant-type:device_code"],"acr_values_supported":["0","1"],"response_types_supported":["code","none","id_token","token","id_token
+        token","code id_token","code token","code id_token token"],"subject_types_supported":["public","pairwise"],"id_token_signing_alg_values_supported":["PS384","RS384","EdDSA","ES384","HS256","HS512","ES256","RS256","HS384","ES512","PS256","PS512","RS512"],"id_token_encryption_alg_values_supported":["ECDH-ES+A256KW","ECDH-ES+A192KW","ECDH-ES+A128KW","RSA-OAEP","RSA-OAEP-256","RSA1_5","ECDH-ES"],"id_token_encryption_enc_values_supported":["A256GCM","A192GCM","A128GCM","A128CBC-HS256","A192CBC-HS384","A256CBC-HS512"],"userinfo_signing_alg_values_supported":["PS384","RS384","EdDSA","ES384","HS256","HS512","ES256","RS256","HS384","ES512","PS256","PS512","RS512","none"],"userinfo_encryption_alg_values_supported":["ECDH-ES+A256KW","ECDH-ES+A192KW","ECDH-ES+A128KW","RSA-OAEP","RSA-OAEP-256","RSA1_5","ECDH-ES"],"userinfo_encryption_enc_values_supported":["A256GCM","A192GCM","A128GCM","A128CBC-HS256","A192CBC-HS384","A256CBC-HS512"],"request_object_signing_alg_values_supported":["PS384","RS384","EdDSA","ES384","HS256","HS512","ES256","RS256","HS384","ES512","PS256","PS512","RS512","none"],"request_object_encryption_alg_values_supported":["ECDH-ES+A256KW","ECDH-ES+A192KW","ECDH-ES+A128KW","RSA-OAEP","RSA-OAEP-256","RSA1_5","ECDH-ES"],"request_object_encryption_enc_values_supported":["A256GCM","A192GCM","A128GCM","A128CBC-HS256","A192CBC-HS384","A256CBC-HS512"],"response_modes_supported":["query","fragment","form_post","query.jwt","fragment.jwt","form_post.jwt","jwt"],"registration_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/clients-registrations/openid-connect","token_endpoint_auth_methods_supported":["private_key_jwt","client_secret_basic","client_secret_post","tls_client_auth","client_secret_jwt"],"token_endpoint_auth_signing_alg_values_supported":["PS384","RS384","EdDSA","ES384","HS256","HS512","ES256","RS256","HS384","ES512","PS256","PS512","RS512"],"introspection_endpoint_auth_methods_supported":["private_key_jwt","client_secret_basic","client_secret_post","tls_client_auth","client_secret_jwt"],"introspection_endpoint_auth_signing_alg_values_supported":["PS384","RS384","EdDSA","ES384","HS256","HS512","ES256","RS256","HS384","ES512","PS256","PS512","RS512"],"authorization_signing_alg_values_supported":["PS384","RS384","EdDSA","ES384","HS256","HS512","ES256","RS256","HS384","ES512","PS256","PS512","RS512"],"authorization_encryption_alg_values_supported":["ECDH-ES+A256KW","ECDH-ES+A192KW","ECDH-ES+A128KW","RSA-OAEP","RSA-OAEP-256","RSA1_5","ECDH-ES"],"authorization_encryption_enc_values_supported":["A256GCM","A192GCM","A128GCM","A128CBC-HS256","A192CBC-HS384","A256CBC-HS512"],"claims_supported":["aud","sub","iss","auth_time","name","given_name","family_name","preferred_username","email","acr"],"claim_types_supported":["normal"],"claims_parameter_supported":true,"scopes_supported":["openid","web-origins","basic","phone","roles","acr","microprofile-jwt","offline_access","address","profile","basic_apiv2_template","email"],"request_parameter_supported":true,"request_uri_parameter_supported":true,"require_request_uri_registration":true,"code_challenge_methods_supported":["plain","S256"],"tls_client_certificate_bound_access_tokens":true,"revocation_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/revoke","revocation_endpoint_auth_methods_supported":["private_key_jwt","client_secret_basic","client_secret_post","tls_client_auth","client_secret_jwt"],"revocation_endpoint_auth_signing_alg_values_supported":["PS384","RS384","EdDSA","ES384","HS256","HS512","ES256","RS256","HS384","ES512","PS256","PS512","RS512"],"backchannel_logout_supported":true,"backchannel_logout_session_supported":true,"device_authorization_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/auth/device","backchannel_token_delivery_modes_supported":["poll","ping"],"backchannel_authentication_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/ext/ciba/auth","backchannel_authentication_request_signing_alg_values_supported":["PS384","RS384","EdDSA","ES384","ES256","RS256","ES512","PS256","PS512","RS512"],"require_pushed_authorization_requests":false,"pushed_authorization_request_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/ext/par/request","mtls_endpoint_aliases":{"token_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/token","revocation_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/revoke","introspection_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/token/introspect","device_authorization_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/auth/device","registration_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/clients-registrations/openid-connect","userinfo_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/userinfo","pushed_authorization_request_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/ext/par/request","backchannel_authentication_endpoint":"https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/ext/ciba/auth"},"authorization_response_iss_parameter_supported":true}'
+  recorded_at: Sat, 29 Aug 2026 04:33:31 GMT
+- request:
+    method: post
+    uri: https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/token
+    body:
+      encoding: UTF-8
+      string: client_id=sotadata&client_secret=1379ce34-e5d1-4c59-bf4b-297faf633d58&username=ZL4NVW&password=sotDog3l%21fe&grant_type=password
+    headers:
+      Accept:
+      - "*/*"
+      User-Agent:
+      - rest-client/2.1.0 (linux x86_64) ruby/3.4.10p104
+      Content-Type:
+      - application/x-www-form-urlencoded
+      Content-Length:
+      - '128'
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Host:
+      - sso.sota.org.uk
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Cache-Control:
+      - no-store
+      Pragma:
+      - no-cache
+      Content-Length:
+      - '2253'
+      Content-Type:
+      - application/json
+      Referrer-Policy:
+      - no-referrer
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - ALLOW FROM https://www.google.com
+      X-Xss-Protection:
+      - 1; mode=block
+      Date:
+      - Sat, 29 Aug 2026 04:33:32 GMT
+    body:
+      encoding: UTF-8
+      string: '{"access_token":"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJpbENBN1BJcTM1bUdyQVFlT3RrM0F0bUpQV0thNnEwLWI2Ujk4dWZZc29rIn0.eyJleHAiOjE3ODc5Nzg5MTIsImlhdCI6MTc4Nzk3ODAxMiwianRpIjoiMzg2NzNiYjctZTdkNi00MWI0LTk5NzYtNTA5MjhiMzNiZDJjIiwiaXNzIjoiaHR0cHM6Ly9zc28uc290YS5vcmcudWsvYXV0aC9yZWFsbXMvU09UQSIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJmNzAyYzVmNi01ZjRlLTQ0MTUtODM3NS04OTEwZTRhYmUwYzgiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzb3RhZGF0YSIsInNpZCI6IjA2MDM4MjliLTVkODgtNGI3MC04NGE5LTI4NzlmYTE3YmYxNCIsImFsbG93ZWQtb3JpZ2lucyI6WyIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJzbXMtcmVtb3RlIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiIiwiQ2FsbHNpZ24iOiJaTDROVlciLCJVc2VySUQiOjQ1Mjk0LCJIb21lQXNzb2NpYXRpb25JRCI6IjEyMyIsIm5hbWUiOiJNYXR0IEJyaWdncyIsIlNXTENhbGxzaWduIjoiIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiemw0bnZ3IiwiZ2l2ZW5fbmFtZSI6Ik1hdHQiLCJmYW1pbHlfbmFtZSI6IkJyaWdncyIsImxhdCI6Ii00NS4yODE0MDkiLCJsb25nIjoiMTY5LjMzNzMzOSIsImVtYWlsIjoibWF0dGJyaWdnc0B5YWhvby5jb20ifQ.idlXBZo8_PfMot6aGHZtT4qFud_dyKoQnvVGSadnHdrlOmg10ZqB0AbRD8ovt2jYJG_lwH-Ur-rAhrJ-43CLi5Y-iSx1wQ3SgWAPfLjkUqCA33UQp9K5nUpnwzIYl7MXm7zXWXJUNfxrp6ciBYr0ahcP91rZ4tmGQddyFtwn0UAEmFpWQnZa3PLkxQKHvey4hRAlgHwmI3JrEnMIkqp35Qr3iDYBVBx2S7DHWCLqYJ5TZ1oDxkqYaziUO8HwZ2JY2TIa7LysitF83h_2OtnAL8RYCzqSZOmcb-2o3m7kwoAnfph8-Cp4FDZUNgy4r9v1qnaMeXZjjF0LrvptoWXJLw","expires_in":900,"refresh_expires_in":2592000,"refresh_token":"eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI0ZmIwNDYzNi02YWIyLTRlYWQtOTFiMS01NmNkZTUwYThhMjEifQ.eyJleHAiOjE3OTA1NzAwMTIsImlhdCI6MTc4Nzk3ODAxMiwianRpIjoiOGY0ZTA3MjctMjk3OC00NzBiLThmZDAtZTQ2MGMxOWJlYzdjIiwiaXNzIjoiaHR0cHM6Ly9zc28uc290YS5vcmcudWsvYXV0aC9yZWFsbXMvU09UQSIsImF1ZCI6Imh0dHBzOi8vc3NvLnNvdGEub3JnLnVrL2F1dGgvcmVhbG1zL1NPVEEiLCJzdWIiOiJmNzAyYzVmNi01ZjRlLTQ0MTUtODM3NS04OTEwZTRhYmUwYzgiLCJ0eXAiOiJSZWZyZXNoIiwiYXpwIjoic290YWRhdGEiLCJzaWQiOiIwNjAzODI5Yi01ZDg4LTRiNzAtODRhOS0yODc5ZmExN2JmMTQiLCJzY29wZSI6IndlYi1vcmlnaW5zIGJhc2ljIHJvbGVzIn0.2Vd51gmK6X4jG9iiYFsFNx80zk64Op8P9HWS8IZXd1TzZ0zu3yY82Lsd5RzMtcKY6En63IcAFqyCS93IPJ-ydQ","token_type":"Bearer","not-before-policy":1534833483,"session_state":"0603829b-5d88-4b70-84a9-2879fa17bf14","scope":""}'
+  recorded_at: Sat, 29 Aug 2026 04:33:32 GMT
+- request:
+    method: get
+    uri: https://api-db2.sota.org.uk/api/activations/ZL3/SL-002
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Content-Type:
+      - application/json
+      Authorization:
+      - Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJpbENBN1BJcTM1bUdyQVFlT3RrM0F0bUpQV0thNnEwLWI2Ujk4dWZZc29rIn0.eyJleHAiOjE3ODc5Nzg5MTIsImlhdCI6MTc4Nzk3ODAxMiwianRpIjoiMzg2NzNiYjctZTdkNi00MWI0LTk5NzYtNTA5MjhiMzNiZDJjIiwiaXNzIjoiaHR0cHM6Ly9zc28uc290YS5vcmcudWsvYXV0aC9yZWFsbXMvU09UQSIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJmNzAyYzVmNi01ZjRlLTQ0MTUtODM3NS04OTEwZTRhYmUwYzgiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzb3RhZGF0YSIsInNpZCI6IjA2MDM4MjliLTVkODgtNGI3MC04NGE5LTI4NzlmYTE3YmYxNCIsImFsbG93ZWQtb3JpZ2lucyI6WyIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJzbXMtcmVtb3RlIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiIiwiQ2FsbHNpZ24iOiJaTDROVlciLCJVc2VySUQiOjQ1Mjk0LCJIb21lQXNzb2NpYXRpb25JRCI6IjEyMyIsIm5hbWUiOiJNYXR0IEJyaWdncyIsIlNXTENhbGxzaWduIjoiIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiemw0bnZ3IiwiZ2l2ZW5fbmFtZSI6Ik1hdHQiLCJmYW1pbHlfbmFtZSI6IkJyaWdncyIsImxhdCI6Ii00NS4yODE0MDkiLCJsb25nIjoiMTY5LjMzNzMzOSIsImVtYWlsIjoibWF0dGJyaWdnc0B5YWhvby5jb20ifQ.idlXBZo8_PfMot6aGHZtT4qFud_dyKoQnvVGSadnHdrlOmg10ZqB0AbRD8ovt2jYJG_lwH-Ur-rAhrJ-43CLi5Y-iSx1wQ3SgWAPfLjkUqCA33UQp9K5nUpnwzIYl7MXm7zXWXJUNfxrp6ciBYr0ahcP91rZ4tmGQddyFtwn0UAEmFpWQnZa3PLkxQKHvey4hRAlgHwmI3JrEnMIkqp35Qr3iDYBVBx2S7DHWCLqYJ5TZ1oDxkqYaziUO8HwZ2JY2TIa7LysitF83h_2OtnAL8RYCzqSZOmcb-2o3m7kwoAnfph8-Cp4FDZUNgy4r9v1qnaMeXZjjF0LrvptoWXJLw
+      Connection:
+      - keep-alive
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Server:
+      - Rocket
+      Permissions-Policy:
+      - interest-cohort=()
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      Access-Control-Allow-Origin:
+      - "*"
+      Access-Control-Allow-Methods:
+      - POST, GET, DELETE, OPTIONS
+      Access-Control-Allow-Headers:
+      - Authorization, id_token, Content-type
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Content-Length:
+      - '103'
+      Date:
+      - Sat, 29 Aug 2026 04:33:32 GMT
+      Set-Cookie:
+      - DO-LB="ChMxMC4xMzEuMTA1LjE2MDo4MDAwEPqt7CM="; Max-Age=300; Path=/; HttpOnly;
+        SameSite=Lax
+      Cache-Control:
+      - private
+    body:
+      encoding: UTF-8
+      string: '[{"id":584186,"userId":45294,"activationDate":"2021-11-24T00:00:00Z","ownCallsign":"ZL4NVW","qsos":10}]'
+  recorded_at: Sat, 29 Aug 2026 04:33:33 GMT
+- request:
+    method: get
+    uri: https://api-db2.sota.org.uk/logs/whochasedme/584186
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Content-Type:
+      - application/json
+      Authorization:
+      - Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJpbENBN1BJcTM1bUdyQVFlT3RrM0F0bUpQV0thNnEwLWI2Ujk4dWZZc29rIn0.eyJleHAiOjE3ODc5Nzg5MTIsImlhdCI6MTc4Nzk3ODAxMiwianRpIjoiMzg2NzNiYjctZTdkNi00MWI0LTk5NzYtNTA5MjhiMzNiZDJjIiwiaXNzIjoiaHR0cHM6Ly9zc28uc290YS5vcmcudWsvYXV0aC9yZWFsbXMvU09UQSIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJmNzAyYzVmNi01ZjRlLTQ0MTUtODM3NS04OTEwZTRhYmUwYzgiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzb3RhZGF0YSIsInNpZCI6IjA2MDM4MjliLTVkODgtNGI3MC04NGE5LTI4NzlmYTE3YmYxNCIsImFsbG93ZWQtb3JpZ2lucyI6WyIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJzbXMtcmVtb3RlIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiIiwiQ2FsbHNpZ24iOiJaTDROVlciLCJVc2VySUQiOjQ1Mjk0LCJIb21lQXNzb2NpYXRpb25JRCI6IjEyMyIsIm5hbWUiOiJNYXR0IEJyaWdncyIsIlNXTENhbGxzaWduIjoiIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiemw0bnZ3IiwiZ2l2ZW5fbmFtZSI6Ik1hdHQiLCJmYW1pbHlfbmFtZSI6IkJyaWdncyIsImxhdCI6Ii00NS4yODE0MDkiLCJsb25nIjoiMTY5LjMzNzMzOSIsImVtYWlsIjoibWF0dGJyaWdnc0B5YWhvby5jb20ifQ.idlXBZo8_PfMot6aGHZtT4qFud_dyKoQnvVGSadnHdrlOmg10ZqB0AbRD8ovt2jYJG_lwH-Ur-rAhrJ-43CLi5Y-iSx1wQ3SgWAPfLjkUqCA33UQp9K5nUpnwzIYl7MXm7zXWXJUNfxrp6ciBYr0ahcP91rZ4tmGQddyFtwn0UAEmFpWQnZa3PLkxQKHvey4hRAlgHwmI3JrEnMIkqp35Qr3iDYBVBx2S7DHWCLqYJ5TZ1oDxkqYaziUO8HwZ2JY2TIa7LysitF83h_2OtnAL8RYCzqSZOmcb-2o3m7kwoAnfph8-Cp4FDZUNgy4r9v1qnaMeXZjjF0LrvptoWXJLw
+      Connection:
+      - keep-alive
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Server:
+      - Rocket
+      Permissions-Policy:
+      - interest-cohort=()
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      Access-Control-Allow-Origin:
+      - "*"
+      Access-Control-Allow-Methods:
+      - POST, GET, DELETE, OPTIONS
+      Access-Control-Allow-Headers:
+      - Authorization, id_token, Content-type
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Content-Length:
+      - '6952'
+      Date:
+      - Sat, 29 Aug 2026 04:33:33 GMT
+      Set-Cookie:
+      - DO-LB="ChMxMC4xMzEuMTA1LjE2MDo4MDAwEPut7CM="; Max-Age=300; Path=/; HttpOnly;
+        SameSite=Lax
+      Cache-Control:
+      - private
+    body:
+      encoding: UTF-8
+      string: '{"summary":[{"ActivationDate":"24/Nov/2021","SummitID":107077,"ActivationID":584186,"QSOs":10,"OwnCallsign":"ZL4NVW","Summit":"ZL3/SL-002
+        (ZL3/SL-002)"}],"chases":[{"OwnCallsign":"ZL1BQD","Band":"5MHz","Mode":"SSB","TimeOfDay":"00:05","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/OT-230","Name":"ZL3/OT-230","ChaserLogID":5117548},{"OwnCallsign":"ZL1BQD","Band":"5MHz","Mode":"SSB","TimeOfDay":"01:45","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-002","Name":"ZL3/SL-002","ChaserLogID":5117606},{"OwnCallsign":"ZL3QR","Band":"5MHz","Mode":"SSB","TimeOfDay":"01:45","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-002","Name":"ZL3/SL-002","ChaserLogID":5119268},{"OwnCallsign":"ZL3RIK","Band":"5MHz","Mode":"SSB","TimeOfDay":"01:50","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-002","Name":"ZL3/SL-002","ChaserLogID":5117572},{"OwnCallsign":"ZL2STR","Band":"7MHz","Mode":"SSB","TimeOfDay":"01:53","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-002","Name":"ZL3/SL-002","ChaserLogID":5124920},{"OwnCallsign":"ZL1TM","Band":"7MHz","Mode":"SSB","TimeOfDay":"01:55","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-002","Name":"ZL3/SL-002","ChaserLogID":5119409},{"OwnCallsign":"ZL3GA","Band":"7MHz","Mode":"SSB","TimeOfDay":"02:02","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-002","Name":"ZL3/SL-002","ChaserLogID":5117573},{"OwnCallsign":"ZL3GA","Band":"7MHz","Mode":"SSB","TimeOfDay":"03:42","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/OT-234","Name":"ZL3/OT-234","ChaserLogID":5117605},{"OwnCallsign":"ZL3MR","Band":"7MHz","Mode":"SSB","TimeOfDay":"03:42","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/OT-234","Name":"ZL3/OT-234","ChaserLogID":5117663},{"OwnCallsign":"ZL3RIK","Band":"7MHz","Mode":"SSB","TimeOfDay":"03:42","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/OT-234","Name":"ZL3/OT-234","ChaserLogID":5117604},{"OwnCallsign":"ZL3QR","Band":"7MHz","Mode":"SSB","TimeOfDay":"03:43","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/OT-234","Name":"ZL3/OT-234","ChaserLogID":5119270},{"OwnCallsign":"ZL1BQD","Band":"7MHz","Mode":"SSB","TimeOfDay":"03:44","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/OT-234","Name":"ZL3/OT-234","ChaserLogID":5117607},{"OwnCallsign":"ZL1TM","Band":"7MHz","Mode":"SSB","TimeOfDay":"03:44","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/OT-234","Name":"ZL3/OT-234","ChaserLogID":5119410},{"OwnCallsign":"ZL2STR","Band":"7MHz","Mode":"SSB","TimeOfDay":"03:44","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/OT-234","Name":"ZL3/OT-234","ChaserLogID":5124921},{"OwnCallsign":"ZL2ATH","Band":"7MHz","Mode":"SSB","TimeOfDay":"05:16","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/OT-243","Name":"ZL3/OT-243","ChaserLogID":5119293},{"OwnCallsign":"ZL1TM","Band":"7MHz","Mode":"SSB","TimeOfDay":"05:21","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/OT-243","Name":"ZL3/OT-243","ChaserLogID":5119411},{"OwnCallsign":"ZL1BQD","Band":"7MHz","Mode":"SSB","TimeOfDay":"05:22","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/OT-243","Name":"ZL3/OT-243","ChaserLogID":5117660},{"OwnCallsign":"ZL3QR","Band":"5MHz","Mode":"SSB","TimeOfDay":"05:23","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/OT-243","Name":"ZL3/OT-243","ChaserLogID":5119276},{"OwnCallsign":"ZL3MR","Band":"5MHz","Mode":"SSB","TimeOfDay":"05:26","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/OT-243","Name":"ZL3/OT-243","ChaserLogID":5117664},{"OwnCallsign":"ZL3JD","Band":"5MHz","Mode":"SSB","TimeOfDay":"05:27","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/OT-243","Name":"ZL3/OT-243","ChaserLogID":5121015},{"OwnCallsign":"ZL1TM","Band":"7MHz","Mode":"SSB","TimeOfDay":"20:01","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-011","Name":"ZL3/SL-011","ChaserLogID":5119419},{"OwnCallsign":"ZL2STR","Band":"7MHz","Mode":"SSB","TimeOfDay":"20:01","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-011","Name":"ZL3/SL-011","ChaserLogID":5124922},{"OwnCallsign":"ZL2ATH","Band":"7MHz","Mode":"SSB","TimeOfDay":"20:09","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-011","Name":"ZL3/SL-011","ChaserLogID":5119295},{"OwnCallsign":"ZL1BQD","Band":"5MHz","Mode":"SSB","TimeOfDay":"20:12","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-011","Name":"ZL3/SL-011","ChaserLogID":5119389},{"OwnCallsign":"ZL3QR","Band":"5MHz","Mode":"SSB","TimeOfDay":"20:17","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-011","Name":"ZL3/SL-011","ChaserLogID":5119277},{"OwnCallsign":"ZL1BQD","Band":"7MHz","Mode":"SSB","TimeOfDay":"22:43","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-019","Name":"Mount
+        Cameron","ChaserLogID":5119390},{"OwnCallsign":"ZL2STR","Band":"7MHz","Mode":"SSB","TimeOfDay":"22:49","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-019","Name":"Mount
+        Cameron","ChaserLogID":5124923},{"OwnCallsign":"ZL3ASN","Band":"7MHz","Mode":"SSB","TimeOfDay":"22:50","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-019","Name":"Mount
+        Cameron","ChaserLogID":5119225},{"OwnCallsign":"ZL1TM","Band":"7MHz","Mode":"SSB","TimeOfDay":"22:51","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-019","Name":"Mount
+        Cameron","ChaserLogID":5119420},{"OwnCallsign":"ZL3QR","Band":"7MHz","Mode":"SSB","TimeOfDay":"22:51","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-019","Name":"Mount
+        Cameron","ChaserLogID":5119278},{"OwnCallsign":"ZL3RIK","Band":"7MHz","Mode":"SSB","TimeOfDay":"22:51","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-019","Name":"Mount
+        Cameron","ChaserLogID":5119224},{"OwnCallsign":"ZL2ATH","Band":"7MHz","Mode":"SSB","TimeOfDay":"22:52","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-019","Name":"Mount
+        Cameron","ChaserLogID":5119297},{"OwnCallsign":"ZL4FZ","Band":"7MHz","Mode":"SSB","TimeOfDay":"22:52","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-019","Name":"Mount
+        Cameron","ChaserLogID":5119226},{"OwnCallsign":"ZL3JD","Band":"7MHz","Mode":"SSB","TimeOfDay":"22:54","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-019","Name":"Mount
+        Cameron","ChaserLogID":5121016},{"OwnCallsign":"VK3PF","Band":"14MHz","Mode":"SSB","TimeOfDay":"23:01","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-019","Name":"Mount
+        Cameron","ChaserLogID":5124240}],"summits":[{"OwnCallsign":"ZL1BQD","Band":"5MHz","Mode":"SSB","TimeOfDay":"01:45","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-002","Name":"ZL3/SL-002","ChaserLogID":5117606},{"OwnCallsign":"ZL3QR","Band":"5MHz","Mode":"SSB","TimeOfDay":"01:45","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-002","Name":"ZL3/SL-002","ChaserLogID":5119268},{"OwnCallsign":"ZL3RIK","Band":"5MHz","Mode":"SSB","TimeOfDay":"01:50","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-002","Name":"ZL3/SL-002","ChaserLogID":5117572},{"OwnCallsign":"ZL2STR","Band":"7MHz","Mode":"SSB","TimeOfDay":"01:53","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-002","Name":"ZL3/SL-002","ChaserLogID":5124920},{"OwnCallsign":"ZL1TM","Band":"7MHz","Mode":"SSB","TimeOfDay":"01:55","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-002","Name":"ZL3/SL-002","ChaserLogID":5119409},{"OwnCallsign":"ZL3GA","Band":"7MHz","Mode":"SSB","TimeOfDay":"02:02","OtherCallsign":"ZL4NVW","SummitCode":"ZL3/SL-002","Name":"ZL3/SL-002","ChaserLogID":5117573}]}'
+  recorded_at: Sat, 29 Aug 2026 04:33:34 GMT
+recorded_with: VCR 6.4.0

@@ -1,4 +1,4 @@
-class ExternalAlert < ActiveRecord::Base
+class ExternalAlert < ApplicationRecord
 
   before_save {before_save_actions}
 
@@ -26,21 +26,22 @@ def self.fetch
     if !@tz then @tz=Timezone.find_by(name: 'UTC') end
 
     #ParksNPeaks
-    begin
-      url = 'http://parksnpeaks.org/api/ALERTS/'
-      pnp_alerts = JSON.parse(open(url).read)
-    rescue StandardError
-      puts "Received invalid alert data from Parks'n'Peaks. Showing only local alerts"
-      pnp_alerts = []
-    end
-    puts "#{pnp_alerts.count} alerts received"
+#    begin
+#      url = 'http://parksnpeaks.org/api/ALERTS/'
+#      pnp_alerts = JSON.parse(open(url).read)
+#    rescue StandardError
+#      puts "Received invalid alert data from Parks'n'Peaks. Showing only local alerts"
+#      pnp_alerts = []
+#    end
+#    puts "#{pnp_alerts.count} alerts received"
 
     #POTA
     alerts=[]
     begin
       Timeout.timeout(30) do
         url = 'https://api.pota.app/activation'
-        alerts = JSON.parse(open(url).read)
+        raw_response = fetch_external_url(url)
+        alerts = JSON.parse(raw_response.blank? ? "[]" : raw_response)
       end
     rescue Timeout::Error
       puts 'ERROR: POTA Timeout'
@@ -54,7 +55,9 @@ def self.fetch
     #WWFF
     begin
       url = 'https://spots.wwff.co/static/agendas.json'
-      wwff_alerts = JSON.parse(open(url).read)
+      raw_response = fetch_external_url(url)
+      wwff_alerts = JSON.parse(raw_response.blank? ? "[]" : raw_response)
+
     rescue StandardError
       puts "Received invalid alert data from WWFF. Showing only local alerts"
       wwff_alerts = []
@@ -68,11 +71,8 @@ def self.fetch
     epoch_url = 'https://api-db2.sota.org.uk/api/alerts/epoch'
     as=AdminSettings.first
     old_epoch=as.sota_alert_epoch
-    new_epoch=open(epoch_url).read
+    new_epoch = fetch_external_url(epoch_url)
 
-    puts old_epoch
-    puts new_epoch
-    puts old_epoch==new_epoch
     #if epoch has chnaged, get new spots
     unless old_epoch==new_epoch
       as.sota_alert_epoch=new_epoch
@@ -80,7 +80,8 @@ def self.fetch
 
       begin
         url = 'https://api-db2.sota.org.uk/api/alerts'
-        sota_alerts = JSON.parse(open(url).read)
+        raw_response = fetch_external_url(url)
+        sota_alerts = JSON.parse(raw_response.blank? ? "[]" : raw_response)
       rescue StandardError
         puts "Received invalid alert data from SOTA. Showing only local alerts"
         sota_alerts = []
@@ -136,21 +137,21 @@ def self.fetch
         )
     end
 
-    pnp_alerts.each do |alert|
-      if !["SOTA", "ZLOTA"].include?(alert['Class']) then
-        @all_alerts.push(
-           starttime: if alert['alTime'].to_datetime then alert['alTime'].to_datetime.in_time_zone(@tz.name).strftime('%Y-%m-%d %H:%M') + ( if alert['alDay'] == '1' then ' (Day)' elsif alert['alDay'] == '2' then ' (Morning)' elsif alert['alDay'] == '3' then ' (Afternoon)' elsif alert['alDay'] == '4' then ' (Evening)' elsif alert['alDay'] == '5' then ' (Overnight)' else '' end) else '' end,
-           activatingCallsign: alert['CallSign'].strip,
-           code: alert['WWFFID'] && !alert['WWFFID'].empty? ? alert['WWFFID'] : alert['Location'],
-           name: alert['Location'],
-           frequency: alert['Freq'],
-           mode: alert['MODE'],
-           comments: alert['Comments'],
-           programme: 'PnP: ' + alert['Class']
-         )
-      end
-    end
-
+#    pnp_alerts.each do |alert|
+#      if !["SOTA", "ZLOTA"].include?(alert['Class']) then
+#        @all_alerts.push(
+#           starttime: if alert['alTime'].to_datetime then alert['alTime'].to_datetime.in_time_zone(@tz.name).strftime('%Y-%m-%d %H:%M') + ( if alert['alDay'] == '1' then ' (Day)' elsif alert['alDay'] == '2' then ' (Morning)' elsif alert['alDay'] == '3' then ' (Afternoon)' elsif alert['alDay'] == '4' then ' (Evening)' elsif alert['alDay'] == '5' then ' (Overnight)' else '' end) else '' end,
+#           activatingCallsign: alert['CallSign'].strip,
+#           code: alert['WWFFID'] && !alert['WWFFID'].empty? ? alert['WWFFID'] : alert['Location'],
+#           name: alert['Location'],
+#           frequency: alert['Freq'],
+#           mode: alert['MODE'],
+#           comments: alert['Comments'],
+#           programme: 'PnP: ' + alert['Class']
+#         )
+#      end
+#    end
+#
     @all_alerts.each do |alert|
       #puts alert.to_json
       begin
@@ -187,7 +188,7 @@ def self.import_hota_alerts(alerts)
       dxccs = DxccPrefix.find_by(prefix: dxcc)
       continent = dxccs.continent
     end
-    ext_alert=ExternalAlert.new(id: -alert.item_id, starttime: alert.referenced_time, duration: alert.duration, activatingCallsign: alert.callsign, code: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: 'ZLOTA', dxcc: dxcc, continent: continent)
+    ext_alert=ExternalAlert.new(id: -alert.item_id, starttime: alert.referenced_time, duration: alert.duration, activatingCallsign: alert.callsign, code: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: 'ZLOTA', dxcc: dxcc, continent: continent.code)
     all_alerts+=[ext_alert] 
   end 
   all_alerts

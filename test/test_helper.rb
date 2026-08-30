@@ -108,7 +108,7 @@ Band.create({"meter_band"=>"80m", "freq_band"=>"3.6MHz", "group"=>"HF", "min_fre
      topic_id=ALERT_TOPIC
 
      post=Post.create(params)
-     item=Item.create(topic_id: topic_id, item_type: 'post', item_id: post.id, created_at: post.created_at, created_by_id: params[:created_by_id])
+     item=Item.create(topic_id: topic_id, item_type: 'post', item_id: post.id, created_at: post.created_at, created_by_id: params[:created_by_id], updated_by_id: params[:created_by_id])
      item.reload
   end
 

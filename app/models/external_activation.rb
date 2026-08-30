@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # typed: false
-class ExternalActivation < ActiveRecord::Base
+class ExternalActivation < ApplicationRecord
   before_save { before_save_actions }
 
   def before_save_actions
@@ -70,48 +70,40 @@ class ExternalActivation < ActiveRecord::Base
   def self.update_sota_activation(summit, only_new=true)
     # log in
 
-    jscreds = Keycloak::Client.get_token(SOTA_USER, SOTA_PASSWORD, 'sotadata', SOTA_SECRET)
+    jscreds = Keycloak::Client.get_token(
+       Rails.application.credentials.sota_user,
+       Rails.application.credentials.sota_password,
+       'sotadata',
+       Rails.application.credentials.sota_secret)
     creds = JSON.parse(jscreds)
     access_token = creds['access_token']
     # id_token = creds['id_token']
 
     activation_ids = []
     puts 'Summit: ' + summit.code
-    # url = "https://api-db.sota.org.uk/admin/find_summit?search="+summit.code
-    # data = JSON.parse(open(url, {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE}).read)
-    # if data and data[0] then
-    #  summitId=data[0]["SummitId"]
-    #      url = "https://api-db.sota.org.uk/admin/summit_history?summitID="+summitId.to_s
-    # data = JSON.parse(open(url, {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE}).read)
     url = URI.parse('https://api-db2.sota.org.uk/api/activations/' + summit.code)
     http = Net::HTTP.new(url.host, url.port)
     http.use_ssl = true
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
     req = Net::HTTP::Get.new(url.path.to_s, 'Content-Type' => 'application/json', 'Authorization' => 'Bearer ' + access_token, 'connection' => 'keep-alive')
+    req['User-Agent'] = USER_AGENT_STRING
     res = http.request(req)
     data = JSON.parse(res.body)
 
-    #      if data and data["activations"] then
     if data && data.count.positive?
-      # puts "Activations: "+data["activations"].count.to_s
       puts 'Activations: ' + data.count.to_s
       newcount = 0
-      # data["activations"].each do |activation|
       data.each do |activation|
         sa = ExternalActivation.new
         sa.asset_type = 'summit'
         sa.external_activation_id = activation['id'].to_i
-        # sa.callsign=activation["ownCallsign"].strip
         sa.callsign = User.remove_call_suffix(activation['ownCallsign'].strip)
         if sa.callsign then
           puts "Activator: #{sa.callsign}"
           sa.summit_code = summit.code.strip
-          # sa.summit_sota_id=summitId
-          # if activation["ActivationDate"] then sa.date=activation["ActivationDate"].to_date  end
           if activation['activationDate'] then sa.date = activation['activationDate'].to_date.strftime('%Y-%m-%d') end
           sa.qso_count = activation['qsos']
-          # sa.qso_count=activation["QSOs"]
           activation_ids += [activation['id']] if !only_new #triggers chaser check for all activations
           dups = ExternalActivation.where(external_activation_id: sa.external_activation_id).count
           if dups.zero?
@@ -147,6 +139,7 @@ class ExternalActivation < ActiveRecord::Base
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
       req = Net::HTTP::Get.new(url.path.to_s, 'Content-Type' => 'application/json', 'Authorization' => 'Bearer ' + access_token, 'connection' => 'keep-alive')
+      req['User-Agent'] = USER_AGENT_STRING
       res = http.request(req)
       data = JSON.parse(res.body)
       if data && data['chases']
@@ -196,7 +189,10 @@ class ExternalActivation < ActiveRecord::Base
   def self.update_pota_activation(asset)
     puts 'Park: ' + asset.code
     url = 'https://api.pota.app/park/activations/' + asset.code.capitalize + '?count=all'
-    data = JSON.parse(open(url, ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE).read)
+    raw_response = fetch_external_url(url)
+    data = JSON.parse(raw_response.blank? ? "[]" : raw_response)
+
+ #   data = JSON.parse(open(url, ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE).read)
     if data && data.count.positive?
       puts 'Activations: ' + data.count.to_s
       newcount = 0

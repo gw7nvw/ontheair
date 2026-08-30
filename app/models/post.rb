@@ -79,7 +79,7 @@ class Post < ActiveRecord::Base
   end
 
   def add_map_image
-    return if defined?(UAT_ENV)
+    return if !defined?(Rails) || !Rails.env.production?
     international = false
     logger.debug "HERE!!!"
     if location == nil
@@ -511,6 +511,7 @@ class Post < ActiveRecord::Base
   end
 
   def send_to_sota(debug, from, callsign, a_code, freq, mode, description)
+
     result = true
     messages = ''
 
