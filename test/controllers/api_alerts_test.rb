@@ -28,6 +28,7 @@ class ApiAlertsTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     data = JSON.parse(@response.body)
+    data = data.sort_by { |d| d["reference"] }
     assert_equal data.count, 3
     assert_equal data[0].excluding(["id", "created_time"]), 
       {"comments" => "This is a comment", "referenced_time" => t1.iso8601(3), "duration" => 1, "name" => "#{asset1.name} [#{asset1.code}] {RE44nt}; #{asset2.name} [#{asset2.code}] {RE44nt}", "reference" => asset1.code, "frequency" => "7090.0", "mode" => "SSB", "activator" => user2.callsign},
@@ -58,6 +59,7 @@ class ApiAlertsTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     data = JSON.parse(@response.body)
+    data = data.sort_by{ |d| d["reference"]}
     assert_equal data.count, 2
     assert_equal data[0].excluding(["id", "created_time"]),
       {"comments" => "This is a comment", "referenced_time" => t1.iso8601(3), "duration" => 1, "name" => "#{asset1.name} [#{asset1.code}] {RE44nt}; #{asset2.name} [#{asset2.code}] {RE44nt}", "reference" => asset1.code, "frequency" => "7090.0", "mode" => "SSB", "activator" => user2.callsign},

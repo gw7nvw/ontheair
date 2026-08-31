@@ -112,8 +112,8 @@ class Region < ActiveRecord::Base
        d.iso_code as "countryID",
        d.continent_code as "continentID"
     FROM regions a
-    JOIN dxcc_prefixes d ON a.dxcc = d.prefix
-    JOIN states s ON s.code = a.state_code
+    LEFT JOIN dxcc_prefixes d ON a.dxcc = d.prefix
+    LEFT JOIN states s ON s.code = a.state_code
     WHERE a.dxcc IN (:dxccs) 
     ORDER BY a.sota_code
     SQL

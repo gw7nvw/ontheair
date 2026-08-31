@@ -1244,7 +1244,7 @@ class Asset < ActiveRecord::Base
         r.code AS "siteID",   
         t.pnp_class AS "award",
         r.name AS "name",
-        ST_CardinalDirection(ST_Azimuth(c.origin, calc.azimuth_target)) AS "siteDirection",
+        ST_CardinalDirection(degrees((ST_Azimuth(c.origin, calc.azimuth_target))) AS "siteDirection",
         calc.dist_km AS "siteDistance"
       FROM config c
       CROSS JOIN (
@@ -1294,7 +1294,7 @@ class Asset < ActiveRecord::Base
         r.code AS "siteID",   
         t.pnp_class AS "awardID",
         r.name AS "siteName",
-        CONCAT(calc.dist_km::varchar, 'km ', ST_CardinalDirection(ST_Azimuth(c.origin, calc.azimuth_target))) AS "siteDistance",
+        CONCAT(calc.dist_km::varchar, 'km ', ST_CardinalDirection(degrees(ST_Azimuth(c.origin, calc.azimuth_target)))) AS "siteDistance",
         calc.dist_km AS "siteDistanceNumeric"
       FROM config c
       CROSS JOIN (
@@ -1316,7 +1316,7 @@ class Asset < ActiveRecord::Base
  -- STEP 2: Only calculate heavy math on those 10 isolated rows
       CROSS JOIN LATERAL (
         SELECT 
-          Round((ST_Distance_Sphere(c.origin, r.active_geom) / 1000)::numeric, 2) AS dist_km,
+          Round((ST_DistanceSphere(c.origin, r.active_geom) / 1000)::numeric, 2) AS dist_km,
           CASE WHEN r.active_geom = r.location THEN r.active_geom -- if it was location
                ELSE ST_ClosestPoint(r.active_geom, c.origin) 
           END AS azimuth_target

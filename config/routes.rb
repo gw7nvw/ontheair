@@ -152,7 +152,7 @@ match '/api/CHECK', to: 'api#pnp_check',    via:'get'
 match '/api/SITES/CHECK', to: 'api#pnp_check',    via:'get'
 match '/api/SITES/:id', to: 'api#pnp_sites_by_class',    via:'get'
 match '/api/SITES', to: 'api#pnp_sites',    via:'get'
-match '/api/GETUSERKEY/:callsign/:pin', to: 'api#pnp_getuserkey',    via:'get'
+match '/api/GETUSERKEY/:userID/:APIKey', to: 'api#pnp_getuserkey',    via:'get'
 match '/api/SPOT', to: 'api#pnp_spot',    via:'post'
 match '/api/CLOSE/:lat/:long', to: 'api#pnp_close',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
 match '/api/CLOSE/:lat/:long/:dummy', to: 'api#pnp_close',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }

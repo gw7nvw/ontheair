@@ -31,7 +31,7 @@ class UsersControllerTest < ActionController::TestCase
 
     #should get list of users
     table=get_table_test(@response.body, 'user_table')
-    assert_equal 4, get_row_count_test(table), "4 rows"
+    assert_equal 5, get_row_count_test(table), "5 rows"
     row=get_row_test(table,2)
     assert_match /ZL3CC/, get_col_test(row,1), "Correct callsign"
     assert_match /Bob/, get_col_test(row,2), "Name"
@@ -71,7 +71,7 @@ class UsersControllerTest < ActionController::TestCase
 
     #should get list of users
     table=get_table_test(@response.body, 'user_table')
-    assert_equal 4, get_row_count_test(table), "4 rows"
+    assert_equal 5, get_row_count_test(table), "5 rows"
     row=get_row_test(table,2)
     assert_match /ZL3CC/, get_col_test(row,1), "Correct callsign"
     assert_match /Bob/, get_col_test(row,2), "Name"
@@ -111,7 +111,7 @@ class UsersControllerTest < ActionController::TestCase
 
     #should get list of users
     table=get_table_test(@response.body, 'user_table')
-    assert_equal 4, get_row_count_test(table), "4 rows"
+    assert_equal 5, get_row_count_test(table), "5 rows"
     row=get_row_test(table,2)
     assert_match /ZL3CC/, get_col_test(row,1), "Correct callsign"
     assert_match /Bob/, get_col_test(row,2), "Name"
@@ -943,10 +943,10 @@ class UsersControllerTest < ActionController::TestCase
     table=get_table_test(@response.body, 'region_chased_table')
     assert_equal 3, get_row_count_test(table), "3 rows - header and 2 regions"
 
-    #Relies on park being 8th column. Will need updating if new classes added
+    #Relies on park being 9th column. Will need updating if new classes added
     row=get_row_test(table,2)
     assert_match /Canterbury/, get_col_test(row,1), "Correct region"
-    assert_match /1\/2/, get_col_test(row,8), "Correct progress"
+    assert_match /1\/2/, get_col_test(row,9), "Correct progress"
 
     #Now check activated
     get 'region_progress', params: {id: user1.callsign}
@@ -955,10 +955,10 @@ class UsersControllerTest < ActionController::TestCase
     table=get_table_test(@response.body, 'region_activated_table')
     assert_equal 3, get_row_count_test(table), "3 rows - header and 2 regions"
 
-    #Relies on park being 8th column. Will need updating if new classes added
+    #Relies on park being 9th column. Will need updating if new classes added
     row=get_row_test(table,2)
     assert_match /Canterbury/, get_col_test(row,1), "Correct region"
-    assert_match /1\/2/, get_col_test(row,8), "Correct progress"
+    assert_match /1\/2/, get_col_test(row,9), "Correct progress"
 
   end
 
@@ -995,11 +995,11 @@ class UsersControllerTest < ActionController::TestCase
     table=get_table_test(@response.body, 'district_chased_table')
     assert_equal 3, get_row_count_test(table), "3 rows - header and 2 districts"
 
-    #Relies on park being 7th column. Will need updating if new classes added
+    #Relies on park being 8th column. Will need updating if new classes added
     row=get_row_test(table,2)
     assert_match /Canterbury/, get_col_test(row,1), "Correct region"
     assert_match /Christchurch/, get_col_test(row,2), "Correct district"
-    assert_match /1\/2/, get_col_test(row,7), "Correct progress"
+    assert_match /1\/2/, get_col_test(row,8), "Correct progress"
 
     #Now check activated
     get 'district_progress', params: {id: user1.callsign, region: 'CB'}
@@ -1008,11 +1008,11 @@ class UsersControllerTest < ActionController::TestCase
     table=get_table_test(@response.body, 'district_activated_table')
     assert_equal 3, get_row_count_test(table), "3 rows - header and 2 districts"
 
-    #Relies on park being 7th column. Will need updating if new classes added
+    #Relies on park being 8th column. Will need updating if new classes added
     row=get_row_test(table,2)
     assert_match /Canterbury/, get_col_test(row,1), "Correct region"
     assert_match /Christchurch/, get_col_test(row,2), "Correct district"
-    assert_match /1\/2/, get_col_test(row,7), "Correct progress"
+    assert_match /1\/2/, get_col_test(row,8), "Correct progress"
 
   end
 

@@ -209,7 +209,7 @@ class ApiController < ApplicationController
       p.referenced_time = (al_date + ' ' + al_time + ' UTC').to_time
       p.referenced_date = (al_date + ' 00:00:00 UTC').to_time
       p.updated_at = Time.now
-      p.title = 'SPOT: ' + p.callsign + ' spotted portable at ' + a_name + '[' + a_code + '] on ' + p.freq.to_s + '/' + p.mode + ' at ' + Time.now.in_time_zone('Pacific/Auckland').strftime('%Y-%m-%d %H:%M') + 'NZ'
+      p.title = 'SPOT: ' + p.callsign + ' spotted portable at ' + a_name + ' [' + a_code + '] on ' + p.freq.to_s + '/' + p.mode + ' at ' + Time.now.in_time_zone('Pacific/Auckland').strftime('%Y-%m-%d %H:%M') + 'NZ'
       topic_id = if debug
                        TEST_SPOT_TOPIC
                      else
@@ -236,11 +236,7 @@ class ApiController < ApplicationController
       puts "Authentication failed"
       res = { success: false, message: 'Authentication failed!' }
     end
-    respond_to do |format|
-      format.js { render json: res }
-      format.json { render json: res }
-      format.html { render json: res }
-    end
+    render json: res
   end
 
   def logs_post
@@ -249,26 +245,21 @@ class ApiController < ApplicationController
       res = { success: true, message: 'Thanks for the data!' }
       @upload = Upload.new
       @upload.doc = params[:file]
-      res = @upload.save
-      puts res
+      result = @upload.save
       logfile = File.read(@upload.doc.path)
-      logs = Log.import(logfile, nil)
+      logs = Log.import('adif', user, logfile, user)
+
       @upload.destroy
       if logs[:success] == false
         res = { success: false, message: logs[:errors].join(', ') }
       end
       if (logs[:success] == true) && logs[:errors] && (logs[:errors].count > 0)
-        res = { success: true, message: 'Warnings: ' + logs[:errors].join(', ') }
+        res = { success: false, message: 'Warnings: ' + logs[:errors].join(', ') }
       end
     else
       res = { success: false, message: 'Login failed using supplied credentials' }
-  end
-
-    respond_to do |format|
-      format.js { render json: res }
-      format.json { render json: res }
-      format.html { render json: res }
     end
+    render json: res
   end
 
   ###############################################################
@@ -290,20 +281,13 @@ class ApiController < ApplicationController
     end
   end
 
-  def pnp_zlota
-    respond_to do |format|
-      format.js { send_file Rails.root.join('public/assets/zlota.json'), type: 'application/json', disposition: 'inline' }
-      format.json { send_file Rails.root.join('public/assets/zlota.json'), type: 'application/json', disposition: 'inline' }
-      format.html { send_file Rails.root.join('public/assets/zlota.json'), type: 'application/json', disposition: 'inline' }
-      format.csv { send_file Rails.root.join('public/assets/zlota.csv'), type: 'text/csv', disposition: 'inline' }
-    end
-  end
-
   def pnp_getuserkey
-    user = User.find_by(callsign: params[:callsign].upcase, pin: params[:pin].upcase)
-    if user then res = user.pin else res = "FALSE" end
-
-    render text: res
+    res = "false"
+    if api_authenticate(params) 
+      user = User.find_by(callsign: params[:userID].upcase)
+      res=user.pin if user
+    end
+    render plain: res
   end
 
   def pnp_check
@@ -378,7 +362,7 @@ class ApiController < ApplicationController
     a.location="point(#{long} #{lat})"
     name = a.maidenhead
 
-    render text: name
+    render plain: name
   end
 
   def pnp_shiresid
@@ -390,7 +374,7 @@ class ApiController < ApplicationController
     name = ""
     name = shires.first["name"] if shires and shires.count>0
 
-    render text: name
+    render plain: name
   end
  
   def pnp_summitid
@@ -408,7 +392,7 @@ class ApiController < ApplicationController
       name = "Currently not within a summit AZ" 
     end
 
-    render text: name
+    render plain: name
   end
 
   def pnp_parkid
@@ -426,7 +410,7 @@ class ApiController < ApplicationController
       name = "Currently not within a Park" 
     end
 
-    render text: name
+    render plain: name
   end
  
 
@@ -454,7 +438,7 @@ class ApiController < ApplicationController
         res = Asset.generate_pnp_sites(dxccs, where_query)
       end
     end
-    reaw_json = res.to_json.gsub('/', '\\/')
+    raw_json = res.to_json.gsub('/', '\\/')
     render json: raw_json
   end
 
@@ -678,7 +662,7 @@ class ApiController < ApplicationController
     else
        res = '"FALSE"'
     end
-    render text: res
+    render plain: res
   end
 
   private
@@ -691,26 +675,9 @@ class ApiController < ApplicationController
     valid = false
   
     if params[:userID] && params[:APIKey]
-      user=User.find_by(callsign: params[:userID].upcase, pin: params[:APIKey].upcase) 
-      user=User.find_by(callsign: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase) if !user
-
-      if user && (user.activated || user.pnp_imported) 
-        valid = true
-      else
-        # authenticate via PnP
-        # if not a local user, or is a local user and have allowed PnP logins
-        # if !user or (user and user.allow_pnp_login==true) then
- #       if user && (user.allow_pnp_login == true)
- #         params = { 'actClass' => 'WWFF', 'actCallsign' => 'test', 'actSite' => 'test', 'mode' => 'SSB', 'freq' => '7.095', 'comments' => 'Test', 'userID' => params[:userID], 'APIKey' => params[:APIKey] }
- #         res = send_spot_to_pnp(params, '/DEBUG')
- #         if res.body.match('Success')
- #           valid = true
- #           puts 'AUTH: SUCCESS authenticated via PnP'
- #         else
- #           puts 'AUTH: FAILED authentication via PnP'
- #         end
- #       end
-      end
+      user=User.find_by(callsign: params[:userID].upcase, pin: params[:APIKey].upcase, activated: true) 
+      user=User.find_by(callsign: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase, pnp_imported: true) if !user
+      valid = true if user
     end
     valid
   end

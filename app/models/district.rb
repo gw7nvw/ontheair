@@ -123,8 +123,8 @@ class District < ActiveRecord::Base
        d.iso_code as "countryID",
        d.continent_code as "continentID"
     FROM districts a
-    JOIN dxcc_prefixes d ON a.dxcc = d.prefix
-    JOIN states s ON s.code = a.state_code
+    LEFT JOIN dxcc_prefixes d ON a.dxcc = d.prefix
+    LEFT JOIN states s ON s.code = a.state_code
     WHERE ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), a.boundary)
     LIMIT 1;
     SQL
@@ -154,8 +154,8 @@ class District < ActiveRecord::Base
        d.iso_code as "countryID",
        d.continent_code as "continentID"
     FROM districts a
-    JOIN dxcc_prefixes d ON a.dxcc = d.prefix
-    JOIN states s ON s.code = a.state_code
+    LEFT JOIN dxcc_prefixes d ON a.dxcc = d.prefix
+    LEFT JOIN states s ON s.code = a.state_code
     WHERE a.dxcc IN (:dxccs) 
     ORDER BY a.district_code
     SQL
@@ -196,14 +196,14 @@ class District < ActiveRecord::Base
        s.pnp_code as "State",
        'SHIRE' as "Class"
     FROM districts a
-    JOIN dxcc_prefixes d ON a.dxcc = d.prefix
-    JOIN states s ON s.code = a.state_code
+    LEFT JOIN dxcc_prefixes d ON a.dxcc = d.prefix
+    LEFT JOIN states s ON s.code = a.state_code
     WHERE a.dxcc IN (:dxccs) 
     ORDER BY a.district_code
     SQL
 
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([sql, { dxccs: dxccs }])
+    sanitized_sql = Arel.sql(sql, dxccs: dxccs )
 
     # 3. Pull raw string text directly from the execution block
     connection.select_all(sanitized_sql)

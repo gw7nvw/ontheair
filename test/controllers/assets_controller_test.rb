@@ -244,7 +244,6 @@ class AssetsControllerTest < ActionController::TestCase
 
     get :show, params: {id: asset1.safecode}
     assert_response :success
-    puts response.body
     assert_select '#activated_by', /#{user1.callsign}/, "activated by"
     assert_select '#activated_by', /#{user4.callsign}/, "activated by"
     assert_select '#chased_by', /#{user2.callsign}/, "chased by"

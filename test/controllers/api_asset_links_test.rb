@@ -20,6 +20,7 @@ class ApiAssetLinksTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     data = JSON.parse(@response.body)
+    data = data.sort_by{ |d| d["contained_code"] }
     assert_equal data.count, 3
     assert_equal data[0].excluding(["id", "created_at", "updated_at"]), 
       {"contained_code" => "ZLH/OT-001", "containing_code" => "ZLP/OT-0001", "overlap" => nil},

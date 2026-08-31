@@ -38,8 +38,6 @@ class User < ActiveRecord::Base
   VALID_PHONE_REGEX = /\A\+[1-9]\d{1,14}\z/i
   validates :acctnumber, allow_blank: true, format: { with: VALID_PHONE_REGEX }
 
-  VALID_CALLSIGN_REGEX = /^\d{0,1}[a-zA-Z]{1,2}\d{1,4}[a-zA-Z]{1,4}$/
-
   def email_is_valid
     if email 
       provider=email.split('@')[1]

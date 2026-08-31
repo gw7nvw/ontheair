@@ -32,11 +32,13 @@ class Post < ActiveRecord::Base
   end
 
   def update_site
-    self.site = ''
+    sites = []
     self.asset_codes.each do |ac|
       assets = Asset.assets_from_code(ac)
-      self.site += (assets && (assets.count > 0) ? (assets.first[:name] || '') : '') + ' [' + ac + '] ' + (assets && (assets.count > 0) && assets.first[:asset] ? '{' + assets.first[:asset].maidenhead + '}; ' : '')
+      maidenhead = (assets && (assets.count > 0) && assets.first[:asset] ? " {#{assets.first[:asset].maidenhead}}" : '')
+      sites += ["#{(assets && (assets.count > 0) ? (assets.first[:name] || '') : '')} [#{ac}]#{maidenhead}"]
     end
+    self.site = sites.join('; ')
   end
 
   def update_item

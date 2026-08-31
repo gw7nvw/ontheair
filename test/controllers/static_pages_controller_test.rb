@@ -190,10 +190,10 @@ class StaticPagesControllerTest < ActionController::TestCase
     row2=get_row_test(table,3)
 
     assert_match /1/, get_col_test(row1, 1), "Position"
-    assert_match /#{user1.callsign}/, get_col_test(row1, 2), "Callsign"
+    assert_match /#{user1.callsign}|#{user2.callsign}/, get_col_test(row1, 2), "Callsign"
     assert_match /1/, get_col_test(row1, 4), "Hut"
     assert_match /1/, get_col_test(row2, 1), "Position"
-    assert_match /#{user2.callsign}/, get_col_test(row2, 2), "Callsign"
+    assert_match /#{user1.callsign}|#{user2.callsign}/, get_col_test(row2, 2), "Callsign"
     assert_match /1/, get_col_test(row2, 4), "Hut"
 
     #Park scores

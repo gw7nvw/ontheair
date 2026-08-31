@@ -22,5 +22,6 @@ module Ontheair
     #
      config.time_zone = "UTC"
     # config.eager_load_paths << Rails.root.join("extras")
+    config.active_record.schema_format = :sql
   end
 end

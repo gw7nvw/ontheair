@@ -2,7 +2,6 @@
 
 # typed: false
 class Api2Controller < ApplicationController
-  VALID_CALLSIGN_REGEX = '.[A-Z]+[0-9]+[A-Z]+'
 
   include PostsHelper
 

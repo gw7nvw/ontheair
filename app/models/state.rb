@@ -108,7 +108,7 @@ class State < ActiveRecord::Base
        d.iso_code as "countryID",
        d.continent_code as "continentID"
     FROM  states a
-    JOIN dxcc_prefixes d ON a.dxcc = d.prefix
+    LEFT JOIN dxcc_prefixes d ON a.dxcc = d.prefix
     WHERE a.dxcc IN (:dxccs) 
     ORDER BY a.code
     SQL
