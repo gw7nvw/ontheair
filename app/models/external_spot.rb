@@ -153,13 +153,12 @@ class ExternalSpot < ApplicationRecord
 
       wwff_spots = spots || []
 
-#      #Parks N Peaks
+      #Parks N Peaks
 #      spots=[]
 #      begin
 #        Timeout.timeout(30) do
-#          url = 'http://www.parksnpeaks.org/api/ALL'
-#          raw_response = fetch_external_url(url)
-#          spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
+#          url = "http://www.parksnpeaks.org/api/ALL?t=#{Time.now.to_i}"
+#          spots = JSON.parse(open(url).read)
 #          puts "GOT PnP: "+spots.to_json
 #        end
 #      rescue 
@@ -167,7 +166,7 @@ class ExternalSpot < ApplicationRecord
 #      else
 #      end
 
-      pnp_spots = spots || []
+#      pnp_spots = spots || []
 
       #HEMA
       hemaspots = []

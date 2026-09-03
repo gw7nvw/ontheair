@@ -7,6 +7,7 @@ mount Resque::Server.new, at: "/resque"
 
 #static pages
 root 'static_pages#home'
+match '/migrate',   to: 'static_pages#migrate',   via: 'get'
 match '/results',   to: 'static_pages#results',   via: 'get'
 match '/recent',   to: 'static_pages#recent',   via: 'get'
 match '/spots/history',   to: 'static_pages#spot_history',   via: 'get'

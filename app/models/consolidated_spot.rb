@@ -203,13 +203,14 @@ class ConsolidatedSpot < ActiveRecord::Base
         end
   
         
-        subs.each do |sub|
-          filter = sub.push_external_filter
-          puts "send notification to #{sub.callsign}"
-          sub.send_notification(summary, self.url, if sub.push_include_comments then self.comments.last else nil end, if sub.push_include_map then raw_image else nil end) 
+        if self.time and self.time.max>3.minutes.ago then
+          subs.each do |sub|
+            filter = sub.push_external_filter
+            puts "send notification to #{sub.callsign}"
+            sub.send_notification(summary, self.url, if sub.push_include_comments then self.comments.last else nil end, if sub.push_include_map then raw_image else nil end) 
+          end
+          system("rm #{filename}") if filename
         end
-        system("rm #{filename}") if filename
-
       end
     end
     self.update_column :old_spot_type, self.spot_type
