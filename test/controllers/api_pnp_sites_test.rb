@@ -40,7 +40,7 @@ class ApiPnpSitesTest < ActionDispatch::IntegrationTest
     data = data.sort_by { |d| d["ID"] }
     assert_equal data.count, 4
     assert_equal data[0],
-      {"Award" => "Shires", "Location" => nil, "ID" => "CC", "Name" => "Christchurch", "Longitude" => "172", "Latitude" => "-40.5", "ShireID" => "CC", "ContainedBy" => nil, "Contains" => nil, "Region" => "CB", "Continent" => "OC", "Country" => "ZL", "District" => "CC", "State" => nil, "Class" => "SHIRE"},
+      {"Award" => "Shires", "Location" => nil, "ID" => "ZL-CC1", "Name" => "Christchurch", "Longitude" => "172", "Latitude" => "-40.5", "ShireID" => "ZL-CC1", "ContainedBy" => nil, "Contains" => nil, "Region" => "CB", "Continent" => "OC", "Country" => "ZL", "District" => "ZL-CC1", "State" => nil, "Class" => "SHIRE"},
       "first row should match"
   end
 

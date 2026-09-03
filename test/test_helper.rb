@@ -36,10 +36,12 @@ Region.destroy_all
 Region.create(dxcc: 'ZL', sota_code: 'CB', name: "Canterbury", boundary: 'MULTIPOLYGON(((171 -40, 174 -40, 174 -41, 171 -41)))') 
 Region.create(dxcc: 'ZL', sota_code: 'OT', name: "Otago", boundary: 'MULTIPOLYGON(((171 -41, 174 -41, 174 -42, 171 -42)))')
 District.destroy_all
-District.create(dxcc: 'ZL', district_code: 'CC', name: "Christchurch", region_code: "CB", boundary: 'MULTIPOLYGON(((171 -40, 173 -40, 173 -41, 171 -41)))')
-District.create(dxcc: 'ZL', district_code: 'WA', name: "Waimate", region_code: "CB", boundary: 'MULTIPOLYGON(((173 -40, 174 -40, 174 -41, 173 -41)))')
-District.create(dxcc: 'ZL', district_code: 'DU', name: "Dunedin", region_code: "OT",boundary: 'MULTIPOLYGON(((171 -41, 173 -41, 173 -42, 171 -42)))') 
-District.create(dxcc: 'ZL', district_code: 'CO', name: "Central Otago", region_code: "OT",boundary: 'MULTIPOLYGON(((173 -41, 174 -41, 174 -42, 173 -42)))')
+District.create(dxcc: 'ZL', district_code: 'ZL-CC1', name: "Christchurch", region_code: "CB", boundary: 'MULTIPOLYGON(((171 -40, 173 -40, 173 -41, 171 -41)))')
+District.create(dxcc: 'ZL', district_code: 'ZL-WD1', name: "Waimate", region_code: "CB", boundary: 'MULTIPOLYGON(((173 -40, 174 -40, 174 -41, 173 -41)))')
+District.create(dxcc: 'ZL', district_code: 'ZL-DC1', name: "Dunedin", region_code: "OT",boundary: 'MULTIPOLYGON(((171 -41, 173 -41, 173 -42, 171 -42)))') 
+District.create(dxcc: 'ZL', district_code: 'ZL-CD3', name: "Central Otago", region_code: "OT",boundary: 'MULTIPOLYGON(((173 -41, 174 -41, 174 -42, 173 -42)))')
+DxccPrefix.create(name: "New Zealand", prefix: "ZL", itu_zone: "60", cq_zone: "32", continent_code: "OC", dxcc_enum: nil, is_active: true, iso_code: "NZ", sms_gateway: "+64273105319")
+DxccPrefix.create(name: "Australia", prefix: "VK", itu_zone: "(I)", cq_zone: "29", continent_code: "OC", dxcc_enum: nil, is_active: true, iso_code: "AU", sms_gateway: "+61406705011")
 NzTribalLand.destroy_all
 NzTribalLand.create({ "ogc_fid"=>21, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 175 -40, 175 -35, 170 -35)))", "boundary_quite_simplified" => "MULTIPOLYGON (((170 -40, 175 -40, 175 -35, 170 -35)))", "name"=>"Ngāti Apa"})
 NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 175 -40, 175 -45, 170 -45)))", "boundary_quite_simplified" => "MULTIPOLYGON (((170 -40, 175 -40, 175 -45, 170 -45)))", "name"=>"Ngāi Tahu"})

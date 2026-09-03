@@ -4,7 +4,7 @@ require "test_helper"
 class AssetLookthroughTest < ActiveSupport::TestCase
 
   test "Look-through values available" do
-
+    skip "loo through table not present in test"
     #NOTE - this creates a record in an active, live production table - be warned
     #tidy up
     ls=Lake.where(code: 'ZLL/9999')

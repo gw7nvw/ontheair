@@ -1,7 +1,7 @@
 # typed: false
 require "test_helper"
 include ApplicationHelper
-class ApiPnpCheckTest < ActionDispatch::IntegrationTest
+class ApiPnpCloseTest < ActionDispatch::IntegrationTest
 
 
   ##################################################################

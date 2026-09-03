@@ -120,7 +120,7 @@ class Item < ActiveRecord::Base
     end
     cs.frequency = round_freq if round_freq and round_freq != '' and round_freq.to_d != 0
     cs.mode = post.mode if post.mode and post.mode != ''
-    cs.time += [self.created_at]
+    cs.time += [if post.referenced_time then post.referenced_time else self.created_at end]
     cs.callsign += [post.updated_by_name]
     cs.code += post.asset_codes
     cs.name += [post.site]

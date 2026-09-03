@@ -27,8 +27,8 @@ class UserAwardCompletionTest < ActiveSupport::TestCase
 
   test "can create and retire district completion awards" do
     user1=create_test_user
-    district=District.find_by(district_code: 'CC')    
-    district2=District.find_by(district_code: 'CO')    
+    district=District.find_by(district_code: 'ZL-CC1')    
+    district2=District.find_by(district_code: 'ZL-CD3')    
 
     assert user1.has_completion_award('district',district.id,'chaser','hut')==false,       "User has no completion award by default"
 
@@ -47,7 +47,7 @@ class UserAwardCompletionTest < ActiveSupport::TestCase
     region=Region.find_by(sota_code: 'CB')    
     user1=create_test_user
     user2=create_test_user
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
 
     #no award when none of 1 parks activated
     user1.check_completion_awards('region')
@@ -62,7 +62,7 @@ class UserAwardCompletionTest < ActiveSupport::TestCase
     assert user1.has_completion_award('region',region.id,'chaser','park')==false, "User still has no chaser completion award"
 
     #add another park to region, check award is revoked
-    asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
     user1.check_completion_awards('region')
     assert user1.has_completion_award('region',region.id,'activator','park')==false, "User has no completion award"
   end
@@ -71,7 +71,7 @@ class UserAwardCompletionTest < ActiveSupport::TestCase
     region=Region.find_by(sota_code: 'CB')    
     user1=create_test_user
     user2=create_test_user
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
 
     #no award when none of 1 parks activated
     user1.check_completion_awards('region')
@@ -86,7 +86,7 @@ class UserAwardCompletionTest < ActiveSupport::TestCase
     assert user1.has_completion_award('region',region.id,'chaser','park')==false, "User still has no chaser completion award"
 
     #add another park to region, check award is revoked
-    asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
     user1.check_completion_awards('region')
     assert user1.has_completion_award('region',region.id,'activator','park')==false, "User has no completion award"
   end
@@ -95,7 +95,7 @@ class UserAwardCompletionTest < ActiveSupport::TestCase
     region=Region.find_by(sota_code: 'CB')    
     user1=create_test_user
     user2=create_test_user
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
 
     #no award when none of 1 parks activated
     user2.check_completion_awards('region')
@@ -110,7 +110,7 @@ class UserAwardCompletionTest < ActiveSupport::TestCase
     assert user2.has_completion_award('region',region.id,'activator','park')==false, "User still has no chaser completion award"
 
     #add another park to region, check award is revoked
-    asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
     user2.check_completion_awards('region')
     assert user2.has_completion_award('region',region.id,'chaser','park')==false, "User has no completion award"
   end
@@ -119,7 +119,7 @@ class UserAwardCompletionTest < ActiveSupport::TestCase
     region=Region.find_by(sota_code: 'CB')    
     user1=create_test_user
     user2=create_test_user
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
 
     #no award when none of 1 parks activated
     user2.check_completion_awards('region')
@@ -134,16 +134,16 @@ class UserAwardCompletionTest < ActiveSupport::TestCase
     assert user2.has_completion_award('region',region.id,'activator','park')==false, "User still has no chaser completion award"
 
     #add another park to region, check award is revoked
-    asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
     user2.check_completion_awards('region')
     assert user2.has_completion_award('region',region.id,'chaser','park')==false, "User has no completion award"
   end
 
   test "District completion award awarded and revoked based on comntacts made" do
-    district=District.find_by(district_code: 'CC')    
+    district=District.find_by(district_code: 'ZL-CC1')    
     user1=create_test_user
     user2=create_test_user
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
 
     #no award when none of 1 parks activated
     user1.check_completion_awards('district')
@@ -156,18 +156,18 @@ class UserAwardCompletionTest < ActiveSupport::TestCase
     assert user1.has_completion_award('district',district.id,'activator','park')==true, "User has completion award"
 
     #add another park to district, check award is revoked
-    asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
     user1.check_completion_awards('district')
     assert user1.has_completion_award('district',district.id,'activator','park')==false, "User has no completion award"
   end
 
   test "Minor / inactive assets ignored in completion award" do 
-    district=District.find_by(district_code: 'CC')    
+    district=District.find_by(district_code: 'ZL-CC1')    
     user1=create_test_user
     user2=create_test_user
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
-    asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park', minor: true)
-    asset3=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park', is_active: false)
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park', minor: true)
+    asset3=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park', is_active: false)
 
     #award issued when 1 / 1 parks activated (minor / inactive parks ignored)
     log=create_test_log(user1,asset_codes: [asset1.code])

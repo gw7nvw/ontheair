@@ -12,10 +12,10 @@ class ContactsControllerTest < ActionController::TestCase
     user2=create_test_user
     user3=create_test_user
 
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-43))
-    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'CC', location: create_point(173,-43), test_radius: 0.1)
-    asset3=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', location: create_point(173,-45), code_prefix: 'ZL3/CB-')
-    asset4=create_test_asset(asset_type: 'park', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173.01,-45), test_radius: 0.1)
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
+    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'ZL-CC1', location: create_point(173,-43), test_radius: 0.1)
+    asset3=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', location: create_point(173,-45), code_prefix: 'ZL3/CB-')
+    asset4=create_test_asset(asset_type: 'park', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173.01,-45), test_radius: 0.1)
 
     #activator log
     log=create_test_log(user1, asset_codes: [asset1.code], date: '2022-01-01'.to_date)
@@ -40,7 +40,7 @@ class ContactsControllerTest < ActionController::TestCase
     user2=create_test_user
     sign_in user1
 
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-43))
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
 
     #activator log
     log=create_test_log(user1, asset_codes: [asset1.code], date: '2022-01-01'.to_date)
@@ -89,8 +89,8 @@ class ContactsControllerTest < ActionController::TestCase
     user3=create_test_user
     sign_in user1
 
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-43))
-    asset2=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-43))
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
+    asset2=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
 
     #activator log
     log=create_test_log(user1, asset_codes: [asset1.code], date: '2022-01-01'.to_date)
@@ -137,8 +137,8 @@ class ContactsControllerTest < ActionController::TestCase
     user3=create_test_user
     sign_in user1
 
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-43))
-    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-44))
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
+    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-44))
 
     #activator log
     log=create_test_log(user1, asset_codes: [asset1.code], date: '2022-01-01'.to_date)
@@ -177,8 +177,8 @@ class ContactsControllerTest < ActionController::TestCase
     user3=create_test_user
     sign_in user1
 
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-43))
-    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-44))
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
+    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-44))
 
     #chaser log with me as activator
     log=create_test_log(user2, date: '2022-01-01'.to_date)

@@ -95,6 +95,7 @@ class ApiAssetsTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     data = JSON.parse(@response.body)
+    data = data.sort_by { |d| d["code"]}
     assert_equal data.count, 2
     assert_equal data[0].excluding(["id", "created_at", "updated_at"]), 
       {"url" => "assets/#{asset2.safecode}", "asset_type" => "park", "code" => asset2.code, "name" => asset2.name, "location" => "POINT (169.1 -45.2)", "altitude" => 1302, "minor" => false, "is_active" => true, "region" => "OT", "old_code" => "invalid", "area" => 349285979.9796295}

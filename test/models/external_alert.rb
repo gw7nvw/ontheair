@@ -58,13 +58,11 @@ test "should include local alerts" do
     t1 = Time.now.floor
     item=create_test_alert(user2, asset_codes: [asset1.code, asset2.code], callsign: user2.callsign, referenced_time: t1, freq: 7.09, mode: "SSB", duration: 1, description: "This is a comment")
 
-    puts item.to_json
 
     hota_alerts = Post.find_by_sql [ " select p.*, i.id as item_id from posts p inner join items i on i.item_id=p.id and i.topic_id=1 and i.item_type='post' and ((p.referenced_date + interval '1 hours' * duration::numeric) > '#{(Time.now - 1.days).strftime("%Y-%m-%d %H:%M")}' or p.referenced_date > '#{(Time.now - 1.days).strftime("%Y-%m-%d %H:%M")}')" ]
 
     ea = ExternalAlert.import_hota_alerts(hota_alerts)
 
-    puts ea.to_json
     assert_equal ea.first.attributes.excluding(["created_at", "updated_at", "id" ]),
       {"starttime" => t1, "activatingCallsign" => "ZL4AAAB", "code" => "[\"ZLH/ZZ-001\", \"ZLH/ZZ-002\"]", "name" => "place-AAAA [ZLH/ZZ-001] {}; place-AAAB [ZLH/ZZ-002] {}; ", "frequency" => "7.09", "comments" => "This is a comment", "mode" => "SSB", "programme" => "ZLOTA", "duration" => "1", "dxcc" => "ZL", "continent" => "OC"},
     "External alerts list internal alert"

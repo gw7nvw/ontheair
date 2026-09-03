@@ -15,10 +15,10 @@ class LogsControllerTest < ActionController::TestCase
 
     sign_in user4
 
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-43))
-    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'CC', location: create_point(173,-43), test_radius: 0.1)
-    asset3=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', location: create_point(173,-45), code_prefix: 'ZL3/CB-')
-    asset4=create_test_asset(asset_type: 'park', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173.01,-45), test_radius: 0.1)
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
+    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'ZL-CC1', location: create_point(173,-43), test_radius: 0.1)
+    asset3=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', location: create_point(173,-45), code_prefix: 'ZL3/CB-')
+    asset4=create_test_asset(asset_type: 'park', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173.01,-45), test_radius: 0.1)
 
     #activator log
     log=create_test_log(user1, asset_codes: [asset1.code], date: '2022-01-02'.to_date, is_qrp1: true, is_portable1: true)
@@ -91,10 +91,10 @@ class LogsControllerTest < ActionController::TestCase
 
     sign_in user1
 
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-43))
-    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'CC', location: create_point(173,-43), test_radius: 0.1)
-    asset3=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', location: create_point(173,-45), code_prefix: 'ZL3/CB-')
-    asset4=create_test_asset(asset_type: 'park', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173.01,-45), test_radius: 0.1)
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
+    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'ZL-CC1', location: create_point(173,-43), test_radius: 0.1)
+    asset3=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', location: create_point(173,-45), code_prefix: 'ZL3/CB-')
+    asset4=create_test_asset(asset_type: 'park', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173.01,-45), test_radius: 0.1)
 
     #activator log
     log=create_test_log(user1, asset_codes: [asset1.code], date: '2022-01-02'.to_date, is_qrp1: true, is_portable1: true)
@@ -152,8 +152,8 @@ class LogsControllerTest < ActionController::TestCase
     user3=create_test_user
     sign_in user1
 
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-43))
-    asset2=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-43))
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
+    asset2=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
 
     #activator log
     log=create_test_log(user1, asset_codes: [asset1.code], date: '2022-01-03'.to_date)
@@ -779,7 +779,7 @@ class LogsControllerTest < ActionController::TestCase
     assert_equal "57", contacts[0].signal1, "Signal1"
     assert_equal "59", contacts[0].signal2, "Signal2"
     #loc2=Asset.maidenhead_to_lat_lon('RE66gk') 
-    assert_equal "POINT (172.5 -43.583333333333336)", contacts[0].location2.as_text, "Location2"
+    assert_equal "POINT (172.54167 -43.5625)", contacts[0].location2.as_text, "Location2"
 
     #rest of entries exist
     assert_equal "ZL3GIG", contacts[1].callsign2, "Callsign"

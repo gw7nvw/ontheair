@@ -962,7 +962,7 @@ File generated on 03 Feb, 2023 at 07:11
     assert_equal logs[:good_contacts], 1, "one contact"
     log=logs[:logs].first
     contact=log.contacts.first
-    assert_equal 'POINT (168.0 -45.0)', contact.location2.to_s
+    assert_equal 'POINT (169.0 -44.5)', contact.location2.to_s
     assert_equal "user", contact.loc_source2
 
     #lat,lon preferred
@@ -1368,7 +1368,7 @@ test "parameter combinations and formats (name)" do
     assert_equal logs[:good_contacts], 1, "one contact"
     log=logs[:logs].first
     contact=log.contacts.first
-    assert_equal 'POINT (168.0 -45.0)', contact.location1.to_s
+    assert_equal 'POINT (169.0 -44.5)', contact.location1.to_s
     assert_equal "user", log.loc_source
 
     #lat,lon preferred

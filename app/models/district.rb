@@ -101,7 +101,7 @@ class District < ActiveRecord::Base
     SQL
 
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([sql, { lat: lat, long: long }])
+    sanitized_sql = Arel.sql(sql, lat: lat, long: long)
 
     # 3. Pull raw string text directly from the execution block
     connection.select_all(sanitized_sql)
@@ -130,7 +130,7 @@ class District < ActiveRecord::Base
     SQL
 
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([sql, { lat: lat, long: long }])
+    sanitized_sql = Arel.sql(sql, lat: lat, long: long)
 
     # 3. Pull raw string text directly from the execution block
     connection.select_all(sanitized_sql)
@@ -161,7 +161,7 @@ class District < ActiveRecord::Base
     SQL
 
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([sql, { dxccs: dxccs }])
+    sanitized_sql = Arel.sql(sql, dxccs: dxccs )
 
     # 3. Pull raw string text directly from the execution block
     connection.select_all(sanitized_sql)

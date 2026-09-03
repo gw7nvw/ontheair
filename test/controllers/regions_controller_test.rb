@@ -49,10 +49,10 @@ class RegionsControllerTest < ActionController::TestCase
     table=get_table_test(@response.body, 'district_table')
     assert_equal 3, get_row_count_test(table), "3 rows"
     row=get_row_test(table,2)
-    assert_match /CC/, get_col_test(row,1), "Correct code"
+    assert_match /ZL-CC1/, get_col_test(row,1), "Correct code"
     assert_match /Christchurch/, get_col_test(row,2), "Correct name"
     row=get_row_test(table,3)
-    assert_match /WA/, get_col_test(row,1), "Correct code"
+    assert_match /ZL-WD1/, get_col_test(row,1), "Correct code"
     assert_match /Waimate/, get_col_test(row,2), "Correct name"
 
     #Places

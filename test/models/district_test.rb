@@ -6,13 +6,13 @@ class DistrictTest < ActiveSupport::TestCase
     asset1=create_test_asset(asset_type: 'hut', location: create_point(173.5,-41.5), country: 'ZL', code_prefix: 'ZLH/OT-')
     asset2=create_test_asset(asset_type: 'summit', code_prefix: 'ZL1/OT-', location: create_point(173.5,-41.6), country: 'ZL')
     asset3=create_test_asset(asset_type: 'summit', code_prefix: 'ZL1/CB-', location: create_point(171.5,-40.6), country: 'ZL')
-    district = District.find_by(district_code: 'CO')
+    district = District.find_by(district_code: 'ZL-CD3')
     assets = district.assets
     assert_equal assets.count, 2, "Correct no of assets returned"
     assert_equal assets.first.code, asset1.code
     assert_equal assets.last.code, asset2.code
 
-    district = District.find_by(district_code: 'CC')
+    district = District.find_by(district_code: 'ZL-CC1')
     assets = district.assets
     assert_equal assets.count, 1, "Correct no of assets returned"
     assert_equal assets.first.code, asset3.code
@@ -22,12 +22,12 @@ class DistrictTest < ActiveSupport::TestCase
     asset1=create_test_asset(asset_type: 'hut', location: create_point(173.5,-41.5), country: 'ZL', code_prefix: 'ZLH/OT-')
     asset2=create_test_asset(asset_type: 'summit', code_prefix: 'ZL1/OT-', location: create_point(173.5,-41.6), country: 'ZL')
     asset3=create_test_asset(asset_type: 'summit', code_prefix: 'ZL1/CB-', location: create_point(171.5,-40.6), country: 'ZL')
-    district = District.find_by(district_code: 'CO')
+    district = District.find_by(district_code: 'ZL-CD3')
     assets = district.assets_by_type('hut')
     assert_equal assets.count, 1, "Correct no of assets returned"
     assert_equal assets.first.code, asset1.code
 
-    district = District.find_by(district_code: 'CC')
+    district = District.find_by(district_code: 'ZL-CC1')
     assets = district.assets_by_type('hut')
     assert_equal assets.count, 0, "Correct no of assets returned"
   end
@@ -42,13 +42,13 @@ class DistrictTest < ActiveSupport::TestCase
     assert_equal assets.count, 3, "Correct no of assets returned"
     assert_equal assets[1].site_list, [asset1.code]
     assert_equal assets[1].type, 'hut'
-    assert_equal assets[1].name, 'CO'
+    assert_equal assets[1].name, 'ZL-CD3'
     assert_equal assets[2].site_list, [asset2.code]
     assert_equal assets[2].type, 'summit'
-    assert_equal assets[2].name, 'CO'
+    assert_equal assets[2].name, 'ZL-CD3'
     assert_equal assets[0].site_list, [asset3.code]
     assert_equal assets[0].type, 'summit'
-    assert_equal assets[0].name, 'CC'
+    assert_equal assets[0].name, 'ZL-CC1'
   end
 
 end

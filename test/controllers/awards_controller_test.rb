@@ -69,8 +69,8 @@ class AwardsControllerTest < ActionController::TestCase
     sign_in users(:zl3cc)
     user1=create_test_user
     user2=create_test_user
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut')
-    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'CC', location: create_point(173,-45), test_radius: 0.1, name: 'test park')
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut')
+    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'ZL-CC1', location: create_point(173,-45), test_radius: 0.1, name: 'test park')
 
     #award issues when 1 / 1 parks activated
     log=create_test_log(user1,asset_codes: [asset1.code])
@@ -192,7 +192,7 @@ class AwardsControllerTest < ActionController::TestCase
     user1=create_test_user(timezone: tz.id)
     sign_in user1
     award=Award.find_by(all_district: true, chased: true, activated: false, programme: 'park')
-    district=District.find_by(district_code: 'CC')
+    district=District.find_by(district_code: 'ZL-CC1')
     user1.issue_completion_award('district',district.id,'chaser','park')
     user1.retire_completion_award('district',district.id,'chaser','park')
 

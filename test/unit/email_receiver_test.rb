@@ -42,7 +42,7 @@ or with GPS. To learn more, visit http://explore.garmin.com/inreach.
     newest_spot = ConsolidatedSpot.order(created_at: :desc).first
     assert_equal user1.callsign, newest_spot.activatorCallsign
     assert_equal newest_spot.attributes.excluding(["created_at", "updated_at", "id", "time", "comments", "post_id"]),
-      {"callsign" => ["#{user1.callsign}"],"activatorCallsign" => "#{user1.callsign}","code" => ["#{asset1.code}"],"name" => ["#{asset1.name} [#{asset1.code}] {RE44nt}; "],"frequency" => "3.69","mode" => "SSB","spot_type" => ["WWFF"],"points" => nil,"altM" => nil,"old_spot_type" => [],"band" => "80m","dxcc" => "ZL","continent" => "OC"},
+      {"callsign" => ["#{user1.callsign}"],"activatorCallsign" => "#{user1.callsign}","code" => ["#{asset1.code}"],"name" => ["#{asset1.name} [#{asset1.code}] {RE44nt}"],"frequency" => "3.69","mode" => "SSB","spot_type" => ["WWFF"],"points" => nil,"altM" => nil,"old_spot_type" => [],"band" => "80m","dxcc" => "ZL","continent" => "OC"},
     "Wrong parameters in spot"
     assert_match /#{user1.callsign}: On air in 5 mins \(via InReach\) \(.+\)/, newest_spot.comments.first
   end
@@ -77,7 +77,7 @@ More sotamat-related bumph goes here
     newest_spot = ConsolidatedSpot.order(created_at: :desc).first
     assert_equal user1.callsign, newest_spot.activatorCallsign
     assert_equal newest_spot.attributes.excluding(["created_at", "updated_at", "id", "time", "comments", "post_id"]),
-      {"callsign" => ["#{user1.callsign}"],"activatorCallsign" => "#{user1.callsign}","code" => ["#{asset1.code}"],"name" => ["#{asset1.name} [#{asset1.code}] {RE44nt}; "],"frequency" => "3.69","mode" => "SSB","spot_type" => ["WWFF"],"points" => nil,"altM" => nil,"old_spot_type" => [],"band" => "80m","dxcc" => "ZL","continent" => "OC"},
+      {"callsign" => ["#{user1.callsign}"],"activatorCallsign" => "#{user1.callsign}","code" => ["#{asset1.code}"],"name" => ["#{asset1.name} [#{asset1.code}] {RE44nt}"],"frequency" => "3.69","mode" => "SSB","spot_type" => ["WWFF"],"points" => nil,"altM" => nil,"old_spot_type" => [],"band" => "80m","dxcc" => "ZL","continent" => "OC"},
     "Wrong parameters in spot"
     assert_match /#{user1.callsign}: On air in 5 mins \(via SOTAmat\) \(.+\)/, newest_spot.comments.first
   end
@@ -119,7 +119,7 @@ or with GPS. To learn more, visit http://explore.garmin.com/inreach.
     # 3. Verify the record properties match the parsed email fields
     newest_alert = Post.order(created_at: :desc).first
     assert_equal newest_alert.attributes.excluding(["created_at", "updated_at", "id", "time", "comments", "post_id"]),
-      {"title" => "ALERT: #{user1.callsign} going portable to #{asset1.name} [#{asset1.code}] on 3.690/SSB at #{t1.strftime("%Y-%m-%d %H:%M UTC")}", "description" => "time +/- (via InReach)", "created_by_id" => user1.id, "updated_by_id" => user1.id, "filename" => nil, "image_file_name" => nil, "image_content_type" => nil, "image_file_size" => nil, "image_updated_at" => nil, "do_not_publish" => nil, "referenced_datetime" => nil, "referenced_date" => t1.to_date, "referenced_time" => t1, "duration" => nil, "site" => "#{asset1.name} [#{asset1.code}] {RE44nt}; ", "code" => nil, "mode" => "SSB", "freq" => "3.690", "is_hut" => nil, "is_park" => nil, "is_island" => nil, "is_summit" => nil, "hut" => nil, "park" => nil, "island" => nil, "summit" => nil, "callsign" => user1.callsign, "asset_codes" => [asset1.code], "user_id" => nil, "do_not_lookup" => nil, "location" => nil, "loc_source" => nil}  
+      {"title" => "ALERT: #{user1.callsign} going portable to #{asset1.name} [#{asset1.code}] on 3.690/SSB at #{t1.strftime("%Y-%m-%d %H:%M UTC")}", "description" => "time +/- (via InReach)", "created_by_id" => user1.id, "updated_by_id" => user1.id, "filename" => nil, "image_file_name" => nil, "image_content_type" => nil, "image_file_size" => nil, "image_updated_at" => nil, "do_not_publish" => nil, "referenced_datetime" => nil, "referenced_date" => t1.to_date, "referenced_time" => t1, "duration" => nil, "site" => "#{asset1.name} [#{asset1.code}] {RE44nt}", "code" => nil, "mode" => "SSB", "freq" => "3.690", "is_hut" => nil, "is_park" => nil, "is_island" => nil, "is_summit" => nil, "hut" => nil, "park" => nil, "island" => nil, "summit" => nil, "callsign" => user1.callsign, "asset_codes" => [asset1.code], "user_id" => nil, "do_not_lookup" => nil, "location" => nil, "loc_source" => nil}  
     "Wrong parameters in alert"
   end
 

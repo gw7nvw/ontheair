@@ -185,7 +185,7 @@ class AssetsControllerTest < ActionController::TestCase
   # SHOW 
   ##################################################################
   test "View asset" do
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut')
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut')
     asset2=create_test_asset(asset_type: 'park', region: 'OT', location: create_point(173,-45), test_radius: 0.1, name: 'test park', minor: true)
 
     get :show, params: {id: asset1.safecode}
@@ -233,7 +233,7 @@ class AssetsControllerTest < ActionController::TestCase
     user4=create_test_user
     user5=create_test_user
 
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut')
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut')
 
     log=create_test_log(user1, asset_codes: [asset1.code], date: '2022-01-01'.to_date)
     contact=create_test_contact(user1, user2, log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-01 01:00'.to_time)
@@ -259,7 +259,7 @@ class AssetsControllerTest < ActionController::TestCase
     user4=create_test_user
     user5=create_test_user
 
-    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
+    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
 
     activation=create_test_external_activation(user1,asset1, date: '2022-01-01'.to_date)
     chase=create_test_external_chase(activation,user2,asset1,time: '2022-01-01 02:00'.to_time)
@@ -280,7 +280,7 @@ class AssetsControllerTest < ActionController::TestCase
   
   #links
   test "View asset shows web links" do
-    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
+    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
     weblink=create_test_web_link(asset1, 'https://hutbagger.nz/1', 'hutbagger')
 
     get :show, params: {id: asset1.safecode}
@@ -291,7 +291,7 @@ class AssetsControllerTest < ActionController::TestCase
   #photos
   test "View asset shows photo" do
     user1=create_test_user
-    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
+    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
     photo=create_test_photo(user1, asset1,  'photo title', 'This is a description')
 
     get :show, params: {id: asset1.safecode}
@@ -303,7 +303,7 @@ class AssetsControllerTest < ActionController::TestCase
   #comments
   test "View asset shows comments" do
     user1=create_test_user
-    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
+    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
     comment=create_test_comment(user1, asset1,  'This is a comment')
 
     get :show, params: {id: asset1.safecode}
@@ -377,7 +377,7 @@ class AssetsControllerTest < ActionController::TestCase
   test "Can create an asset" do
     sign_in users(:zl4nvw)
 
-    post :create, params: {asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
+    post :create, params: {asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "ZL-CC1", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
     assert_response :redirect
     assert_redirected_to /\/assets\/[0-9]*/
     assert_equal "Success!", flash[:success]
@@ -385,7 +385,7 @@ class AssetsControllerTest < ActionController::TestCase
     assert_equal "ZLP/XX-9999", asset.code
     assert_equal "Hut", asset.asset_type
     assert_equal "CB", asset.region
-    assert_equal "CC", asset.district
+    assert_equal "ZL-CC1", asset.district
     assert_equal "Test Hut", asset.name
     assert_equal 172, asset.location.x.to_i
     assert_equal -43, asset.location.y.to_i
@@ -401,7 +401,7 @@ class AssetsControllerTest < ActionController::TestCase
 
   test "Non editor cannot post New Asset form" do
     sign_in users(:zl3cc)
-    post :create, params: {asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
+    post :create, params: {asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "ZL-CC1", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
     assert_response :redirect
     assert_redirected_to /assets/
 
@@ -409,7 +409,7 @@ class AssetsControllerTest < ActionController::TestCase
   end
 
   test "Non logged in cannot post New Asset form" do
-    post :create, params: {asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
+    post :create, params: {asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "ZL-CC1", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
     assert_response :redirect
     assert_redirected_to /signin/
 
@@ -417,15 +417,15 @@ class AssetsControllerTest < ActionController::TestCase
   end
 
   test "invalid asset params rejected correctly" do
-    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
+    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
     sign_in users(:zl4nvw)
     #no name
-    post :create, params: {asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
+    post :create, params: {asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "ZL-CC1", name: "", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
     assert_response :success
     assert_select "#error_explanation", /Name/
 
     #duplicate code
-    post :create, params: {asset: {code: asset1.code, asset_type: "Hut", region: "CB", district: "CC", name: "name", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
+    post :create, params: {asset: {code: asset1.code, asset_type: "Hut", region: "CB", district: "ZL-CC1", name: "name", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
     assert_response :success
     assert_select "#error_explanation", /Code/
   end
@@ -435,7 +435,7 @@ class AssetsControllerTest < ActionController::TestCase
   # EDIT 
   ##################################################################
   test "Can view Edit Asset form" do
-    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
+    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
     sign_in users(:zl4nvw)
 
     get :edit, params: {id: asset1.safecode}
@@ -459,7 +459,7 @@ class AssetsControllerTest < ActionController::TestCase
     assert_select '#asset_code' do assert_select "[value=?]", asset1.code end
     assert_select '#asset_asset_type' do assert_select "[value=?]", 'hut' end
     assert_select '#asset_region' do assert_select "[value=?]", 'CB'  end
-    assert_select '#asset_district' do assert_select "[value=?]", 'CC' end
+    assert_select '#asset_district' do assert_select "[value=?]", 'ZL-CC1' end
     assert_select '#asset_name' do assert_select "[value=?]", 'test hut' end
     assert_select '#asset_az_radius' do assert_select "[value=?]", 0.1 end
     assert_select '#asset_points' do assert_select "[value=?]", 5 end
@@ -476,7 +476,7 @@ class AssetsControllerTest < ActionController::TestCase
   end
 
   test "Non editor cannot view Edit Asset form" do
-    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
+    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
     sign_in users(:zl3cc)
     get :edit, params: {id: asset1.safecode}
     assert_response :redirect
@@ -486,7 +486,7 @@ class AssetsControllerTest < ActionController::TestCase
   end
 
   test "Not logged in cannot view edit Asset form" do
-    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
+    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
     get :edit, params: {id: asset1.safecode}
     assert_response :redirect
     assert_redirected_to /signin/
@@ -504,10 +504,10 @@ class AssetsControllerTest < ActionController::TestCase
   end
 
   test "Can update an asset" do
-    asset=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
+    asset=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
     sign_in users(:zl4nvw)
 
-    patch :update, params: {id: asset.id, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
+    patch :update, params: {id: asset.id, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "ZL-CC1", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
     assert_response :redirect
     assert_redirected_to /\/assets\/[0-9]*/
     assert_equal "Asset details updated", flash[:success]
@@ -515,7 +515,7 @@ class AssetsControllerTest < ActionController::TestCase
     assert_equal "ZLP/XX-9999", asset.code
     assert_equal "Hut", asset.asset_type
     assert_equal "CB", asset.region
-    assert_equal "CC", asset.district
+    assert_equal "ZL-CC1", asset.district
     assert_equal "Test Hut", asset.name
     assert_equal 172, asset.location.x.to_i
     assert_equal -43, asset.location.y.to_i
@@ -531,9 +531,9 @@ class AssetsControllerTest < ActionController::TestCase
 
   test "Non editor cannot update Edit Asset form" do
     sign_in users(:zl3cc)
-    asset=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
+    asset=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
 
-    patch :update, params: {id: asset.id, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
+    patch :update, params: {id: asset.id, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "ZL-CC1", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
     assert_response :redirect
     assert_redirected_to /assets/
 
@@ -545,9 +545,9 @@ class AssetsControllerTest < ActionController::TestCase
   end
 
   test "Not logged in cannot update edit Asset form" do
-    asset=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
+    asset=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
 
-    patch :update, params: {id: asset.id, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
+    patch :update, params: {id: asset.id, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "ZL-CC1", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
     assert_response :redirect
     assert_redirected_to /signin/
 
@@ -556,7 +556,7 @@ class AssetsControllerTest < ActionController::TestCase
 
   test "Update non existant asset handled correctly" do
     sign_in users(:zl4nvw)
-    patch :update, params: {id: 99999, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
+    patch :update, params: {id: 99999, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "ZL-CC1", name: "Test Hut", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
     assert_response :redirect
     assert_redirected_to /assets/
     
@@ -564,16 +564,16 @@ class AssetsControllerTest < ActionController::TestCase
   end
 
   test "invalid asset params rejected correctly in edit" do
-    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
-    asset2=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
+    asset1=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
+    asset2=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-')
     sign_in users(:zl4nvw)
     #no name
-    patch :update, params: {id: asset1.id, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "CC", name: "", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
+    patch :update, params: {id: asset1.id, asset: {code: "ZLP/XX-9999", asset_type: "Hut", region: "CB", district: "ZL-CC1", name: "", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
     assert_response :success
     assert_select "#error_explanation", /Name/
 
     #duplicate code
-    patch :update, params: {id: asset1.id, asset: {code: asset2.code, asset_type: "Hut", region: "CB", district: "CC", name: "", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
+    patch :update, params: {id: asset1.id, asset: {code: asset2.code, asset_type: "Hut", region: "CB", district: "ZL-CC1", name: "", x: 1580000, y: 5180000, altitude: 100, valid_from: "2020-01-01", valid_to: "2024-12-31", is_active: true, is_nzart: true, minor: false, az_radius: 0.1, points: 5}}
     assert_response :success
     assert_select "#error_explanation", /Code/
   end
@@ -582,7 +582,7 @@ class AssetsControllerTest < ActionController::TestCase
   # DELETE 
   ##################################################################
   test "Can delete an asset" do
-    asset=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
+    asset=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-45), name: 'test hut', code_prefix: 'ZL3/CB-', az_radius: 0.1, points: 5, altitude: 100, is_nzart: true, minor: false)
     assets=Asset.count
     sign_in users(:zl4nvw)
 

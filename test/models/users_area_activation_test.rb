@@ -6,10 +6,10 @@ class UserAreaActivationTest < ActiveSupport::TestCase
   test "assets from activator log listed by region, type" do
     user1=create_test_user
     user2=create_test_user
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
-    asset2=create_test_asset(region: 'CB', district: 'WA', asset_type: 'park')
-    asset3=create_test_asset(region: 'OT', district: 'DU', asset_type: 'park')
-    asset4=create_test_asset(region: 'OT', district: 'CO', asset_type: 'park')
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-WD1', asset_type: 'park')
+    asset3=create_test_asset(region: 'OT', district: 'ZL-DC1', asset_type: 'park')
+    asset4=create_test_asset(region: 'OT', district: 'ZL-CC1', asset_type: 'park')
     log=create_test_log(user1,asset_codes: [asset1.code])
     contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-01 00:00:00'.to_time)
     log2=create_test_log(user1,asset_codes: [asset2.code])
@@ -51,10 +51,10 @@ class UserAreaActivationTest < ActiveSupport::TestCase
   test "assets from chaser log listed by region, type" do
     user1=create_test_user
     user2=create_test_user
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
-    asset2=create_test_asset(region: 'CB', district: 'WA', asset_type: 'park')
-    asset3=create_test_asset(region: 'OT', district: 'DU', asset_type: 'park')
-    asset4=create_test_asset(region: 'OT', district: 'CO', asset_type: 'park')
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-WA1', asset_type: 'park')
+    asset3=create_test_asset(region: 'OT', district: 'ZL-DC1', asset_type: 'park')
+    asset4=create_test_asset(region: 'OT', district: 'ZL-CD3', asset_type: 'park')
     log=create_test_log(user1)
     contact=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset1.code], time: '2022-01-01 00:00:00'.to_time)
     contact2=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset2.code], time: '2022-01-01 00:00:00'.to_time)
@@ -93,7 +93,7 @@ class UserAreaActivationTest < ActiveSupport::TestCase
   test "assets from external activator log listed by region, type" do
     user1=create_test_user
     user2=create_test_user
-    asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'summit', code_prefix: 'ZL3/CB-')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'summit', code_prefix: 'ZL3/CB-')
     activation=create_test_external_activation(user1, asset2)
     chase=create_test_external_chase(activation, user2, asset2)
  
@@ -121,8 +121,8 @@ class UserAreaActivationTest < ActiveSupport::TestCase
   test "assets broken down by region, type" do
     user1=create_test_user
     user2=create_test_user
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
-    asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'hut')
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'hut')
     log=create_test_log(user1)
     contact=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset1.code], time: '2022-01-01 00:00:00'.to_time)
     contact2=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset2.code], time: '2022-01-01 00:00:00'.to_time)
@@ -153,10 +153,10 @@ class UserAreaActivationTest < ActiveSupport::TestCase
   test "do not include assets not valid at contact date" do
     user1=create_test_user
     user2=create_test_user
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park', is_active: false)
-    asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'hut', valid_to: '2022-01-01'.to_time)
-    asset3=create_test_asset(region: 'CB', district: 'CC', asset_type: 'hut', valid_from: '2022-01-03'.to_time)
-    asset4=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park', valid_from: '2022-01-01'.to_time, valid_to: '2022-01-03'.to_time)
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park', is_active: false)
+    asset2=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'hut', valid_to: '2022-01-01'.to_time)
+    asset3=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'hut', valid_from: '2022-01-03'.to_time)
+    asset4=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park', valid_from: '2022-01-01'.to_time, valid_to: '2022-01-03'.to_time)
     log=create_test_log(user1, date: '2022-01-02'.to_date)
     contact=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset1.code], time: '2022-01-02 00:00:00'.to_time)
     contact2=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset2.code], time: '2022-01-02 00:00:00'.to_time)
@@ -181,8 +181,8 @@ class UserAreaActivationTest < ActiveSupport::TestCase
   test "do not include minor by default" do
     user1=create_test_user
     user2=create_test_user
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park', minor: true)
-    asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'hut', minor: false)
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park', minor: true)
+    asset2=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'hut', minor: false)
     log=create_test_log(user1)
     contact=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset1.code])
     contact=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset2.code])
@@ -210,10 +210,10 @@ class UserAreaActivationTest < ActiveSupport::TestCase
   test "assets from activator log listed by district, type" do
     user1=create_test_user
     user2=create_test_user
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
-    asset2=create_test_asset(region: 'CB', district: 'WA', asset_type: 'park')
-    asset3=create_test_asset(region: 'OT', district: 'DU', asset_type: 'park')
-    asset4=create_test_asset(region: 'OT', district: 'CO', asset_type: 'park')
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-WD1', asset_type: 'park')
+    asset3=create_test_asset(region: 'OT', district: 'ZL-DC1', asset_type: 'park')
+    asset4=create_test_asset(region: 'OT', district: 'ZL-CD3', asset_type: 'park')
     log=create_test_log(user1,asset_codes: [asset1.code])
     contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-01 00:00:00'.to_time)
     log2=create_test_log(user1,asset_codes: [asset2.code])
@@ -226,19 +226,19 @@ class UserAreaActivationTest < ActiveSupport::TestCase
     contacts=user1.area_activations('district').sort
     assert contacts.count==4, "Expect 4 district activated"
     assert contacts[0][:type]=='park', "Expect correct asset type"
-    assert contacts[0][:name]=='CC', "Expect correct distict"
+    assert contacts[0][:name]=='ZL-CC1', "Expect correct distict"
     assert contacts[0][:site_list].count==1
     assert contacts[0][:site_list].sort==[asset1.code].sort
     assert contacts[1][:type]=='park', "Expect correct asset type"
-    assert contacts[1][:name]=='CO', "Expect correct distict"
+    assert contacts[1][:name]=='ZL-CD3', "Expect correct distict"
     assert contacts[1][:site_list].count==1
     assert contacts[1][:site_list].sort==[asset4.code].sort
     assert contacts[2][:type]=='park', "Expect correct asset type"
-    assert contacts[2][:name]=='DU', "Expect correct distict"
+    assert contacts[2][:name]=='ZL-DC1', "Expect correct distict"
     assert contacts[2][:site_list].count==1
     assert contacts[2][:site_list].sort==[asset3.code].sort
     assert contacts[3][:type]=='park', "Expect correct asset type"
-    assert contacts[3][:name]=='WA', "Expect correct distict"
+    assert contacts[3][:name]=='ZL-WD1', "Expect correct distict"
     assert contacts[3][:site_list].count==1
     assert contacts[3][:site_list].sort==[asset2.code].sort
 
@@ -249,10 +249,10 @@ class UserAreaActivationTest < ActiveSupport::TestCase
   test "assets from chaser log listed by district, type" do
     user1=create_test_user
     user2=create_test_user
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
-    asset2=create_test_asset(region: 'CB', district: 'WA', asset_type: 'park')
-    asset3=create_test_asset(region: 'OT', district: 'DU', asset_type: 'park')
-    asset4=create_test_asset(region: 'OT', district: 'CO', asset_type: 'park')
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-WD1', asset_type: 'park')
+    asset3=create_test_asset(region: 'OT', district: 'ZL-DC1', asset_type: 'park')
+    asset4=create_test_asset(region: 'OT', district: 'ZL-CD3', asset_type: 'park')
     log=create_test_log(user1)
     contact=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset1.code], time: '2022-01-01 00:00:00'.to_time)
     contact2=create_test_contact(user1,user2,log_id: log.id, asset2_codes: [asset2.code], time: '2022-01-01 00:00:00'.to_time)
@@ -262,19 +262,19 @@ class UserAreaActivationTest < ActiveSupport::TestCase
     contacts=user2.area_activations('district').sort
     assert contacts.count==4, "Expect 4 district activated by activator"
     assert contacts[0][:type]=='park', "Expect correct asset type"
-    assert contacts[0][:name]=='CC', "Expect correct distict"
+    assert contacts[0][:name]=='ZL-CC1', "Expect correct distict"
     assert contacts[0][:site_list].count==1
     assert contacts[0][:site_list].sort==[asset1.code].sort
     assert contacts[1][:type]=='park', "Expect correct asset type"
-    assert contacts[1][:name]=='CO', "Expect correct distict"
+    assert contacts[1][:name]=='ZL-CD3', "Expect correct distict"
     assert contacts[1][:site_list].count==1
     assert contacts[1][:site_list].sort==[asset4.code].sort
     assert contacts[2][:type]=='park', "Expect correct asset type"
-    assert contacts[2][:name]=='DU', "Expect correct distict"
+    assert contacts[2][:name]=='ZL-DC1', "Expect correct distict"
     assert contacts[2][:site_list].count==1
     assert contacts[2][:site_list].sort==[asset3.code].sort
     assert contacts[3][:type]=='park', "Expect correct asset type"
-    assert contacts[3][:name]=='WA', "Expect correct distict"
+    assert contacts[3][:name]=='ZL-WD1', "Expect correct distict"
     assert contacts[3][:site_list].count==1
     assert contacts[3][:site_list].sort==[asset2.code].sort
 
@@ -285,14 +285,14 @@ class UserAreaActivationTest < ActiveSupport::TestCase
   test "assets from external activator log listed by district, type" do
     user1=create_test_user
     user2=create_test_user
-    asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'summit', code_prefix: 'ZL3/CB-')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'summit', code_prefix: 'ZL3/CB-')
     activation=create_test_external_activation(user1, asset2)
     chase=create_test_external_chase(activation, user2, asset2)
  
     contacts=user1.area_activations('district')
     assert contacts.count==1, "Expect 1 district activated"
     assert contacts[0][:type]=='summit', "Expect correct asset type"
-    assert contacts[0][:name]=='CC', "Expect correct district"
+    assert contacts[0][:name]=='ZL-CC1', "Expect correct district"
     assert contacts[0][:site_list].count==1
     assert contacts[0][:site_list].sort==[asset2.code].sort
     
@@ -302,7 +302,7 @@ class UserAreaActivationTest < ActiveSupport::TestCase
     contacts=user2.area_chases('district')
     assert contacts.count==1, "Expect 1 district chased"
     assert contacts[0][:type]=='summit', "Expect correct asset type"
-    assert contacts[0][:name]=='CC', "Expect correct district"
+    assert contacts[0][:name]=='ZL-CC1', "Expect correct district"
     assert contacts[0][:site_list].count==1
     assert contacts[0][:site_list].sort==[asset2.code].sort
     

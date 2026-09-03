@@ -52,7 +52,6 @@ test "should successfully fetch data from external APIs" do
     "Got correct last HEMA spot"
 
   #assert_equal llota.count, 10, 'Got 10 LLOTA records'
-  puts llota.first.to_json
 
   #check repull does not trigger duplicates
   assert_no_difference 'ExternalSpot.count' do
@@ -77,7 +76,6 @@ test "should upcase mode on save" do
 end
 
 test "should create new consolidated spot" do
-  puts ConsolidatedSpot.count
   t = Time.now
   assert_difference 'ConsolidatedSpot.count', 1 do
     es = ExternalSpot.create({"time" => t, "callsign" => "M0KCB", "activatorCallsign" => "MW0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.31312", "mode" => "ssb", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil})
@@ -150,7 +148,6 @@ test "New frequency should trigger new consolidated spot" do
 end
 
 test "New mode should trigger new consolidated spot" do
-  puts ConsolidatedSpot.count
   t1 = 1.minute.ago
   assert_difference 'ConsolidatedSpot.count', 1 do
     es = ExternalSpot.create({"time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "MW0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.31312", "mode" => "ssb", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil})

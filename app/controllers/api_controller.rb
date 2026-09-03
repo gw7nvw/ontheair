@@ -652,15 +652,10 @@ class ApiController < ApplicationController
   end
 
   def pnp_verifyuser
-    if params[:user] and params[:pin] then
-      user=User.find_by(callsign: params[:user].upcase, pin: params[:pin].upcase)
-      user=User.find_by(callsign: params[:user].upcase, pnp_APIKey: params[:pin].upcase) if !user
-    end
-
-    if user then 
-       res = '"TRUE"'
-    else
-       res = '"FALSE"'
+    res = '"FALSE"'
+    if api_authenticate(params)
+      user = User.find_by(callsign: params[:userID].upcase)
+      res='"TRUE"' if user
     end
     render plain: res
   end
@@ -677,6 +672,7 @@ class ApiController < ApplicationController
     if params[:userID] && params[:APIKey]
       user=User.find_by(callsign: params[:userID].upcase, pin: params[:APIKey].upcase, activated: true) 
       user=User.find_by(callsign: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase, pnp_imported: true) if !user
+      user=User.find_by(pnp_username: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase, pnp_imported: true) if !user
       valid = true if user
     end
     valid

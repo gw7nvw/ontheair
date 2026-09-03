@@ -36,7 +36,7 @@ class SmsGatewayTest < ActionDispatch::IntegrationTest
     # 4. Deep-validate that only the exact fields you care about were parsed into your database
     newest_spot = ConsolidatedSpot.order(created_at: :desc).first
     assert_equal newest_spot.attributes.excluding(["created_at", "updated_at", "id", "time", "comments", "post_id"]),
-      {"callsign" => ["#{user1.callsign}"],"activatorCallsign" => "#{user1.callsign}","code" => [asset1.code],"name" => ["#{asset1.name} [#{asset1.code}] {RE44nt}; "],"frequency" => "7.085","mode" => "SSB","spot_type" => ["SOTA"],"points" => nil,"altM" => nil,"old_spot_type" => [],"band" => "40m","dxcc" => "ZL","continent" => "OC"},
+      {"callsign" => ["#{user1.callsign}"],"activatorCallsign" => "#{user1.callsign}","code" => [asset1.code],"name" => ["#{asset1.name} [#{asset1.code}] {RE44nt}"],"frequency" => "7.085","mode" => "SSB","spot_type" => ["SOTA"],"points" => nil,"altM" => nil,"old_spot_type" => [],"band" => "40m","dxcc" => "ZL","continent" => "OC"},
     "Wrong parameters in spot"
   end
 
@@ -85,7 +85,7 @@ class SmsGatewayTest < ActionDispatch::IntegrationTest
     # 4. Deep-validate that only the exact fields you care about were parsed into your database
     newest_spot = ConsolidatedSpot.order(created_at: :desc).first
     assert_equal newest_spot.attributes.excluding(["created_at", "updated_at", "id", "time", "comments", "post_id"]),
-      {"callsign" => ["#{user1.callsign}"],"activatorCallsign" => "#{user1.callsign}","code" => [asset1.code],"name" => ["#{asset1.name} [#{asset1.code}] {RE44nt}; "],"frequency" => "7.085","mode" => "SSB","spot_type" => ["SOTA"],"points" => nil,"altM" => nil,"old_spot_type" => [],"band" => "40m","dxcc" => "ZL","continent" => "OC"},
+      {"callsign" => ["#{user1.callsign}"],"activatorCallsign" => "#{user1.callsign}","code" => [asset1.code],"name" => ["#{asset1.name} [#{asset1.code}] {RE44nt}"],"frequency" => "7.085","mode" => "SSB","spot_type" => ["SOTA"],"points" => nil,"altM" => nil,"old_spot_type" => [],"band" => "40m","dxcc" => "ZL","continent" => "OC"},
     "Wrong parameters in spot"
   end
 
@@ -122,7 +122,7 @@ class SmsGatewayTest < ActionDispatch::IntegrationTest
     # 4. Deep-validate that only the exact fields you care about were parsed into your database
     newest_spot = ConsolidatedSpot.order(created_at: :desc).first
     assert_equal newest_spot.attributes.excluding(["created_at", "updated_at", "id", "time", "comments", "post_id"]),
-      {"callsign" => ["#{user1.callsign}"],"activatorCallsign" => "#{user1.callsign}","code" => [asset1.code],"name" => ["#{asset1.name} [#{asset1.code}] {RE44nt}; "],"frequency" => "7.085","mode" => "SSB","spot_type" => ["SOTA"],"points" => nil,"altM" => nil,"old_spot_type" => [],"band" => "40m","dxcc" => "ZL","continent" => "OC"},
+      {"callsign" => ["#{user1.callsign}"],"activatorCallsign" => "#{user1.callsign}","code" => [asset1.code],"name" => ["#{asset1.name} [#{asset1.code}] {RE44nt}"],"frequency" => "7.085","mode" => "SSB","spot_type" => ["SOTA"],"points" => nil,"altM" => nil,"old_spot_type" => [],"band" => "40m","dxcc" => "ZL","continent" => "OC"},
     "Wrong parameters in spot"
     assert_match /#{user1.callsign}: SOTA \*\[iPnP\] \(via SMS\) \(.+\)/, newest_spot.comments.first
   end
@@ -160,7 +160,7 @@ class SmsGatewayTest < ActionDispatch::IntegrationTest
     # 4. Deep-validate that only the exact fields you care about were parsed into your database
     newest_spot = ConsolidatedSpot.order(created_at: :desc).first
     assert_equal newest_spot.attributes.excluding(["created_at", "updated_at", "id", "time", "comments", "post_id"]),
-      {"callsign" => ["#{user1.callsign}"],"activatorCallsign" => "#{user1.callsign}","code" => [asset1.code],"name" => ["#{asset1.name} [#{asset1.code}] {RE44nt}; "],"frequency" => "7.085","mode" => "SSB","spot_type" => ["SOTA"],"points" => nil,"altM" => nil,"old_spot_type" => [],"band" => "40m","dxcc" => "ZL","continent" => "OC"},
+      {"callsign" => ["#{user1.callsign}"],"activatorCallsign" => "#{user1.callsign}","code" => [asset1.code],"name" => ["#{asset1.name} [#{asset1.code}] {RE44nt}"],"frequency" => "7.085","mode" => "SSB","spot_type" => ["SOTA"],"points" => nil,"altM" => nil,"old_spot_type" => [],"band" => "40m","dxcc" => "ZL","continent" => "OC"},
     "Wrong parameters in spot"
   end
 
@@ -197,7 +197,7 @@ class SmsGatewayTest < ActionDispatch::IntegrationTest
     # 4. Deep-validate that only the exact fields you care about were parsed into your database
     newest_spot = ConsolidatedSpot.order(created_at: :desc).first
     assert_equal newest_spot.attributes.excluding(["created_at", "updated_at", "id", "time", "comments", "post_id"]),
-      {"callsign" => ["#{user1.callsign}"],"activatorCallsign" => "#{user1.callsign}","code" => [asset1.code],"name" => ["#{asset1.name} [#{asset1.code}] {RE44nt}; "],"frequency" => "7.085","mode" => "SSB","spot_type" => ["SOTA"],"points" => nil,"altM" => nil,"old_spot_type" => [],"band" => "40m","dxcc" => "ZL","continent" => "OC"},
+      {"callsign" => ["#{user1.callsign}"],"activatorCallsign" => "#{user1.callsign}","code" => [asset1.code],"name" => ["#{asset1.name} [#{asset1.code}] {RE44nt}"],"frequency" => "7.085","mode" => "SSB","spot_type" => ["SOTA"],"points" => nil,"altM" => nil,"old_spot_type" => [],"band" => "40m","dxcc" => "ZL","continent" => "OC"},
     "Wrong parameters in spot"
   end
 
@@ -234,7 +234,7 @@ class SmsGatewayTest < ActionDispatch::IntegrationTest
     # 4. Deep-validate that only the exact fields you care about were parsed into your database
     newest_alert = Post.order(created_at: :desc).first
     assert_equal newest_alert.attributes.excluding(["created_at", "updated_at", "id", "time", "comments", "post_id"]),
-      {"title" => "ALERT: #{user1.callsign} going portable to #{asset1.name} [#{asset1.code}] on 7.085/SSB at 2022-01-01 12:00 UTC", "description" => "SOTA *[iPnP] (via SMS)", "created_by_id" => user1.id, "updated_by_id" => user1.id, "filename" => nil, "image_file_name" => nil, "image_content_type" => nil, "image_file_size" => nil, "image_updated_at" => nil, "do_not_publish" => nil, "referenced_datetime" => nil, "referenced_date" => "2022-01-01".to_date, "referenced_time" => "2022-01-01 12:00:00.000000000 UTC +00:00".to_time, "duration" => 1, "site" => "#{asset1.name} [#{asset1.code}] {RE44nt}; ", "code" => nil, "mode" => "SSB", "freq" => "7.085", "is_hut" => nil, "is_park" => nil, "is_island" => nil, "is_summit" => nil, "hut" => nil, "park" => nil, "island" => nil, "summit" => nil, "callsign" => user1.callsign, "asset_codes" => [asset1.code], "user_id" => nil, "do_not_lookup" => nil, "location" => nil, "loc_source" => nil},
+      {"title" => "ALERT: #{user1.callsign} going portable to #{asset1.name} [#{asset1.code}] on 7.085/SSB at 2022-01-01 12:00 UTC", "description" => "SOTA *[iPnP] (via SMS)", "created_by_id" => user1.id, "updated_by_id" => user1.id, "filename" => nil, "image_file_name" => nil, "image_content_type" => nil, "image_file_size" => nil, "image_updated_at" => nil, "do_not_publish" => nil, "referenced_datetime" => nil, "referenced_date" => "2022-01-01".to_date, "referenced_time" => "2022-01-01 12:00:00.000000000 UTC +00:00".to_time, "duration" => 1, "site" => "#{asset1.name} [#{asset1.code}] {RE44nt}", "code" => nil, "mode" => "SSB", "freq" => "7.085", "is_hut" => nil, "is_park" => nil, "is_island" => nil, "is_summit" => nil, "hut" => nil, "park" => nil, "island" => nil, "summit" => nil, "callsign" => user1.callsign, "asset_codes" => [asset1.code], "user_id" => nil, "do_not_lookup" => nil, "location" => nil, "loc_source" => nil},
     "Wrong parameters in alert"
   end
 
@@ -271,7 +271,7 @@ class SmsGatewayTest < ActionDispatch::IntegrationTest
     # 4. Deep-validate that only the exact fields you care about were parsed into your database
     newest_alert = Post.order(created_at: :desc).first
     assert_equal newest_alert.attributes.excluding(["created_at", "updated_at", "id", "time", "comments", "post_id"]),
-      {"title" => "ALERT: #{user1.callsign} going portable to #{asset1.name} [#{asset1.code}] on 7.085/SSB at 2022-01-01 12:00 UTC", "description" => "SOTA *[iPnP] (via SMS)", "created_by_id" => user1.id, "updated_by_id" => user1.id, "filename" => nil, "image_file_name" => nil, "image_content_type" => nil, "image_file_size" => nil, "image_updated_at" => nil, "do_not_publish" => nil, "referenced_datetime" => nil, "referenced_date" => "2022-01-01".to_date, "referenced_time" => "2022-01-01 12:00:00.000000000 UTC +00:00".to_time, "duration" => 1, "site" => "#{asset1.name} [#{asset1.code}] {RE44nt}; ", "code" => nil, "mode" => "SSB", "freq" => "7.085", "is_hut" => nil, "is_park" => nil, "is_island" => nil, "is_summit" => nil, "hut" => nil, "park" => nil, "island" => nil, "summit" => nil, "callsign" => user1.callsign, "asset_codes" => [asset1.code], "user_id" => nil, "do_not_lookup" => nil, "location" => nil, "loc_source" => nil},
+      {"title" => "ALERT: #{user1.callsign} going portable to #{asset1.name} [#{asset1.code}] on 7.085/SSB at 2022-01-01 12:00 UTC", "description" => "SOTA *[iPnP] (via SMS)", "created_by_id" => user1.id, "updated_by_id" => user1.id, "filename" => nil, "image_file_name" => nil, "image_content_type" => nil, "image_file_size" => nil, "image_updated_at" => nil, "do_not_publish" => nil, "referenced_datetime" => nil, "referenced_date" => "2022-01-01".to_date, "referenced_time" => "2022-01-01 12:00:00.000000000 UTC +00:00".to_time, "duration" => 1, "site" => "#{asset1.name} [#{asset1.code}] {RE44nt}", "code" => nil, "mode" => "SSB", "freq" => "7.085", "is_hut" => nil, "is_park" => nil, "is_island" => nil, "is_summit" => nil, "hut" => nil, "park" => nil, "island" => nil, "summit" => nil, "callsign" => user1.callsign, "asset_codes" => [asset1.code], "user_id" => nil, "do_not_lookup" => nil, "location" => nil, "loc_source" => nil},
     "Wrong parameters in alert"
   end
 
@@ -307,7 +307,7 @@ class SmsGatewayTest < ActionDispatch::IntegrationTest
     # 4. Deep-validate that only the exact fields you care about were parsed into your database
     newest_alert = Post.order(created_at: :desc).first
     assert_equal newest_alert.attributes.excluding(["created_at", "updated_at", "id", "time", "comments", "post_id"]),
-      {"title" => "ALERT: #{user1.callsign} going portable to #{asset1.name} [#{asset1.code}] on 7.085/SSB at 2022-01-01 12:00 UTC", "description" => "WWFF n-fer *[iPnP] (via SMS)", "created_by_id" => user1.id, "updated_by_id" => user1.id, "filename" => nil, "image_file_name" => nil, "image_content_type" => nil, "image_file_size" => nil, "image_updated_at" => nil, "do_not_publish" => nil, "referenced_datetime" => nil, "referenced_date" => "2022-01-01".to_date, "referenced_time" => "2022-01-01 12:00:00.000000000 UTC +00:00".to_time, "duration" => 1, "site" => "#{asset1.name} [#{asset1.code}] {RE44nt}; #{asset2.name} [#{asset2.code}] {RE44nt}; ", "code" => nil, "mode" => "SSB", "freq" => "7.085", "is_hut" => nil, "is_park" => nil, "is_island" => nil, "is_summit" => nil, "hut" => nil, "park" => nil, "island" => nil, "summit" => nil, "callsign" => user1.callsign, "asset_codes" => [asset1.code, asset2.code], "user_id" => nil, "do_not_lookup" => nil, "location" => nil, "loc_source" => nil},
+      {"title" => "ALERT: #{user1.callsign} going portable to #{asset1.name} [#{asset1.code}] on 7.085/SSB at 2022-01-01 12:00 UTC", "description" => "WWFF n-fer *[iPnP] (via SMS)", "created_by_id" => user1.id, "updated_by_id" => user1.id, "filename" => nil, "image_file_name" => nil, "image_content_type" => nil, "image_file_size" => nil, "image_updated_at" => nil, "do_not_publish" => nil, "referenced_datetime" => nil, "referenced_date" => "2022-01-01".to_date, "referenced_time" => "2022-01-01 12:00:00.000000000 UTC +00:00".to_time, "duration" => 1, "site" => "#{asset1.name} [#{asset1.code}] {RE44nt}; #{asset2.name} [#{asset2.code}] {RE44nt}", "code" => nil, "mode" => "SSB", "freq" => "7.085", "is_hut" => nil, "is_park" => nil, "is_island" => nil, "is_summit" => nil, "hut" => nil, "park" => nil, "island" => nil, "summit" => nil, "callsign" => user1.callsign, "asset_codes" => [asset1.code, asset2.code], "user_id" => nil, "do_not_lookup" => nil, "location" => nil, "loc_source" => nil},
     "Wrong parameters in alert"
   end
 
@@ -343,7 +343,7 @@ class SmsGatewayTest < ActionDispatch::IntegrationTest
     # 4. Deep-validate that only the exact fields you care about were parsed into your database
     newest_alert = Post.order(created_at: :desc).first
     assert_equal newest_alert.attributes.excluding(["created_at", "updated_at", "id", "time", "comments", "post_id"]),
-      {"title" => "ALERT: #{user1.callsign} going portable to #{asset1.name} [#{asset1.code}] on 7.085/SSB at 2022-01-01 12:00 UTC", "description" => "WWFF single *[iPnP] (via SMS)", "created_by_id" => user1.id, "updated_by_id" => user1.id, "filename" => nil, "image_file_name" => nil, "image_content_type" => nil, "image_file_size" => nil, "image_updated_at" => nil, "do_not_publish" => nil, "referenced_datetime" => nil, "referenced_date" => "2022-01-01".to_date, "referenced_time" => "2022-01-01 12:00:00.000000000 UTC +00:00".to_time, "duration" => 1, "site" => "#{asset1.name} [#{asset1.code}] {RE44nt}; ", "code" => nil, "mode" => "SSB", "freq" => "7.085", "is_hut" => nil, "is_park" => nil, "is_island" => nil, "is_summit" => nil, "hut" => nil, "park" => nil, "island" => nil, "summit" => nil, "callsign" => user1.callsign, "asset_codes" => [asset1.code], "user_id" => nil, "do_not_lookup" => true, "location" => nil, "loc_source" => nil},
+      {"title" => "ALERT: #{user1.callsign} going portable to #{asset1.name} [#{asset1.code}] on 7.085/SSB at 2022-01-01 12:00 UTC", "description" => "WWFF single *[iPnP] (via SMS)", "created_by_id" => user1.id, "updated_by_id" => user1.id, "filename" => nil, "image_file_name" => nil, "image_content_type" => nil, "image_file_size" => nil, "image_updated_at" => nil, "do_not_publish" => nil, "referenced_datetime" => nil, "referenced_date" => "2022-01-01".to_date, "referenced_time" => "2022-01-01 12:00:00.000000000 UTC +00:00".to_time, "duration" => 1, "site" => "#{asset1.name} [#{asset1.code}] {RE44nt}", "code" => nil, "mode" => "SSB", "freq" => "7.085", "is_hut" => nil, "is_park" => nil, "is_island" => nil, "is_summit" => nil, "hut" => nil, "park" => nil, "island" => nil, "summit" => nil, "callsign" => user1.callsign, "asset_codes" => [asset1.code], "user_id" => nil, "do_not_lookup" => true, "location" => nil, "loc_source" => nil},
     "Wrong parameters in alert"
   end
 

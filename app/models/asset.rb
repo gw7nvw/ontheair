@@ -295,7 +295,11 @@ class Asset < ActiveRecord::Base
   def self.maidenhead_to_lat_lon(maidenhead)
     maidenhead = maidenhead[0..5]
     # pad 4 digit maidenhead to 6
-    maidenhead += 'aa' if maidenhead.length == 4
+    mh_len = 6
+    if maidenhead.length == 4
+      maidenhead += 'aa' 
+      mh_len=4
+    end
     abc = 'abcdefghijklmnopqrstuvwxyz'
     long20 = abc.upcase.index(maidenhead[0]).to_f
     lat10 = abc.upcase.index(maidenhead[1]).to_f
@@ -308,35 +312,48 @@ class Asset < ActiveRecord::Base
     lat = lat10 * 10 + lat1 + latm / 24
     long -= 180
     lat -= 90
-    { x: long, y: lat }
+    if mh_len==6
+      long += (0.041667) #centre point
+      lat += (0.020833) #centre point
+    elsif mh_len==4
+      long += 1
+      lat += 0.5
+    end
+    { x: long.round(5), y: lat.round(5) }
   end
 
   # Return 6-digit maidenhead locator from location
   def maidenhead
-    if location
-      mhl = '######'.dup
-      abc = 'abcdefghijklmnopqrstuvwxyz'
-      lat = location.y
-      long = location.x
-      long += 180
-      lat += 90
+    return '' if location.blank?
 
-      long20 = (long / 20).to_i
-      lat10 = (lat / 10).to_i
-      long2 = ((long - (long20 * 20)) / 2).to_i
-      lat1 = (lat - (lat10 * 10)).to_i
-      longm = ((long - (long20 * 20 + long2 * 2)) * 12).to_i
-      latm = ((lat - (lat10 * 10 + lat1)) * 24).to_i
-      mhl[0] = abc[long20].upcase
-      mhl[1] = abc[lat10].upcase
-      mhl[2] = long2.to_s
-      mhl[3] = lat1.to_s
-      mhl[4] = abc[longm]
-      mhl[5] = abc[latm]
-    else
-      mhl = ''
-    end
-    mhl
+    abc = 'abcdefghijklmnopqrstuvwxyz'
+  
+    # Extract PostGIS point coordinates (x = longitude, y = latitude)
+    long = location.x + 180.0
+    lat  = location.y + 90.0
+  
+    # 1. Calculate Field boundaries (First 2 Letters)
+    long20 = (long / 20.0).floor
+    lat10  = (lat / 10.0).floor
+  
+    # 2. Calculate Square boundaries (Middle 2 Digits)
+    long2 = ((long - (long20 * 20.0)) / 2.0).floor
+    lat1  = (lat - (lat10 * 10.0)).floor
+  
+    # 3. Calculate Sub-square boundaries (Trailing 2 Letters)
+    # Added .floor and bounded clamp limits to completely stop floating-point edge crashes
+    longm = [((long - (long20 * 20.0 + long2 * 2.0)) * 12.0).floor, 23].min
+    latm  = [((lat - (lat10 * 10.0 + lat1 * 1.0)) * 24.0).floor, 23].min
+  
+    # 4. Construct and return the 6-character locator string cleanly
+    [
+      abc[long20].upcase,
+      abc[lat10].upcase,
+      long2.to_s,
+      lat1.to_s,
+      abc[longm],
+      abc[latm]
+    ].join
   end
 
   # simplified boundary with downscaling big assets (and detail/accuracy for small assets)

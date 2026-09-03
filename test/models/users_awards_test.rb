@@ -31,7 +31,7 @@ class UserAwardTest < ActiveSupport::TestCase
     contact=[]
 
     while count<10 do
-      asset[count]=create_test_asset(region: 'CB', district: 'CC', asset_type: 'hut')
+      asset[count]=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'hut')
       log[count]=create_test_log(user1,asset_codes: [asset[count].code])
       contact[count]=create_test_contact(user1,user2,log_id: log[count].id, asset1_codes: [asset[count].code], time: '2022-01-01 00:00:00'.to_time)
       #call manually as these callbacks are disabled in test
@@ -68,8 +68,8 @@ class UserAwardTest < ActiveSupport::TestCase
 
     #bagged on both activations and chases, so 5 park to parks needed for level 10 award
     while count<5 do
-      asset1[count]=create_test_asset(region: 'CB', district: 'CC', asset_type: 'hut')
-      asset2[count]=create_test_asset(region: 'CB', district: 'CC', asset_type: 'hut')
+      asset1[count]=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'hut')
+      asset2[count]=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'hut')
       log[count]=create_test_log(user1,asset_codes: [asset1[count].code])
       contact[count]=create_test_contact(user1,user2,log_id: log[count].id, asset1_codes: [asset1[count].code], asset2_codes: [asset2[count].code], time: '2022-01-01 00:00:00'.to_time)
       #call manually as these callbacks are disabled in test
@@ -112,7 +112,7 @@ class UserAwardTest < ActiveSupport::TestCase
     contact4=[]
 
     while count<10 do
-      asset[count]=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+      asset[count]=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
       log[count]=create_test_log(user1,asset_codes: [asset[count].code], date: '2022-01-01'.to_date)
       contact[count]=create_test_contact(user1,user2,log_id: log[count].id, asset1_codes: [asset[count].code], time: '2022-01-01 00:00:00'.to_time)
       count+=1

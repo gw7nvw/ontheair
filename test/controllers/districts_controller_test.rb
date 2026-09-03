@@ -23,31 +23,31 @@ class DistrictsControllerTest < ActionController::TestCase
     table=get_table_test(@response.body, 'district_table')
     assert_equal 5, get_row_count_test(table), "5 rows"
     row=get_row_test(table,2)
-    assert_match /CC/, get_col_test(row,1), "Correct code"
+    assert_match /ZL-CC1/, get_col_test(row,1), "Correct code"
     assert_match /Christchurch/, get_col_test(row,2), "Correct name"
     assert_match /Canterbury/, get_col_test(row,4), "Correct region"
     row=get_row_test(table,3)
-    assert_match /WA/, get_col_test(row,1), "Correct code"
+    assert_match /ZL-WD1/, get_col_test(row,1), "Correct code"
     assert_match /Waimate/, get_col_test(row,2), "Correct name"
     assert_match /Canterbury/, get_col_test(row,4), "Correct region"
     row=get_row_test(table,4)
-    assert_match /CO/, get_col_test(row,1), "Correct code"
+    assert_match /ZL-CD3/, get_col_test(row,1), "Correct code"
     assert_match /Central Otago/, get_col_test(row,2), "Correct name"
     assert_match /Otago/, get_col_test(row,4), "Correct region"
     row=get_row_test(table,5)
-    assert_match /DU/, get_col_test(row,1), "Correct code"
+    assert_match /ZL-DC1/, get_col_test(row,1), "Correct code"
     assert_match /Dunedin/, get_col_test(row,2), "Correct name"
     assert_match /Otago/, get_col_test(row,4), "Correct region"
   end
 
   test "Not logged in should get show page" do
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-43))
-    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'CC', location: create_point(173,-43), test_radius: 0.1)
-    asset3=create_test_asset(asset_type: 'park', region: 'CB', district: 'WA',  location: create_point(173,-45), test_radius: 0.1)
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
+    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'ZL-CC1', location: create_point(173,-43), test_radius: 0.1)
+    asset3=create_test_asset(asset_type: 'park', region: 'CB', district: 'ZL-WD1',  location: create_point(173,-45), test_radius: 0.1)
 
-    get :show, params: {id: 'CC'}
+    get :show, params: {id: 'ZL-CC1'}
     assert_response :success
-    assert_select '#code', /CC/
+    assert_select '#code', /ZL-CC1/
     assert_select '#name', /Christchurch/
     assert_select '#callsign', /Log in/  #non logged in version
     assert_select '#submit', {count: 0}  #no per-user stats
@@ -72,10 +72,10 @@ class DistrictsControllerTest < ActionController::TestCase
     user2=create_test_user
     user3=create_test_user
 
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-43))
-    asset4=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173.1,-43))
-    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'CC', location: create_point(173,-43), test_radius: 0.1)
-    asset3=create_test_asset(asset_type: 'summit', region: 'CB', district: 'CC', location: create_point(173,-45), code_prefix: 'ZL3/CB-')
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
+    asset4=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173.1,-43))
+    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'ZL-CC1', location: create_point(173,-43), test_radius: 0.1)
+    asset3=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', location: create_point(173,-45), code_prefix: 'ZL3/CB-')
 
     #activator log
     log=create_test_log(user1, asset_codes: [asset1.code], date: '2022-01-01'.to_date)
@@ -91,7 +91,7 @@ class DistrictsControllerTest < ActionController::TestCase
     activation=create_test_external_activation(user1,asset3, date: '2022-01-01'.to_date)
     chase=create_test_external_chase(activation,user2,asset3,time: '2022-01-01 02:00'.to_time)
 
-    get :show, params: {id: 'CC', callsign: "*"}
+    get :show, params: {id: 'ZL-CC1', callsign: "*"}
     assert_response :success
     assert_select '#callsign', {value: '*'}
 
@@ -122,7 +122,7 @@ class DistrictsControllerTest < ActionController::TestCase
     assert_match /YES/, get_col_test(row,4), "Chased by all=yes"
 
     #now filter by user1
-    get :show, params: {id: 'CC', callsign: user1.callsign}
+    get :show, params: {id: 'ZL-CC1', callsign: user1.callsign}
     assert_response :success
     assert_select '#callsign', {value: user1.callsign}
 
@@ -153,7 +153,7 @@ class DistrictsControllerTest < ActionController::TestCase
     assert_no_match /YES/, get_col_test(row,4), "Chased by user1!=yes"
 
     #now filter by user2
-    get :show, params: {id: 'CC', callsign: user2.callsign}
+    get :show, params: {id: 'ZL-CC1', callsign: user2.callsign}
     assert_response :success
     assert_select '#callsign', {value: user2.callsign}
 
@@ -190,13 +190,13 @@ class DistrictsControllerTest < ActionController::TestCase
     user1=User.find_by(callsign: 'ZL4NVW')
     user2=create_test_user
 
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'CC', description: "This is a comment", location: create_point(173,-43))
+    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
 
     #activator log
     log=create_test_log(user1, asset_codes: [asset1.code], date: '2022-01-01'.to_date)
     contact=create_test_contact(user1, user2, log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-01 01:00'.to_time)
 
-    get :show, params: {id: 'CC'}
+    get :show, params: {id: 'ZL-CC1'}
     assert_response :success
     assert_select '#callsign', {value: 'ZL4NVW'}
 

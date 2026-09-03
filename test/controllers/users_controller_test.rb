@@ -761,7 +761,7 @@ class UsersControllerTest < ActionController::TestCase
     log=[]
     contact=[]
     while count<10 do
-      asset[count]=create_test_asset(region: 'CB', district: 'CC', asset_type: 'hut')
+      asset[count]=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'hut')
       log[count]=create_test_log(user1,asset_codes: [asset[count].code])
       contact[count]=create_test_contact(user1,user2,log_id: log[count].id, asset1_codes: [asset[count].code], time: '2022-01-01 00:00:00'.to_time)
       count+=1
@@ -816,7 +816,7 @@ class UsersControllerTest < ActionController::TestCase
     user2.add_callsigns
     sign_in(user2)
     region=Region.find_by(sota_code: 'CB')
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
 
     #no award when none of 1 parks activated
     user2.check_completion_awards('region')
@@ -843,7 +843,7 @@ class UsersControllerTest < ActionController::TestCase
  
 
     #add another park to region, check award is revoked
-    asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
     user2.check_completion_awards('region')
 
     get 'awards', params: {id: 'ZL3CC'}
@@ -865,7 +865,7 @@ class UsersControllerTest < ActionController::TestCase
     user2.add_callsigns
     sign_in(user2)
     region=Region.find_by(sota_code: 'CB')
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
 
     #no award when none of 1 parks activated
     user1.check_completion_awards('district')
@@ -892,7 +892,7 @@ class UsersControllerTest < ActionController::TestCase
  
 
     #add another park to region, check award is revoked
-    asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
     user1.check_completion_awards('district')
 
     get 'awards', params: {id: 'ZL4NVW'}
@@ -914,8 +914,8 @@ class UsersControllerTest < ActionController::TestCase
     user1=create_test_user
     user2=create_test_user
     sign_in(user2)
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
-    asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
     log=create_test_log(user1,asset_codes: [asset1.code])
     contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-01 00:00:00'.to_time)
 
@@ -966,8 +966,8 @@ class UsersControllerTest < ActionController::TestCase
     user1=create_test_user
     user2=create_test_user
     sign_in(user2)
-    asset1=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
-    asset2=create_test_asset(region: 'CB', district: 'CC', asset_type: 'park')
+    asset1=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
+    asset2=create_test_asset(region: 'CB', district: 'ZL-CC1', asset_type: 'park')
     log=create_test_log(user1,asset_codes: [asset1.code])
     contact=create_test_contact(user1,user2,log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-01 00:00:00'.to_time)
 
