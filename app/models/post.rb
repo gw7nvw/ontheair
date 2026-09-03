@@ -82,6 +82,7 @@ class Post < ActiveRecord::Base
 
   def add_map_image
     return if !defined?(Rails) || !Rails.env.production?
+
     international = false
     logger.debug "HERE!!!"
     if location == nil

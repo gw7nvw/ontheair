@@ -153,21 +153,6 @@ class ExternalSpot < ApplicationRecord
 
       wwff_spots = spots || []
 
-      #Parks N Peaks
-#      spots=[]
-#      begin
-#        Timeout.timeout(30) do
-#          url = "http://www.parksnpeaks.org/api/ALL?t=#{Time.now.to_i}"
-#          spots = JSON.parse(open(url).read)
-#          puts "GOT PnP: "+spots.to_json
-#        end
-#      rescue 
-#        puts 'ERROR: PnP Timeout'
-#      else
-#      end
-
-#      pnp_spots = spots || []
-
       #HEMA
       hemaspots = []
       begin
@@ -237,20 +222,6 @@ class ExternalSpot < ApplicationRecord
           spot_type: 'POTA'
         )
       end
-#      pnp_spots.each do |spot|
-#        ExternalSpot.create(
-#          time: spot['actTime'].to_datetime ? spot['actTime'].to_datetime.in_time_zone('UTC') : nil,
-#          callsign: spot['actSpoter'].strip,
-#          activatorCallsign: spot['actCallsign'].strip,
-#          code: (spot['actSiteID'] && !spot['actSiteID'].empty? ? spot['actSiteID'] : spot['actLocation']).gsub('?','X'),
-#          name: spot['altLocation'] && !spot['altLocation'].empty? ? spot['altLocation'] : spot['actLocation'],
-#          frequency: spot['actFreq'],
-#          mode: spot['actMode'],
-#          comments: spot['actComments'][0..255],
-#          spot_type: spot['actClass'],
-#          is_pnp: true
-#        )
-#      end
       wwff_spots.each do |spot|
         result=ExternalSpot.create(
           time: spot['spot_time_formatted'].to_datetime ? spot['spot_time_formatted'].to_datetime.in_time_zone('UTC') : nil,
