@@ -41,6 +41,7 @@
     </tr>
   </table>
 
+
 <% if signed_in? and ((@items and @items.count>0) or (@awards and @awards.count>0)) then %>
   <h2>
     <span class="heading2"><%=link_to "What's New", '/topics/4',  remote: true,:onclick => "linkHandler('more')"%></span>
@@ -72,6 +73,16 @@
   </div>
 </form>
 
+  <% if !signed_in? %>
+    <div class="erow">
+     <div class="hrline">
+            <hr noshade size="4">
+       </div>
+    </div>
+    <div class="erow">
+      <p>Existing parksnpeaks.org user arriving on this new site for the first time? <%= link_to "Click here for details ", '/migrate',  remote: true, :onclick => "linkHandler('forgot')" %> of how to re-activate your old account</p>
+    </div>
+  <% end %>
   <div class="erow">
      <div class="hrline">
         <hr noshade size="4">

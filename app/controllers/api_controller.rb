@@ -693,6 +693,7 @@ class ApiController < ApplicationController
     if params[:userID] && params[:APIKey]
       user=User.find_by(callsign: params[:userID].upcase, pin: params[:APIKey].upcase) 
       user=User.find_by(callsign: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase) if !user
+      user=User.find_by(pnp_username:pnp_username:: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase) if !user
 
       if user && (user.activated || user.pnp_imported) 
         valid = true

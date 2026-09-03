@@ -165,7 +165,7 @@ class ExternalSpot < ActiveRecord::Base
       spots=[]
       begin
         Timeout.timeout(30) do
-          url = 'http://www.parksnpeaks.org/api/ALL'
+          url = "http://www.parksnpeaks.org/api/ALL?t=#{Time.now.to_i}"
           spots = JSON.parse(open(url).read)
           puts "GOT PnP: "+spots.to_json
         end

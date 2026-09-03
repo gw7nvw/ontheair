@@ -30,6 +30,9 @@
       <%= f.password_field :password %>
       <%= f.submit "Sign in", id: "submit", class: "btn btn-small btn-primary btn-highlight" %>
     </div>
+    <div class="erow">
+      <p><i>Existing parksnpeaks.org user arriving on this new site for the first time? <%= link_to "Click here for details ", '/migrate',  remote: true, :onclick => "linkHandler('forgot')" %> of how to re-activate your old account</i></p>
+    </div>
   <% end %>
 </div>
 

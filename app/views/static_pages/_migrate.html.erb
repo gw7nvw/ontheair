@@ -1,0 +1,91 @@
+<script>
+   reset_map_controllers();
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+   document.title = <%= raw(@site_title) %>
+   document.getElementById('logo').innerHTML = <%= raw(@site_title) %>
+   <% if @current_country=='VK' %>
+     document.getElementById('VK').style = "display:inline" 
+     document.getElementById('ZL').style = "display:none" 
+  <% else %>
+     document.getElementById('VK').style = "display:none" 
+     document.getElementById('ZL').style = "display:inline" 
+  <% end %>
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b>Moving from PnP</b>
+   </div>
+   <div id="controls">
+     <% if write_access?  %>
+       <%=  link_to "Add Spot", "/posts/new?topic_id="+SPOT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=  link_to "Add Alert", "/posts/new?topic_id="+ALERT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+     <% end %>
+     <%=render 'map_controls'%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <div style="background-image: url(<%=@site_title_image%>); background-size: cover;padding-bottom: 10px; margin-top: -2px;">
+    <h1> <%= raw(@site_title_unquoted) %> </h1>
+  </div>
+
+  <h2>Migrating accounts from the old parksnpeaks.org server</h2>
+  <div class="erow">
+    <p><b>Welcome to ontheair</b></p>
+    <p>After many years the old parksnpeaks.org site has reached and of life, and the services formerly provided there
+     are being migrated to ontheair.   All user accounts have been copied over, but if you want to send spots or alerts
+     from the new website then you will need to set up a new password on the new server.</p>
+
+     <p>You have two options:</p>
+     <ul>
+       <li>If you have access to the email address you use to register with parksnpeaks.org, then click the <b>Password Reset</b> button below. </li>
+     
+       <li>If you cannot access that email account, you will need to register a new account here using the <b>Create Account</b> button below.</li>
+     </ul>
+     <p>If neither of these options work for you, then get in touch with me, mattbriggs@yahoo.com and I'll help get things working for you.</p>
+   </div>
+   <div class="erow">
+     <%=  link_to "Password Reset", new_password_reset_path, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('forgot')" %>
+     <%=  link_to "Create Account", "/users/new", class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('new')" %>
+   </div>
+    <div class="erow">
+      <div class="hrline">
+         <hr noshade size="4">
+      </div>
+    </div>
+
+   <div class="erow">
+    <p>Once you have access to your account, then please note the following:</p>
+    <ul>
+      <li>To use SMS spotting, or to send spots to SOTAwatch, you will need to register your mobile phone number against your account</li>
+      <li>Existing iPnP or VKPortalog users will be able to continue to use their existing parksnpeaks APIKey from 
+          that app. But for new users or devices, please enter the PIN (from your user profile on this site) in the 
+          app for authentication</li>
+      <li>You can subscribe to our email lists for spots and alerts on the profile page.  But be aware that emails 
+          can be subject to 
+          several minutes of delays an that the bulk-email process does not permit filtering by spot type. If you 
+          want guaranteed instant notification of spots, as well as more advanced filtering rules on what spots you 
+          see, then take a look at the pushover app for your mobile device.  Instructions for setting up pushover 
+          with ontheair are in the user's guide.</li>
+    </ul>
+    <p>Full details of how to use ontheair are in the <b>Users Guide</b>, which can be found in the <b>Info</b> menu. 
+       This guide was originally written wth ZL operators in mind, so sorry for that. We hope to make if  more 
+       VK-focussed in future</p>
+   </div>
+
+ 
+     
+</div>
+<script>
+document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+if ($(window).width() < 960) {
+        site_smaller_map();
+      }
+
+</script>
+
