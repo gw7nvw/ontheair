@@ -474,7 +474,9 @@ class ApiController < ApplicationController
 
   #PNP post alert
   def pnp_post_alert
+    logger.info "RAW POST START:#{request.raw_post.inspect}:END"
     logger.debug params.to_json
+
     if api_authenticate(params)
       user = User.find_by(callsign: params[:userID].upcase)
       res = { success: true, message: 'Thanks for the data!' }
@@ -543,9 +545,9 @@ class ApiController < ApplicationController
   def pnp_spot
     # handle both PnP and VKPortaLog
     logger.debug params.to_json
-    logger.debug request.raw_post
+    logger.info "RAW POST START:#{request.raw_post.inspect}:END"
     if params and params.first and params.first.last.nil? then
-      logger.debug "Looks like a VKPortaLog JSON Srting POST"
+      logger.debug "Looks like a VKPortaLog JSON String POST"
       #VKPortaLog - JSON
       parstr = params.first
       parstr = parstr.first

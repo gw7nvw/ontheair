@@ -166,6 +166,10 @@ class Contact < ActiveRecord::Base
   #####################################################################
   # ON SAVE ACTIONS
   #####################################################################
+  def check_qrp
+    is_qrp2 = true if comments1&.include?('QRP') or comments2&.include?('QRP')
+  end
+
   def set_defaults
     self.timezone ||= Timezone.find_by(name: 'UTC').id
   end

@@ -16,6 +16,7 @@ class Log < ActiveRecord::Base
     location = get_most_accurate_location
     add_containing_codes(location[:asset])
     update_classes
+    check_qrp
   end
 
   #################################
@@ -77,6 +78,10 @@ class Log < ActiveRecord::Base
   #################################
   # BEFORE SAVE ACTIONS
   #################################
+  def check_qrp
+    is_qrp1 = true if comments1&.include?('QRP') 
+  end
+
   def add_user_ids
     # look up callsign1 at contact.time
     user1 = User.find_by_callsign_date(callsign1, date, true)

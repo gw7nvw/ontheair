@@ -520,58 +520,86 @@ class Post < ActiveRecord::Base
     puts ':' + asset_type + ':'
     if (asset_type == 'SOTA') || (asset_type == 'summit')
 
-      jscreds = Keycloak::Client.get_token(SOTA_USER, SOTA_PASSWORD, SOTA_CLIENT_ID, SOTA_SECRET)
-      creds = JSON.parse(jscreds)
-      access_token = creds['access_token']
-      id_token = creds['id_token']
-
-      if debug
-        puts 'DEBUG'
-        url = URI.parse('https://cluster.sota.org.uk:8150/testme')
-      else
-        puts 'LIVE'
-        url = URI.parse('https://cluster.sota.org.uk:8150/spotme')
-      end
-
-      http = Net::HTTP.new(url.host, url.port)
-      http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-
-      parts = a_code.split('/')
-      if parts.count == 2
-        region = parts[0]
-        subcode = parts[1]
-
-        #workaround - add .0 to integer frequencies
-        if freq and !freq.blank? and !freq.include?('.') then freq=freq.to_i.to_s+".0" end
-        payloadspot = {
-          'To': '+64273105319',
-          'MessageTime': Time.now.utc.strftime('%a %b %d %H:%M:%S %Y'),
-          'From': from,
-          'MessageSid': 'SMS_ZL',
-          'Body': callsign + ' ' + region + ' ' + subcode + ' ' + freq + ' ' + mode + ' ' + description
-        }
-
+      begin
+        jscreds = Keycloak::Client.get_token(SOTA_USER, SOTA_PASSWORD, SOTA_CLIENT_ID, SOTA_SECRET)
+        creds = JSON.parse(jscreds)
+        access_token = creds['access_token']
+        id_token = creds['id_token']
+        refresh_token = creds['refresh_token'] # <- Grab the refresh token
+ 
         if debug
-          puts 'Sending SPOT to SOTA'
-          puts payloadspot.to_json
-        end
-
-        req = Net::HTTP::Get.new("#{url.path}?"+(payloadspot.collect { |k, v| "#{k}=#{CGI.escape(v.to_s)}" }.join('&')), 'Content-Type' => 'application/json', 'Authorization' => 'bearer ' + access_token, 'id_token' => id_token, 'connection' => 'keep-alive', 'User-Agent' => 'ontheair.nz' )
-        begin
-          res = http.request(req)
-        rescue StandardError
-          puts 'Send to SOTA failed'
-          result = false
-          messages = 'Failed to contact SOTA server'
+          puts 'DEBUG'
+          url = URI.parse('https://cluster.sota.org.uk:8150/testme')
         else
-          messages = 'Sent spot to SOTA; '
-          puts 'DEBUG: SOTA response'
+          puts 'LIVE'
+          url = URI.parse('https://cluster.sota.org.uk:8150/spotme')
         end
-      else
-        puts 'Invalid SOTA code: ' + a_code
-        messages = 'Invalid SOTA code: ' + a_code + '; '
-        result = false
+  
+        http = Net::HTTP.new(url.host, url.port)
+        http.use_ssl = true
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+  
+        parts = a_code.split('/')
+        if parts.count == 2
+          region = parts[0]
+          subcode = parts[1]
+  
+          #workaround - add .0 to integer frequencies
+          if freq and !freq.blank? and !freq.include?('.') then freq=freq.to_i.to_s+".0" end
+          payloadspot = {
+            'To': '+64273105319',
+            'MessageTime': Time.now.utc.strftime('%a %b %d %H:%M:%S %Y'),
+            'From': from,
+            'MessageSid': 'SMS_ZL',
+            'Body': callsign + ' ' + region + ' ' + subcode + ' ' + freq + ' ' + mode + ' ' + description
+          }
+  
+          if debug
+            puts 'Sending SPOT to SOTA'
+            puts payloadspot.to_json
+          end
+  
+          req = Net::HTTP::Get.new("#{url.path}?"+(payloadspot.collect { |k, v| "#{k}=#{CGI.escape(v.to_s)}" }.join('&')), 'Content-Type' => 'application/json', 'Authorization' => 'bearer ' + access_token, 'id_token' => id_token, 'connection' => 'keep-alive', 'User-Agent' => 'ontheair.nz' )
+          begin
+            res = http.request(req)
+          rescue StandardError
+            puts 'Send to SOTA failed'
+            result = false
+            messages = 'Failed to contact SOTA server'
+          else
+            messages = 'Sent spot to SOTA; '
+            puts 'DEBUG: SOTA response'
+          end
+        else
+          puts 'Invalid SOTA code: ' + a_code
+          messages = 'Invalid SOTA code: ' + a_code + '; '
+          result = false
+        end
+      ensure
+        if refresh_token
+          begin
+            # Pull configuration details dynamically from the gem's setup
+            token_url = Keycloak.auth_server_url 
+            logout_url = token_url.sub('/token', '/logout')
+            uri = URI.parse(logout_url)
+  
+            # Fire a direct form-urlencoded POST request
+            response = Net::HTTP.post_form(uri, {
+              client_id: SOTA_CLIENT_ID,
+              client_secret: SOTA_SECRET,
+              refresh_token: refresh_token
+            })
+  
+            # Keycloak returns a 204 No Content response on a successful back-channel logout
+            if response.code == "204"
+              Rails.logger.debug "SSO session successfully killed via direct API request! No zombies."
+            else
+              Rails.logger.error("Keycloak rejected the logout request: #{response.code} - #{response.body}")
+              end
+          rescue => e
+            Rails.logger.error("Failed to execute native HTTP logout: #{e.message}")
+          end
+        end
       end
     elsif debug
       puts 'Not a SOTA asset: ' + a_code
