@@ -82,6 +82,20 @@ var site_green_circle;
 var site_yellow_circle;
 var site_docland_styles=[];
 
+// Configuration thresholds (can be relaxed now since map conflict is gone)
+const MIN_DISTANCE = 100;   // Pixels moved horizontally before we intercept
+const ALLOWED_RATIO = 1.5;  // Must be mostly horizontal
+
+//swipe
+var touchStartX = 0;
+var touchStartY = 0;
+var swipeHandled = false;
+
+//throttling
+var site_lastRefreshTime = 0;
+const MIN_REFRESH_INTERVAL = 60000; 
+var site_isCurrentlyFetching = false;
+
 const HTTP_STATUS = {
   0: "No Internet Connection",
   200: "OK",
@@ -104,6 +118,58 @@ Array.prototype.remove = function() {
     return this;
 };
 
+function add_swipe() {
+window.addEventListener('touchstart', function(e) {
+    // 1. EXCLUDE MAP: If touch started inside the map div, abort completely
+    if (e.target.closest('#map_map') || e.target.closest('.photo-bar')) {
+        swipeHandled = true; // Blocks the rest of this gesture sequence
+        return;
+    }
+
+    // 2. MULTI-TOUCH GUARD: Abort if more than one finger is used
+    if (e.touches.length > 1) {
+        swipeHandled = true; 
+        return;
+    }
+
+    touchStartX = e.changedTouches[0].clientX;
+    touchStartY = e.changedTouches[0].clientY;
+    swipeHandled = false; 
+}, { passive: true });
+
+window.addEventListener('touchmove', function(e) {
+    // Abort if the gesture started on the map, is already handled, or a second finger joined
+    if (swipeHandled || e.touches.length > 1) {
+        return;
+    }
+
+    const currentX = e.changedTouches[0].clientX;
+    const currentY = e.changedTouches[0].clientY;
+    
+    const diffX = currentX - touchStartX;
+    const diffY = currentY - touchStartY;
+
+    // Check if the user has moved far enough horizontally to test for a swipe
+    if (Math.abs(diffX) > MIN_DISTANCE) {
+        
+        // Ensure it's a distinct horizontal swipe, not a vertical scroll
+        if (Math.abs(diffX) > Math.abs(diffY) * ALLOWED_RATIO) {
+            
+            // Cancel native scrolling on the menu bar during the swipe
+            if (e.cancelable) e.preventDefault(); 
+            
+            swipeHandled = true; 
+
+            if (diffX > 0) {
+                site_bigger_map(); // Swipe Right
+            } else {
+                site_smaller_map(); // Swipe Left
+            }
+        }
+    }
+}, { passive: false });
+}
+
 function site_init() {
  try {
   $(document).ready(site_resizeHeader);
@@ -113,6 +179,9 @@ function site_init() {
     if(typeof(def_dxcc)!='undefined') {
       if(def_dxcc=='VK') {
         def_proj="EPSG:3857"
+        map_current_proj="4326"
+        map_current_projname="WGS"
+        map_current_projdp=4 
       } else {
         //def_proj='EPSG:2193'
         def_proj='EPSG:3857'
@@ -172,6 +241,7 @@ function site_init() {
  }
  finally {
  }
+ add_swipe();
 }
 
 function site_zoom_end_callback() {
@@ -469,7 +539,7 @@ function site_init_styles() {
   site_red_circle=map_create_style("circle", 5, "#ff2222", "#880000", 1);
   site_green_circle=map_create_style("circle", 5, "#22ff22", "#008800", 1);
   site_yellow_circle=map_create_style("circle", 5, "#ffd700", "#008800", 1);
-  site_purple_star=map_create_style("star", 10, "#8b008b", "#8b008b", 1);
+  site_purple_star=map_create_style("star", 15, "#ffff00", "#330066", 2);
   site_red_star=map_create_style("star", 10, "#990000","#990000", 1);
   site_green_star=map_create_style("star", 10, "#009900", "#009900", 1);
   site_red_line=map_create_style("", null, "#990000", "#990000", 4);

@@ -147,6 +147,11 @@ class StaticPagesController < ApplicationController
   end
 
   def spots
+
+#  if ['222.153.106.137'].include?(request.remote_ip)
+#    return render js: "window.location.reload();"
+#  end
+
     alerts
 
     hoursago = 1

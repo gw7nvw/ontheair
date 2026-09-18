@@ -203,6 +203,7 @@ class ApiController < ApplicationController
       end
 
       if params[:do_not_lookup] then p.do_not_lookup=true end
+      if params[:do_not_publish] then p.do_not_publish=true end
       p.asset_codes=a_code != '' ? a_codes : []
       debug = p.description.upcase['DEBUG'] ? true : false
       al_date = Time.now.in_time_zone('UTC').strftime('%Y-%m-%d')
@@ -301,7 +302,17 @@ class ApiController < ApplicationController
   end
 
   def pnp_getuserkey
+    # PIN - preferred
     user = User.find_by(callsign: params[:callsign].upcase, pin: params[:pin].upcase)
+    # APIKey
+    user = User.find_by(callsign: params[:callsign].upcase, pnp_APIKey: params[:pin]) if !user
+    #Password
+    if !user
+      user ||= User.find_by(callsign: params[:callsign].upcase)
+      user = nil if !(user && user.authenticate(params[:pin]))
+    end
+ 
+
     if user then res = user.pin else res = "FALSE" end
 
     render text: res
@@ -460,6 +471,8 @@ class ApiController < ApplicationController
 
   #GET SPOTS
   def pnp_all
+#    portalog = true if request and request.user_agent and request.user_agent.match('okhttp/3.12.12')
+
     zone = 'ALL'
     zone = params[:zone].upcase if params[:zone]
     duration = 120
@@ -502,6 +515,7 @@ class ApiController < ApplicationController
       end
 
       if params[:do_not_lookup] then p.do_not_lookup=true end
+      if params[:do_not_publish] then p.do_not_publish=true end
       p.asset_codes=a_code != '' ? a_codes : []
       debug = p.description.upcase['DEBUG'] ? true : false
       al_date = params[:alDate]
@@ -695,7 +709,7 @@ class ApiController < ApplicationController
     if params[:userID] && params[:APIKey]
       user=User.find_by(callsign: params[:userID].upcase, pin: params[:APIKey].upcase) 
       user=User.find_by(callsign: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase) if !user
-      user=User.find_by(pnp_username:pnp_username:: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase) if !user
+      user=User.find_by(pnp_username: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase) if !user
 
       if user && (user.activated || user.pnp_imported) 
         valid = true

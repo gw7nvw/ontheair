@@ -2,7 +2,7 @@
 Hota::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
-  # Code is not reloaded between requests.
+ #Code is not reloaded between requests.
   config.cache_classes = true
 
   # Eager load code on boot. This eager loads most of Rails and
@@ -44,8 +44,8 @@ Hota::Application.configure do
 #  config.force_ssl = true
 
   # Set to :debug to see everything in the log.
-  config.log_level = :error
-# config.log_level = :debug
+#  config.log_level = :error
+ config.log_level = :info
 
   # Prepend all log lines with the following tags.
   # config.log_tags = [ :subdomain, :uuid ]

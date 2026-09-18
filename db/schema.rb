@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20260816195403) do
+ActiveRecord::Schema.define(version: 20260913084133) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1014,6 +1014,7 @@ ActiveRecord::Schema.define(version: 20260816195403) do
     t.string   "pnp_APIKey"
     t.boolean  "pnp_imported",                    default: false
     t.string   "pnp_username"
+    t.string   "pnp_status"
   end
 
   add_index "users", ["callsign"], :name => "index_users_on_callsign"

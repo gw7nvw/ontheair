@@ -101,7 +101,7 @@ class ConsolidatedSpot < ActiveRecord::Base
     find_by_sql(sanitized_sql).map(&:attributes)
   end
  
-  def self.get_pnp_spots(start_time, zone)
+  def self.get_pnp_spots_orig(start_time, zone)
     sql = <<-SQL
       SELECT jsonb_agg(spot_json) AS final_payload FROM (
         SELECT 
@@ -138,6 +138,71 @@ class ConsolidatedSpot < ActiveRecord::Base
         ORDER BY f.t_val DESC
       ) as sub;
     SQL
+
+    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
+    sanitized_sql = sanitize_sql_array([sql, { start_time: start_time, zone: zone }])
+    
+    # 3. Pull raw string text directly from the execution block
+    connection.select_value(sanitized_sql) || '[]'
+  end
+  def self.get_pnp_spots(start_time, zone)
+sql = <<-SQL
+  SELECT jsonb_agg(spot_json) AS final_payload FROM (
+    SELECT 
+     (
+       jsonb_build_object(
+         'actTime', f.t_val, 
+         'actId', f.id, 
+         'actCallsign', f."activatorCallsign", 
+         'actMode', f.mode,
+         'actComments', CASE WHEN LENGTH(f.codes_str) - LENGTH(REPLACE(f.codes_str, ',', '')) > 0 THEN CONCAT('[', f.codes_str, '] ', f.comm_val) ELSE f.comm_val END,
+         'actFreq', f.frequency, 
+         'actSpoter', f.cs_val,
+         'actClass', f.chosen_class, 
+         'actSiteID', f.code_array[array_position(f.spot_type_array, f.chosen_class)],
+         'ID', f.code_array[array_position(f.spot_type_array, f.chosen_class)],
+         'altLocation', f.name_array[array_position(f.spot_type_array, f.chosen_class)], 
+         'actLocation', CASE 
+           WHEN f.chosen_class IN ('SOTA', 'SIOTA', 'SHIRES', 'ZLOTA') 
+           THEN f.code_array[array_position(f.spot_type_array, f.chosen_class)] 
+           ELSE f.name_array[array_position(f.spot_type_array, f.chosen_class)] 
+         END
+       ) ||
+       jsonb_strip_nulls(
+         jsonb_build_object(
+           'WWFFid', f.code_array[array_position(f.spot_type_array, 'WWFF')],
+           'WWFFID', f.code_array[array_position(f.spot_type_array, 'WWFF')],
+           'ParkID', f.code_array[array_position(f.spot_type_array, 'WWFF')],
+           'POTAID', f.code_array[array_position(f.spot_type_array, 'POTA')],
+           'SOTAID', f.code_array[array_position(f.spot_type_array, 'SOTA')],
+           'SANPCPAID', f.code_array[array_position(f.spot_type_array, 'SANPCPA')],
+           'KRMNPAID', f.code_array[array_position(f.spot_type_array, 'KRMNPA')]
+         )
+       )
+     ) AS spot_json
+    FROM ( 
+       SELECT id, "activatorCallsign", mode, frequency, code AS code_array, spot_type AS spot_type_array, name AS name_array,
+           time[cardinality(time)] AS t_val, 
+           callsign[cardinality(callsign)] AS cs_val,
+           spot_type[cardinality(spot_type)] AS st_val,
+           TRIM(REGEXP_REPLACE(LEFT(comments[cardinality(comments)], -10), '^[^:]*:', '')) AS comm_val,
+           array_to_string(ARRAY(SELECT DISTINCT unnest(code)), ', ') AS codes_str,
+           
+           -- Unified priority engine
+           COALESCE(
+             CASE WHEN 'SOTA' = ANY(spot_type) THEN 'SOTA' END,
+             CASE WHEN 'WWFF' = ANY(spot_type) THEN 'WWFF' END,
+             CASE WHEN 'SIOTA' = ANY(spot_type) THEN 'SIOTA' END,
+             CASE WHEN 'HEMA' = ANY(spot_type) THEN 'HEMA' END,
+             spot_type[cardinality(spot_type)]
+           )::varchar AS chosen_class
+       FROM consolidated_spots
+       WHERE updated_at >= :start_time::timestamptz 
+         AND (:zone = 'ALL' OR continent = :zone)
+    ) as f
+    ORDER BY f.t_val DESC
+  ) as sub;
+SQL
 
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
     sanitized_sql = sanitize_sql_array([sql, { start_time: start_time, zone: zone }])

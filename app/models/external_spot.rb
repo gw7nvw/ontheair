@@ -5,7 +5,7 @@ MAX_SPOT_LIFETIME = 60
 
 # typed: false
 class ExternalSpot < ActiveRecord::Base
-  before_save :before_save_actions
+  before_validation :before_save_actions
   validate :record_is_unique
   after_save :create_consolidated_spot
 

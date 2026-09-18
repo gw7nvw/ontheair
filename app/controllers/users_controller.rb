@@ -201,9 +201,9 @@ class UsersController < ApplicationController
     password = params[:user][:password]
     password_confirmation = params[:user][:password_confirmation]
 
+    logger.info user_params.to_s
+#    user = User.find_by('email = ? and callsign = ? and activated is not true', user_params[:email]&.downcase,user_params[:callsign]&.upcase)
     user = User.new(user_params)
-    user.password = password
-    user.password_confirmation = password_confirmation
 
     user.callsign = user.callsign.strip
     existing_user = User.find_by(callsign: user.callsign.upcase)
@@ -214,6 +214,8 @@ class UsersController < ApplicationController
             else
               user
             end
+    @user.password = password
+    @user.password_confirmation = password_confirmation
     @user.callsign = user.callsign
     @user.firstname = user.firstname.strip
     @user.lastname = user.lastname.strip
@@ -231,9 +233,9 @@ class UsersController < ApplicationController
       sign_in @user
 
       flash[:success] = if @user.read_only
-                          'Welcome to ZL on the Air. Your account has been created as a restricted, non-amatuer user. Contact admin@ontheair if you expected full access'
+                          'Welcome to on the Air. Your account has been created as a restricted, non-amatuer user. Contact admin@ontheair if you expected full access'
                         else
-                          'Welcome to ZL On the Air'
+                          'Welcome to On the Air'
                         end
 
       redirect_to '/users/' + @user.callsign
