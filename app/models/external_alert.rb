@@ -2,6 +2,12 @@ class ExternalAlert < ApplicationRecord
 
   before_save {before_save_actions}
 
+  attribute :codes, :string, array: true, default: -> { [] }
+
+  def get_codes
+    if codes and codes.count>0 then codes else [code] end
+  end
+
   def before_save_actions
      add_dxcc
      self.comments=self.comments[0..254] if self.comments
@@ -179,16 +185,18 @@ end
 def self.import_hota_alerts(alerts)
   all_alerts=[]
   alerts.each do |alert|
-    code = alert.code
+    code = alert.asset_codes.first
     dxcc = ""
     continent = "OC"
-    asset = Asset.find_by(code)
+    asset = Asset.find_by(code: code)
+    programme="ZLOTA" #default
     if asset then
       dxcc = asset.country
       dxccs = DxccPrefix.find_by(prefix: dxcc)
       continent = dxccs.continent
+      programme=asset.type.pnp_class
     end
-    ext_alert=ExternalAlert.new(id: -alert.item_id, starttime: alert.referenced_time, duration: alert.duration, activatingCallsign: alert.callsign, code: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: 'ZLOTA', dxcc: dxcc, continent: continent.code)
+    ext_alert=ExternalAlert.new(id: -alert.item_id, starttime: alert.referenced_time, duration: alert.duration, activatingCallsign: alert.callsign, codes: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: programme, dxcc: dxcc, continent: continent.code)
     all_alerts+=[ext_alert] 
   end 
   all_alerts

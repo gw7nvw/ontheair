@@ -386,7 +386,6 @@ class ApiController < ApplicationController
     logger.debug res.to_json
     if res and res.count>0
       res=res.first 
-      puts res.to_s 
       name = "(#{res["code"]}) #{res["name"].gsub(',',';')}"  
     else
       name = "Currently not within a summit AZ" 
@@ -404,7 +403,6 @@ class ApiController < ApplicationController
     logger.debug res.to_json
     if res and res.count>0
       res=res.first 
-      puts res.to_s 
       name = "(#{res["code"]}) #{res["name"].gsub(',',';')}"  
     else
       name = "Currently not within a Park" 
@@ -458,6 +456,23 @@ class ApiController < ApplicationController
 
   #PNP post alert
   def pnp_post_alert
+    if params and params.first and params.first.last.nil? then
+      logger.debug "Looks like a VKPortaLog JSON Srting POST"
+      #VKPortaLog - JSON
+      parstr = params.first
+      parstr = parstr.first
+      parstr = JSON.parse(parstr)
+      params=parstr.transform_keys(&:to_sym)
+    elsif params==[] or params.nil? or params.blank?
+      #Parameterised - do nothing
+      logger.debug "Looks like a iPnP parameterised POST"
+      parstr = request.raw_post
+      parstr = JSON.parse(parstr)
+      params=parstr.transform_keys(&:to_sym)
+    else
+      #hopefully we got some real params as the API is designed to do!
+    end
+
     logger.debug params.to_json
     if api_authenticate(params)
       user = User.find_by(callsign: params[:userID].upcase)
@@ -490,6 +505,7 @@ class ApiController < ApplicationController
       al_time = params[:alTime]
       p.referenced_time = (al_date + ' ' + al_time + ' UTC').to_time
       p.referenced_date = (al_date + ' 00:00:00 UTC').to_time
+      p.duration = 1
       p.updated_at = Time.now
       p.title = 'ALERT: ' + p.callsign + ' going portable at ' + a_name + '[' + a_code + '] on ' + p.freq.to_s + '/' + p.mode + ' at ' + p.referenced_time.strftime('%Y-%m-%d %H:%M') + 'UTC'
       topic_id = if debug
@@ -615,7 +631,7 @@ class ApiController < ApplicationController
   def pnp_delete_spot
     logger.debug params.to_json
     logger.debug request.raw_post
-    res = { success: true, message: "Spot deleted"  }
+    res = { success: true, message: "We do not support spot deletion at this time"  }
     render json: res
   end
   def pnp_vk
@@ -683,10 +699,9 @@ class ApiController < ApplicationController
     alerts.each do |alert|
       pnp_alert={}
       pnp_alert[:alID] = alert.id
-      if alert.code.kind_of?(Array) then  codes = alert.code else codes = [alert.code] end
-      pnp_alert[:WWFFID] = codes.first
-      pnp_alert[:actSiteID] = codes.first
-      pnp_alert[:allAssetCodes] = codes
+      pnp_alert[:WWFFID] = alert.get_codes.first
+      pnp_alert[:actSiteID] = alert.get_codes.first
+      pnp_alert[:allAssetCodes] = alert.get_codes
       pnp_alert[:CallSign] = alert.activatingCallsign
       pnp_alert[:Class] = alert.programme  
       pnp_alert[:Location] = alert.name
@@ -704,7 +719,6 @@ class ApiController < ApplicationController
   def to_pnp_spots(spots)
     pnp_spots=[]
     spots.each do |spot|
-      puts spot.to_json
       index = 0
       spot_count = spot.code.count
       respot_count = spot.time.count
