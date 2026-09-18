@@ -6,11 +6,17 @@ module SessionsHelper
   def sign_in(user)
     remember_token = User.new_token
     Rails.logger.info 'Assign RT: ' + remember_token
-    if ENV['RAILS_ENV'] == 'production'
-      cookies[:remember_token2] = { value: remember_token, expires: TOKEN_EXPIRY.month.from_now.utc, domain: 'ontheair.nz' }
+    current_cookie_domain = if request.host.end_with?('ontheair.nz')
+      '.ontheair.nz'
+    elsif request.host.end_with?('parksnpeaks.org')
+      '.parksnpeaks.org'
     else
-      cookies[:remember_token3] = { value: remember_token, expires: TOKEN_EXPIRY.month.from_now.utc, domain: 'ontheair.nz' }
-
+      :all
+    end
+    if ENV['RAILS_ENV'] == 'production'
+      cookies[:remember_token2] = { value: remember_token, expires: TOKEN_EXPIRY.month.from_now.utc, domain: current_cookie_domain }
+    else
+      cookies[:remember_token3] = { value: remember_token, expires: TOKEN_EXPIRY.month.from_now.utc, domain: current_cookie_domain }
     end
     UserToken.create(remember_token: User.digest(remember_token), user_id: user.id)
     self.current_user = user

@@ -1,33 +1,82 @@
 <% params='/spots?'+raw(@parameters)%>
 
 <script>
-   try {
-   refreshInterval = setTimeout(function(){
-     //only if we're still on spots page
-     if(document.getElementById('spots')) {
-       $.ajax({
-         beforeSend: function (xhr){
-           xhr.setRequestHeader("Content-Type","application/javascript");
-           xhr.setRequestHeader("Accept","text/javascript");
-         },
-         type: "GET",
-         timeout: 20000,
-         url: "<%=params%>",
-//         url: `/spots?<%=raw(@parameters)%>`,
-         complete: function(jqXHR, thrownError) {
-           /* complete also fires when error ocurred, so only clear if no error has been shown */
-           if(thrownError=="timeout" || thrownError=="error") {
-             document.getElementById('retrieved').innerHTML="<p><b>TIMED OUT</b></p>";
-           }
-         }
-       });
-     };
-  }, 60000); /* time in milliseconds (ie 60 seconds)*/
+
+// 1. Create a global safety buffer (e.g., don't fetch more than once every 10 seconds)
+if (typeof site_lastRefreshTime === 'undefined') {
+  var site_lastRefreshTime = 0;
+  const MIN_REFRESH_INTERVAL = 60000;
+  var site_isCurrentlyFetching = false;
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    const now = Date.now();
+    // Safety Guard A: If a request is already running, do nothing
+    if (site_isCurrentlyFetching) return;
+  
+ 
+    // Safety Guard B: If it refreshed too recently, do nothing
+    if (now - site_lastRefreshTime < MIN_REFRESH_INTERVAL) return;
+    
+    // Lock the gate before starting the AJAX call
+    site_isCurrentlyFetching = true;
+    site_lastRefreshTime = now;
+    
+    startTimer();
+    refreshData();
+  } else {
+    //  The user switched tabs, minimised, or changed apps
+    pauseTimer();
+  }
+});
+
+function refreshData() {
+  //only if we're still on spots page
+  if(document.getElementById('spots')) {
+    $.ajax({
+      beforeSend: function (xhr){
+        xhr.setRequestHeader("Content-Type","application/javascript");
+        xhr.setRequestHeader("Accept","text/javascript");
+      },
+      type: "GET",
+      timeout: 20000,
+      url: "<%=params%>",
+      complete: function(jqXHR, thrownError) {
+        // Unlock the gate when the request finishes (win or lose)
+        site_isCurrentlyFetching = false; 
+
+        /* complete also fires when error ocurred, so only clear if no error has been shown */
+        if(thrownError=="timeout" || thrownError=="error") {
+          document.getElementById('retrieved').innerHTML="<p><b>TIMED OUT</b></p>";
+        }
+      }
+    });
+  } else {
+    // If the element wasn't found, make sure to unlock the flag just in case
+    site_isCurrentlyFetching = false;
+  };
+}
+
+function startTimer() {
+  try {
+    pauseTimer();
+    refreshInterval = setTimeout(refreshData, 60000); /* time in milliseconds (ie 60 seconds)*/
   }
   catch(err) {
   } 
   finally {
   }
+
+}
+
+function pauseTimer() {
+  if (refreshInterval) {
+    clearTimeout(refreshInterval);
+    refreshInterval = null; // Clear the variable
+  }
+}
+startTimer();
 </script>
 <script>
    //reset_map_controllers();

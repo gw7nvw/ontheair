@@ -226,6 +226,7 @@ class Post < ActiveRecord::Base
   def send_to_all(debug, from, callsign, assets, freq, mode, description, topic, idate, itime, tzname)
     result = true
     messages = ''
+    return if do_not_publish == true
     if topic && topic.is_spot
       # SPOT
       assets.each do |ac|

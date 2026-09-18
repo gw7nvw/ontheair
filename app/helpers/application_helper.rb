@@ -5,21 +5,34 @@ module ApplicationHelper
   require 'net/http'
 
   def sign_in(user)
-    puts 'Self: ' + to_s
     remember_token = User.new_token
-    cookies[:remember_token] = { value: remember_token, expires: 1.month.from_now.utc }
-    user.update_attribute(:remember_token, User.digest(remember_token))
+    Rails.logger.info 'Assign RT: ' + remember_token
+    current_cookie_domain = if request.host.end_with?('ontheair.nz')
+      '.ontheair.nz'
+    elsif request.host.end_with?('parksnpeaks.org')
+      '.parksnpeaks.org'
+    else
+      :all
+    end
+    if ENV['RAILS_ENV'] == 'production'
+      cookies[:remember_token2] = { value: remember_token, expires: TOKEN_EXPIRY.month.from_now.utc, domain: current_cookie_domain }
+    else
+      cookies[:remember_token3] = { value: remember_token, expires: TOKEN_EXPIRY.month.from_now.utc, domain: current_cookie_domain }
+    end
+    UserToken.create(remember_token: User.digest(remember_token), user_id: user.id)
     self.current_user = user
     session[:user_id] = user.id
-    request = ActionDispatch::Request.new(auth.env)
-    ip_address = request.remote_ip
+    flush_old_tokens(user)
+    request_ip = request.remote_ip
     user_agent = request.user_agent || 'Unknown'
-    UserAgent.where(user_ip: ip_address).update_all(
-      request_count: 0,
-      suspicious_access_count: 0,
-      confirmed_bot: false,
-      updated_at: Time.now
-    )
+    UserAgent.where(user_ip: request_ip).update_all(
+        access_count: 0,
+        suspicious_access_count: 0,
+        suspected_bot: false,
+        confirmed_bot: false,
+        confirmed_human: true,
+        updated_at: Time.now
+      )
   end
 
   def safe_param(param)

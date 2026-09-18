@@ -10,6 +10,13 @@ module Ontheair
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 8.0
+    #add modles from lib
+    #config.autoload_paths += %W(#{config.root}/lib)
+    #config.middleware.insert_after "ActionDispatch::Session::ActiveRecordStore", "DynamicCookieDomain"
+    #config.middleware.insert_after "ActionDispatch::Session::ActiveRecordStore", "SkipBotSessions"
+    # Settings in config/environments/* take precedence over those specified here.
+    # Application configuration should go into files in config/initializers
+    # -- all .rb files in that directory are automatically loaded.
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.

@@ -925,7 +925,6 @@ class Asset < ActiveRecord::Base
 
     if codes.count > 1
       codes.each do |code|
-        logger.debug "DEBUG: assessing code2 #{code}"
         assets = Asset.find_by_sql [" select id, code, safecode, asset_type, location, az_area, area from assets where code='#{code}' limit 1"]
         asset = assets ? assets.first : nil
         if asset
@@ -937,20 +936,19 @@ class Asset < ActiveRecord::Base
               loc_asset = asset
               accuracy = asset.area
               loc_source = 'area'
-              logger.debug 'DEBUG: Assigning polygon locn'
             end
           elsif loc_source != 'user'
             # if there are two point locations (e.g. summit and hut)
             # just use the last found (no way to know which is more accurate)
             if loc_source == 'point'
-              logger.debug 'Multiple POINT locations found'
+            #  logger.debug 'Multiple POINT locations found'
             end
 
             # assign point location
             location = asset.location
             loc_asset = asset
             loc_source = 'point'
-            logger.debug 'DEBUG: Assigning point locn'
+            #logger.debug 'DEBUG: Assigning point locn'
           end
         end
       end

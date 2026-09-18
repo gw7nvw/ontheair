@@ -76,8 +76,8 @@ class ApplicationController < ActionController::Base
   
       trs=2193
       xyarr= transform_geom(x, y, srs, trs)
-      @map_x=xyarr[0]
-      @map_y=xyarr[1]
+      @map_x=xyarr[0]  if xyarr
+      @map_y=xyarr[1] if xyarr
     end
     @zoomlevel = params[:zoom] if params[:zoom]
     @proj=as.default_projection    
@@ -173,7 +173,7 @@ class ApplicationController < ActionController::Base
   end
 
   def set_cache_headers
-    #response.headers['Cache-Control'] = 'max-age=30, public'
+#    response.headers['Cache-Control'] = 'max-age=30, public'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = 'Fri, 01 Jan 1990 00:00:00 GMT'
   end

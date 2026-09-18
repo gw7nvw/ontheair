@@ -1729,6 +1729,33 @@ class User < ActiveRecord::Base
           
           
           
+def self.find_missing_pnp(filename)
+    raw_data = File.read(filename)
+    raw_struct = JSON.parse(raw_data)
+    data_struct  = raw_struct[2]
+    users = data_struct["data"]
+
+    users.each do |pnp_u|
+      callsign = pnp_u["user_callsign"].strip.upcase
+      callsign = User.remove_call_suffix(callsign)
+      callsign = callsign.strip
+      email = pnp_u["user_email"].strip.downcase
+      next if callsign == 'ZL2OZ'
+      if !callsign or callsign=="" then
+        puts "Invalid callsign"
+        next
+      end
+      ota_u = User.find_by(callsign: callsign)
+      if !ota_u
+        puts "No record from #{callsign}"
+      end
+      if ota_u&.pnp_imported == false
+        ota_u.update_column(:pnp_imported, true)
+        ota_u.update_column(:pnp_status, "Missed")
+        puts "Missed #{callsign}"
+      end
+    end
+end
 
 
   def self.import_from_pnp(filename)
@@ -1793,6 +1820,95 @@ class User < ActiveRecord::Base
     end
   end
 
+  def invalid_logs
+    sql = <<-SQL
+    SELECT DISTINCT l.*
+FROM logs l
+-- 1. Narrow down logs by user first (or search all logs if removing the callsign filter)
+JOIN (
+    SELECT id, unnest(asset_codes) AS asset_code 
+    FROM logs
+    WHERE callsign1 = '#{self.callsign}' -- Remove or change this to search everything
+) e1 ON l.id = e1.id
+JOIN assets a1 ON a1.code = e1.asset_code
+-- 2. Self-join the same pre-filtered dataset
+JOIN (
+    SELECT id, unnest(asset_codes) AS asset_code 
+    FROM logs
+    WHERE callsign1 = '#{self.callsign}' -- Remove or change this to search everything
+) e2 ON l.id = e2.id AND e1.asset_code < e2.asset_code
+JOIN assets a2 ON a2.code = e2.asset_code
+-- 3. Execute the clean intersecting check exactly once per pair
+WHERE a1.is_active=true and a2.is_active=true and ST_Intersects(
+    (COALESCE(a1.az_boundary, a1.boundary, a1.location)), 
+    (COALESCE(a2.az_boundary, a2.boundary, a2.location))
+) = false;
+    SQL
+
+    # 3. Pull raw string text directly from the execution block
+    ActiveRecord::Base.connection.select_all(sql)
+
+  end
+
+  def suspect_contacts(rate_kph)
+    sql = <<-SQL
+select c.id, c.prev_id, c.distance, c.delta_time, c.rate, c.asset1_codes, c.time from 
+( SELECT prev_id, ST_DISTANCE_SPHERE(location1, prev_geom) AS distance,
+       EXTRACT (EPOCH FROM(time - prev_time))::INTEGER AS delta_time,
+       -- Uses NULLIF to return NULL (instead of breaking) if delta is 0 seconds
+       (ST_DISTANCE_SPHERE(location1, prev_geom) / 
+        NULLIF(EXTRACT(EPOCH FROM (time - prev_time))::INTEGER, 0)) * 3.6 AS rate,
+       id,
+       time,
+       asset1_codes
+FROM (
+    SELECT id,
+           time,
+           asset1_codes,
+           location1, 
+           LAG(id) OVER (ORDER BY time) AS prev_id,
+           LAG(asset1_codes) OVER (ORDER BY time) AS prev_codes,
+           LAG(location1) OVER (ORDER BY time) AS prev_geom,
+           LAG(time) OVER (ORDER BY time) AS prev_time
+    FROM contacts 
+    WHERE callsign1 = '#{self.callsign}'
+) AS foo 
+-- Correctly handles the first record where prev_codes is NULL
+WHERE (prev_codes IS NULL OR asset1_codes <> prev_codes)
+ORDER BY time) as c
+ where rate>#{rate_kph};
+   SQL
+
+    contacts = ActiveRecord::Base.connection.select_all(sql)
+    contacts.each do |c|
+      next if not c["prev_id"]
+      this_id = c["id"]
+      prev_id = c["prev_id"]
+      this_c = Contact.find(this_id)
+      prev_c = Contact.find(prev_id) 
+      loc1 = Asset.get_most_accurate_location(this_c.asset1_codes)
+      loc2 = Asset.get_most_accurate_location(prev_c.asset1_codes)
+      result = ActiveRecord::Base.connection.select_all("select ST_DISTANCE_SPHERE(a1.boundary_simplified, a2.boundary_simplified) as distance from assets a1 inner join assets a2 on a2.id=#{loc2[:asset].id} where a1.id=#{loc1[:asset].id}")
+      puts "#{this_c.time} (#{(c['delta_time'].to_f/60).to_i}) dst:  #{result.first['distance'].to_f.to_i}, rate: #{(3.6*(result.first["distance"].to_f)/c['delta_time'].to_f).to_i}, prev: #{prev_c.asset1_codes}, this: #{this_c.asset1_codes}" if result.first["distance"] and c['delta_time']
+    end
+  end
+   
+  def overlapping_logs
+    sql = <<-SQL
+      SELECT 
+        l.id AS log_id,
+        -- Add any other columns from the logs table you need here (e.g., l.status, l.name)
+        MIN(c.time) AS earliest_contact_time,
+        MAX(c.time) AS latest_contact_time
+      FROM logs l
+      INNER JOIN contacts c ON c.log_id = l.id
+      GROUP BY l.id
+      inner join (
+        
+      )
+      WHERE callsign1=#{self.callsign}'; 
+    SQL
+  end 
   private
 
   def create_remember_token
