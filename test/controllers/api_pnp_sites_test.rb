@@ -18,6 +18,7 @@ class ApiPnpSitesTest < ActionDispatch::IntegrationTest
 
     get "/api/SITES/zlota"
 
+
     assert_response :success
 
     data = JSON.parse(@response.body)

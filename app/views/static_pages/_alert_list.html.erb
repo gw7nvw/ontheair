@@ -12,7 +12,7 @@
         <td><%if alert[:starttime] then %><%=alert[:starttime].in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=alert[:starttime].in_time_zone(@tz.name).strftime("%H:%M")%></b> <%if alert[:duration] then %> - <%=(alert[:starttime]+alert[:duration].to_f*3600).in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=(alert[:starttime]+alert[:duration].to_f*3600).in_time_zone(@tz.name).strftime("%H:%M")%></b> <% end %> (<%=@tz.name%>)<% end %></td>
         <td><b><%=render :partial => 'callsign',  :locals => {:this_callsign => alert[:activatingCallsign]} %></b></td>
         <td>@ 
-          <% codes=alert[:code] %>
+          <% codes=alert[:codes] %>
           <% if codes.kind_of?(Array)==false then codes=[codes] end %>
           <% validlink=false %>
           <% codes.each do |code| %>

@@ -686,9 +686,9 @@ class ApiController < ApplicationController
     valid = false
   
     if params[:userID] && params[:APIKey]
-      user=User.find_by(callsign: params[:userID].upcase, pin: params[:APIKey].upcase) 
-      user=User.find_by(callsign: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase) if !user
-      user=User.find_by(pnp_username:pnp_username:: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase) if !user
+      user=User.find_by(callsign: params[:userID].upcase, pin: params[:APIKey].upcase, activated: true) 
+      user=User.find_by(callsign: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase, pnp_imported: true) if !user
+      user=User.find_by(pnp_username: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase, pnp_imported: true) if !user
 
       valid = true if user
     end
