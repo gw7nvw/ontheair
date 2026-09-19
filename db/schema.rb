@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20260913084133) do
+ActiveRecord::Schema.define(version: 20260919030816) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -154,6 +154,7 @@ ActiveRecord::Schema.define(version: 20260913084133) do
   add_index "assets", ["asset_type"], :name => "idx_assets_type_and_spatial"
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
   add_index "assets", ["boundary"], :name => "assets_boundary_index", :spatial => true
+  add_index "assets", ["boundary"], :name => "idx_assets_boundary", :spatial => true
   add_index "assets", ["boundary_quite_simplified"], :name => "assets_boundary_quite_simplified_index", :spatial => true
   add_index "assets", ["boundary_simplified"], :name => "assets_boundary_simplified_index", :spatial => true
   add_index "assets", ["boundary_very_simplified"], :name => "assets_boundary_very_simplified_index", :spatial => true
@@ -406,6 +407,8 @@ ActiveRecord::Schema.define(version: 20260913084133) do
     t.string   "duration"
     t.string   "dxcc"
     t.string   "continent"
+    t.string   "source"
+    t.integer  "source_id"
   end
 
   create_table "external_chases", force: true do |t|
@@ -686,6 +689,8 @@ ActiveRecord::Schema.define(version: 20260913084133) do
   end
 
   add_index "logs", ["asset_classes"], :name => "idx_logs_asset_classes"
+  add_index "logs", ["asset_codes"], :name => "idx_logs_asset_codes_gin"
+  add_index "logs", ["callsign1", "id"], :name => "idx_logs_callsign1_id"
   add_index "logs", ["date"], :name => "index_logs_on_date"
   add_index "logs", ["user1_id"], :name => "logs_user1id_idx"
 

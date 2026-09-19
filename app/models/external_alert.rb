@@ -2,6 +2,7 @@ class ExternalAlert < ActiveRecord::Base
 
   before_save {before_save_actions}
 
+
   def before_save_actions
      add_dxcc
      self.comments=self.comments[0..254] if self.comments
@@ -89,8 +90,11 @@ def self.fetch
     puts "#{sota_alerts.count} alerts received"
 
     @all_alerts = []
+    api_source_ids=[]
     sota_alerts.each do |alert|
       @all_alerts.push(
+           source: "SOTA",
+           source_id: alert["id"],
            starttime: if alert["dateActivated"].to_time then alert["dateActivated"].to_time.in_time_zone(@tz.name).strftime("%Y-%m-%d %H:%M") else "" end,
            activatingCallsign: alert['activatingCallsign'].strip,
            code: (alert['associationCode'] + '/' + alert['summitCode']).gsub('?','X'),
@@ -101,10 +105,15 @@ def self.fetch
            comments: (alert['comments']||"") + (if alert['posterCallsign'] and alert['posterCallsign'].length>0 then ' (de '+alert['posterCallsign']+')' else "" end),
            programme: 'SOTA'
       )
+      api_source_ids << alert["id"]
     end
+    synch_deletions('SOTA', api_source_ids)
 
+    api_source_ids=[]
     wwff_alerts.each do |alert|
       @all_alerts.push(
+          source: "WWFF",
+          source_id:  alert['id'],
           starttime: if alert['utc_start'].to_datetime then alert['utc_start'].to_datetime.in_time_zone('UTC').strftime('%Y-%m-%d %H:%M') else "" end,
           duration: if alert['utc_start'].to_time and alert['utc_end'].to_time then ((alert['utc_end'].to_time-alert['utc_start'].to_time)/3600).to_s else "" end,
           activatingCallsign: alert['activator_call'].strip,
@@ -115,8 +124,11 @@ def self.fetch
           comments: alert['remarks']+(if alert['poster'] and alert['poster'].length>0 then ' (de '+alert['poster']+')' else "" end),
           programme: 'WWFF'
         )
+      api_source_ids << alert["id"]
     end
+    synch_deletions('WWFF', api_source_ids)
 
+    api_source_ids=[]
     pota_alerts.each do |alert|
       duration = 1
       if alert['startDate'] and alert['startTime'] and alert['endDate'] and alert['endTime'] then
@@ -124,6 +136,8 @@ def self.fetch
         duration = 1.0 * duration / 3600
       end
       @all_alerts.push(
+        source: 'POTA',
+        source_id: alert['scheduledActivitiesId'],
           starttime: if alert['startDate'].to_datetime then (alert['startDate']+' '+alert['startTime']).to_datetime.in_time_zone(@tz.name).strftime('%Y-%m-%d %H:%M') else '' end,
           duration: duration,
           activatingCallsign: alert['activator'].strip,
@@ -134,11 +148,16 @@ def self.fetch
           comments: alert['comments'],
           programme: 'POTA'
         )
+      api_source_ids << alert["scheduledActivitiesId"]
     end
+    synch_deletions('POTA', api_source_ids)
 
+    api_source_ids=[]
     pnp_alerts.each do |alert|
       if !["SOTA", "ZLOTA"].include?(alert['Class']) then
         @all_alerts.push(
+           source: "PNP",
+           source_id: alert['alID'],
            starttime: if alert['alTime'].to_datetime then alert['alTime'].to_datetime.in_time_zone(@tz.name).strftime('%Y-%m-%d %H:%M') + ( if alert['alDay'] == '1' then ' (Day)' elsif alert['alDay'] == '2' then ' (Morning)' elsif alert['alDay'] == '3' then ' (Afternoon)' elsif alert['alDay'] == '4' then ' (Evening)' elsif alert['alDay'] == '5' then ' (Overnight)' else '' end) else '' end,
            activatingCallsign: alert['CallSign'].strip,
            code: alert['WWFFID'] && !alert['WWFFID'].empty? ? alert['WWFFID'] : alert['Location'],
@@ -148,14 +167,19 @@ def self.fetch
            comments: alert['Comments'],
            programme: 'PnP: ' + alert['Class']
          )
+      api_source_ids << alert["alID"]
       end
     end
+    synch_deletions('PNP', api_source_ids)
+
 
     @all_alerts.each do |alert|
       #puts alert.to_json
       begin
-        dups = ExternalAlert.where(starttime: alert[:starttime].tr('A-Z,a-z,[()]','').strip, activatingCallsign: alert[:activatingCallsign], code: alert[:code], frequency: alert[:frequency], mode: alert[:mode], programme: alert[:programme])
+        dups = ExternalAlert.where(starttime: alert[:starttime].tr('A-Z,a-z,[()]','').strip, activatingCallsign: alert[:activatingCallsign], code: alert[:code], frequency: alert[:frequency], mode: alert[:mode], programme: alert[:programme], comments: alert[:comments])
         if !(dups && dups.count.positive?)
+           #Handle updates
+           ActiveRecord::Base.connection.execute("DELETE FROM external_alerts WHERE source='#{alert[:source]}' AND source_id=#{alert[:source_id]}") if alert[:source] and alert[:source_id]
            puts "Creating alert: "+alert.to_json.to_s
            result=ExternalAlert.create(alert) 
            puts "ERROR: Create alert failed" if !result 
@@ -163,7 +187,6 @@ def self.fetch
       rescue StandardError
         puts "Failed to add an external alert with invalid formatting"
       end
-
     end
 
     #tidy up
@@ -173,6 +196,18 @@ def self.fetch
 
   @all_alerts
 
+end
+
+def self.synch_deletions(source, api_source_ids)
+  return if !api_source_ids or api_source_ids.count==0
+
+  local_future_ids = ExternalAlert.where(source: source)
+      .where("starttime > ?", Time.current + 5.minutes)
+      .pluck(:source_id)
+  missing_ids = local_future_ids - api_source_ids
+  if missing_ids.any?
+    ExternalAlert.where(source: source, source_id: missing_ids).delete_all
+  end 
 end
 
 def self.import_hota_alerts(alerts)
@@ -187,7 +222,7 @@ def self.import_hota_alerts(alerts)
       dxccs = DxccPrefix.find_by(prefix: dxcc)
       continent = dxccs.continent
     end
-    ext_alert=ExternalAlert.new(id: -alert.item_id, starttime: alert.referenced_time, duration: alert.duration, activatingCallsign: alert.callsign, code: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: 'ZLOTA', dxcc: dxcc, continent: continent)
+    ext_alert=ExternalAlert.new(id: -alert.item_id, starttime: alert.referenced_time, duration: alert.duration, activatingCallsign: alert.callsign, code: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: 'ZLOTA', dxcc: dxcc, continent: continent, source: 'ZLOTA', source_id: alert.item_id)
     all_alerts+=[ext_alert] 
   end 
   all_alerts
