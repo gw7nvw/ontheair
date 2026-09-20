@@ -10,7 +10,7 @@ class SkipBotSessions
     request = ActionDispatch::Request.new(env)
     user_agent = env['HTTP_USER_AGENT'] || 'Unknown'
     current_path = env['PATH_INFO']
-    ip_address = env['REMOTE_ADDR']
+    ip_address = env['HTTP_CF_CONNECTING_IP'] || env['REMOTE_ADDR']
 
     begin
       unless current_path.start_with?('/api') or current_path.start_with?('/posts/sms') 
@@ -38,8 +38,11 @@ class SkipBotSessions
               # Do nothign and stop checks
             elsif ua_record.confirmed_bot?
               env['bot']="confirmed_bot"
+              if ua_record.updated_at < 15.minutes.ago
+                ua_record.touch
+                Rails.logger.info "!!! BLACKLIST TIMESTAMP UPDATED: Confirmed bot extended lockout"
+              end
               # Keep updating the timestamp so active attackers stay locked out indefinitely
-              ua_record.touch 
               Rails.logger.info "!!! BLACKLIST BLOCKED: Confirmed bot tried to access #{current_path}"
               return [403, { 'Content-Type' => 'text/plain' }, ["Access Denied.\nYour IP has been blacklisted by this site's anti-bot protection. You can clear this by going to https://ontheair.nz/signin and signing in or by waiting 24 hours before trying again.\n"]]
   
