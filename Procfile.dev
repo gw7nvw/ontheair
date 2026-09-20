@@ -1,2 +1,4 @@
-web: env RUBY_DEBUG_OPEN=true bin/rails server
-js: yarn build --watch
+web: env RUBY_DEBUG_OPEN=true bin/rails server -b 103.100.39.49 
+css: bin/rails dartsass:watch
+js:  npm run build -- --watch
+

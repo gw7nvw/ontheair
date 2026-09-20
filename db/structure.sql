@@ -73,28 +73,25 @@ $$;
 CREATE FUNCTION public.utmzone(public.geometry) RETURNS integer
     LANGUAGE plpgsql IMMUTABLE
     AS $_$
-DECLARE
-    geomgeog geometry;
-    zone int;
-    pref int;
-BEGIN
-    -- 1. Transform input geometry to WGS84 (Lat/Long) for calculations
-    geomgeog := ST_Transform($1, 4326);
-    
-    -- 2. Determine Northern (32600) vs Southern (32700) Hemisphere EPSG prefix
-    IF (ST_Y(geomgeog)) > 0 THEN 
-        pref := 32600;
-    ELSE 
-        pref := 32700;
-    END IF;
-    
-    -- 3. Calculate 6-degree longitudinal zone block (1 to 60)
-    zone := floor((ST_X(geomgeog) + 180) / 6) + 1;
-    
-    -- 4. Combine them to get the accurate UTM SRID (e.g., 32760 for NZ area)
-    RETURN zone + pref;
-END;
-$_$;
+ DECLARE
+     geomgeog geometry;
+     zone int;
+     pref int;
+
+ BEGIN
+     geomgeog:= ST_Transform($1,4326);
+
+     IF (ST_Y(geomgeog))>0 THEN
+        pref:=32600;
+     ELSE
+        pref:=32700;
+     END IF;
+
+     zone:=floor((ST_X(geomgeog)+180)/6)+1;
+
+     RETURN zone+pref;
+ END;
+ $_$;
 
 
 SET default_tablespace = '';
@@ -2481,7 +2478,7 @@ CREATE TABLE public.users (
     "pnp_APIKey" character varying(255),
     pnp_imported boolean DEFAULT false,
     pnp_username character varying(255),
-    pnp_status character varying
+    pnp_status character varying(255)
 );
 
 
@@ -3937,6 +3934,20 @@ CREATE INDEX eas_userid_idx ON public.external_activations USING btree (user_id)
 
 
 --
+-- Name: idx_assets_boundary; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_assets_boundary ON public.assets USING gist (boundary);
+
+
+--
+-- Name: idx_assets_coalesced_geo; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_assets_coalesced_geo ON public.assets USING gist (COALESCE(az_boundary, boundary, location));
+
+
+--
 -- Name: idx_assets_quite_simplified_3857; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4011,6 +4022,20 @@ CREATE INDEX idx_external_spots_time_activator ON public.external_spots USING bt
 --
 
 CREATE INDEX idx_logs_asset_classes ON public.logs USING gin (asset_classes);
+
+
+--
+-- Name: idx_logs_asset_codes_gin; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_logs_asset_codes_gin ON public.logs USING gin (asset_codes);
+
+
+--
+-- Name: idx_logs_callsign1_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_logs_callsign1_id ON public.logs USING btree (callsign1, id);
 
 
 --

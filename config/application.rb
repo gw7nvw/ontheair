@@ -10,6 +10,7 @@ module Ontheair
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 8.0
+    config.assets.prefix = "/rails-assets"
     #add modles from lib
     #config.autoload_paths += %W(#{config.root}/lib)
     #config.middleware.insert_after "ActionDispatch::Session::ActiveRecordStore", "DynamicCookieDomain"

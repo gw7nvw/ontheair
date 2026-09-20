@@ -1,5 +1,4 @@
-@import "bootstrap"; 
-@import "slider";
+//@import "slider";
 
 /* mixins, variables, etc. */
 
@@ -526,7 +525,7 @@ p {
 
 
 
-#qsl_left_panel #map_map {
+#qsl_left_panel #map_div {
         width: 100% !important;
         height: 100% !important;
 }
@@ -630,10 +629,10 @@ html, body {
         font-size: 1.2em;
         letter-spacing: -1px;
         font-weight: bold;
-        color: $black;
+        color: black;
 }
 
-#map_map {
+#map_div {
 //        width: calc(100% - 15px);
         width: 100%;
         height: calc(100% - 48px); 
@@ -762,8 +761,8 @@ input {
 }
 
 .field_with_errors {
-  @extend .control-group;
-  @extend .error;
+  @extend .is-invalid
+//  display: contents; /* Prevents Rails' default wrapper div from breaking flexbox/grid layouts */
 }
 
 .imageWrap { 

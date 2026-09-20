@@ -1,0 +1,1345 @@
+LINZ_API_KEY='d01gerrwb5fqmwwhpx3s65p62hj';
+var site_map_size=1;
+var contacts_layer;
+var site_show_polygon=true;
+var site_territory_layers=[];
+var site_map_pinned=false;
+var site_show_controls=true;
+var site_back = false;
+//var site_default_projection="EPSG:2193";
+var site_default_projection="EPSG:3857";
+//var def_zoom=7;
+var site_projection=site_default_projection;
+var refreshInterval;
+var currZoom;
+var debug_response;
+import WKT from 'ol/format/WKT';
+import TileLayer from "ol/layer/Tile";
+import XYZ from "ol/source/XYZ";
+import TileGrid from "ol/tilegrid/TileGrid";
+import { get as getProjection } from 'ol/proj';
+  
+  
+// Site-specfic stuff follows - should be in separate file
+//  
+  
+import $ from "jquery"; // Ensure jQuery is imported at the top of the file
+
+//callback variabkles
+var site_select_row;
+var site_select_code_dest;
+var site_select_name_dest;
+var site_select_loc_dest;
+var site_select_x_dest;
+var site_select_y_dest;
+var site_select_append=false;
+var site_current_style=null;
+var site_current_click_layer=null;
+
+//layers
+var district_layer;
+var region_layer;
+var geology_layer;
+var geology_simple_layer;
+var geology_detail_layer;
+var district_simple_layer;
+var region_simple_layer;
+var district_detail_layer;
+var region_detail_layer;
+var polygon_layer;
+var polygon_simple_layer;
+var polygon_detail_layer;
+//var vkpolygon_layer;
+//var vkpolygon_simple_layer;
+//var vkpolygon_detail_layer;
+var points_layer;
+//var vkpoints_layer;
+var site_map_layers={};
+var site_default_point_layers=['lake','lighthouse','summit','hump','volcano'];
+var site_all_point_layers=['park','hut','island','summit','hump','lake','lighthouse','volcano'];
+var site_default_polygon_layers=[];
+var site_default_world_layer='OpenHikingMap';
+var site_default_world_zoom=11;
+var site_default_world_centre = [16085209, -4006631];
+//styles
+var site_docland_style;
+var site_district_style;
+var site_region_style;
+var site_geology_style;
+var site_island_style;
+var site_lake_style;
+var site_public_lake_point_style;
+var site_lake_point_style;
+var site_island_point_style;
+var site_parks_style;
+var site_beacon_style;
+var site_huts_style;
+var site_humps_style;
+var site_public_humps_style;
+var site_summits_style;
+var site_silos_style;
+var site_volcano_style;
+var site_public_summits_style;
+var site_contacts_style;
+var site_highlight_polygon;
+var site_az_style;
+var site_red_polygon;
+var site_green_polygon;
+var site_purple_star;
+var site_red_star;
+var site_green_star;
+var site_red_circle;;
+var site_green_circle;
+var site_yellow_circle;
+var site_docland_styles=[];
+
+const HTTP_STATUS = {
+  0: "No Internet Connection",
+  200: "OK",
+  201: "Created",
+  400: "Bad Request",
+  403: "Forbidden",
+  404: "Not Found",
+  422: "Unprocessable (or login expired)",
+  500: "Internal Server Error"
+};
+
+Array.prototype.remove = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};
+
+function site_init() {
+// try {
+  $(document).ready(site_resizeHeader);
+  $(window).resize(site_resizeHeader);
+
+  if(typeof(map_map)=='undefined') {
+    if(typeof(def_dxcc)!='undefined') {
+      if(def_dxcc=='VK') {
+        def_proj="EPSG:3857"
+      } else {
+        //def_proj='EPSG:2193'
+        def_proj='EPSG:3857'
+      }
+    }
+    site_init_styles();
+    if(typeof(def_proj)!='undefined') {
+       site_projection=def_proj;
+    }
+    map_init_mapspast('map_div',site_projection);
+    site_add_vector_layers();
+    map_add_scratch_layer();
+    map_add_position_layer();
+    
+
+    if(typeof(def_layer)!='undefined') {
+       map_show_only_layer(def_layer);
+    }
+
+    if(typeof(def_zoom)!='undefined') {
+       map_zoom(def_zoom);
+    }
+    if(typeof(def_centre)!='undefined') {
+       map_map.getView().setCenter(def_centre);
+    }
+    if(site_show_controls) {
+      map_add_tooltip();
+      map_on_click_activate(map_navigate_on_click_callback);
+      if ($(window).width() < 960) {
+        site_smaller_map();
+      }
+      if(typeof(def_x)!='undefined' && typeof(def_y)!='undefined') {
+         var centre='POINT('+def_x+' '+def_y+')';
+         map_centre(centre,site_projection);
+      }
+    }
+
+    currZoom = map_map.getView().getZoom();
+    map_map.on('moveend', function(e) {
+      var newZoom = map_map.getView().getZoom();
+      if (currZoom != newZoom) {
+        site_zoom_end_callback(); 
+        currZoom = newZoom;
+      }
+      xy = map_map.getView().getCenter();
+      if (map_current_layer != site_default_world_layer && ((typeof site_pref_extent === 'undefined') || (xy[0] < site_pref_extent[0] || xy[0] > site_pref_extent[2] || xy[1] < site_pref_extent[1] || xy[1] > site_pref_extent[3]))) {
+        map_show_only_layer(site_default_world_layer);
+      } else if (site_pref_layer != map_current_layer && typeof site_pref_extent != 'undefined' && xy[0] > site_pref_extent[0] && xy[0] < site_pref_extent[2] && xy[1] > site_pref_extent[1] && xy[1] < site_pref_extent[3]) {
+        map_show_only_layer(site_pref_layer)
+      };
+
+    });
+  }
+// } 
+ //catch(err) {
+//   site_smaller_map();
+// }
+// finally {
+// }
+}
+
+function site_zoom_end_callback() {
+  if(document.getElementById('polygon_layers')) {
+    if(map_map.getView().getZoom()<4) { document.getElementById('polygon_layers').style="color: #999999 !important; font-style: italic !important"; 
+    } else {
+      document.getElementById('polygon_layers').style="color: #000000; font-style: normal";
+    };
+    if(map_map.getView().getZoom()<2) { document.getElementById('point_layers').style="color: #999999 !important; font-style: italic !important"; 
+    } else {
+      document.getElementById('point_layers').style="color: #000000; font-style: normal";
+    };
+  };
+}
+
+function place_init(plloc, keep,style) 
+{
+  if (typeof(map_map)=='undefined') site_init();
+  if (typeof(style)=='undefined' || style==null) style=site_purple_star;
+
+  if (keep==0) map_clear_scratch_layer();
+  if(plloc && plloc.length>0) {
+    map_add_feature_from_wkt(plloc, 'EPSG:4326',style);
+    if (site_map_pinned==false) map_centre(plloc,'EPSG:4326');
+  }
+  map_map.updateSize();
+}
+
+function park_init(plloc,keep,cntloc) {
+  if (typeof(map_map)=='undefined') site_init();
+
+  if (keep==0) map_clear_scratch_layer();
+  if(plloc && plloc.length>0) {
+    if (cntloc==null) cntloc=map_get_centre_of_geom(plloc);
+  }
+  if (cntloc && cntloc.length>0)  map_add_feature_from_wkt(cntloc, 'EPSG:4326',site_purple_star);
+  if (plloc && plloc.length>0)  map_add_feature_from_wkt(plloc, 'EPSG:4326',site_highlight_polygon);
+  if (site_map_pinned==false) map_centre(cntloc,'EPSG:4326');
+  
+  map_map.updateSize();
+}
+
+function site_smaller_map() {
+//  document.getElementById('map_div').style.display="none";
+  if (site_map_size==1) {
+    document.getElementById('right_panel').style.display="block";
+    $('#left_panel').toggleClass('col-md-5 col-md-0');
+    $('#right_panel').toggleClass('col-md-7 col-md-12');
+    $('#actionbar').toggleClass('col-md-7 col-md-12');
+    document.getElementById('left_panel').style.display="none";
+    site_map_size=0;
+    if (document.getElementById('larger_map')) {
+      document.getElementById('larger_map').style.display="contents";
+      document.getElementById('smaller_map').style.display="none";
+    }
+  } else if (site_map_size==2 && $(window).width() < 960) {
+    document.getElementById('right_panel').style.display="block";
+    $('#left_panel').toggleClass('col-md-12 col-md-0');
+    $('#right_panel').toggleClass('col-md-0 col-md-12');
+    $('#actionbar').toggleClass('col-md-0 col-md-12');
+    document.getElementById('left_panel').style.display="none";
+    site_map_size=0;
+    if (document.getElementById('larger_map')) {
+      document.getElementById('larger_map').style.display="contents";
+      document.getElementById('smaller_map').style.display="none";
+    }
+  } else if (site_map_size==2) {
+    document.getElementById('right_panel').style.display="block";
+    $('#left_panel').toggleClass('col-md-12 col-md-5');
+    $('#right_panel').toggleClass('col-md-0 col-md-7');
+    $('#actionbar').toggleClass('col-md-0 col-md-7');
+    site_map_size=1;
+    if (document.getElementById('larger_map')) {
+      document.getElementById('larger_map').style.display="contents";
+      document.getElementById('smaller_map').style.display="contents";
+    }
+  }
+
+  setTimeout( function() {
+    map_map.updateSize();
+    document.getElementById('map_div').style.display="block";
+    setTimeout( function() { map_map.updateSize(); }, 1000);
+    map_map.updateSize();
+    if(typeof(hot)=="object") {
+       hot.render()
+    }
+  }, 200);
+
+  return false ;
+
+}
+
+function toggle_map() {
+   if (site_map_size<1) {
+     site_bigger_map();
+   } else {
+     site_smaller_map();
+   }
+}
+
+function site_bigger_map() {
+  if (site_map_size==1) 
+  {
+    document.getElementById('left_panel').style.display="block";
+    $('#left_panel').toggleClass('col-md-5 col-md-12');
+    $('#right_panel').toggleClass('col-md-7 col-md-0');
+    $('#actionbar').toggleClass('col-md-7 col-md-0');
+  setTimeout( function() {document.getElementById('right_panel').style.display="none";}, 100);
+    site_map_size=2;
+    document.getElementById('larger_map').style.display="none";
+    document.getElementById('smaller_map').style.display="contents";
+  } else if (site_map_size==0 && $(window).width() < 960) {
+    document.getElementById('left_panel').style.display="block";
+    $('#left_panel').toggleClass('col-md-0 col-md-12');
+    $('#right_panel').toggleClass('col-md-12 col-md-0');
+    $('#actionbar').toggleClass('col-md-12 col-md-0');
+  setTimeout( function() {document.getElementById('right_panel').style.display="none";}, 100);
+    site_map_size=2;
+    document.getElementById('larger_map').style.display="none";
+    document.getElementById('smaller_map').style.display="contents";
+  } else if (site_map_size==0) {
+   // document.getElementById('map_div').style.display="none";
+    $('#left_panel').toggleClass('col-md-0 col-md-5');
+    $('#right_panel').toggleClass('col-md-12 col-md-7');
+    $('#actionbar').toggleClass('col-md-12 col-md-7');
+    site_map_size=1;
+    document.getElementById('left_panel').style.display="block";
+    document.getElementById('larger_map').style.display="contents";
+    document.getElementById('smaller_map').style.display="contents";
+  }
+  setTimeout( function() {
+    map_map.updateSize();
+    document.getElementById('map_div').style.display="block";
+    setTimeout( function() { map_map.updateSize(); }, 1000);
+    map_map.updateSize();
+    if(typeof(hot)=="object") {
+       hot.render()
+    }
+  }, 200);
+  return false ;
+}
+
+function reset_map_controllers(keep) {
+  //clearInterval(refreshInterval);
+
+  document.body.classList.remove("loading");
+
+//deactiavte all other click controllers
+  if(typeof(map_map)=='undefined') {
+     site_init();
+  }
+     deactivate_all_click();
+     map_on_click_activate(map_navigate_on_click_callback);
+     if (keep!=1) map_clear_scratch_layer();
+     map_scratch_layer.setVisible(true);
+     // toggle visible layers to default
+     map_map.updateSize();
+
+//set status icon to show click to navigate
+}
+
+function deactivate_all_click() {
+
+  if(typeof(map_map)!='undefined') map_on_click_deactivate(map_navigate_on_click_callback);
+//  if(typeof(map_map)!='undefined') map_on_click_deactivate(site_select_point_on_click_callback);
+  map_disable_draw();
+
+  //set status icon to show blank
+}
+
+function site_polygon_style_function(feature, resoluton) {
+  if(feature.get('asset_type')=="island")  return site_island_style;
+  if(feature.get('asset_type')=="lake")  return site_lake_style;
+  if(feature.get('asset_type')=="llota lake")  return site_lake_style;
+  if(feature.get('asset_type')=="park")  return site_docland_style_function(feature, resoluton);
+  if(feature.get('asset_type')=="pota park")  return site_pota_style;
+  if(feature.get('asset_type')=="sanpcpa park")  return site_pota_style;
+  if(feature.get('asset_type')=="krmnpa park")  return site_wwff_style;
+  if(feature.get('asset_type')=="wwff park")  return site_wwff_style;
+}
+
+function site_docland_style_function(feature, resoluton) {
+  if(feature.get('category')=="DOC")  return site_docland_styles[1];
+  return site_docland_styles[2];
+}
+
+function site_points_style_function(feature, resoluton) {
+  if(feature.get('asset_type')=="hut")  return site_huts_style;
+  if((feature.get('asset_type')=="lake") && (feature.get('public_access')=='t')) return site_public_lake_point_style;
+  if(feature.get('asset_type')=="lake")  return site_lake_point_style;
+  if((feature.get('asset_type')=="llota lake") && (feature.get('public_access')=='t')) return site_public_lake_point_style;
+  if(feature.get('asset_type')=="llota lake")  return site_lake_point_style;
+  if(feature.get('asset_type')=="island")  return site_island_point_style;
+  if((feature.get('asset_type')=="hump") && (feature.get('public_access')=='t')) return site_public_humps_style;
+  if(feature.get('asset_type')=="hump")  return site_humps_style;
+  if((feature.get('asset_type')=="summit") && (feature.get('public_access')=='t')) return site_public_summits_style;
+  if(feature.get('asset_type')=="summit")  return site_summits_style;
+  if(feature.get('asset_type')=="silo")  return site_silos_style;
+  if(feature.get('asset_type')=="volcano")  return site_volcano_style;
+  if(feature.get('asset_type')=="lighthouse")  return site_beacon_style;
+  if(feature.get('asset_type')=="illw lighthouse")  return site_beacon_style;
+  if(feature.get('asset_type')=="park")  return site_park_point_style;
+  if(feature.get('asset_type')=="pota park")  return site_pota_point_style;
+  if(feature.get('asset_type')=="wwff park")  return site_wwff_point_style;
+  if(feature.get('asset_type')=="sanpcpa park")  return site_pota_point_style;
+  if(feature.get('asset_type')=="krmnpa park")  return site_wwff_point_style;
+}
+
+
+function site_add_vector_layers() {
+  if(typeof(user_point_layers)!== "undefined" && user_point_layers!=='' && user_point_layers[0]!=="undefined") site_default_point_layers=user_point_layers;
+  if(typeof(user_polygon_layers)!== "undefined" && user_polygon_layers!=='' && user_polygon_layers[0]!=="undefined") site_default_polygon_layers=user_polygon_layers;
+  site_set_map_filters('polygon',site_default_polygon_layers);
+  polygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon",site_polygon_style_function,true,12,15,'polygon', 'EPSG:3857');
+  polygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_simple",site_polygon_style_function,true,9,12,'polygon', 'EPSG:3857');
+  polygon_detail_layer=map_add_vector_layer("Polygon Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_detail",site_polygon_style_function,true,15,32,'polygon', 'EPSG:3857');
+  district_layer=map_add_vector_layer("District", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district",site_district_style,false,12,15,null,  'EPSG:3857');
+  district_simple_layer=map_add_vector_layer("District Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_simple",site_district_style,false,7,12,null,'EPSG:3857');
+  district_detail_layer=map_add_vector_layer("District Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_detail",site_district_style,false,15,32,null,'EPSG:3857');
+  geology_layer=map_add_vector_layer("Geology", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology",site_geology_style,false,12,15,null,'EPSG:3857');
+  geology_simple_layer=map_add_vector_layer("Geology Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology_simple",site_geology_style,false,7,12, null,'EPSG:3857');
+  geology_detail_layer=map_add_vector_layer("Geology Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology_detail",site_geology_style,false,15,32,null,'EPSG:3857');
+  region_layer=map_add_vector_layer("Region", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region",site_region_style,false,12,15,null,'EPSG:3857');
+  region_simple_layer=map_add_vector_layer("Region Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_simple",site_region_style,false,7,12,null,'EPSG:3857');
+  region_detail_layer=map_add_vector_layer("Region Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_detail",site_region_style,false,15,32,null,'EPSG:3857');
+
+  site_set_map_filters('point',site_default_point_layers);
+  //vkpolygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/vkhota2.map", "polygon",site_polygon_style_function,true,10,15,'polygon', 'EPSG:3857');
+  //vkpolygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/vkhota2.map", "polygon_simple",site_polygon_style_function,true,5,10,'polygon', 'EPSG:3857');
+  //vkpolygon_detail_layer=map_add_vector_layer("Polygon Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/vkhota2.map", "polygon_detail",site_polygon_style_function,true,15,32,'polygon', 'EPSG:3857');
+  points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,5,32,'point', 'EPSG:3857');
+  //vkpoints_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/vkhota2.map", "vkpoints",site_points_style_function,true,5,32,'point', 'EPSG:3857');
+  contacts_layer=map_add_vector_layer("Contacts", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "contacts",site_contacts_style,false,1,32, 'EPSG:3857');
+
+  map_map.addLayer(district_layer);
+  map_map.addLayer(district_simple_layer);
+  map_map.addLayer(district_detail_layer);
+  map_map.addLayer(geology_layer);
+  map_map.addLayer(geology_simple_layer);
+  map_map.addLayer(geology_detail_layer);
+  map_map.addLayer(region_layer);
+  map_map.addLayer(region_simple_layer);
+  map_map.addLayer(region_detail_layer);
+  map_map.addLayer(polygon_layer);
+  map_map.addLayer(polygon_simple_layer);
+  map_map.addLayer(polygon_detail_layer);
+  map_map.addLayer(points_layer);
+  //map_map.addLayer(vkpolygon_layer);
+  //map_map.addLayer(vkpolygon_simple_layer);
+  //map_map.addLayer(vkpolygon_detail_layer);
+  //map_map.addLayer(vkpoints_layer);
+  map_map.addLayer(contacts_layer);
+}
+
+function site_set_map_filters(filter, list) {
+  var filterstring="";
+  if(list.length>1) {filterstring="<OR>"};
+  list.forEach(function(element,index) { filterstring=filterstring+"<PropertyIsEqualTo><PropertyName>asset_type</PropertyName><Literal>"+element+"</Literal></PropertyIsEqualTo>";});
+  if(list.length>1) {filterstring=filterstring+"</OR>"};
+  if(list.length==0) {filterstring="<PropertyIsEqualTo><PropertyName>asset_type</PropertyName><Literal>donotmatch</Literal></PropertyIsEqualTo>"};
+  map_filters[filter]=filterstring;
+  site_map_layers[filter]=list;
+}
+
+function site_add_layers() {
+        map_add_raster_layer('OpenHikingMap', 'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png', 'osm', 0, 23, "CC OpenHikingMap, OpenStreetMap", "https://wiki.openstreetmap.org/wiki/OpenHikingMap", 0, 18);
+        map_add_raster_layer('Sentinel 2 Imagery', 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg', 'osm', 0, 23, "CC EOX GmbH", "https://cloudless.eox.at/license-non-commercial", 0, 18);
+        //map_add_raster_layer('NZTM Topo 2019', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
+        //map_add_raster_layer('NZTM Topo 2019', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11, "CC LINZ", "https://www.linz.govt.nz/copyright");
+        map_add_raster_layer('NZTM Topo 2019', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375,15, "CC LINZ", "https://www.linz.govt.nz/copyright", 6, 15);
+//        map_add_raster_layer('NZTM Topo 2019', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/3857/topo50-2019/{z}/{x}/{y}.png', 'osm', 0, 15, "CC LINZ", "https://www.linz.govt.nz/copyright");
+        //map_add_raster_layer('Public Access Land', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/pal-2193/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
+        map_add_raster_layer('Public Access Land', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/pal-2193/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 15, "CC LINZ", "https://www.linz.govt.nz/copyright", 6, 15);
+        map_add_raster_layer('(LINZ) Topo50 latest','http://tiles-a.data-cdn.linz.govt.nz/services;key=d8c83efc690a4de4ab067eadb6ae95e4/tiles/v4/layer=767/EPSG:2193/{z}/{x}/{y}.png','linz',8690, 17, "CC LINZ", "https://www.linz.govt.nz/copyright", 4, 17);
+        map_add_raster_layer('(LINZ) Airphoto latest','https://basemaps.linz.govt.nz/v1/tiles/aerial/2193/{z}/{x}/{y}.png?api='+LINZ_API_KEY,'linz',8690, 17, "CC LINZ", "https://www.linz.govt.nz/copyright", 9, 19);
+
+
+
+}
+
+function site_add_controls() {
+   if(site_show_controls) {
+
+        map_create_control("/icons/layers24.png","Select layers",site_mapLayers,"mapLayers");
+        map_create_control("/icons/cog24.png","Configure map",site_mapKey,"mapKey");
+        map_create_control("/icons/pin24.png","Pin map (do not automatically recentre)",site_pinMap,"mapPin");
+        map_create_control("/icons/target24.png","Centre map on current item",site_centreMap,"mapCentre");
+        map_create_control("/icons/location.png","Show current position",site_show_position,"mapPosition");
+  }
+}
+
+
+function site_init_styles() {
+  site_blue_dot=map_create_style("circle", 4, "#2222ff", "#22ffff", 1);
+  site_red_circle=map_create_style("circle", 5, "#ff2222", "#880000", 1);
+  site_green_circle=map_create_style("circle", 5, "#22ff22", "#008800", 1);
+  site_yellow_circle=map_create_style("circle", 5, "#ffd700", "#008800", 1);
+  site_purple_star=map_create_style("star", 10, "#8b008b", "#8b008b", 1);
+  site_red_star=map_create_style("star", 10, "#990000","#990000", 1);
+  site_green_star=map_create_style("star", 10, "#009900", "#009900", 1);
+  site_red_line=map_create_style("", null, "#990000", "#990000", 4);
+  site_docland_style=map_create_style("", null, 'rgba(0,128,0,0.4)', "#005500", 2);
+  site_linz_style=map_create_style("", null, 'rgba(0,0,0,0)', "#550055", 2);
+  site_parks_style=map_create_style("", null, 'rgba(256,140,0,0.4)', "#331f00", 2);
+  site_island_style=map_create_style("", null, 'rgba(256,256,0,0.4)', "#ff8c00", 2);
+  site_lake_style=map_create_style("", null, 'rgba(0,128,255,0.4)', "#0066aa", 2);
+  site_huts_style=map_create_style("circle", 3, "#2222ff", "#22ffff", 1);
+  site_park_point_style=map_create_style("x", 6, "#99ff99", "#009900", 1);
+  site_pota_point_style=map_create_style("x", 6, "#339933", "#003300", 1);
+  site_wwff_point_style=map_create_style("x", 6, "#003300", "#009900", 1);
+  site_island_point_style=map_create_style("triangle", 4, "#ff8c00", "#ff8c00", 1);
+  site_lake_point_style=map_create_style("x", 6, "#3366ff", "#3366ff", 1);
+  site_public_lake_point_style=map_create_style("x", 6, "#0000cc", "#0000cc", 1);
+  site_beacon_style=map_create_style("triangle", 6, "#ffff00", "#ffff00", 1);
+  site_humps_style=map_create_style("triangle", 4, "#e60000", "#e60000", 1);
+  site_public_humps_style=map_create_style("triangle", 4, "#800000", "#800000", 1);
+  site_summits_style=map_create_style("triangle", 4, "#cc66ff", "#cc66ff", 1);
+  site_silos_style=map_create_style("cross", 4, "#ffff00", "#996600", 1);
+  site_volcano_style=map_create_style("triangle", 4, "#ff1493", "#ff1493", 1);
+  site_public_summits_style=map_create_style("triangle", 4, "#6600cc", "#6600cc", 1);
+  site_contacts_style=map_create_style("circle", 4, "#2222ff", "#22ffff", 1);
+  site_highlight_polygon=map_create_style("", null, 'rgba(128,0,0,0.3)', "#660000", 2);
+  site_az_style=map_create_style("", null, 'rgba(204,204,0,0.3)', "#666600", 2);
+  site_red_polygon=map_create_style("", null, 'rgba(256,0,0,0.6)', "#880000", 2);
+  site_district_style=map_create_style("", null, 'rgba(0,0,0,0.0)', "#880088", 4);
+  site_geology_style=map_create_style("", null, 'rgba(153,0,255,0.2)', "#9900ff", 1);
+  site_region_style=map_create_style("", null, 'rgba(0,0,0,0.0)', "#AA0044", 4);
+  site_green_polygon=map_create_style("", null, 'rgba(0,256,0,0.6)', "#008800", 2);
+  site_pota_style=map_create_style('',0, 'rgba(128,0,128,0.2)', "#900090", 2);
+  site_wwff_style=map_create_style('',0, 'rgba(150,30,150,0.2)', "#901090", 2);
+  site_docland_styles[1]=map_create_style('',0, 'rgba(0,128,0,0.2)', "#005500", 2);
+  site_docland_styles[2]=map_create_style('',0, 'rgba(128,255,128,0.2)', "#20a020", 1);
+
+}
+
+
+
+function site_mapKey() {
+        window.currentActiveModal = map_create_dialog(
+            "Map options",
+            '<div id="info_details2">Retrieving ...</div>'
+        );
+
+        $.ajax({
+          beforeSend: function (xhr){
+            xhr.setRequestHeader("Content-Type","application/javascript");
+            xhr.setRequestHeader("Accept","text/javascript");
+          },
+          type: "GET",
+          timeout: 60000,
+          url: "/legend?projection="+map_current_proj,
+          error: function() {
+              document.getElementById("info_details2").innerHTML = 'Error contacting server';
+          },
+          complete: function() {
+              document.getElementById("page_status").innerHTML = '';
+          }
+        });
+}
+
+function site_show_position() {
+  if(map_show_position==0) {
+     document.getElementById("mapPosition").style.backgroundColor="#008800"
+  } else {
+     document.getElementById("mapPosition").style.backgroundColor="#ffffff"
+  }
+  map_enable_tracking();
+
+}
+
+function site_pinMap() {
+  if(site_map_pinned==0) {
+     site_map_pinned=1;
+     document.getElementById("mapPin").style.backgroundColor="#008800"
+  } else {
+     site_map_pinned=0;
+     document.getElementById("mapPin").style.backgroundColor="#ffffff"
+  }
+}
+
+function site_centreMap() {
+  map_centre(map_last_centre,'EPSG:4326');
+
+}
+
+function site_search_map_position(pos_ele, code_ele) {
+  posn=site_get_map_position(pos_ele);
+  if (posn[0]!=null && posn[1]!=null) {
+    x=posn[0];
+    y=posn[1];
+    search_location(x,y,code_ele)
+  }
+  return(false)
+}
+
+function site_get_map_position(elementId) {
+  x=null;
+  y=null;
+  if (map_show_position==0) {
+    site_show_position();
+  }
+  posn=map_geolocation.getPosition();
+  if (posn && posn.length==2) {
+    x=posn[0];
+    y=posn[1];
+    document.getElementById(elementId).value = x.toString()+","+y.toString();
+  } else {
+    document.getElementById(elementId).value = "GPS not ready, try again";
+  }
+  return([x,y])
+}
+
+
+function site_navigate_to(url) {
+  if(url.length>0) {
+        document.body.classList.add("loading");
+        document.getElementById("page_status").innerHTML = 'Loading ...';
+
+        $.ajax({
+          beforeSend: function (xhr){
+            xhr.setRequestHeader("Content-Type","application/javascript");
+            xhr.setRequestHeader("Accept","text/javascript");
+          },
+          type: "GET",
+          timeout: 60000,
+          url: '/'+url,
+          complete: function() {
+              /* complete also fires when error ocurred, so only clear if no error has been shown */
+              if(site_map_size==2) site_smaller_map();
+              document.getElementById("page_status").innerHTML = '';
+          }
+
+        });
+      }
+}
+
+function site_drawPlace(disable_icon, enable_icon, place_loc, place_x, place_y,style) {
+  if (typeof(style)=='undefined' || style==null) {
+     style=site_purple_star;
+  } 
+     
+  if(site_map_size==0) {
+      site_bigger_map();
+  }
+  deactivate_all_click();
+  document.getElementById(enable_icon).style.display="none";
+  document.getElementById(disable_icon).style.display="block";
+
+  //map_clear_scratch_layer();
+  map_enable_draw("Point",style,place_loc, place_x ,place_y  ,true);
+}
+
+function site_drawBoundary(disable_icon, enable_icon, place_loc) {
+  if(site_map_size==0) {
+     site_bigger_map();
+  }
+
+  /*point_selectNothing();*/
+  deactivate_all_click();
+
+  document.getElementById(enable_icon).style.display="none";
+  document.getElementById(disable_icon).style.display="block";
+  //map_clear_scratch_layer();
+  map_enable_draw("Polygon",site_highlight_polygon,place_loc, null, null  ,true);
+}
+
+function site_selectPlace(row, code_loc, name_loc, location_loc, x_loc, y_loc, disable_icon, enable_icon, style, append,asset_type) {
+  deactivate_all_click();
+  if(enable_icon!=null) document.getElementById(enable_icon).style.display="none";
+  if(disable_icon!=null) document.getElementById(disable_icon).style.display="block";
+
+  map_on_click_activate(site_select_point_on_click_callback);
+
+  site_select_row=row;
+  site_select_code_dest=code_loc;
+  site_select_name_dest=name_loc;
+  site_select_loc_dest=location_loc;
+  site_select_x_dest=x_loc;
+  site_select_y_dest=y_loc;
+  site_current_click_layer=asset_type;
+  site_current_style=style;
+  if(append==true) {site_select_append=true } else {site_select_append=false};
+}
+
+function site_selectSummit(row, id_loc, name_loc, location_loc, x_loc, y_loc, disable_icon, enable_icon, style) {
+  deactivate_all_click();
+  site_toggle_huts(false);
+  site_toggle_summits(true);
+  site_toggle_docland(false);
+  site_toggle_island(0);
+  if(enable_icon!=null) document.getElementById(enable_icon).style.display="none";
+  if(disable_icon!=null) document.getElementById(disable_icon).style.display="block";
+
+  map_on_click_activate(site_select_point_on_click_callback);
+
+  site_select_row=row;;
+  site_select_id_dest=id_loc;
+  site_select_name_dest=name_loc;
+  site_select_loc_dest=location_loc;
+  site_select_x_dest=x_loc;
+  site_select_y_dest=y_loc;
+  site_current_click_layer='Summits';
+  site_current_style=style;
+}
+
+function site_selectPark(row, id_loc, name_loc, disable_icon, enable_icon, style) {
+  deactivate_all_click();
+  if(enable_icon!=null) document.getElementById(enable_icon).style.display="none";
+  if(disable_icon!=null) document.getElementById(disable_icon).style.display="block";
+
+  site_toggle_huts(false);
+  site_toggle_summits(false);
+  site_toggle_docland(true);
+  site_toggle_island(0);
+
+  map_on_click_activate(site_select_point_on_click_callback);
+
+  site_select_row=row;
+  site_select_id_dest=id_loc;
+  site_select_name_dest=name_loc;
+  site_select_loc_dest=null;
+  site_select_x_dest=null;
+  site_select_y_dest=null;
+  site_current_click_layer='Parks';
+  site_current_style=style;
+}
+
+function site_selectIsland(row, id_loc, name_loc, disable_icon, enable_icon, style) {
+  deactivate_all_click();
+  if(enable_icon!=null) document.getElementById(enable_icon).style.display="none";
+  if(disable_icon!=null) document.getElementById(disable_icon).style.display="block";
+
+  site_toggle_huts(false);
+  site_toggle_summits(false);
+  site_toggle_docland(false);
+  site_toggle_island(2);
+
+  map_on_click_activate(site_select_point_on_click_callback);
+
+  site_select_row=row;;
+  site_select_id_dest=id_loc;
+  site_select_name_dest=name_loc;
+  site_select_loc_dest=null;
+  site_select_x_dest=null;
+  site_select_y_dest=null;
+  site_current_click_layer='Island';
+  site_current_style=style;
+}
+
+function site_selectNothing(disable_icon, enable_icon) {
+  document.getElementById(enable_icon).style.display="block";
+  document.getElementById(disable_icon).style.display="none";
+  deactivate_all_click();
+  site_select_name_dest=null
+  site_select_id_dest=null;
+  site_select_loc_dest=null;
+  site_select_x_dest=null;
+  site_select_y_dest=null;
+  site_current_style=null;
+}
+
+function site_select_point_on_click_callback(evt) {
+    var pixel = evt.pixel;
+    var wktp = new ol.format.WKT;   //should be handled in map, not here
+    var feature = map_map.forEachFeatureAtPixel(pixel, function(feature, layer) {
+      if((!site_current_click_layer||(feature.get('asset_type').substr(0,site_current_click_layer.length)==site_current_click_layer)) && feature.get('is_active')) {
+         return feature;
+      } else {
+         return null;
+      }
+    });
+    
+    if(feature) {
+      debug_f=feature;
+        //now copy it to where we want it 
+      if(site_select_row!=null) {
+        if(site_select_name_dest!=null) data2[site_select_row][site_select_name_dest]=feature.get('name');
+        data2[site_select_row]['loc_desc2']=feature.get('name');
+        if(site_select_code_dest!=null) data2[site_select_row][site_select_code_dest]=feature.get('code');
+        if(site_select_loc_dest!=null) data2[site_select_row][site_select_loc_dest]=wktp.writeFeature(feature, { dataProjection: 'EPSG:4326', featureProjection: site_projection});
+        if(site_select_x_dest!=null) data2[site_select_row][site_select_x_dest]=feature.getGeometry().getCoordinates()[0];
+        if(site_select_y_dest!=null) data2[site_select_row][site_select_y_dest]=feature.getGeometry().getCoordinates()[1];
+        hot.render();
+      } else {
+        if(site_select_append) {
+          if(site_select_name_dest!=null) {
+            names=document.getElementById(site_select_name_dest).innerHTML;
+            if(names.length>0) { names=names+"<br/>";}
+            document.getElementById(site_select_name_dest).innerHTML=names+"["+feature.get('code')+"] "+feature.get('name');
+          }
+          if(site_select_code_dest!=null) {
+            codes=document.getElementById(site_select_code_dest).value;
+            if(codes.length>0) { codes=codes+",";}
+            document.getElementById(site_select_code_dest).value=codes+feature.get('code');
+          }
+        } else {
+          if(site_select_name_dest!=null)  document.getElementById(site_select_name_dest).value=feature.get('name');
+          if(site_select_code_dest!=null)  document.getElementById(site_select_code_dest).value=feature.get('code');
+        }
+        if(site_select_loc_dest!=null) document.getElementById(site_select_loc_dest).value=wktp.writeFeature(feature, { dataProjection: 'EPSG:4326', featureProjection: site_projection});
+        if(site_select_x_dest!=null) document.getElementById(site_select_x_dest).value=feature.getGeometry().getCoordinates()[0];
+        if(site_select_y_dest!=null) document.getElementById(site_select_y_dest).value=feature.getGeometry().getCoordinates()[1];
+      }
+      debug_f=feature;
+      //now mark it on map
+      if(site_current_style!=null) {
+           map_clear_scratch_layer(null, site_current_style);
+           f2=feature.clone();
+           f2.setStyle(site_current_style);
+           map_add_feature(f2);
+      }
+    }
+}   
+   
+function closeAllHandlers() {
+    if (window.currentActiveModal) {
+      window.currentActiveModal.close();
+    }
+
+    document.body.classList.remove("loading");
+    document.getElementById("page_status").innerHTML = ''
+}
+
+function submitHandler(entity_name) {
+    document.body.classList.add("loading");
+    document.getElementById("page_status").innerHTML = 'Loading ...'
+}
+
+    $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
+       options.tryCount= (!options.tryCount) ? 0 : options.tryCount;0;
+       options.timeout = 5000*(options.tryCount+1);
+       options.retryLimit=0;
+       // Override the complete callback defensively
+       var originalComplete = options.complete;
+
+       options.complete = function(jqXHR, thrownError) {
+         /* complete also fires when error ocurred, so only clear if no error has been shown */
+         if(thrownError=="timeout") {
+           this.tryCount++;
+           document.getElementById("page_status").innerHTML = 'Retrying ...';
+           this.timeout=15000*this.tryCount;
+           if(this.tryCount<=this.retryLimit) {
+             $.rails.ajax(this);
+           } else {
+             document.getElementById("page_status").innerHTML = 'Timeout';
+             document.body.classList.remove("loading");
+             window.currentActiveModal = map_create_dialog(
+               "Loading",
+               '<div id="page_status2">Timeout</div>'
+             );
+           }
+         }
+         if(thrownError=="error") {
+           document.getElementById("page_status").innerHTML = 'Error: '+(HTTP_STATUS[jqXHR.status] || '')+'['+jqXHR.status+']';
+           document.body.classList.remove("loading");
+           window.currentActiveModal = map_create_dialog(
+             "Loading",
+             '<div id="page_status2">Error: '+(HTTP_STATUS[jqXHR.status] || '')+'['+jqXHR.status+']</div>'
+           );
+
+         }
+         if(thrownError=="success") {
+           //if(site_map_size==0) site_bigger_map();
+           document.getElementById("page_status").innerHTML = ''
+           document.body.classList.remove("loading");
+           site_resizeHeader()
+         }
+         window.lastUrl=document.URL;
+     };
+   });
+
+function linkHandler(entity_name) {
+    clearTimeout(refreshInterval);
+
+    if(entity_name=='back_link') {
+      site_back=true;
+      history.back();
+    } else {
+       site_back=false;
+    } 
+    dialog=true;
+    /* close the dropdown */
+    $('.dropdown').removeClass('show'); // Bootstrap 4 uses 'show' instead of 'open'
+    $('.dropdown-menu').removeClass('show');
+
+    document.body.classList.add("loading");
+
+    document.getElementById("page_status").innerHTML = 'Loading ...'
+}
+
+function site_clear_element(formids) {
+  var length=formids.length;
+  for(var count=0;count<length;count++) {  
+    document.getElementById(formids[count]).value='';
+  }
+}
+function site_clear_html_element(htmlids) {
+  var length=htmlids.length;
+  for(var count=0;count<length;count++) {  
+    document.getElementById(htmlids[count]).innerHTML='';
+  }
+}
+
+function site_clear_elementData(row,cols) {
+  for (col = 0; col < cols.length; col++ ) {
+    if(Array.isArray(data2[row][cols[col]])) {
+      data2[row][cols[col]]=[];
+    } else {
+      data2[row][cols[col]]='';
+    }
+  }
+ hot.render();
+}
+
+
+
+function search_islands(field) {
+        window.currentActiveModal = map_create_dialog(
+            "Select island",
+            '<div id="info_details2">Retrieving ...</div>'
+        );
+
+        $.ajax({
+          beforeSend: function (xhr){
+            xhr.setRequestHeader("Content-Type","application/javascript");
+            xhr.setRequestHeader("Accept","text/javascript");
+          },
+          type: "GET",
+          timeout: 60000,
+          url: "/queryisland?islandfield="+field,
+          error: function() {
+              document.getElementById("info_details2").innerHTML = 'Error contacting server';
+          },
+          complete: function() {
+              document.getElementById("page_status").innerHTML = '';
+          }
+
+        });
+ return(false);
+}
+
+function search_parks(field) {
+        window.currentActiveModal = map_create_dialog(
+            "Select park",
+            '<div id="info_details2">Retrieving ...</div>'
+        );
+
+        $.ajax({
+          beforeSend: function (xhr){
+            xhr.setRequestHeader("Content-Type","application/javascript");
+            xhr.setRequestHeader("Accept","text/javascript");
+          },
+          type: "GET",
+          timeout: 60000,
+          url: "/querypark?parkfield="+field,
+          error: function() {
+              document.getElementById("info_details2").innerHTML = 'Error contacting server';
+          },
+          complete: function() {
+              document.getElementById("page_status").innerHTML = '';
+          }
+
+        });
+ return(false);
+}
+function submit_search() {
+   document.getElementById("info_results2").innerHTML = 'Searching...';
+
+   return false;
+}
+
+function select_asset(field, code, name, x, y, loc, containing_codes, containing_names) {
+  if (typeof(document.contactform)=="object")  { 
+     formname="contactform";
+     varprefix="contact_";
+  } 
+  if (typeof(document.postform)=="object")  { 
+     formname="postform";
+     varprefix="post_";
+  }
+  if (typeof(document.logform)=="object")  { 
+     formname="logform";
+     varprefix="log_";
+  }
+  if (field=='child') {
+     formname="childform";
+     varprefix="c_asset_link_";
+  }
+  if (field=='parent') {
+     formname="parentform";
+     varprefix="p_asset_link_";
+  }
+
+  if (field=="asset") {
+    codes=document[formname][varprefix+"asset_codes"].value
+    if(codes=="{}") {codes="";} 
+    if(codes=="[]") {codes="";} 
+    if(codes && codes.length>0) {codes=codes+","};
+    document[formname][varprefix+"asset_codes"].value=codes+code;
+    names=document.getElementById('asset_names').innerHTML;
+    if(names && names.length>0) {names=names+"<br/>"};
+    document.getElementById('asset_names').innerHTML=names+"["+code+"] "+name;
+    document[formname][varprefix+"x1"].value=x;
+    document[formname][varprefix+"y1"].value=y;
+    document[formname][varprefix+"location1"].value=loc;
+    //document[formname][varprefix+"containing_codes"].value=containing_codes;
+    //document.getElementsById["containing_names"].innerHTML=containing_names;
+    map_clear_scratch_layer('Point', site_green_star);
+    map_add_feature_from_wkt(loc,'EPSG:4326',site_green_star) ;
+  }
+  if (field=="child") {
+    document[formname][varprefix+"containing_code"].value=code;
+    document[formname][varprefix+"containing_name"].value=name;
+    map_clear_scratch_layer('Point', site_red_star);
+    map_add_feature_from_wkt(loc,'EPSG:4326',site_red_star) ;
+  }
+  if (field=="parent") {
+    document[formname][varprefix+"contained_code"].value=code;
+    document[formname][varprefix+"contained_name"].value=name;
+    map_clear_scratch_layer('Point', site_red_star);
+    map_add_feature_from_wkt(loc,'EPSG:4326',site_red_star) ;
+  }
+  if (field.substr(0,3)=="row") {
+    row=field.substr(4,1000)
+    if(data2[row]['asset2_codes']==null) {data2[row]['asset2_codes']=[code];} else {
+    codes=data2[row]['asset2_codes'].push(code) 
+ }
+    names=data2[row]['asset2_names']
+    if(names=='null'||name=='undefined') {names=""};
+    if(names && names.length>0) {names=names+"\n"};
+    data2[row]['asset2_names']=names+"["+code+"] "+name;
+    data2[row]['location2']=loc;
+    data2[row]['x2']=x;
+    data2[row]['y2']=y;
+    //data2[row]['park2_id']=containing_codes;
+    //data2[row]['park2_tn']=containing_names;
+    //data2[row]['loc_desc2']=name+" ("+park_name+")"
+    map_clear_scratch_layer('Point', site_red_star);
+    map_add_feature_from_wkt(loc,'EPSG:4326',site_red_star) ;
+    hot.render();
+  }
+  return false;
+}
+
+
+function search_location(x,y,elementId) {
+        $.ajax({
+          beforeSend: function (xhr){
+            xhr.setRequestHeader("Content-Type","application/javascript");
+            xhr.setRequestHeader("Accept","text/javascript");
+          },
+          type: "GET",
+          timeout: 6000,
+          url: "/query_location?qx="+x+"&qy="+y,
+          complete: function(response) {
+            debug_response=response;
+              document.getElementById(elementId).innerHTML = response.responseText;
+          }
+        });
+ return(false);
+}
+
+function search_assets(field) {
+        window.currentActiveModal = map_create_dialog(
+            "Select",
+            '<div id="info_details2">Retrieving ...</div>'
+        );
+
+        $.ajax({
+          beforeSend: function (xhr){
+            xhr.setRequestHeader("Content-Type","application/javascript");
+            xhr.setRequestHeader("Accept","text/javascript");
+          },
+          type: "GET",
+          timeout: 60000,
+          url: "/query?assetfield="+field,
+          error: function() {
+              document.getElementById("info_details2").innerHTML = 'Error contacting server';
+          },
+          complete: function() {
+              document.getElementById("page_status").innerHTML = '';
+          }
+
+        });
+ return(false);
+}
+
+function search_summits(field) {
+        window.currentActiveModal = map_create_dialog(
+            "Select summit",
+            '<div id="info_details2">Retrieving ...</div>'
+        );
+
+        $.ajax({
+          beforeSend: function (xhr){
+            xhr.setRequestHeader("Content-Type","application/javascript");
+            xhr.setRequestHeader("Accept","text/javascript");
+          },
+          type: "GET",
+          timeout: 60000,
+          url: "/querysummit?summitfield="+field,
+          error: function() {
+              document.getElementById("info_details2").innerHTML = 'Error contacting server';
+          },
+          complete: function() {
+              document.getElementById("page_status").innerHTML = '';
+          }
+
+        });
+ return(false);
+}
+
+   function clickplus(divname) {
+     document.getElementById(divname).style.display = 'block';
+     document.getElementById(divname+"plus").style.display="none";
+     document.getElementById(divname+"minus").style.display="block";
+   }
+
+   function clickilplus(divname) {
+     document.getElementById(divname).style.display = 'inline';
+     document.getElementById(divname+"plus").style.display="none";
+     document.getElementById(divname+"minus").style.display="inline";
+   }
+
+
+   function clickminus(divname) {
+     document.getElementById(divname).style.display = 'none';
+     document.getElementById(divname+"plus").style.display="block";
+     document.getElementById(divname+"minus").style.display="none";
+   }
+
+   function clickilminus(divname) {
+     document.getElementById(divname).style.display = 'none';
+     document.getElementById(divname+"plus").style.display="inline";
+     document.getElementById(divname+"minus").style.display="none";
+   }
+
+   function updatexy(value) {
+     id=document.contactform.contact_hut1_id.value.split(',')[0];
+     x=document.contactform.contact_hut1_id.value.split(',')[1];
+     y=document.contactform.contact_hut1_id.value.split(',')[2];
+
+     document.contactform.contact_x1.value=x;
+     document.contactform.contact_y1.value=y;
+   }
+
+function site_mapLayers(shownew) {
+        if (shownew || typeof(shownew)=='undefined') {
+         window.currentActiveModal = map_create_dialog(
+            "Select layers",
+            '<div id="info_details2">Retrieving ...</div>' );
+        };
+
+        $.ajax({
+          beforeSend: function (xhr){
+            xhr.setRequestHeader("Content-Type","application/javascript");
+            xhr.setRequestHeader("Accept","text/javascript");
+          },
+          type: "GET",
+          timeout: 60000,
+          url: "/layerswitcher?baselayer="+map_current_layer+"&pointlayers=["+site_map_layers.point+"]&polygonlayers=["+site_map_layers.polygon+"]&territorylayers=["+site_territory_layers+"]",
+          error: function() {
+              document.getElementById("info_details2").innerHTML = 'Error contacting server';
+          },
+          complete: function() {
+               site_zoom_end_callback();
+
+
+//              document.getElementById("page_status").innerHTML = '';
+          }
+
+        });
+
+}
+
+
+function site_toggle_vector_layers(filter, layer) {  
+  if(site_map_layers[filter].includes(layer)) {
+    for( var i = 0; i < site_map_layers[filter].length; i++){ 
+        if ( site_map_layers[filter][i] === layer) { 
+            site_map_layers[filter].splice(i, 1); 
+        }
+    }
+  } else {
+    site_map_layers[filter].push(layer);
+  }; 
+  site_set_map_filters(filter,site_map_layers[filter]);
+}
+
+function site_toggle_geology_layer() { 
+  if (site_territory_layers.includes("geology")) {
+    geology_layer.setVisible(false);
+    geology_simple_layer.setVisible(false);
+    geology_detail_layer.setVisible(false);
+    site_territory_layers.remove("geology");
+  } else {
+    geology_layer.setVisible(true);
+    geology_simple_layer.setVisible(true);
+    geology_detail_layer.setVisible(true);
+    site_territory_layers.push("geology");
+  }
+}
+function site_toggle_region_layer() { 
+  if (site_territory_layers.includes("region")) {
+    region_layer.setVisible(false);
+    region_simple_layer.setVisible(false);
+    region_detail_layer.setVisible(false);
+    site_territory_layers.remove("region");
+  } else {
+    region_layer.setVisible(true);
+    region_simple_layer.setVisible(true);
+    region_detail_layer.setVisible(true);
+    site_territory_layers.push("region");
+  }
+}
+
+function site_toggle_district_layer() { 
+  if (site_territory_layers.includes("district")) {
+    district_layer.setVisible(false);
+    district_simple_layer.setVisible(false);
+    district_detail_layer.setVisible(false);
+    site_territory_layers.remove("district");
+  } else {
+    district_layer.setVisible(true);
+    district_simple_layer.setVisible(true);
+    district_detail_layer.setVisible(true);
+    site_territory_layers.push("district");
+  }
+}
+
+function site_clear_vector_layers(filter, layer) { 
+  site_map_layers[filter]=[];
+}
+
+function site_set_vector_layers(filter, layer, value) { 
+  if(site_map_layers[filter].includes(layer)) {
+    for( var i = 0; i < site_map_layers[filter].length; i++){
+        if ( site_map_layers[filter][i] === layer) {
+            site_map_layers[filter].splice(i, 1);
+        }
+    }
+  } 
+ 
+  if(value) {
+    site_map_layers[filter].push(layer);
+  };
+
+  site_set_map_filters(filter,site_map_layers[filter]);
+}
+
+function site_refresh_layer(filter) {
+  if (filter=='point') {
+    setTimeout( function() { points_layer.getSource().clear(); }, 1000);
+    //setTimeout( function() { vkpoints_layer.getSource().clear(); }, 1000);
+  } else {
+    setTimeout( function() { polygon_layer.getSource().clear();polygon_simple_layer.getSource().clear();
+      polygon_detail_layer.getSource().clear();
+    }, 1000);
+//    setTimeout( function() { vkpolygon_layer.getSource().clear();vkpolygon_simple_layer.getSource().clear();
+//      vkpolygon_detail_layer.getSource().clear();
+//    }, 1000);
+  };
+
+}
+
+function expand_div(divname) {
+     if (document.getElementById(divname).style.display == 'block') {
+       document.getElementById(divname).style.display = 'none';
+     } else {
+       document.getElementById(divname).style.display = 'block';
+     };
+  return(false);
+}
+
+function show_div(div) {
+   document.getElementById(div).style.display="block";
+}
+function hide_div(div) {
+   document.getElementById(div).style.display="none";
+}
+
+function site_resizeHeader() {
+document.getElementById("actionbar-push").style.height=document.getElementById("actionbar-full").offsetHeight-8+"px"; 
+  }
+
+function site_select_maplayer(name, url, basemap, minzoom, maxzoom, extent) {
+   map_select_maplayer(name, url, basemap, minzoom, maxzoom);
+   site_pref_layer=name;
+   site_pref_extent=extent;  
+}
+window.site_init = site_init;
+window.site_zoom_end_callback = site_zoom_end_callback;
+window.place_init = place_init;
+window.park_init = park_init;
+window.site_smaller_map = site_smaller_map;
+window.toggle_map = toggle_map;
+window.site_bigger_map = site_bigger_map;
+window.reset_map_controllers = reset_map_controllers;
+window.deactivate_all_click = deactivate_all_click;
+window.site_polygon_style_function = site_polygon_style_function;
+window.site_docland_style_function = site_docland_style_function;
+window.site_points_style_function = site_points_style_function;
+window.site_add_vector_layers = site_add_vector_layers;
+window.site_set_map_filters = site_set_map_filters;
+window.site_add_layers = site_add_layers;
+window.site_add_controls = site_add_controls;
+window.site_init_styles = site_init_styles;
+window.site_mapKey = site_mapKey;
+window.site_show_position = site_show_position;
+window.site_pinMap = site_pinMap;
+window.site_centreMap = site_centreMap;
+window.site_search_map_position = site_search_map_position;
+window.site_get_map_position = site_get_map_position;
+window.site_navigate_to = site_navigate_to;
+window.site_drawPlace = site_drawPlace;
+window.site_drawBoundary = site_drawBoundary;
+window.site_selectPlace = site_selectPlace;
+window.site_selectSummit = site_selectSummit;
+window.site_selectPark = site_selectPark;
+window.site_selectIsland = site_selectIsland;
+window.site_selectNothing = site_selectNothing;
+window.site_select_point_on_click_callback = site_select_point_on_click_callback;
+window.closeAllHandlers = closeAllHandlers;
+window.submitHandler = submitHandler;
+window.linkHandler = linkHandler;
+window.site_clear_element = site_clear_element;
+window.site_clear_html_element = site_clear_html_element;
+window.site_clear_elementData = site_clear_elementData;
+window.search_islands = search_islands;
+window.search_parks = search_parks;
+window.submit_search = submit_search;
+window.select_asset = select_asset;
+window.search_location = search_location;
+window.search_assets = search_assets;
+window.search_summits = search_summits;
+window.clickplus = clickplus;
+window.clickilplus = clickilplus;
+window.clickminus = clickminus;
+window.clickilminus = clickilminus;
+window.updatexy = updatexy;
+window.site_mapLayers = site_mapLayers;
+window.site_toggle_vector_layers = site_toggle_vector_layers;
+window.site_toggle_geology_layer = site_toggle_geology_layer;
+window.site_toggle_region_layer = site_toggle_region_layer;
+window.site_toggle_district_layer = site_toggle_district_layer;
+window.site_clear_vector_layers = site_clear_vector_layers;
+window.site_set_vector_layers = site_set_vector_layers;
+window.site_refresh_layer = site_refresh_layer;
+window.expand_div = expand_div;
+window.show_div  = show_div;
+window.hide_div = hide_div;
+window.site_resizeHeader = site_resizeHeader;
+window.site_select_maplayer = site_select_maplayer;
+window.site_back = site_back;
+window.site_map_layers = site_map_layers;
+window.site_purple_star = site_purple_star;
+window.site_highlight_polygon = site_highlight_polygon;
+window.site_az_style = site_az_style;
+window.site_mapLayers = site_mapLayers;
+window.site_all_point_layers = site_all_point_layers;
