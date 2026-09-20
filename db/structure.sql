@@ -10,19 +10,31 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: public; Type: SCHEMA; Schema: -; Owner: -
+-- Name: btree_gist; Type: EXTENSION; Schema: -; Owner: -
 --
 
-CREATE SCHEMA IF NOT EXISTS public;
-CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
 CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public;
+
+
+--
+-- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
+
+
+--
+-- Name: postgres_fdw; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS postgres_fdw WITH SCHEMA public;
+
+
+--
+-- Name: unaccent; Type: EXTENSION; Schema: -; Owner: -
+--
+
 CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;
-
---
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON SCHEMA public IS 'standard public schema';
 
 
 --
@@ -52,13 +64,6 @@ BEGIN
   END;
 END;
 $$;
-
-
---
--- Name: FUNCTION st_cardinaldirection(azimuth double precision); Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON FUNCTION public.st_cardinaldirection(azimuth double precision) IS 'input azimuth in radians; returns N, NW, W, SW, S, SE, E, or NE';
 
 
 --
@@ -2475,7 +2480,8 @@ CREATE TABLE public.users (
     baselayer character varying(255),
     "pnp_APIKey" character varying(255),
     pnp_imported boolean DEFAULT false,
-    pnp_username character varying(255)
+    pnp_username character varying(255),
+    pnp_status character varying
 );
 
 
@@ -4235,9 +4241,10 @@ CREATE INDEX vk_code_indx ON public.vk_assets USING btree (code);
 -- PostgreSQL database dump complete
 --
 
-SET search_path TO public, postgis;
+SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260913084133'),
 ('20260831024620'),
 ('20260816195403'),
 ('20260723041914'),

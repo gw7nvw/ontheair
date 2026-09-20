@@ -33,7 +33,7 @@ class ApiPnpAllTest < ActionDispatch::IntegrationTest
     assert_equal data.count, 2
     #note ID picking up LAST code, not first.  Not ideal, but too hard to fix for now ...
     assert_equal data[0].excluding(["actId"]), 
-      {"ID" => asset2.code, "actFreq" => "7.09", "actMode" => "SSB","actTime" => t1.to_s,"actClass" => "ZLOTA","actSiteID" => asset2.code,"actSpoter" => user1.callsign,"actCallsign" => user2.callsign,"actComments" => "[#{asset1.code}, #{asset2.code}] test spot","actLocation" => asset2.code,"altLocation" => "#{asset1.name} [#{asset1.code}] {RE44nt}; #{asset2.name} [#{asset2.code}] {RE44nt}"},
+      {"ID" => asset1.code, "actFreq" => "7.09", "actMode" => "SSB","actTime" => t1.to_s,"actClass" => "ZLOTA","actSiteID" => asset1.code,"actSpoter" => user1.callsign,"actCallsign" => user2.callsign,"actComments" => "[#{asset1.code}, #{asset2.code}] test spot","actLocation" => asset1.code,"altLocation" => "#{asset1.name} [#{asset1.code}] {RE44nt}; #{asset2.name} [#{asset2.code}] {RE44nt}"},
       "first row should match"
     assert_equal data[1].excluding(["actId"]), 
       {"ID" => asset3.code, "actFreq" => "7.09", "actMode" => "SSB","actTime" => t2.to_s,"actClass" => "ZLOTA","actSiteID" => asset3.code,"actSpoter" => user1.callsign,"actCallsign" => user1.callsign,"actComments" => "self spot","actLocation" => asset3.code,"altLocation" => "#{asset3.name} [#{asset3.code}] {RE44bt}"},

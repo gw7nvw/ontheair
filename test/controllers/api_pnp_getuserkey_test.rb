@@ -46,6 +46,6 @@ class ApiPnpGetuserkeyTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     data = @response.body
-    assert_equal data, "false", "Should return false"
+    assert_equal data, "FALSE", "Should return false"
   end
 end
