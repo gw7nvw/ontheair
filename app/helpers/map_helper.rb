@@ -6,6 +6,7 @@ module MapHelper
   end
 
   def get_3857_map_x_y(lng_deg, lat_deg, zoom, xsize, ysize, id)
+    logger.error("HERE")
     system("mkdir /tmp/#{id}")
     lat_rad = lat_deg/180 * Math::PI
     n = 2.0 ** zoom
@@ -16,8 +17,6 @@ module MapHelper
     offset_x = 256 * (xsize - 1) / 2 + (x - int_x) * 256
     offset_y = 256 * (ysize - 1) / 2 + (y - int_y) * 256
   
-#    tile_server = "https://tile.tracestrack.com/topo__/{z}/{x}/{y}.png?key=874a3238a1d41a597af32a3a6fcdc74e"
-#    tile_server = "https://api.maptiler.com/maps/outdoor-v4/256/{z}/{x}/{y}.png?key=yXodNjKS8PzfQcTJ4N1G"
     tile_server = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
     # 9 tiles, one in each direction around centre
     minx = int_x - (xsize - 1) / 2
@@ -53,6 +52,7 @@ module MapHelper
   # Assumes an XYZ tile server in EPSG:2193 (NZTM) projection
   # You'd need to tweak the maths to use one in google's web_mercator projection such as  openstreetmap
   def get_map_x_y(gridx, gridy, z, xsize, ysize, id)
+    logger.error("THERE")
     # X,Y coordinates for centre tile at this zoom level
     c_x = ((gridx + 20037508) / (4891.97 * 2**(13 - z))).to_i
     c_y = ((gridy + 20037508) / (4891.97 * 2**(13 - z))).to_i
@@ -85,7 +85,7 @@ module MapHelper
     system("montage /tmp/#{id}/#{z}*.png -mode Concatenate -tile #{xsize}x#{ysize} /tmp/#{id}.jpg")
     # add the dot, diameter 6 pixels
     system("convert /tmp/#{id}.jpg -fill blue -stroke red -draw 'circle #{px},#{py} #{px + 6},#{py + 6}' -quality 45 /tmp/#{id}-point.jpg")
-    # system("rm -r /tmp/#{id}") #remove temporary files
+     system("rm -r /tmp/#{id}") #remove temporary files
 
     # return the filename of map image created
     "/tmp/#{id}-point.jpg"
@@ -120,10 +120,17 @@ module MapHelper
       puts url, filename
 
       # download tile
-      f = File.open(filename + '.png', 'wb') do |file|
-        file.write(open(url, "Referer" => "https://ontheair.nz", "User-Agent" => "ontheair",).read)
+      # Open the local file for binary writing as before
+      File.open(filename + '.png', 'wb') do |file|
+        # Use URI.open explicitly and pass headers as a standard Ruby 3 options hash
+        remote_data = URI.open(
+          url, 
+          "Referer" => "http://new.ontheair.nz", 
+          "User-Agent" => "ontheair"
+        ).read
+  
+        file.write(remote_data)
       end
-
     # if we fail to download a tile (happens with bad grid ref or outside NZ)
     # infill with a blank tile
     rescue

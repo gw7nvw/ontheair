@@ -23,6 +23,11 @@ $lightblue: #4444ff;
     }
 }
 
+/* Force the cell viewport scrolling container to allow absolute overlay overflow */
+.ht-wrapper {
+  height: 100% !important;
+}
+
 .spinner_modal {
     display:    none;
     position:   fixed;
@@ -32,7 +37,7 @@ $lightblue: #4444ff;
     height:     100%;
     width:      100%;
     background: rgba( 255, 255, 255, .2 )
-    url('/assets/spinner.gif')
+    url('/icons/spinner.gif')
     50% 50%
     no-repeat;
 }
@@ -67,6 +72,13 @@ div#right_panel div.gridbox_dhx_skyblue.isModern table.hdr tr td {
     background-color: #4CAF50 !important;
 }
 
+#grid1 {
+  height: 100%;
+}
+
+.navbar-nav .nav-link {
+  white-space: nowrap !important;
+}
 
 table {
     border-collapse: collapse;
@@ -210,7 +222,7 @@ textarea {
 }
 
 .modal {
-  margin-left: -130px;
+ // margin-left: -130px;
 }
 
 .body-select {
@@ -224,6 +236,22 @@ textarea {
   h1 {
     margin-bottom: 10px;
   }
+}
+
+.alert-error {
+  background-color: #f2dede;
+  border-color: #eed3d7;
+  color: #b94a48 !important;
+}
+
+.alert-success {
+  background-color: #dff0d8;
+  border-color: #d6e9c6;
+  color: #468847 !important;
+}
+
+.alert, .alert h4 {
+  color: #ee3853;
 }
 
 .alert_bar_outer {
@@ -356,7 +384,7 @@ p {
  height: 100%;
  padding-left: 0px;
  padding-right: 0px;
- margin-top: 28px;
+ //margin-top: 28px;
 }
 
 #page_status{
@@ -405,7 +433,7 @@ p {
   color: white;
   text-transform: uppercase;
   letter-spacing: -1px;
-  padding-top: 9px;
+//  padding-top: 9px;
   font-weight: bold;
   line-height: 1;
   &:hover {
@@ -415,7 +443,7 @@ p {
 }
 
 #menus {
-  float: right;
+//  float: right;
   font-size:1.2em;
 }
 
@@ -466,8 +494,9 @@ p {
 //        padding: 2.5px;
         position: fixed;
         margin-bottom: 10px;
-//        margin-top: 24px;
+        margin-top: 50px;
         margin-left: 0px;
+        padding: 0px;
         z-index: 1000;
 }
 
@@ -644,15 +673,18 @@ html, body {
 
 ul {
     /* rest of the styles */
-    -webkit-transform: translate3d(0,0,0);
+//    -webkit-transform: translate3d(0,0,0);
+  font-size: 0.9em;
+  line-height: 1.2em;
 }
 
 #right_panel
 {
 	float: right;
-        margin-top: -8px;
+        margin-top: 42px;
         margin-left: 0px;
 	height: auto;    
+        padding: 0px;
 }
 
 #right_scroll
@@ -665,7 +697,7 @@ ul {
 #grid_scroll
 { 
      width: 100%;
-     height: 200px;
+     height: 100%;
      overflow: overlay;
 }
 
@@ -677,7 +709,7 @@ ul {
      margin-left: 0px;
      padding-left: 8px;
      padding-right: 6px;
-     margin-top: -8px;
+     margin-top: 42px;
      z-index: 1000;
      width: 100%;
 }
@@ -685,6 +717,7 @@ ul {
 {
      display: none !important;
      background-color: #4B0082;
+     margin-top: 42px;
  //    height: 32px;
      position: fixed;
      margin-left: 0px;
@@ -752,6 +785,11 @@ input {
   height: auto !important;
 }
 
+.tight_box {
+  width: 16px;
+  margin-bottom: 0px !important;
+}
+  
 #error_explanation {
   color: #f00;
   ul {
@@ -886,7 +924,7 @@ input {
   .ilnb .nav > li {
     height: 16px;
     line-height: 12px;
-    margin-top: -10px;
+   // margin-top: -10px;
  }
   .ilnb .nav {
     height: 20px;
@@ -909,6 +947,15 @@ input {
     margin: 0 0 18px 0;
 }
 
+#ota_header {
+    position: fixed !important;
+    top: 0 !important;
+    z-index: 9999 !important;
+    padding: 0px !important;
+    background-color: #232a28 !important;
+    width: 100%;
+    min-height: 42px;
+}
 /* mobile specific */
 @media only screen and (max-width: 540px), 
        only screen and (max-width: 1024px) and (hover: none) and (pointer: coarse) {
@@ -918,16 +965,16 @@ input {
 
   #menus {
     /* rules that only apply for canvases narrower than 1000px */
-    font-size: 0.9em;
+    font-size: 1rem;
   }
-  .navbar .nav > li > a {
-   padding: 10px 4px 10px;
-  }
+//  .navbar .nav > li > a {
+//   padding: 10px 4px 10px;
+//  }
 
- #rg-image {
-   width:20px !important;
-   padding-top: 4px !important;
-  } 
+// #rg-image {
+//   width:20px !important;
+//   padding-top: 4px !important;
+//  } 
   
   .erow li {
    line-height: 1;
@@ -968,18 +1015,18 @@ input {
     font-size: 0.9em !important;
     line-height: 1.1em !important;
   }
-  #actionbar
-  {
+//  #actionbar
+//  {
  //      height: 54px !important;
-  }
+//  }
 
   #right_scroll {
   }
-  #actionbar-form
-  {
+//  #actionbar-form
+//  {
   //     height: 54px !important;
   //     margin-top: -54px !important;
-  }
+//  }
   
   .photo-bar {
    # padding-left:25px;
@@ -1000,29 +1047,30 @@ input {
 
 #crumbs
 {
-  margin-top: 1px !important;
+  display: none;
 }
-#our_logo {
-  width: 0px;
-  height: 0px;
-  margin-left: 0px;
-  margin-right: 0px;
-  padding-top: 0px;
-  padding-right: 0px;
-  padding-left: 0px;
-}
-#rg-image {
- float:left;
- width:0px;
- height:0px;
- margin-left:0px;
-}
-#rg-text {
- float:left;
- width:0px;
- height:0px;
- margin-left:0px;
-}
+//#our_logo {
+//  width: 0px;
+//  height: 0px;
+//  margin-left: 0px;
+//  margin-right: 0px;
+//  padding-top: 0px;
+//  padding-right: 0px;
+//  padding-left: 0px;
+//}
+//#rg-image {
+// float:left;
+// width:0px;
+// height:0px;
+// margin-left:0px;
+//}
+//#rg-text {
+// float:left;
+// width:0px;
+// height:0px;
+// margin-left:0px;
+//}
+
 
 
 }

@@ -176,6 +176,23 @@ function site_init() {
       };
 
     });
+
+    window.site_map_layers = site_map_layers;
+    window.site_purple_star = site_purple_star;
+    window.site_highlight_polygon = site_highlight_polygon;
+    window.site_az_style = site_az_style;
+    window.site_mapLayers = site_mapLayers;
+    window.site_all_point_layers = site_all_point_layers;
+    window.site_red_circle = site_red_circle;
+    window.site_highlight_polygon = site_highlight_polygon;
+    window.site_az_style = site_az_style;
+    window.site_red_polygon = site_red_polygon;
+    window.site_green_polygon = site_green_polygon;
+    window.site_red_star = site_red_star;
+    window.site_green_star = site_green_star;
+    window.site_green_circle = site_green_circle;
+    window.site_yellow_circle = site_yellow_circle;
+
   }
 // } 
  //catch(err) {
@@ -396,24 +413,24 @@ function site_add_vector_layers() {
   if(typeof(user_point_layers)!== "undefined" && user_point_layers!=='' && user_point_layers[0]!=="undefined") site_default_point_layers=user_point_layers;
   if(typeof(user_polygon_layers)!== "undefined" && user_polygon_layers!=='' && user_polygon_layers[0]!=="undefined") site_default_polygon_layers=user_polygon_layers;
   site_set_map_filters('polygon',site_default_polygon_layers);
-  polygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon",site_polygon_style_function,true,12,15,'polygon', 'EPSG:3857');
+  polygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon",site_polygon_style_function,true,12,14,'polygon', 'EPSG:3857');
   polygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_simple",site_polygon_style_function,true,9,12,'polygon', 'EPSG:3857');
-  polygon_detail_layer=map_add_vector_layer("Polygon Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_detail",site_polygon_style_function,true,15,32,'polygon', 'EPSG:3857');
-  district_layer=map_add_vector_layer("District", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district",site_district_style,false,12,15,null,  'EPSG:3857');
+  polygon_detail_layer=map_add_vector_layer("Polygon Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "polygon_detail",site_polygon_style_function,true,14,32,'polygon', 'EPSG:3857');
+  district_layer=map_add_vector_layer("District", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district",site_district_style,false,12,14,null,  'EPSG:3857');
   district_simple_layer=map_add_vector_layer("District Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_simple",site_district_style,false,7,12,null,'EPSG:3857');
-  district_detail_layer=map_add_vector_layer("District Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_detail",site_district_style,false,15,32,null,'EPSG:3857');
-  geology_layer=map_add_vector_layer("Geology", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology",site_geology_style,false,12,15,null,'EPSG:3857');
+  district_detail_layer=map_add_vector_layer("District Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "district_detail",site_district_style,false,14,32,null,'EPSG:3857');
+  geology_layer=map_add_vector_layer("Geology", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology",site_geology_style,false,12,14,null,'EPSG:3857');
   geology_simple_layer=map_add_vector_layer("Geology Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology_simple",site_geology_style,false,7,12, null,'EPSG:3857');
-  geology_detail_layer=map_add_vector_layer("Geology Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology_detail",site_geology_style,false,15,32,null,'EPSG:3857');
-  region_layer=map_add_vector_layer("Region", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region",site_region_style,false,12,15,null,'EPSG:3857');
+  geology_detail_layer=map_add_vector_layer("Geology Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "geology_detail",site_geology_style,false,14,32,null,'EPSG:3857');
+  region_layer=map_add_vector_layer("Region", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region",site_region_style,false,12,14,null,'EPSG:3857');
   region_simple_layer=map_add_vector_layer("Region Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_simple",site_region_style,false,7,12,null,'EPSG:3857');
-  region_detail_layer=map_add_vector_layer("Region Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_detail",site_region_style,false,15,32,null,'EPSG:3857');
+  region_detail_layer=map_add_vector_layer("Region Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "region_detail",site_region_style,false,14,32,null,'EPSG:3857');
 
   site_set_map_filters('point',site_default_point_layers);
   //vkpolygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/vkhota2.map", "polygon",site_polygon_style_function,true,10,15,'polygon', 'EPSG:3857');
   //vkpolygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/vkhota2.map", "polygon_simple",site_polygon_style_function,true,5,10,'polygon', 'EPSG:3857');
   //vkpolygon_detail_layer=map_add_vector_layer("Polygon Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/vkhota2.map", "polygon_detail",site_polygon_style_function,true,15,32,'polygon', 'EPSG:3857');
-  points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,5,32,'point', 'EPSG:3857');
+  points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,7,32,'point', 'EPSG:3857');
   //vkpoints_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/vkhota2.map", "vkpoints",site_points_style_function,true,5,32,'point', 'EPSG:3857');
   contacts_layer=map_add_vector_layer("Contacts", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "contacts",site_contacts_style,false,1,32, 'EPSG:3857');
 
@@ -480,7 +497,7 @@ function site_init_styles() {
   site_red_circle=map_create_style("circle", 5, "#ff2222", "#880000", 1);
   site_green_circle=map_create_style("circle", 5, "#22ff22", "#008800", 1);
   site_yellow_circle=map_create_style("circle", 5, "#ffd700", "#008800", 1);
-  site_purple_star=map_create_style("star", 10, "#8b008b", "#8b008b", 1);
+  site_purple_star=map_create_style("star", 15, "#ffff00", "#330066", 2);
   site_red_star=map_create_style("star", 10, "#990000","#990000", 1);
   site_green_star=map_create_style("star", 10, "#009900", "#009900", 1);
   site_red_line=map_create_style("", null, "#990000", "#990000", 4);
@@ -759,13 +776,14 @@ function site_select_point_on_click_callback(evt) {
       debug_f=feature;
         //now copy it to where we want it 
       if(site_select_row!=null) {
-        if(site_select_name_dest!=null) data2[site_select_row][site_select_name_dest]=feature.get('name');
-        data2[site_select_row]['loc_desc2']=feature.get('name');
-        if(site_select_code_dest!=null) data2[site_select_row][site_select_code_dest]=feature.get('code');
-        if(site_select_loc_dest!=null) data2[site_select_row][site_select_loc_dest]=wktp.writeFeature(feature, { dataProjection: 'EPSG:4326', featureProjection: site_projection});
-        if(site_select_x_dest!=null) data2[site_select_row][site_select_x_dest]=feature.getGeometry().getCoordinates()[0];
-        if(site_select_y_dest!=null) data2[site_select_row][site_select_y_dest]=feature.getGeometry().getCoordinates()[1];
-        hot.render();
+        window.hot.setDataAtRowProp([
+            [site_select_row,site_select_code_dest, feature.get('code')],
+            [site_select_row,site_select_name_dest, feature.get('name')],
+            [site_select_row,'loc_desc2', feature.get('name')], 
+            [site_select_row,,site_select_loc_dest, wktp.writeFeature(feature, { dataProjection: 'EPSG:4326', featureProjection: site_projection})],
+            [site_select_row,site_select_x_dest, feature.getGeometry().getCoordinates()[0]],
+            [site_select_row,site_select_y_dest, feature.getGeometry().getCoordinates()[1]]
+        ]);
       } else {
         if(site_select_append) {
           if(site_select_name_dest!=null) {
@@ -867,6 +885,7 @@ function linkHandler(entity_name) {
     /* close the dropdown */
     $('.dropdown').removeClass('show'); // Bootstrap 4 uses 'show' instead of 'open'
     $('.dropdown-menu').removeClass('show');
+    $('#mainNavbarResponsive').collapse('hide');
 
     document.body.classList.add("loading");
 
@@ -888,15 +907,13 @@ function site_clear_html_element(htmlids) {
 
 function site_clear_elementData(row,cols) {
   for (col = 0; col < cols.length; col++ ) {
-    if(Array.isArray(data2[row][cols[col]])) {
-      data2[row][cols[col]]=[];
+    if(Array.isArray(window.hot.getDataAtRowProp(row, cols[col]))) {
+      window.hot.setDataAtRowProp([[row, cols[col],[]]]);
     } else {
-      data2[row][cols[col]]='';
+      window.hot.setDataAtRowProp([[row, cols[col],'']]);
     }
   }
- hot.render();
 }
-
 
 
 function search_islands(field) {
@@ -1007,22 +1024,25 @@ function select_asset(field, code, name, x, y, loc, containing_codes, containing
   }
   if (field.substr(0,3)=="row") {
     row=field.substr(4,1000)
-    if(data2[row]['asset2_codes']==null) {data2[row]['asset2_codes']=[code];} else {
-    codes=data2[row]['asset2_codes'].push(code) 
- }
-    names=data2[row]['asset2_names']
-    if(names=='null'||name=='undefined') {names=""};
-    if(names && names.length>0) {names=names+"\n"};
-    data2[row]['asset2_names']=names+"["+code+"] "+name;
-    data2[row]['location2']=loc;
-    data2[row]['x2']=x;
-    data2[row]['y2']=y;
-    //data2[row]['park2_id']=containing_codes;
-    //data2[row]['park2_tn']=containing_names;
-    //data2[row]['loc_desc2']=name+" ("+park_name+")"
+    asset2_codes = window.hot.getDataAtRowProp(row, "asset2_codes");
+    asset2_names = window.hot.getDataAtRowProp(row, "asset2_names");
+    if(asset2_codes==null) {
+      asset2_codes=[code];
+    } else {
+      asset2_codes=asset2_codes.push(code) 
+    }
+    if(asset2_names=='null'||asset2_names=='undefined'||asset2_names==null) {asset2_names=""};
+    if(asset2_names && asset2_names.length>0) {asset2_names=asset2_names+"\n"};
+    asset2_names = asset2_names + "["+code+"] "+name;
+    window.hot.setDataAtRowProp([
+	    [row,'asset2_codes', asset2_codes],
+            [row,'asset2_names', asset2_names],
+            [row,'location2', loc],
+            [row,'x2', x],
+            [row,'y2', y]
+    ]);
     map_clear_scratch_layer('Point', site_red_star);
     map_add_feature_from_wkt(loc,'EPSG:4326',site_red_star) ;
-    hot.render();
   }
   return false;
 }
@@ -1235,11 +1255,16 @@ function site_set_vector_layers(filter, layer, value) {
 
 function site_refresh_layer(filter) {
   if (filter=='point') {
-    setTimeout( function() { points_layer.getSource().clear(); }, 1000);
+    setTimeout( function() { points_layer.getSource().clear(); points_layer.getSource().refresh();}, 1000);
     //setTimeout( function() { vkpoints_layer.getSource().clear(); }, 1000);
   } else {
-    setTimeout( function() { polygon_layer.getSource().clear();polygon_simple_layer.getSource().clear();
+    setTimeout( function() { 
+      polygon_layer.getSource().clear();
+      polygon_simple_layer.getSource().clear();
       polygon_detail_layer.getSource().clear();
+      polygon_layer.getSource().refresh();
+      polygon_simple_layer.getSource().refresh();
+      polygon_detail_layer.getSource().refresh();
     }, 1000);
 //    setTimeout( function() { vkpolygon_layer.getSource().clear();vkpolygon_simple_layer.getSource().clear();
 //      vkpolygon_detail_layer.getSource().clear();
@@ -1273,6 +1298,7 @@ function site_select_maplayer(name, url, basemap, minzoom, maxzoom, extent) {
    site_pref_layer=name;
    site_pref_extent=extent;  
 }
+
 window.site_init = site_init;
 window.site_zoom_end_callback = site_zoom_end_callback;
 window.place_init = place_init;
@@ -1337,9 +1363,5 @@ window.hide_div = hide_div;
 window.site_resizeHeader = site_resizeHeader;
 window.site_select_maplayer = site_select_maplayer;
 window.site_back = site_back;
-window.site_map_layers = site_map_layers;
-window.site_purple_star = site_purple_star;
-window.site_highlight_polygon = site_highlight_polygon;
-window.site_az_style = site_az_style;
-window.site_mapLayers = site_mapLayers;
-window.site_all_point_layers = site_all_point_layers;
+window.site_yellow_circle = site_yellow_circle;
+

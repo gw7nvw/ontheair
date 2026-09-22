@@ -145,6 +145,7 @@ class PostsController < ApplicationController
         res = @post.save
         if res
           if a_ext == false
+            logger.debug "SAVEMAP: #{a_ext}" 
             @post.add_map_image
             res = @post.save
           end

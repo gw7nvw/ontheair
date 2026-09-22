@@ -276,7 +276,24 @@ class LogsController < ApplicationController
 
   #Spreadsheet editor calls
   def load
+    @contacts = Contact.where(log_id: params[:id]).order(:time)
+    @contacts.each do |c|
+      c.timetext = c.localtime(current_user)
+      asset2_names = []
+      c.asset2_codes.each do |ac|
+        a = Asset.find_by(code: ac)
+        asset2_names += a ? ['[' + a.code + '] ' + a.name] : [ac]
+      end
+      c.asset2_names = asset2_names.join('/n')
+    end
+
+    respond_to do |format|
+      format.html
+      format.js
+      format.json { render json: @contacts, status: status, methods: %i[timetext asset2_names] }
+    end
   end
+
 
   def save
     status = 200
@@ -287,27 +304,27 @@ class LogsController < ApplicationController
     loguser = User.find_by_callsign_date(log.callsign1.upcase, log.date)
     if current_user && ((current_user.id == loguser.id) || current_user.is_admin)
       # Convert the incoming Handsontable parameter keys back into a clean 2D row/column array
-      raw_data = params[:data] || {}
+      table_rows = params[:data] || {}
 
-      # Sort by the row index keys ("0", "1", "2") and extract just the inner column values
-      table_rows = raw_data.keys.sort_by(&:to_i).map do |row_key|
-        column_hash = raw_data[row_key]
-
-        # Sort the columns by index ("0", "1", "2") to preserve the original horizontal cell order
-        column_hash.keys.sort_by(&:to_i).map { |col_key| column_hash[col_key] }
-      end
-
+     # # Sort by the row index keys ("0", "1", "2") and extract just the inner column values
+     # table_rows = raw_data.keys.sort_by(&:to_i).map do |row_key|
+    #    column_hash = raw_data[row_key]
+#
+#        # Sort the columns by index ("0", "1", "2") to preserve the original horizontal cell order
+#        column_hash.keys.sort_by(&:to_i).map { |col_key| column_hash[col_key] }
+#      end
+      logger.debug "TABLE: #{table_rows.to_json}"
 
       table_rows.each do |row|
-        rid = row[0].to_i
+        rid = row["id"].to_i
         if rid && (rid >= 1)
           cle = Contact.find_by_id(rid)
         else
           cle = Contact.new
           cle.createdBy_id = current_user.id
         end
-        next unless row[2]
-        cle.time = format('%05.2f', ((row[1] || '').gsub(/\D/, '').to_f / 100)).tr('.', ':')
+        next unless row["callsign2"]
+        cle.time = format('%05.2f', ((row["timetext"] || '').gsub(/\D/, '').to_f / 100)).tr('.', ':')
         cle.callsign1 = log.callsign1
         cle.date = log.date
         cle.loc_desc1 = log.loc_desc1
@@ -318,26 +335,26 @@ class LogsController < ApplicationController
         cle.x1 = log.x1
         cle.y1 = log.y1
         cle.location1 = log.location1
-        cle.callsign2 = (row[2] || '').upcase
-        cle.is_qrp2 = row[3]
-        cle.is_portable2 = row[4]
-        cle.mode = row[5]
-        cle.frequency = row[6]
-        cle.signal2 = row[7]
-        cle.signal1 = row[8]
-        cle.name2 = row[9]
-        cle.loc_desc2 = row[10]
-        cle.do_not_lookup = row[11]
+        cle.callsign2 = (row["callsign2"] || '').upcase
+        cle.is_qrp2 = row["is_qrp2"]
+        cle.is_portable2 = row["is_portable2"]
+        cle.mode = row["mode"]
+        cle.frequency = row["frequency"]
+        cle.signal2 = row["signal2"]
+        cle.signal1 = row["signal1"]
+        cle.name2 = row["name2"]
+        cle.loc_desc2 = row["loc_desc2"]
+        cle.do_not_lookup = row["do_not_lookup"]
         cle.asset1_codes = log.asset_codes
         cle.asset1_codes = [''] if cle.asset1_codes.nil?
-        cle.asset2_codes = row[14]
+        cle.asset2_codes = row["asset2_codes"]
         logger.debug 'DEBUG asset codes'
         logger.debug cle.asset2_codes
         logger.debug cle.loc_desc2
         if cle.asset2_codes.nil? || (cle.asset2_codes == []) then cle.asset2_codes = [''] end
-        cle.location2 = row[15]
-        cle.x2 = row[16]
-        cle.y2 = row[17]
+        cle.location2 = row["location2"]
+        cle.x2 = row["x2"]
+        cle.y2 = row["y2"]
         cle.log_id = id
         cle.convert_user_timezone_to_utc(current_user)
 

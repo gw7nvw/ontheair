@@ -10,7 +10,7 @@ class Contact < ActiveRecord::Base
   belongs_to :createdBy, class_name: 'User'
 
   before_save { before_save_actions }
-  after_save { update_scores }
+#  after_save { update_scores }
   before_destroy { update_scores }
 
   validates :callsign1,  presence: true, length: { maximum: 50 }

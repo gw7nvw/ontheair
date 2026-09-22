@@ -77,113 +77,144 @@ class ExternalActivation < ApplicationRecord
        Rails.application.credentials.sota_secret)
     creds = JSON.parse(jscreds)
     access_token = creds['access_token']
+    refresh_token = creds['refresh_token'] # <- Grab the refresh token
+
     # id_token = creds['id_token']
 
-    activation_ids = []
-    puts 'Summit: ' + summit.code
-    url = URI.parse('https://api-db2.sota.org.uk/api/activations/' + summit.code)
-    http = Net::HTTP.new(url.host, url.port)
-    http.use_ssl = true
-    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    begin
+      activation_ids = []
+      puts 'Summit: ' + summit.code
+      url = URI.parse('https://api-db2.sota.org.uk/api/activations/' + summit.code)
+      http = Net::HTTP.new(url.host, url.port)
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+  
+      req = Net::HTTP::Get.new(url.path.to_s, 'Content-Type' => 'application/json', 'Authorization' => 'Bearer ' + access_token, 'connection' => 'keep-alive')
+      req['User-Agent'] = USER_AGENT_STRING
+      res = http.request(req)
+      data = JSON.parse(res.body)
+  
+      if data && data.count.positive?
+        puts 'Activations: ' + data.count.to_s
+        newcount = 0
+        data.each do |activation|
+          sa = ExternalActivation.new
+          sa.asset_type = 'summit'
+          sa.external_activation_id = activation['id'].to_i
+          sa.callsign = User.remove_call_suffix(activation['ownCallsign'].strip)
+          if sa.callsign then
+            puts "Activator: #{sa.callsign}"
+            sa.summit_code = summit.code.strip
+            if activation['activationDate'] then sa.date = activation['activationDate'].to_date.strftime('%Y-%m-%d') end
+            sa.qso_count = activation['qsos']
+            activation_ids += [activation['id']] if !only_new #triggers chaser check for all activations
+            dups = ExternalActivation.where(external_activation_id: sa.external_activation_id).count
+            if dups.zero?
+              activation_ids += [activation['id']] if only_new #triggers chaser check for new activations only
+              puts "#{sa.callsign}  New!"
+              newcount += 1
+              sa.save
+              user = User.find_by(callsign: sa.callsign)
+              user ||= User.create(callsign: sa.callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
+              if user
+                if Rails.env.production?
+                  user.outstanding = true
+                  user.save
+                  Resque.enqueue(Scorer)
+                else
+                  user.update_score
+                  user.check_awards
+                  user.check_completion_awards('district')
+                  user.check_completion_awards('region')
+                end
+              end
+            end
+          end
+          puts 'New: ' + newcount.to_s
+        end
+      end
+  
+      # get chasers
+      activation_ids.each do |aid|
+        url = URI.parse('https://api-db2.sota.org.uk/logs/whochasedme/' + aid.to_s)
+        http = Net::HTTP.new(url.host, url.port)
+        http.use_ssl = true
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
-    req = Net::HTTP::Get.new(url.path.to_s, 'Content-Type' => 'application/json', 'Authorization' => 'Bearer ' + access_token, 'connection' => 'keep-alive')
-    req['User-Agent'] = USER_AGENT_STRING
-    res = http.request(req)
-    data = JSON.parse(res.body)
-
-    if data && data.count.positive?
-      puts 'Activations: ' + data.count.to_s
-      newcount = 0
-      data.each do |activation|
-        sa = ExternalActivation.new
-        sa.asset_type = 'summit'
-        sa.external_activation_id = activation['id'].to_i
-        sa.callsign = User.remove_call_suffix(activation['ownCallsign'].strip)
-        if sa.callsign then
-          puts "Activator: #{sa.callsign}"
-          sa.summit_code = summit.code.strip
-          if activation['activationDate'] then sa.date = activation['activationDate'].to_date.strftime('%Y-%m-%d') end
-          sa.qso_count = activation['qsos']
-          activation_ids += [activation['id']] if !only_new #triggers chaser check for all activations
-          dups = ExternalActivation.where(external_activation_id: sa.external_activation_id).count
-          if dups.zero?
-            activation_ids += [activation['id']] if only_new #triggers chaser check for new activations only
-            puts "#{sa.callsign}  New!"
-            newcount += 1
-            sa.save
-            user = User.find_by(callsign: sa.callsign)
-            user ||= User.create(callsign: sa.callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
-            if user
-              if Rails.env.production?
-                user.outstanding = true
-                user.save
-                Resque.enqueue(Scorer)
-              else
-                user.update_score
-                user.check_awards
-                user.check_completion_awards('district')
-                user.check_completion_awards('region')
+        req = Net::HTTP::Get.new(url.path.to_s, 'Content-Type' => 'application/json', 'Authorization' => 'Bearer ' + access_token, 'connection' => 'keep-alive')
+        req['User-Agent'] = USER_AGENT_STRING
+        res = http.request(req)
+        data = JSON.parse(res.body)
+        if data && data['chases']
+          if data['summary'] && data['summary'].count.positive?
+            actdate = data['summary'].first['ActivationDate']
+            puts 'chases: ' + data['chases'].count.to_s
+            newcount = 0
+            data['chases'].each do |chase|
+              next unless chase['SummitCode'].strip == summit.code # check not chaseof another summit same day
+              sc = ExternalChase.new
+              sc.asset_type = 'summit'
+              sc.external_activation_id = aid
+              sc.callsign = User.remove_call_suffix(chase['OwnCallsign'].strip)
+              sc.band = chase['Band']
+              sc.mode = chase['Mode']
+              acttime = chase['TimeOfDay'].strip
+              sc.summit_code = summit.code.strip
+              # sc.summit_sota_id=summitId
+              sc.date = actdate
+              sc.time = Time.parse(actdate + ' ' + acttime + ' UTC')
+              dups = ExternalChase.where(sc.attributes.except('summit_sota_id', 'id', 'updated_at', 'created_at', 'user_id')).count
+              next unless dups.zero?
+              puts sc.callsign + ': New!'
+              newcount += 1
+              sc.save
+              user = User.find_by(callsign: sc.callsign)
+              user ||= User.create(callsign: sc.callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
+              if user
+                if Rails.env.production?
+                  user.outstanding = true
+                  user.save
+                  Resque.enqueue(Scorer)
+                else
+                  user.update_score
+                  user.check_awards
+                  user.check_completion_awards('district')
+                  user.check_completion_awards('region')
+                end
               end
             end
           end
         end
         puts 'New: ' + newcount.to_s
       end
-    end
+    ensure
+        # 3. This block ALWAYS runs, killing the zombie session before the script exits
+      if refresh_token
+        begin
+          # Pull configuration details dynamically from the gem's setup
+          token_url = Keycloak.auth_server_url # e.g., "https://your-keycloak-server.com"
+          logout_url = token_url.sub('/token', '/logout')
+          uri = URI.parse(logout_url)
 
-    # get chasers
-    activation_ids.each do |aid|
-      url = URI.parse('https://api-db2.sota.org.uk/logs/whochasedme/' + aid.to_s)
-      http = Net::HTTP.new(url.host, url.port)
-      http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+          # Fire a direct form-urlencoded POST request
+          response = Net::HTTP.post_form(uri, {
+            client_id: 'sotadata',
+            client_secret: SOTA_SECRET,
+            refresh_token: refresh_token
+          })
 
-      req = Net::HTTP::Get.new(url.path.to_s, 'Content-Type' => 'application/json', 'Authorization' => 'Bearer ' + access_token, 'connection' => 'keep-alive')
-      req['User-Agent'] = USER_AGENT_STRING
-      res = http.request(req)
-      data = JSON.parse(res.body)
-      if data && data['chases']
-        if data['summary'] && data['summary'].count.positive?
-          actdate = data['summary'].first['ActivationDate']
-          puts 'chases: ' + data['chases'].count.to_s
-          newcount = 0
-          data['chases'].each do |chase|
-            next unless chase['SummitCode'].strip == summit.code # check not chaseof another summit same day
-            sc = ExternalChase.new
-            sc.asset_type = 'summit'
-            sc.external_activation_id = aid
-            sc.callsign = User.remove_call_suffix(chase['OwnCallsign'].strip)
-            sc.band = chase['Band']
-            sc.mode = chase['Mode']
-            acttime = chase['TimeOfDay'].strip
-            sc.summit_code = summit.code.strip
-            # sc.summit_sota_id=summitId
-            sc.date = actdate
-            sc.time = Time.parse(actdate + ' ' + acttime + ' UTC')
-            dups = ExternalChase.where(sc.attributes.except('summit_sota_id', 'id', 'updated_at', 'created_at', 'user_id')).count
-            next unless dups.zero?
-            puts sc.callsign + ': New!'
-            newcount += 1
-            sc.save
-            user = User.find_by(callsign: sc.callsign)
-            user ||= User.create(callsign: sc.callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
-            if user
-              if Rails.env.production?
-                user.outstanding = true
-                user.save
-                Resque.enqueue(Scorer)
-              else
-                user.update_score
-                user.check_awards
-                user.check_completion_awards('district')
-                user.check_completion_awards('region')
-              end
-            end
+          # Keycloak returns a 204 No Content response on a successful back-channel logout
+          if response.code == "204"
+            Rails.logger.debug "SSO session successfully killed via direct API request! No zombies."
+          else
+            Rails.logger.error("Keycloak rejected the logout request: #{response.code} - #{response.body}")
           end
+        rescue => e
+          Rails.logger.error("Failed to execute native HTTP logout: #{e.message}")
         end
       end
-      puts 'New: ' + newcount.to_s
     end
+
   end
 
   def self.update_pota_activation(asset)

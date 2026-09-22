@@ -24,7 +24,7 @@
       <div class="rowtitle"><%= "Id:" %></div>
       <% url=@asset.external_url %>
       <% if url then %> 
-        <div class="rowtext"><%= link_to @asset.code, url, target: "_blank" %><img src="/assets/external-link-symbol.png"></div>
+        <div class="rowtext"><%= link_to @asset.code, url, target: "_blank" %><img src="/icons/external-link-symbol.png"></div>
       <% else %>
         <div class="rowtext"><%= @asset.code %></div>
       <% end %>

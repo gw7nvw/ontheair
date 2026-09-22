@@ -415,8 +415,10 @@ function map_add_vector_layer(name, url, field, style, visible,minzoom,maxzoom,f
   }
 
   vector=new ol.layer.Vector({
-      minResolution: minresolution,
-      maxResolution: maxresolution,
+//      minResolution: minresolution,
+//      maxResolution: maxresolution,
+      minZoom: minZoom,
+      maxZoom: maxZoom,
       source: vectorSource,
       style: style,
       visible: visible,

@@ -76,7 +76,7 @@ $(function () {
       <tr>
         <td>
           <% if current_user and (current_user.is_admin or current_user.id == user.id) %>
-            <span title="Click to edit"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/users/'+user.callsign+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+            <span title="Click to edit"><%= link_to image_tag("/icons/pencil_edit.png", :class => 'dock-item'), '/users/'+user.callsign+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
           <% end %>
           <%= link_to user.callsign.upcase, '/users/'+user.callsign, remote: true, :id => 'user_link_'+user.id.to_s, :style => (if not user.activated then 'color:grey' else '' end), :onclick => "linkHandler('user_link_"+user.id.to_s+"')" %>
 

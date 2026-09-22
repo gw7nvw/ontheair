@@ -9,6 +9,7 @@
 
 # Ignore all environment files.
 /.env*
+/.env
 
 # Ignore all logfiles and tempfiles.
 /log/*
@@ -21,6 +22,12 @@
 /tmp/pids/
 /tmp/sockets/
 /tmp/storage/
+*.sql
+dump.rdb
+
+#working baseline jacascript files
+app/javascript/map-script-410.js
+app/javascript/map-script-800.js
 
 # Ignore pidfiles, but keep the directory.
 /tmp/pids/*
@@ -40,6 +47,7 @@
 /public/packs-test
 .eslintcache
 /public/assets
+/public/rails-assets/
 /public/system/
 # /test/vcr_cassettes
 test/vcr_cassettes/australia_dem/*

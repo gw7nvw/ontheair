@@ -131,7 +131,7 @@
           <td><%=asset.code%></td>
           <td>
             <% if write_access? and current_user.is_modifier %>
-              <span title="Click to edit row"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/assets/'+asset.safecode+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+              <span title="Click to edit row"><%= link_to image_tag("/icons/pencil_edit.png", :class => 'dock-item'), '/assets/'+asset.safecode+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
             <% end %>
             <%= link_to asset.name, '/assets/'+asset.safecode, remote: true, :id => 'asset_link_'+asset.id.to_s, :onclick => "linkHandler('asset_link_"+asset.id.to_s+"')" %>
           </td>

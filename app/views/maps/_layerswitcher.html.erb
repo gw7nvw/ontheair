@@ -4,7 +4,7 @@
     <% @maplayers.each do |m| %>
       <li>
          <% if @baselayer and @baselayer==m.name then checked=true else checked=false end %>
-        <%=check_box_tag m.id.to_s, "1", checked, :onclick => "window.currentActiveModal.close();site_select_maplayer('"+m.name+"', '"+m.baseurl+"', '"+m.basemap+"', "+m.minzoom.to_s+", "+m.maxzoom.to_s+", ["+m.extent.to_s+"]);setTimeout(() => {site_mapLayers(true); }, 1000);"%>
+        <%=check_box_tag m.id.to_s, "1", checked, :onclick => "window.currentActiveModal.close();site_select_maplayer('"+m.name+"', '"+m.baseurl+"', '"+m.basemap+"', "+m.minzoom.to_s+", "+m.maxzoom.to_s+", ["+m.extent.to_s+"]);setTimeout(() => {site_mapLayers(true); }, 1000);", class: "tight_box"%>
         <%=m.name%>
       </li>
     <% end %>
@@ -15,17 +15,17 @@
   <ul style="list-style-type:none;padding:0;margin:0;">
     <li>
       <% if @territorylayers and @territorylayers.include?("district") then checked=true else checked=false end %>
-      <%=check_box_tag "Districts", "1", checked, :onclick => "site_toggle_district_layer()"%>
+      <%=check_box_tag "Districts", "1", checked, :onclick => "site_toggle_district_layer()", class: "tight_box"%>
       <%="Districts"%>
     </li>
     <li>
       <% if @territorylayers and @territorylayers.include?("region") then checked=true else checked=false end %>
-      <%=check_box_tag "Regions", "1", checked, :onclick => "site_toggle_region_layer()"%>
+      <%=check_box_tag "Regions", "1", checked, :onclick => "site_toggle_region_layer()", class: "tight_box"%>
       <%="Regions"%>
     </li>
     <li>
       <% if @territorylayers and @territorylayers.include?("geology") then checked=true else checked=false end %>
-      <%=check_box_tag "Geology", "1", checked, :onclick => "site_toggle_geology_layer()"%>
+      <%=check_box_tag "Geology", "1", checked, :onclick => "site_toggle_geology_layer()", class: "tight_box"%>
       <%="Geology"%>
     </li>
   </ul>
@@ -37,7 +37,7 @@
       <% if a.has_location then %>
         <li>
           <% if @pointlayers and @pointlayers.include?(a.name) then checked=true else checked=false end %>
-          <%=check_box_tag a.id.to_s, "1", checked, :onclick => "site_toggle_vector_layers('point','"+a.name+"')"%>
+          <%=check_box_tag a.id.to_s, "1", checked, :onclick => "site_toggle_vector_layers('point','"+a.name+"')", class: "tight_box"%>
           <%=(if a.pnp_class=='ZLOTA' then 'ZLOTA ' else "" end)+a.display_name%>
         </li>
       <% end %>
@@ -54,7 +54,7 @@
       <% if a.has_boundary then %>
         <li>
           <% if @polygonlayers and @polygonlayers.include?(a.name) then checked=true else checked=false end %>
-          <%=check_box_tag a.id.to_s, "1", checked, :onclick => "site_toggle_vector_layers('polygon','"+a.name+"')"%>
+          <%=check_box_tag a.id.to_s, "1", checked, :onclick => "site_toggle_vector_layers('polygon','"+a.name+"')", class: "tight_box"%>
           <%=(if a.pnp_class=='ZLOTA' then 'ZLOTA ' else "" end)+a.display_name%>
         </li>
       <% end %>

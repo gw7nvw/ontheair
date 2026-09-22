@@ -2,7 +2,7 @@
 
 # typed: false
 class LlotaLogsController < ApplicationController
-  before_action :signed_in_user, only: %i[index show send_email download]
+  before_action :signed_in_user, only: %i[index show download]
 
   def index
     callsign = ''

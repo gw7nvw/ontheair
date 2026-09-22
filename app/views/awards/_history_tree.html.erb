@@ -12,7 +12,7 @@
     <tr data-tt-id="<%=count%>" style="height: 34px;">
       <td>
         <% if current_person.is_modifier %>
-          <span title="Click to edit"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/collections/'+@collection.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+          <span title="Click to edit"><%= link_to image_tag("/icons/pencil_edit.png", :class => 'dock-item'), '/collections/'+@collection.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
         <% end %>
 
       <%= link_to "Collected: "+@collection.id.to_s, '/collections/'+@collection.id.to_s, remote: true, :id => 'collection_link_'+@collection.id.to_s, :onclick => "linkHandler('collection_link_"+@collection.id.to_s+"')" %>
@@ -35,7 +35,7 @@
       <tr data-tt-id="<%=count%>" data-tt-parent-id="<%=collection_row%>"  style="height: 34px;">
         <td>
           <% if current_person.is_modifier %>
-            <span title="Click to edit"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/seeds/'+seed.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+            <span title="Click to edit"><%= link_to image_tag("/icons/pencil_edit.png", :class => 'dock-item'), '/seeds/'+seed.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
           <% end %>
 
         <%= link_to "Sown: "+seed.seed_code, '/seeds/'+seed.id.to_s, remote: true, :id => 'seed_link_'+seed.id.to_s, :onclick => "linkHandler('seed_link_"+seed.id.to_s+"')" %>
@@ -54,7 +54,7 @@
          <tr data-tt-id="<%=count%>" data-tt-parent-id="<%=seed_row%>"  style="height: 34px;">
            <td>
               <% if current_person.is_modifier %>
-                <span title="Click to edit"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/seedlings/'+seedling.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+                <span title="Click to edit"><%= link_to image_tag("/icons/pencil_edit.png", :class => 'dock-item'), '/seedlings/'+seedling.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
               <% end %>
               <%= link_to "Potted: "+seedling.seedling_code, '/seedlings/'+seedling.id.to_s, remote: true, :id => 'seedling_link_'+seedling.id.to_s, :onclick => "linkHandler('seedling_link_"+seedling.id.to_s+"')" %>
            </td>
@@ -71,7 +71,7 @@
            <tr data-tt-id="<%=count%>" data-tt-parent-id="<%=seedling_row%>"  style="height: 34px;">
              <td>
                 <% if current_person.is_modifier %>
-                  <span title="Click to edit"><%= link_to image_tag("/assets/pencil_edit.png", :class => 'dock-item'), '/plantings/'+planting.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+                  <span title="Click to edit"><%= link_to image_tag("/icons/pencil_edit.png", :class => 'dock-item'), '/plantings/'+planting.id.to_s+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
                 <% end %>
                 <%= link_to "Planted: "+planting.planting_code, '/plantings/'+planting.id.to_s, remote: true, :id => 'planting_link_'+planting.id.to_s, :onclick => "linkHandler('planting_link_"+planting.id.to_s+"')" %>
              </td>

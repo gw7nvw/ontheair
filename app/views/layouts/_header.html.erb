@@ -1,16 +1,18 @@
-    <header class="navbar navbar-expand-lg navbar-dark bg-dark navbar-fixed-top">
-      <div class="container-fluid" style="font-size:0.8em">
-<!--        <div class="container"> -->
-        <div id="our_logo">
-          <div id="rg-image">
-            <img src='/icons/antenna32.png'>
-          </div>
-          <div id="rg-text">
-            <%= link_to "... On The Air", root_path, id: "logo", remote: true, :onclick => "linkHandler('logo')" %>
-          </div>
-        </div>
-          <div class="collapse navbar-collapse">
-            <ul class="navbar-nav ml-auto" id="menus">
+    <header class="navbar navbar-expand-md navbar-dark bg-dark" id="ota_header">
+      <div class="container-fluid d-flex align-items-center" style="font-size:0.8em">
+        <!-- 2. The Hamburger Button (Only pops up on mobile screens) -->
+        <button class="navbar-toggler" type="button" 
+            data-toggle="collapse" 
+            data-target="#mainNavbarResponsive" 
+            aria-controls="mainNavbarResponsive" 
+            aria-expanded="false" 
+            aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div id="logo" style="display:none"></div>
+        <div class="collapse navbar-collapse" id="mainNavbarResponsive">
+            <ul class="navbar-nav mr-auto text-left" id="menus">
                 <li id="fat-menu" class="nav-item dropdown">
                   <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
                      <span id="VK" style="display: <%=if @current_country=='VK' then 'inline' else 'none' end %>"><img class="flag" src='/icons/australia_flag_background_20.png'>&nbsp;VK</span>
@@ -18,9 +20,9 @@
                      <b class="caret"></b>
                   </a>
                   <div class="dropdown-menu dropdown-menu-right">
-                    <%= link_to image_tag("/icons/new_zealand_flag_background_20.png") + " ZL", '/dxcc/zl', :onclick => "def_centre=[19430000, -5040000];map_map.getView().setCenter(def_centre);map_show_only_layer('NZTM Topo 2019'); map_current_proj = '2193'; map_current_projname = 'NZTM2000'; map_mpc.setProjection(ol.proj.get('EPSG:'+map_current_proj)); map_current_projdp = 0; map_set_coord_format();linkHandler('home_link');", remote: true, data: {turbo_frame: "_top"} %>
+                    <%= link_to image_tag("/icons/new_zealand_flag_background_20.png") + " ZL", '/dxcc/zl', :onclick => "def_centre=[19430000, -5040000];map_map.getView().setCenter(def_centre);map_show_only_layer('NZTM Topo 2019'); map_current_proj = '2193'; map_current_projname = 'NZTM2000'; map_mpc.setProjection(ol.proj.get('EPSG:'+map_current_proj)); map_current_projdp = 0; map_set_coord_format();linkHandler('home_link');", remote: true, data: {turbo_frame: "_top"}, class: "dropdown-item" %>
                     <div class="dropdown-divider"></div>
-                    <%= link_to image_tag("/icons/australia_flag_background_20.png") + " VK", '/dxcc/vk', onclick: "def_centre=[16085209, -4006631];map_map.getView().setCenter(def_centre);map_show_only_layer('OpenHikingMap'); map_current_proj = '4326'; map_current_projname = 'WGS'; map_mpc.setProjection(ol.proj.get('EPSG:'+map_current_proj)); map_current_projdp = 4; map_set_coord_format(); linkHandler('home_link');", remote: true, data: {turbo_frame: "_top"} %>
+                    <%= link_to image_tag("/icons/australia_flag_background_20.png") + " VK", '/dxcc/vk', onclick: "def_centre=[16085209, -4006631];map_map.getView().setCenter(def_centre);map_show_only_layer('OpenHikingMap'); map_current_proj = '4326'; map_current_projname = 'WGS'; map_mpc.setProjection(ol.proj.get('EPSG:'+map_current_proj)); map_current_projdp = 4; map_set_coord_format(); linkHandler('home_link');", remote: true, data: {turbo_frame: "_top"}, class: "dropdown-item" %>
                   </div>
                 </li>
                 <li id="home_link"><%= link_to '...OnTheAir', '/', remote: true, :id => 'home_link', :onclick => "linkHandler('home_link')", class: "nav-link"  %></li>
@@ -113,7 +115,7 @@
                   <% end %>
                   <div class="dropdown-divider"></div>
                   <% if current_user.mailuser and current_user.mailuser.length>0 then %>
-                    <%= link_to "Mail"+mail, '/webmail' %>
+                    <%= link_to "Mail"+mail, '/webmail', class: "dropdown-item" %>
                     <div class="dropdown-divider"></div>
                   <% end %>
                   <%= link_to "Users", '/users',  remote: true,  :id => 'users_link', :onclick => "linkHandler('users_link')", class: "dropdown-item"  %>
@@ -122,12 +124,16 @@
                 </ul>
               </li>
               <% else %>
-                <%= link_to "Sign in", signin_path, remote: true, class: "nav-link" %>
-                <%= link_to "Sign up", signup_path, remote: true, class: "nav-link" %>
+                <%= link_to "Sign in", signin_path, remote: true, class: "nav-link", :onclick => "linkHandler('sign_in_link')" %>
+                <%= link_to "Sign up", signup_path, remote: true, class: "nav-link", :onclick => "linkHandler('sign_up_link')" %>
               <% end %>
 
             </ul>
           </div>
+          <a class="navbar-brand ml-auto mr-0" href="#">
+            <img src='/icons/antenna32.png'>
+          </a>
+        </div>
 <!--        </div>-->
       </div>
     </header>

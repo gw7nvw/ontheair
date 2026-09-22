@@ -42,6 +42,7 @@ import { bbox as bboxStrategy } from "ol/loadingstrategy";
 import GeoJSON from "ol/format/GeoJSON";
 import WKT from "ol/format/WKT";
 import { createStringXY } from "ol/coordinate";
+import "./controllers"
 
 // Import the specific modern projection registration bridge tool
 import { register as registerProj4 } from "ol/proj/proj4";

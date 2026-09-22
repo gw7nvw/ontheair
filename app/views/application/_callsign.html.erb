@@ -4,6 +4,6 @@
    <% elsif ["ZLOTA","PNP","SMS"].include?(this_callsign.upcase.strip) then %>
      <%=this_callsign.upcase.strip%>
    <% else%>
-     <%=link_to this_callsign.upcase.strip, 'https://qrz.com/db/'+this_callsign.upcase.strip, target: "_blank", class: "non_member" %>&nbsp<img src="/assets/external-link-symbol-12.png">
+     <%=link_to this_callsign.upcase.strip, 'https://qrz.com/db/'+this_callsign.upcase.strip, target: "_blank", class: "non_member" %>&nbsp<img src="/icons/external-link-symbol-12.png">
    <% end %>
 </span>

@@ -2,7 +2,9 @@
   assetfield=params[:assetfield]
   if assetfield=='' then assetfield='asset' end 
 %>
-<%= form_tag '/query?assetfield='+assetfield, :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+<%= form_tag '/query', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+   <input type="hidden" id="assetfield" name="assetfield" value='<%=assetfield%>'/>
+
   <div class="erow">
     <div class="rowtitle">Type:</div>
     <div class="rowtext">

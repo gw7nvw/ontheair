@@ -185,6 +185,7 @@ function map_add_scratch_layer() {
     visible: true
   });     
   map_map.addLayer(map_scratch_layer);
+  window.map_scratch_layer = map_scratch_layer;
 };  
 
 function map_add_position_layer() {
@@ -308,7 +309,7 @@ function map_add_raster_layer(name,url,source,maxresolution,numzooms,copyright, 
 	   var tilegrid=linz_tilegrid;
 	   var layer_proj=epsg2193;
    };
-   if (source=="osn") {
+   if (source=="osm") {
            var layer_proj=epsg3857;
    };
    if (layer_proj!=epsg3857) {
@@ -375,6 +376,9 @@ function map_add_vector_layer(name, url, field, style, visible,minzoom,maxzoom, 
             FILTER: '<ogc:Filter><AND><ogc:BBOX><ogc:PropertyName>Shape</ogc:PropertyName><gml:Box srsName="urn:x-ogc:def:crs:'+map_view_projection_name+'"><gml:coordinates>'+extent[0]+','+extent[1]+' '+extent[2]+','+extent[3]+'</gml:coordinates></gml:Box></ogc:BBOX>'+map_filters[filter]+'</AND></ogc:Filter>'
           }
         }).done(function(response) {
+	  if (!response || response === "" || Object.keys(response).length === 0) {
+            return;
+          }
           var tmp_f=new GeoJSON({defaultDataProjection: projection}).readFeatures(
             response, {
               dataProjection: projection,
@@ -419,8 +423,10 @@ function map_add_vector_layer(name, url, field, style, visible,minzoom,maxzoom, 
     });
   }
   vector=new VectorLayer({
-      minResolution: minresolution,
-      maxResolution: maxresolution,
+//      minResolution: minresolution,
+//      maxResolution: maxresolution,
+      minZoom: minzoom,
+      maxZoom: maxzoom,
       source: vectorSource,
       style: style,
       visible: visible,
@@ -511,7 +517,7 @@ function map_create_style(shape, radius, fillcolor, linecolor, linewidth) {
     stroke: stroke,
     image: image
   });
-  
+
   return style;
 }
 
@@ -522,7 +528,7 @@ function map_disable_draw() {
 
 function map_clear_scratch_layer(type, style) {
   if ((typeof(type)=='undefined' || type==null) && (typeof(style)=='undefined' || style==null)) {
-    map_scratch_source.clear();
+    map_scratch_source.clear(true);
   } else {
     var features = map_scratch_source.getFeatures();
      if (features != null && features.length > 0) {
@@ -554,7 +560,7 @@ function map_enable_draw(type, style, loc_dest, x_dest, y_dest, move) {
 		type: type,
 	});
 	map_draw.on('drawend', function (event) {
-		if (move==true) map_scratch_source.clear();
+		if (move==true) map_scratch_source.clear(true);
 		var feature = event.feature;
                 var format = new WKT;
 
@@ -640,6 +646,7 @@ function map_init(divid, projection) {
              coordinateFormat: createStringXY(map_current_projdp),
              projection: getProjection('EPSG:'+map_current_proj)
         }); 
+        window.map_mpc = map_mpc;
 
 	site_add_layers();
 	site_add_controls();
@@ -697,7 +704,7 @@ function map_show_only_layer(name) {
         map_map.getView().setMaxZoom(layer.values_.max_zoom);
 
       } else {
-        if (layer.get('name') != 'Scratch layer') {
+        if (layer.getSource().constructor.name != 'VectorSource') {
   	  layer.setVisible(false);
         };
       };
@@ -885,7 +892,7 @@ function map_add_feature_from_wkt(wkt, source_proj, style) {
     dataProjection: source_proj,
     featureProjection: map_projection_name
     });
-    feature.setStyle(style);
+  feature.setStyle(style);
   map_scratch_source.addFeature(feature);
 }
 
@@ -906,7 +913,7 @@ function map_add_tooltip() {
   function displayTooltip(evt) {
     if (map_draw_status==false) {
       var pixel = evt.pixel;
-      var feature = map_map.forEachFeatureAtPixel(pixel, function(feature) {
+      var feature = map_map.forEachFeatureAtPixel(pixel, function(feature, layer) {
         if(layer!=map_scratch_layer) {
           return feature;
         } else {
@@ -1079,7 +1086,6 @@ window.map_WKTtoGPX = map_WKTtoGPX;
 window.map_GPXtoWKT = map_GPXtoWKT;
 window.map_get_centre_of_geom = map_get_centre_of_geom;
 window.map_mapLayers = map_mapLayers;
-window.map_scratch_layer = map_scratch_layer;
 window.map_current_proj = map_current_proj;
 window.mapcontrols = mapcontrols;
 window.map_projection_name = map_projection_name;

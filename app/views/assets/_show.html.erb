@@ -40,7 +40,7 @@
     <% url=@asset.external_url %>
     <div class="rowtext">
       <% if url then %> 
-        <%= link_to @asset.code, url, target: "_blank" %><img src="/assets/external-link-symbol.png">
+        <%= link_to @asset.code, url, target: "_blank" %><img src="/icons/external-link-symbol.png">
       <% else %>
         <%=@asset.code%>
       <% end %>
@@ -102,7 +102,7 @@
     <div class="erow" id="publicaccess" style='color:#bb0000'>
       <div class="rowtitle" style='color:#bb0000'><%= "Public access to AZ" %></div>
       <div class="rowtext" >
-        None known <%= link_to image_tag("/assets/info.png"), access_info , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
+        None known <%= link_to image_tag("/icons/info.png"), access_info , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
         <small><i><%= link_to '(what does this mean?)', access_info , remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></i></small>
       </div>
     </div>
@@ -112,7 +112,7 @@
     <div class="erow" id="publicaccess" style="color:#00bb00">
       <div class="rowtitle" style="color:#00bb00"><%= "Public access to AZ" %></div>
       <div class="rowtext">
-        Yes <%= link_to image_tag("/assets/info.png"), access_info , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
+        Yes <%= link_to image_tag("/icons/info.png"), access_info , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
         <small><i><%= link_to '(what does this mean?)', access_info , remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></i></small>
       </div>
     </div>
@@ -383,7 +383,7 @@
       <div class="erow">
         <div class="rowtitle"><%= "Nice Location:" %></div>
         <div class="rowtext"> 
-          <% @nice_score.times do %> <img src="/assets/gold-star.png"> <% end %><% (9-@nice_score).times do %> <img src="/assets/grey-star.png"> <% end %>
+          <% @nice_score.to_i.times do %> <img src="/icons/gold-star.png"> <% end %><% (9-@nice_score).to_i.times do %> <img src="/icons/grey-star.png"> <% end %>
         </div>
       </div>
       <% if signed_in? %>
@@ -395,7 +395,7 @@
       <div class="erow">
         <div class="rowtitle"><%= "Easy Access:" %></div>
         <div class="rowtext"> 
-          <% @accessibility_score.times do %> <img src="/assets/gold-star.png"> <% end %><% (9-@accessibility_score).times do %> <img src="/assets/grey-star.png"> <% end %>
+          <% @accessibility_score.to_i.times do %> <img src="/icons/gold-star.png"> <% end %><% (9-@accessibility_score).to_i.times do %> <img src="/icons/grey-star.png"> <% end %>
         </div>
       </div>
       <% if signed_in? %>
@@ -629,7 +629,8 @@
     document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
     place_init('<%=@asset.location%>',  0, site_purple_star);
     <% if @asset.boundary_simple then %>
-      place_init('<%=@asset.boundary_simple%>',  1,site_highlight_polygon);
+        place_init('<%=@asset.boundary_simple%>',  1,site_highlight_polygon);
+
     <% end %>
     <% if @asset.az_boundary_simple then %>
       place_init('<%=@asset.az_boundary_simple%>',  1,site_az_style);

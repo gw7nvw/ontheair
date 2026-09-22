@@ -15,7 +15,7 @@
             <% if link and link.count>0 then %>
               <% validlink=true %>
               <% if link.first[:external] then %>
-                <%=link_to code.upcase,link.first[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
+                <%=link_to code.upcase,link.first[:url], target: "_blank"%><img src="/icons/external-link-symbol.png">
               <% else %>
                <%=link_to code.upcase,link.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
               <% end %>

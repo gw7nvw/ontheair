@@ -17,7 +17,7 @@
           <% asset=Asset.assets_from_code(code) %>
           <% if asset and asset.count>0 and asset.first[:code]!=nil then %>
             <% if asset.first[:external] then %>
-              <%=link_to "["+asset.first[:code]+"] ",asset.first[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">&nbsp
+              <%=link_to "["+asset.first[:code]+"] ",asset.first[:url], target: "_blank"%><img src="/icons/external-link-symbol.png">&nbsp
             <% else %>
              <%=link_to asset.first[:codename],asset.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>&nbsp;
             <% end %>

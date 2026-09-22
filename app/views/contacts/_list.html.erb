@@ -46,7 +46,7 @@
                 <%links=Asset.assets_from_code(cal)%>
                 <% links.each do |link| %>
                   <% if link[:external] then %>
-                    <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
+                    <%=link_to link[:code], link[:url], target: "_blank"%><img src="/icons/external-link-symbol.png">
                   <% else %>
                     <% if link[:asset] then %>
                     <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
@@ -69,7 +69,7 @@
                 <% links.each do |link| %>
                   <% if link[:external] then %>
 
-                    <%=link_to link[:code], link[:url], target: "_blank"%><img src="/assets/external-link-symbol.png">
+                    <%=link_to link[:code], link[:url], target: "_blank"%><img src="/icons/external-link-symbol.png">
                   <% else %>
                     <% if link[:asset] then %>
                       <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
