@@ -4,7 +4,7 @@
 class Nzgdb < ActiveRecord::Base
   require 'csv'
 
-  establish_connection 'nzgdb'
+  establish_connection :nzgdb
 
   attr_accessor :theorder
   def self.import(filename)
