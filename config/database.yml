@@ -98,6 +98,7 @@ production:
     <<: *primary_production
     database: ontheair_production_cable
     migrations_paths: db/cable_migrate
+
 dem15:
   adapter: postgis
   encoding: unicode
@@ -132,6 +133,7 @@ nzgdb:
   schema_search_path: public,postgis
   pool: 5
   database: nzgdb
+
 lakes:
   adapter: postgis
   encoding: unicode
