@@ -117,3 +117,26 @@ capad:
   pool: 5
   database: capad
 
+crownparks:
+  adapter: postgis
+  encoding: unicode
+  postgis_extension: postgis      # default is postgis
+  schema_search_path: public,postgis
+  pool: 5
+  database: crownparks
+
+nzgdb:
+  adapter: postgis
+  encoding: unicode
+  postgis_extension: postgis      # default is postgis
+  schema_search_path: public,postgis
+  pool: 5
+  database: nzgdb
+lakes:
+  adapter: postgis
+  encoding: unicode
+  postgis_extension: postgis      # default is postgis
+  schema_search_path: public,postgis
+  pool: 5
+  database: lakes
+
