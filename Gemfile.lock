@@ -478,6 +478,7 @@ DEPENDENCIES
   puma (>= 5.0)
   rails (~> 8.0.0)
   resque
+  rexml (~> 3.3)
   rgeo
   rgeo-proj4
   rubocop-rails-omakase
