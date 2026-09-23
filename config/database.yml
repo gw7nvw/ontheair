@@ -98,7 +98,9 @@ production:
     <<: *primary_production
     database: ontheair_production_cable
     migrations_paths: db/cable_migrate
+
   dem15:
+    <<: *default
     adapter: postgis
     encoding: unicode
     postgis_extension: postgis      # default is postgis
@@ -109,6 +111,7 @@ production:
     host: localhost
     database: dem15
   capad:
+    <<: *default
     adapter: postgis
     encoding: unicode
     postgis_extension: postgis      # default is postgis
@@ -116,6 +119,7 @@ production:
     pool: 5
     database: capad
   crownparks:
+    <<: *default
     adapter: postgis
     encoding: unicode
     postgis_extension: postgis      # default is postgis
@@ -123,6 +127,7 @@ production:
     pool: 5
     database: crownparks
   nzgdb:
+    <<: *default
     adapter: postgis
     encoding: unicode
     postgis_extension: postgis      # default is postgis
@@ -130,6 +135,7 @@ production:
     pool: 5
     database: nzgdb
   lakes:
+    <<: *default
     adapter: postgis
     encoding: unicode
     postgis_extension: postgis      # default is postgis
