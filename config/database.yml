@@ -98,47 +98,42 @@ production:
     <<: *primary_production
     database: ontheair_production_cable
     migrations_paths: db/cable_migrate
-
-dem15:
-  adapter: postgis
-  encoding: unicode
-  postgis_extension: postgis      # default is postgis
-  schema_search_path: public,postgis
-  pool: 5
-  username: ontheair
-  password: <%= Rails.application.credentials.dig(:production, :database, :password) %>
-  host: localhost
-  database: dem15
-
-capad:
-  adapter: postgis
-  encoding: unicode
-  postgis_extension: postgis      # default is postgis
-  schema_search_path: public,postgis
-  pool: 5
-  database: capad
-
-crownparks:
-  adapter: postgis
-  encoding: unicode
-  postgis_extension: postgis      # default is postgis
-  schema_search_path: public,postgis
-  pool: 5
-  database: crownparks
-
-nzgdb:
-  adapter: postgis
-  encoding: unicode
-  postgis_extension: postgis      # default is postgis
-  schema_search_path: public,postgis
-  pool: 5
-  database: nzgdb
-
-lakes:
-  adapter: postgis
-  encoding: unicode
-  postgis_extension: postgis      # default is postgis
-  schema_search_path: public,postgis
-  pool: 5
-  database: lakes
+  dem15:
+    adapter: postgis
+    encoding: unicode
+    postgis_extension: postgis      # default is postgis
+    schema_search_path: public,postgis
+    pool: 5
+    username: ontheair
+    password: <%= Rails.application.credentials.dig(:production, :database, :password) %>
+    host: localhost
+    database: dem15
+  capad:
+    adapter: postgis
+    encoding: unicode
+    postgis_extension: postgis      # default is postgis
+    schema_search_path: public,postgis
+    pool: 5
+    database: capad
+  crownparks:
+    adapter: postgis
+    encoding: unicode
+    postgis_extension: postgis      # default is postgis
+    schema_search_path: public,postgis
+    pool: 5
+    database: crownparks
+  nzgdb:
+    adapter: postgis
+    encoding: unicode
+    postgis_extension: postgis      # default is postgis
+    schema_search_path: public,postgis
+    pool: 5
+    database: nzgdb
+  lakes:
+    adapter: postgis
+    encoding: unicode
+    postgis_extension: postgis      # default is postgis
+    schema_search_path: public,postgis
+    pool: 5
+    database: lakes
 
