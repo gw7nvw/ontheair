@@ -3,7 +3,7 @@
 # typed: false
 class InvalidReplyUser < StandardError; end
 
-class EmailReceive
+class ResqueProcessEmail
   @queue = :ontheair
   SPOT_TOPIC_ID = 35
   ALERT_TOPIC_ID = 1
