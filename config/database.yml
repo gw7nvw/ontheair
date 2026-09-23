@@ -110,6 +110,7 @@ production:
     password: <%= Rails.application.credentials.dig(:production, :database, :password) %>
     host: localhost
     database: dem15
+    database_tasks: false
   capad:
     <<: *default
     adapter: postgis
@@ -118,6 +119,7 @@ production:
     schema_search_path: public,postgis
     pool: 5
     database: capad
+    database_tasks: false
   crownparks:
     <<: *default
     adapter: postgis
@@ -126,6 +128,7 @@ production:
     schema_search_path: public,postgis
     pool: 5
     database: crownparks
+    database_tasks: false
   nzgdb:
     <<: *default
     adapter: postgis
@@ -134,6 +137,7 @@ production:
     schema_search_path: public,postgis
     pool: 5
     database: nzgdb
+    database_tasks: false
   lakes:
     <<: *default
     adapter: postgis
@@ -142,4 +146,5 @@ production:
     schema_search_path: public,postgis
     pool: 5
     database: lakes
+    database_tasks: false
 
