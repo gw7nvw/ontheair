@@ -8,7 +8,7 @@ class Api2Controller < ApplicationController
   require 'rexml/document'
 #  require 'asset_import_tools'
 
-  skip_before_filter :verify_authenticity_token
+  skip_before_action :verify_authenticity_token
 
   def index; end
 
