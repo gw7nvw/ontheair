@@ -129,6 +129,15 @@ crownparks:
   pool: 5
   database: crownparks
   database_tasks: false
+nzgdb:
+  <<: *default
+  adapter: postgis
+  encoding: unicode
+  postgis_extension: postgis      # default is postgis
+  schema_search_path: public,postgis
+  pool: 5
+  database: crownparks
+  database_tasks: false
     #  nzgdb:
     #<<: *default
     # adapter: postgis
