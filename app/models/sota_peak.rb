@@ -1,7 +1,7 @@
 # frozen_string_literal: false
 
 # typed: false
-require 'asset_import_tools.rb'
+#require 'asset_import_tools.rb'
 class SotaPeak < ActiveRecord::Base
   ############################################################################
   # To pull updates from SOTA

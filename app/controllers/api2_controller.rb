@@ -6,7 +6,7 @@ class Api2Controller < ApplicationController
   include PostsHelper
 
   require 'rexml/document'
-  require 'asset_import_tools'
+#  require 'asset_import_tools'
 
   skip_before_filter :verify_authenticity_token
 
