@@ -593,6 +593,7 @@ class ApiController < ApplicationController
         logger.error 'Asset not known:' + asset_code + ' ... trying to continue'
         a_code = ''
         a_name = 'Unrecognised location: ' + asset_code
+        p.site=asset_code
         a_ext = false
       else
         a_code = assets.first[:code]

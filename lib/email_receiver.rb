@@ -6,7 +6,7 @@ require 'resque'
 require 'redis'
 require 'mail'
 
-class EmailReceive
+class EmailReceiver
   @queue = :ontheair
   SPOT_TOPIC_ID = 35
   ALERT_TOPIC_ID = 1
