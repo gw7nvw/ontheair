@@ -1,0 +1,2 @@
+class AssetOverlap < ApplicationRecord
+end

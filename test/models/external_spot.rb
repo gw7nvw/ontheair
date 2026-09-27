@@ -117,6 +117,79 @@ test "should create addditional entry in previous consolidated spot" do
   assert_equal cs.spot_type, ['HEMA', 'WWFF'], "Spot type"
 end
 
+test "should not consolidate spot if n-fers not allowed" do
+  t1 = 1.minute.ago
+  assert_difference 'ConsolidatedSpot.count', 1 do
+    es = ExternalSpot.create({"time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "MW0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.31312", "mode" => "ssb", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil})
+  end
+  t2 = Time.now
+  assert_difference 'ConsolidatedSpot.count', 1 do
+    es = ExternalSpot.create({"time" => t2, "callsign" => "M1KCB", "activatorCallsign" => "MW0KCB", "code" => "GW/HNW-054", "name" => "New summit", "frequency" => "14.31313", "mode" => "SSB", "comments" => "Test second summit spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => nil, "altM" => nil, "is_pnp" => nil})
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal cs.code, ["GW/HNW-054"], "Code saved"
+  assert_equal cs.name, ["New summit"], "Site name"
+end
+
+test "should consolidate spot if n-fers allowed" do
+  t1 = 1.minute.ago
+  assert_difference 'ConsolidatedSpot.count', 1 do
+    es = ExternalSpot.create({"time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "MW0KCB/P", "code" => "GB-0001", "name" => "Moel Fodiar", "frequency" => "14.31312", "mode" => "ssb", "comments" => "Test spot", "spot_type" => "POTA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil})
+  end
+  t2 = Time.now
+  assert_difference 'ConsolidatedSpot.count', 0 do
+    es = ExternalSpot.create({"time" => t2, "callsign" => "M1KCB", "activatorCallsign" => "MW0KCB", "code" => "GB-0002", "name" => "New park", "frequency" => "14.31313", "mode" => "SSB", "comments" => "Test second park spot", "spot_type" => "POTA", "epoch" => nil, "is_test" => nil, "points" => nil, "altM" => nil, "is_pnp" => nil})
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal cs.code, ["GB-0001", "GB-0002"], "Code saved"
+end
+
+test "should allow respot of same place even if n-fers not allowed" do
+  t1 = 1.minute.ago
+  assert_difference 'ConsolidatedSpot.count', 1 do
+    es = ExternalSpot.create({"time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "MW0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.31312", "mode" => "ssb", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil})
+  end
+  t2 = Time.now
+  assert_difference 'ConsolidatedSpot.count', 0 do
+    es = ExternalSpot.create({"time" => t2, "callsign" => "M1KCB", "activatorCallsign" => "MW0KCB", "code" => "GW/HNW-044", "name" => "New park", "frequency" => "14.31313", "mode" => "SSB", "comments" => "Test second park spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => nil, "altM" => nil, "is_pnp" => nil})
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal cs.code, ["GW/HNW-044","GW/HNW-044"], "Code saved"
+  assert_equal cs.callsign, ["M0KCB", "M1KCB"], "Spotter call"
+end
+
+test "should allow n-fer of if parks overlap" do
+  asset1=create_test_asset(asset_type: 'park', location: create_point(173,-45), test_radius: 0.1)
+  asset2=create_test_asset(asset_type: 'park', location: create_point(173,-45), test_radius: 0.2)
+
+  t1 = 1.minute.ago
+  assert_difference 'ConsolidatedSpot.count', 1 do
+    es = ExternalSpot.create({"time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "MW0KCB/P", "code" => asset1.code, "name" => "Moel Fodiar", "frequency" => "14.31312", "mode" => "ssb", "comments" => "Test spot", "spot_type" => "ZLOTA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil})
+  end
+  t2 = Time.now
+  assert_difference 'ConsolidatedSpot.count', 0 do
+    es = ExternalSpot.create({"time" => t2, "callsign" => "M1KCB", "activatorCallsign" => "MW0KCB", "code" => asset2.code, "name" => "New park", "frequency" => "14.31313", "mode" => "SSB", "comments" => "Test second park spot", "spot_type" => "ZLOTA", "epoch" => nil, "is_test" => nil, "points" => nil, "altM" => nil, "is_pnp" => nil})
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal cs.code, [asset1.code, asset2.code], "Code saved"
+end
+
+test "should not allow n-fer of if parks do not overlap" do
+  asset1=create_test_asset(asset_type: 'park', location: create_point(173,-45), test_radius: 0.1)
+  asset2=create_test_asset(asset_type: 'park', location: create_point(172,-45), test_radius: 0.2)
+
+  t1 = 1.minute.ago
+  assert_difference 'ConsolidatedSpot.count', 1 do
+    es = ExternalSpot.create({"time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "MW0KCB/P", "code" => asset1.code, "name" => "Moel Fodiar", "frequency" => "14.31312", "mode" => "ssb", "comments" => "Test spot", "spot_type" => "ZLOTA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil})
+  end
+  t2 = Time.now
+  assert_difference 'ConsolidatedSpot.count', 1 do
+    es = ExternalSpot.create({"time" => t2, "callsign" => "M1KCB", "activatorCallsign" => "MW0KCB", "code" => asset2.code, "name" => "New park", "frequency" => "14.31313", "mode" => "SSB", "comments" => "Test second park spot", "spot_type" => "ZLOTA", "epoch" => nil, "is_test" => nil, "points" => nil, "altM" => nil, "is_pnp" => nil})
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal cs.code, [asset2.code], "Code saved"
+end
+
 test "should purge old spots" do
   es = ExternalSpot.create({"time" => 2.weeks.ago, "callsign" => "M1KCB", "activatorCallsign" => "MW0KCB", "code" => "GFF-0001", "name" => "Fodiar Park", "frequency" => "14.31313", "mode" => "SSB", "comments" => "Test parkspot", "spot_type" => "WWFF", "epoch" => nil, "is_test" => nil, "points" => nil, "altM" => nil, "is_pnp" => nil})
   assert_equal ExternalSpot.count, 1, "Spot present before purge"

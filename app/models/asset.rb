@@ -38,6 +38,7 @@ class Asset < ActiveRecord::Base
     add_activation_zone(true)
     add_az_area(true)
     add_links
+    add_overlaps
     add_state if !state or state.blank?
   end
 
@@ -62,6 +63,44 @@ class Asset < ActiveRecord::Base
     self.url = 'assets/' + safecode
 
     self.az_radius=1.0*self.type.dist_buffer/1000 if az_radius==nil and self.type.dist_buffer
+  end
+
+    def add_overlaps(flush = true)
+    if flush == true
+      las = AssetOverlap.where(contained_code: code)
+      Rails.logger.warn "DEBUG: deleting #{las.count} old parent links"
+      las.destroy_all
+      las = AssetOverlap.where(containing_code: code)
+      Rails.logger.warn "DEBUG: deleting #{las.count} old child links"
+      las.destroy_all
+    end
+
+    return unless is_active
+
+    overlap_assets = Asset.find_by_sql ["
+        SELECT b.code as code
+        FROM assets a
+        INNER join assets b
+        ON
+          b.is_active=true
+          AND b.id != a.id
+          AND ST_Overlaps(
+            coalesce(a.az_boundary, a.boundary, a.location),
+            coalesce(b.az_boundary, b.boundary, b.location))
+        WHERE a.id=?", self.id ]
+
+    overlap_assets.each do |linked_asset|
+      containing_asset_code = linked_asset['code']
+      contained_asset_code = code
+
+      logger.debug containing_asset_code + ' overlaps ' + contained_asset_code
+      dup = AssetOverlap.where(contained_code: contained_asset_code, containing_code: containing_asset_code)
+      next unless (!dup || dup.count.zero?) && (linked_asset['code'] != code)
+      al = AssetOverlap.new
+      al.contained_code = contained_asset_code
+      al.containing_code = containing_asset_code
+      al.save
+    end # for linked assets
   end
 
   def add_links(flush = true)
@@ -866,10 +905,34 @@ class Asset < ActiveRecord::Base
         elsif a[:title][0..3] == 'POTA' then pnp_class = 'POTA'
         elsif a[:title][0..3] == 'HEMA' then pnp_class = 'HEMA'
         elsif a[:title][0..4] == 'SiOTA' then pnp_class = 'SiOTA'
+        elsif a[:title][0..4] == 'LLOTA' then pnp_class = 'LLOTA'
+        elsif a[:title][0..3] == 'ILLW' then pnp_class = 'ILLW'
         end
       end
     end
     pnp_class
+  end
+
+  def self.get_pnp_classes_from_codes(codes)
+    aa = Asset.assets_from_code(codes.join(','))
+    pnp_class = 'QRP'
+    classes =[]
+    aa.each do |a|
+      if a
+        if a && a[:type] && (a[:external] == false)
+          ac = AssetType.find_by(name: a[:type])
+          pnp_class = ac.pnp_class
+        elsif a[:title][0..3] == 'WWFF' then pnp_class = 'WWFF'
+        elsif a[:title][0..3] == 'POTA' then pnp_class = 'POTA'
+        elsif a[:title][0..3] == 'HEMA' then pnp_class = 'HEMA'
+        elsif a[:title][0..4] == 'SiOTA' then pnp_class = 'SiOTA'
+        elsif a[:title][0..4] == 'LLOTA' then pnp_class = 'LLOTA'
+        elsif a[:title][0..3] == 'ILLW' then pnp_class = 'ILLW'
+        end
+      end
+      classes.push(pnp_class)
+    end
+    classes
   end
 
   ##################################################################
@@ -1613,6 +1676,31 @@ ORDER BY id;
     end
     return json_res
   end
+end
+
+#CHECK IF TWO SETS OF CODES OVERLAP
+def self.overlap_all?(codes1, codes2)
+  sql = <<-SQL
+    SELECT NOT EXISTS (
+      -- 1. Generate all combinations of the two arrays
+      SELECT 1 
+      FROM unnest(ARRAY[:codes1]) AS c1(code1)
+      CROSS JOIN unnest(ARRAY[:codes2]) AS c2(code2)
+  
+      -- 2. Look for combinations that are MISSING from the asset_links table
+      LEFT JOIN asset_links al 
+        ON (al.contained_code = c1.code1 AND al.containing_code = c2.code2) or (al.contained_code = c2.code2 AND al.containing_code = c1.code1)
+      WHERE al.contained_code IS NULL  -- Filters for missing records
+    ) as result;
+  SQL
+
+    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
+    sanitized_sql = sanitize_sql_array([sql, { codes1: codes1, codes2: codes2 }])
+
+    # 3. Pull raw string text directly from the execution block
+    result = connection.select_all(sanitized_sql)
+
+    result.first["result"]
 end
 
   #################################################################

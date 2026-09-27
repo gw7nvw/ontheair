@@ -224,6 +224,37 @@ ALTER SEQUENCE public.asset_links_id_seq OWNED BY public.asset_links.id;
 
 
 --
+-- Name: asset_overlaps; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.asset_overlaps (
+    id bigint NOT NULL,
+    contained_code character varying,
+    containing_code character varying,
+    overlap double precision
+);
+
+
+--
+-- Name: asset_overlaps_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.asset_overlaps_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: asset_overlaps_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.asset_overlaps_id_seq OWNED BY public.asset_overlaps.id;
+
+
+--
 -- Name: asset_photo_links; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -281,7 +312,8 @@ CREATE TABLE public.asset_types (
     use_volcanic_field boolean,
     use_az boolean,
     use_within_sight boolean,
-    like_pattern character varying(255)
+    like_pattern character varying(255),
+    allow_multi boolean
 );
 
 
@@ -2859,6 +2891,13 @@ ALTER TABLE ONLY public.asset_links ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- Name: asset_overlaps id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.asset_overlaps ALTER COLUMN id SET DEFAULT nextval('public.asset_overlaps_id_seq'::regclass);
+
+
+--
 -- Name: asset_photo_links id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -3329,6 +3368,14 @@ ALTER TABLE ONLY public.ar_internal_metadata
 
 ALTER TABLE ONLY public.asset_links
     ADD CONSTRAINT asset_links_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: asset_overlaps asset_overlaps_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.asset_overlaps
+    ADD CONSTRAINT asset_overlaps_pkey PRIMARY KEY (id);
 
 
 --
@@ -4269,6 +4316,8 @@ CREATE INDEX vk_code_indx ON public.vk_assets USING btree (code);
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260927044417'),
+('20260926211603'),
 ('20260913084133'),
 ('20260831024620'),
 ('20260816195403'),

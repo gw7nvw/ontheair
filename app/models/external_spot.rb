@@ -21,8 +21,41 @@ class ExternalSpot < ApplicationRecord
       round_freq = frequency.to_d.round(4).to_s
       base_call = activatorCallsign.gsub(/\/./,'') #remove single character suffix
       dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where (updated_at > ? or ('#{code}' = ANY(code) and updated_at > ?)) and \"activatorCallsign\" = '#{base_call}' and (frequency = '#{round_freq}' or frequency is null or frequency = '' or frequency = '0.0' or '#{round_freq}' = '' or '#{round_freq}' = '0.0') and (mode = '#{mode}' or mode is null or mode = '' or '#{mode}'='') order by created_at desc limit 1",  MAX_SPOT_CONSOLIDATION_TIME.minutes.ago, MAX_SPOT_LIFETIME.minutes.ago]
- 
-      if dups and dups.count>0 then
+
+      reuse = false
+      if dups and dups.count>0 
+        logger.error("SPOTCHECK: DUPS")
+        #check for exact matches within that result set
+        fulldups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where id in (?) and code @> ARRAY[?::varchar] and code <@ ARRAY[?::varchar]", dups.pluck(:id), code, code ]
+        if fulldups and fulldups.count>0 #prioritise full duplicate
+          dups = fulldups
+          reuse = true
+        else
+          reuse = true
+          #check that new assets overlap with old (VK/ZL)
+          if code.match?(/VK|ZL|AU|NZ/)
+            logger.error("SPOTCHECK: NZ/AU")
+            if !Asset.overlap_all?(dups.first.code, [code])
+              logger.error("SPOTCHECK: No everlap")
+              reuse = false
+            end
+          end
+    
+          #check that n-fers are all programmes that allow n-fers
+          if reuse == true
+            dup = dups.first
+            combined_codes = (dup.code + [code]).uniq
+            combined_classes = Asset.get_pnp_classes_from_codes(combined_codes)
+            logger.error("SPOTCHECK: #{combined_classes.to_json}")
+            repeated_classes = combined_classes.tally.select { |item, count| count > 1 }.keys
+            logger.error("SPOTCHECK: #{repeated_classes.to_json}")
+            reuse = false if !AssetType.all_allow_multi?(repeated_classes)
+          end
+        end
+      end
+
+      #reuse existing spot if allowed, otherwise create new spot
+      if reuse == true  
         cs=dups.first
       else
         newspot = true
@@ -94,7 +127,7 @@ class ExternalSpot < ApplicationRecord
             url = 'https://api-db2.sota.org.uk/api/spots/50/all/all'
             raw_response = fetch_external_url(url)
             spots = JSON.parse(raw_response.blank? ? "[]" : raw_response) 
-            puts "GOT SOTA: "+spots.to_json
+            #puts "GOT SOTA: "+spots.to_json
           end
         rescue 
           puts 'ERROR: SOTA Timeout'
@@ -111,7 +144,7 @@ class ExternalSpot < ApplicationRecord
           url = 'https://api.pota.app/spot/activator'
           raw_response = fetch_external_url(url)
           spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
-          puts "GOT POTA: "+spots.to_json
+          #puts "GOT POTA: "+spots.to_json
         end
       rescue 
         puts 'ERROR: POTA Timeout'
@@ -127,7 +160,7 @@ class ExternalSpot < ApplicationRecord
           url = 'https://llota.app/api/spots'
           raw_response = fetch_external_url(url)
           spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
-          puts "GOT LLOTA: "+spots.to_json
+          #puts "GOT LLOTA: "+spots.to_json
         end
       rescue 
         puts 'ERROR: LLOTA Timeout'
@@ -144,7 +177,7 @@ class ExternalSpot < ApplicationRecord
           url = 'https://spots.wwff.co/static/spots.json'
           raw_response = fetch_external_url(url)
           spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
-          puts "GOT WWFF: "+spots.to_json
+          #puts "GOT WWFF: "+spots.to_json
         end
       rescue 
         puts 'ERROR: WWFF Timeout'
@@ -162,12 +195,12 @@ class ExternalSpot < ApplicationRecord
           spots_list = spots_string.split('=')
           spots_list[1..-1].each do |spotstring|
             next unless spotstring && spotstring[';']
-            puts spotstring
+            #puts spotstring
             spot = spotstring.split(';')
             hemaspot = { time: spot[0], activatorCallsign: spot[2], code: spot[3], name: spot[4], frequency: spot[5].split(' ')[0], mode: (spot[5] || '').split('(')[1].split(')')[0], callsign: (spot[6] || '').split('(')[1].split(')')[0], comments: (spot[6] || '').split(' ')[1], spot_type: 'HEMA' }
             hemaspot[:time] = (hemaspot[:time].to_datetime ? hemaspot[:time].to_datetime.in_time_zone('UTC') : nil)
             hemaspots += [hemaspot]
-            puts 'done'
+            #puts 'done'
           end
         end
       rescue
