@@ -19,3 +19,8 @@ Invalid contacts rejected: <%=@invalid_contacts.count%><br/>
   <%=link_to "Download Log", '/sota_logs/'+@summit.safecode+".adi?date="+@logdate+"&user="+@user.callsign, class: "btn btn-small btn-primary" %>
 <% end %>
 <%=link_to "Cancel", '/sota_logs?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
+<script>
+  document.body.classList.remove('loading');
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>
+

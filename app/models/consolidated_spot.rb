@@ -161,11 +161,11 @@ sql = <<-SQL
          'actClass', f.chosen_class, 
          'actSiteID', f.code_array[array_position(f.spot_type_array, f.chosen_class)],
          'ID', f.code_array[array_position(f.spot_type_array, f.chosen_class)],
-         'altLocation', f.name_array[array_position(f.spot_type_array, f.chosen_class)], 
+         'altLocation', f.name_array[cardinality(name_array)],
          'actLocation', CASE 
            WHEN f.chosen_class IN ('SOTA', 'SIOTA', 'SHIRES', 'ZLOTA') 
            THEN f.code_array[array_position(f.spot_type_array, f.chosen_class)] 
-           ELSE f.name_array[array_position(f.spot_type_array, f.chosen_class)] 
+           ELSE f.name_array[cardinality(name_array)]
          END
        ) ||
        jsonb_strip_nulls(
@@ -175,6 +175,10 @@ sql = <<-SQL
            'ParkID', f.code_array[array_position(f.spot_type_array, 'WWFF')],
            'POTAID', f.code_array[array_position(f.spot_type_array, 'POTA')],
            'SOTAID', f.code_array[array_position(f.spot_type_array, 'SOTA')],
+           'ZLOTAID', f.code_array[array_position(f.spot_type_array, 'ZLOTA')],
+           'LLOTAID', f.code_array[array_position(f.spot_type_array, 'LLOTA')],
+           'SIOTAID', f.code_array[array_position(f.spot_type_array, 'SIOTA')],
+           'ILLWID', f.code_array[array_position(f.spot_type_array, 'ILLW')],
            'SANPCPAID', f.code_array[array_position(f.spot_type_array, 'SANPCPA')],
            'KRMNPAID', f.code_array[array_position(f.spot_type_array, 'KRMNPA')]
          )

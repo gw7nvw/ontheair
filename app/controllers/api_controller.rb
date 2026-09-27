@@ -229,7 +229,11 @@ class ApiController < ApplicationController
         item.item_type = 'post'
         item.item_id = p.id
         item.save
-        item.send_emails
+        if ENV['RAILS_ENV'] == 'production'
+          item.send_emails unless p.do_not_publish
+        else
+          Item.send_emails_now(item.id) unless p.do_not_publish
+        end
       else
         puts "Bad spot"
         res = { success: false, message: u.errors.first.to_s }
@@ -475,6 +479,7 @@ class ApiController < ApplicationController
 
     zone = 'ALL'
     zone = params[:zone].upcase if params[:zone]
+    zone = params[:continent].upcase if params[:continent]
     duration = 120
 
     duration = params[:id].to_i if params[:id]
@@ -505,6 +510,7 @@ class ApiController < ApplicationController
       if !assets || assets.count.zero? || assets.first[:code].nil?
         logger.error 'Asset not known:' + asset_code + ' ... trying to continue'
         a_code = ''
+        p.site=asset_code
         a_name = 'Unrecognised location: ' + asset_code
         a_ext = false
       else
@@ -541,7 +547,12 @@ class ApiController < ApplicationController
         item.item_type = 'post'
         item.item_id = p.id
         item.save
-        item.send_emails
+        if ENV['RAILS_ENV'] == 'production'
+          item.send_emails unless p.do_not_publish
+        else
+          Item.send_emails_now(item.id) unless p.do_not_publish
+        end
+
       else
         logger.error "Bad alert"
         res = { success: false, message: u.errors.first.to_s }
@@ -596,6 +607,7 @@ class ApiController < ApplicationController
       if !assets || assets.count.zero? || assets.first[:code].nil?
         logger.error 'Asset not known:' + asset_code + ' ... trying to continue'
         a_code = ''
+        p.site = asset_code
         a_name = 'Unrecognised location: ' + asset_code
         a_ext = false
       else

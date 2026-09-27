@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20260919030816) do
+ActiveRecord::Schema.define(version: 20260927034145) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -62,6 +62,12 @@ ActiveRecord::Schema.define(version: 20260919030816) do
   add_index "asset_links", ["contained_code"], :name => "index_asset_links_on_contained_code"
   add_index "asset_links", ["containing_code"], :name => "index_asset_links_on_containing_code"
 
+  create_table "asset_overlaps", force: true do |t|
+    t.string "contained_code"
+    t.string "containing_code"
+    t.float  "overlap"
+  end
+
   create_table "asset_photo_links", force: true do |t|
     t.string   "asset_code"
     t.string   "link_url"
@@ -91,6 +97,7 @@ ActiveRecord::Schema.define(version: 20260919030816) do
     t.boolean  "use_az"
     t.boolean  "use_within_sight"
     t.string   "like_pattern"
+    t.boolean  "allow_multi"
   end
 
   add_index "asset_types", ["name"], :name => "index_asset_types_on_name"
@@ -154,7 +161,6 @@ ActiveRecord::Schema.define(version: 20260919030816) do
   add_index "assets", ["asset_type"], :name => "idx_assets_type_and_spatial"
   add_index "assets", ["asset_type"], :name => "index_assets_on_asset_type"
   add_index "assets", ["boundary"], :name => "assets_boundary_index", :spatial => true
-  add_index "assets", ["boundary"], :name => "idx_assets_boundary", :spatial => true
   add_index "assets", ["boundary_quite_simplified"], :name => "assets_boundary_quite_simplified_index", :spatial => true
   add_index "assets", ["boundary_simplified"], :name => "assets_boundary_simplified_index", :spatial => true
   add_index "assets", ["boundary_very_simplified"], :name => "assets_boundary_very_simplified_index", :spatial => true
@@ -301,12 +307,9 @@ ActiveRecord::Schema.define(version: 20260919030816) do
   end
 
   add_index "contacts", ["asset1_classes"], :name => "idx_contacts_asset1_classes"
-  add_index "contacts", ["asset1_codes"], :name => "idx_contacts_asset1_codes_gin"
   add_index "contacts", ["asset2_classes"], :name => "idx_contacts_asset2_classes"
-  add_index "contacts", ["asset2_codes"], :name => "idx_contacts_asset2_codes_gin"
   add_index "contacts", ["callsign1"], :name => "index_contacts_on_callsign1"
   add_index "contacts", ["callsign2"], :name => "index_contacts_on_callsign2"
-  add_index "contacts", ["date", "time"], :name => "idx_contacts_date_time"
   add_index "contacts", ["date"], :name => "index_contacts_on_date"
   add_index "contacts", ["log_id"], :name => "contacts_log_id_idx"
   add_index "contacts", ["user1_id"], :name => "contacts_user1id_idx"
@@ -444,8 +447,6 @@ ActiveRecord::Schema.define(version: 20260919030816) do
     t.string   "altM"
     t.boolean  "is_pnp"
   end
-
-  add_index "external_spots", ["time", "activatorCallsign"], :name => "idx_external_spots_time_activator"
 
   create_table "geological_eons", force: true do |t|
     t.string   "name"
@@ -689,8 +690,6 @@ ActiveRecord::Schema.define(version: 20260919030816) do
   end
 
   add_index "logs", ["asset_classes"], :name => "idx_logs_asset_classes"
-  add_index "logs", ["asset_codes"], :name => "idx_logs_asset_codes_gin"
-  add_index "logs", ["callsign1", "id"], :name => "idx_logs_callsign1_id"
   add_index "logs", ["date"], :name => "index_logs_on_date"
   add_index "logs", ["user1_id"], :name => "logs_user1id_idx"
 
@@ -718,7 +717,6 @@ ActiveRecord::Schema.define(version: 20260919030816) do
     t.spatial "boundary_very_simplified",  limit: {:srid=>4326, :type=>"multi_polygon"}
   end
 
-  add_index "nz_tribal_lands", ["boundary_quite_simplified"], :name => "idx_tribal_lands_boundary_quite_simplified", :spatial => true
   add_index "nz_tribal_lands", ["wkb_geometry"], :name => "nz_tribal_lands_wkb_geometry_geom_idx", :spatial => true
 
   create_table "parks", force: true do |t|
@@ -922,6 +920,7 @@ ActiveRecord::Schema.define(version: 20260919030816) do
   end
 
   create_table "user_agents", force: true do |t|
+    t.text     "user_agent",                          null: false
     t.integer  "access_count",            default: 0, null: false
     t.text     "user_ip",                             null: false
     t.boolean  "suspected_bot"
@@ -934,7 +933,7 @@ ActiveRecord::Schema.define(version: 20260919030816) do
     t.boolean  "confirmed_human"
   end
 
-  add_index "user_agents", ["user_ip"], :name => "index_user_agents_on_user_ip"
+  add_index "user_agents", ["user_ip", "user_agent"], :name => "index_user_agents_on_user_ip_and_user_agent", :unique => true
 
   create_table "user_callsigns", force: true do |t|
     t.integer  "user_id"
@@ -944,8 +943,6 @@ ActiveRecord::Schema.define(version: 20260919030816) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
-
-  add_index "user_callsigns", ["callsign", "from_date", "to_date"], :name => "idx_user_callsigns_lookup"
 
   create_table "user_tokens", force: true do |t|
     t.string   "remember_token"

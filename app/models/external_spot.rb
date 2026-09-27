@@ -21,8 +21,46 @@ class ExternalSpot < ActiveRecord::Base
       round_freq = frequency.to_d.round(4).to_s
       base_call = activatorCallsign.gsub('\/P','')
       dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where (updated_at > '#{MAX_SPOT_CONSOLIDATION_TIME.minutes.ago.to_s}' or ('#{code}' = ANY(code) and updated_at > '#{MAX_SPOT_LIFETIME.minutes.ago.to_s}')) and \"activatorCallsign\" = '#{base_call}' and (frequency = '#{round_freq}' or frequency is null or frequency = '' or frequency = '0.0' or '#{round_freq}' = '' or '#{round_freq}' = '0.0') and (mode = '#{mode}' or mode is null or mode = '' or '#{mode}'='') order by created_at desc limit 1" ]
-  
-      if dups and dups.count>0 then
+
+      reuse = false
+      if dups and dups.count>0
+        puts "SPOTCHECK: DUPS"
+
+        #check for exact matches within that result set
+        fulldups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where id in (?) and code @> ARRAY[?::varchar] and code <@ ARRAY[?::varchar]", dups.map{|d| d.id}, [code], [code] ]
+        if fulldups and fulldups.count>0 #prioritise full duplicate
+          dups = fulldups
+          reuse = true
+        else
+          reuse = true
+          #check that new assets overlap with old (VK/ZL)
+          if code.match(/VK|ZL|AU|NZ/)
+            puts "SPOTCHECK: NZ/AU"
+
+            if !Asset.overlap_all?(dups.first.code, [code])
+              puts "SPOTCHECK: No everlap"
+
+              reuse = false
+            end
+          end
+
+          #check that n-fers are all programmes that allow n-fers
+          if reuse == true
+            dup = dups.first
+            combined_codes = (dup.code + [code]).uniq
+            combined_classes = Asset.get_pnp_classes_from_codes(combined_codes)
+            puts "SPOTCHECK: #{combined_classes.to_json}"
+
+            repeated_classes = combined_classes.group_by { |e| e }.select { |_k, v| v.size > 1 }.keys
+            puts "SPOTCHECK: #{repeated_classes.to_json}"
+
+            reuse = false if !AssetType.all_allow_multi?(repeated_classes)
+          end
+        end
+      end
+
+      #reuse existing spot if allowed, otherwise create new spot
+      if reuse == true
         cs=dups.first
       else
         newspot = true
@@ -37,15 +75,16 @@ class ExternalSpot < ActiveRecord::Base
       cs.mode = mode if mode and mode != ''
       cs.time += [time]
       cs.callsign += [callsign]
-      cs.code += [code]
-      cs.code = cs.code #.uniq
-      cs.name += [(name||"")+"; "]
+      if !cs.code.include?(code)
+        cs.code += [code]
+        cs.name += [(name||"")+"; "]
+        cs.spot_type += [spot_type]
+      end
+#      cs.code = cs.code #.uniq
 #      cs.name = cs.name.uniq
       cs.comments += ["["+(if is_pnp then "PnP-" else "" end)+(spot_type||"")+"] "+((callsign||"")+": "+(comments||"") + " ("+(time.strftime("%H:%M:%S")||"")+")")[0..254]]
 #      cs.comments = cs.comments.uniq  
   
-      cs.spot_type += [spot_type]
-#      cs.spot_type = cs.spot_type.uniq  
       cs.save 
     end
     #we now do this on_save
