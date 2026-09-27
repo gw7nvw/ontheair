@@ -4,7 +4,7 @@
 class UsersController < ApplicationController
   include ApplicationHelper
 
-  before_action :signed_in_user, only: %i[edit update district_progress region_progress awards stats assets p2p]
+  before_action :signed_in_user, only: %i[index edit update district_progress region_progress awards stats assets p2p]
 
   def test_notification
     @user = User.find_by(callsign: params[:id].upcase)

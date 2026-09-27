@@ -209,7 +209,6 @@ class Post < ActiveRecord::Base
   def get_all_asset_codes
     codes = asset_codes
     initial_classes = Asset.get_pnp_classes_from_codes(asset_codes)
-
     newcodes = codes
     if loc_source=='user' then
       newcodes = Asset.containing_codes_from_location(location, nil, true)
@@ -223,17 +222,19 @@ class Post < ActiveRecord::Base
     user = User.find_by(callsign: callsign.upcase) if callsign
     if user && (user.logs_pota == false) then newcodes = newcodes.reject { |code| Asset.get_asset_type_from_code(code) == 'pota park' } end
     if user && (user.logs_wwff == false) then newcodes = newcodes.reject { |code| Asset.get_asset_type_from_code(code) == 'wwff park' } end
-
+    
     #check we haven't added illegal nfers
     added_codes = newcodes - asset_codes
     added_classes = Asset.get_pnp_classes_from_codes(added_codes)
-    nfer_classes = added_classes && initial_classes
+    nfer_classes = added_classes & initial_classes
     nfer_classes.each do |nfer|
       at=AssetType.find_by(pnp_class: nfer)
-      if !at.allow_multi==true
-        puts "REJECT: #{nfer}"
-        newcodes = newcodes.reject { |code| Asset.get_asset_type_from_code(code) == at.name }
-        newcodes = (asset_codes + newcodes).uniq
+      if at
+        if !at.allow_multi==true
+          puts "REJECT: #{nfer}"
+          newcodes = newcodes.reject { |code| Asset.get_asset_type_from_code(code) == at.name }
+          newcodes = (asset_codes + newcodes).uniq
+        end
       end
     end
 

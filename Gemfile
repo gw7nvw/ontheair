@@ -21,6 +21,7 @@ gem "rgeo-proj4" # Adds the missing RGeo::CoordSys::Proj4 constant
 gem "kt-paperclip", "~> 7.2"
 gem "bcrypt"
 gem "resque"
+gem "resque-scheduler"
 gem "will_paginate"
 gem "dartsass-rails"
 gem "csv"

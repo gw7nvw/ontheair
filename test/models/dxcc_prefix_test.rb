@@ -35,6 +35,7 @@ class DxccPrefixTest < ActiveSupport::TestCase
     asset3=create_test_asset(asset_type: 'summit', code_prefix: 'VK1/AC-', country: 'VK')
     assets = DxccPrefix.get_assets_with_type('ZL')
     sorted = assets.sort_by {|row| row['type']}
+    puts assets.to_s
     assert_equal assets.count, 2, "Correct no of classes returned"
     assert_equal assets.first["site_list"], [asset1.code]
     assert_equal assets.last["site_list"], [asset2.code]

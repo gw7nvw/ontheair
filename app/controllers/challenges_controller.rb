@@ -60,7 +60,7 @@ class ChallengesController < ApplicationController
     reset_session
 
     # Render a lightweight 404 or send them straight to a static error layout
-    render text: "Forbidden", status: :forbidden
+    render plain: "Forbidden", status: :forbidden
   end
 end
 

@@ -44,6 +44,7 @@
   <%=link_to "Cancel", '/pota_logs?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
 </div>
 <script>
+  document.body.classList.remove('loading');
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>
 

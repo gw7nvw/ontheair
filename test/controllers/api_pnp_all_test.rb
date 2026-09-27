@@ -33,10 +33,10 @@ class ApiPnpAllTest < ActionDispatch::IntegrationTest
     assert_equal data.count, 2
     #note ID picking up LAST code, not first.  Not ideal, but too hard to fix for now ...
     assert_equal data[0].excluding(["actId"]), 
-      {"ID" => asset1.code, "actFreq" => "7.09", "actMode" => "SSB","actTime" => t1.to_s,"actClass" => "ZLOTA","actSiteID" => asset1.code,"actSpoter" => user1.callsign,"actCallsign" => user2.callsign,"actComments" => "[#{asset1.code}, #{asset2.code}] test spot","actLocation" => asset1.code,"altLocation" => "#{asset1.name} [#{asset1.code}] {RE44nt}; #{asset2.name} [#{asset2.code}] {RE44nt}"},
+      {"ID" => asset1.code, "ZLOTAID" => asset1.code, "actFreq" => "7.09", "actMode" => "SSB","actTime" => t1.to_s,"actClass" => "ZLOTA","actSiteID" => asset1.code,"actSpoter" => user1.callsign,"actCallsign" => user2.callsign,"actComments" => "[#{asset1.code}, #{asset2.code}] test spot","actLocation" => asset1.code,"altLocation" => "#{asset1.name} [#{asset1.code}] {RE44nt}; #{asset2.name} [#{asset2.code}] {RE44nt}"},
       "first row should match"
     assert_equal data[1].excluding(["actId"]), 
-      {"ID" => asset3.code, "actFreq" => "7.09", "actMode" => "SSB","actTime" => t2.to_s,"actClass" => "ZLOTA","actSiteID" => asset3.code,"actSpoter" => user1.callsign,"actCallsign" => user1.callsign,"actComments" => "self spot","actLocation" => asset3.code,"altLocation" => "#{asset3.name} [#{asset3.code}] {RE44bt}"},
+      {"ID" => asset3.code, "ZLOTAID" => asset3.code, "actFreq" => "7.09", "actMode" => "SSB","actTime" => t2.to_s,"actClass" => "ZLOTA","actSiteID" => asset3.code,"actSpoter" => user1.callsign,"actCallsign" => user1.callsign,"actComments" => "self spot","actLocation" => asset3.code,"altLocation" => "#{asset3.name} [#{asset3.code}] {RE44bt}"},
       "second row should match"
   end
 
@@ -62,7 +62,7 @@ class ApiPnpAllTest < ActionDispatch::IntegrationTest
       {"ID" => "GFF-0001", "ParkID" => "GFF-0001", "WWFFID" => "GFF-0001", "WWFFid" => "GFF-0001", "actFreq" => "7.19", "actMode" => "AM", "actTime" => t1.to_s, "actClass" => "WWFF", "actSiteID" => "GFF-0001", "actSpoter" => user1.callsign, "actCallsign" => "MM0FMF", "actComments" => "", "actLocation" => "", "altLocation" => ""},
       "first row should match"
     assert_equal data[1].excluding(["actId"]), 
-      {"ID" => asset1.code, "actFreq" => "7.09", "actMode" => "SSB", "actTime" => t2.to_s, "actClass" => "ZLOTA", "actSiteID" => asset1.code, "actSpoter" => user1.callsign, "actCallsign" => user2.callsign, "actComments" => "cq cq", "actLocation" => asset1.code, "altLocation" => ""},
+      {"ID" => asset1.code, "ZLOTAID" => asset1.code, "actFreq" => "7.09", "actMode" => "SSB", "actTime" => t2.to_s, "actClass" => "ZLOTA", "actSiteID" => asset1.code, "actSpoter" => user1.callsign, "actCallsign" => user2.callsign, "actComments" => "cq cq", "actLocation" => asset1.code, "altLocation" => ""},
       "second row should match"
   end
 
@@ -86,7 +86,7 @@ class ApiPnpAllTest < ActionDispatch::IntegrationTest
 
     assert_equal 1, data.count, "Expected only 1 result in 10-minute window"
     assert_equal data[0].excluding(["actId"]),
-      {"ID" => asset3.code, "actFreq" => "7.09", "actMode" => "SSB","actTime" => t2.to_s,"actClass" => "ZLOTA","actSiteID" => asset3.code,"actSpoter" => user1.callsign,"actCallsign" => user1.callsign,"actComments" => "self spot","actLocation" => asset3.code,"altLocation" => "#{asset3.name} [#{asset3.code}] {RE44bt}"},
+      {"ID" => asset3.code, "ZLOTAID" => asset3.code, "actFreq" => "7.09", "actMode" => "SSB","actTime" => t2.to_s,"actClass" => "ZLOTA","actSiteID" => asset3.code,"actSpoter" => user1.callsign,"actCallsign" => user1.callsign,"actComments" => "self spot","actLocation" => asset3.code,"altLocation" => "#{asset3.name} [#{asset3.code}] {RE44bt}"},
       "result row should match"
   end
 
@@ -110,7 +110,7 @@ class ApiPnpAllTest < ActionDispatch::IntegrationTest
     data = JSON.parse(@response.body)
     assert_equal data.count, 1
     assert_equal data[0].excluding(["actId"]),
-      {"ID" => asset1.code, "actFreq" => "7.09", "actMode" => "SSB", "actTime" => t2.to_s, "actClass" => "ZLOTA", "actSiteID" => asset1.code, "actSpoter" => user1.callsign, "actCallsign" => user2.callsign, "actComments" => "cq cq", "actLocation" => asset1.code, "altLocation" => ""}
+      {"ID" => asset1.code, "ZLOTAID" => asset1.code, "actFreq" => "7.09", "actMode" => "SSB", "actTime" => t2.to_s, "actClass" => "ZLOTA", "actSiteID" => asset1.code, "actSpoter" => user1.callsign, "actCallsign" => user2.callsign, "actComments" => "cq cq", "actLocation" => asset1.code, "altLocation" => ""}
       "last row should match"
 
     #use URL alias
@@ -121,7 +121,7 @@ class ApiPnpAllTest < ActionDispatch::IntegrationTest
     data = JSON.parse(@response.body)
     assert_equal data.count, 1
     assert_equal data[0].excluding(["actId"]),
-      {"ID" => asset1.code, "actFreq" => "7.09", "actMode" => "SSB", "actTime" => t2.to_s, "actClass" => "ZLOTA", "actSiteID" => asset1.code, "actSpoter" => user1.callsign, "actCallsign" => user2.callsign, "actComments" => "cq cq", "actLocation" => asset1.code, "altLocation" => ""}
+      {"ID" => asset1.code, "ZLOTAID" => asset1.code, "actFreq" => "7.09", "actMode" => "SSB", "actTime" => t2.to_s, "actClass" => "ZLOTA", "actSiteID" => asset1.code, "actSpoter" => user1.callsign, "actCallsign" => user2.callsign, "actComments" => "cq cq", "actLocation" => asset1.code, "altLocation" => ""}
       "last row should match"
   end
 

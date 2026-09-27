@@ -1,6 +1,7 @@
 require_relative "boot"
 
 require "rails/all"
+require_relative "../lib/middleware/skip_bot_sessions"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -34,5 +35,14 @@ module Ontheair
      config.time_zone = "UTC"
     # config.eager_load_paths << Rails.root.join("extras")
     config.active_record.schema_format = :sql
+#    config.middleware.insert_after ActionDispatch::Session::ActiveRecordStore, SkipBotSessions
+    #    # Add before a specific middleware
+config.middleware.insert_before ActionDispatch::Cookies, SkipBotSessions
+#    initializer "skip_bot_sessions.configure_middleware", after: :build_middleware_stack do |app|
+#      app.config.middleware.insert_after(
+#        :active_record_store,
+#        SkipBotSessions
+#      )
+#    end
   end
 end

@@ -58,7 +58,7 @@ class SkipBotSessions
               end
     
             # 5. check if they are unknown status, nut have hit our triggers
-            elsif ua_record.suspicious_access_count > CHALLENGE_THRESHOLD || (ua_record.access_count>10 && (1.0*ua_record.js_count/ua_record.access_count)<=0.3)
+            elsif ua_record.suspicious_access_count >= CHALLENGE_THRESHOLD || (ua_record.access_count>=10 && (1.0*ua_record.js_count/ua_record.access_count)<=0.3)
               Rails.logger.info "!!! Hit our trigger thresholds. Mark as suspect and REDIRECT"
                 ua_record.update_columns(
                   suspected_bot: true
@@ -89,8 +89,8 @@ class SkipBotSessions
       unless current_path.start_with?('/api') or current_path.start_with?('/posts/sms')
         # C. check for suspicious activties
         # redirects to login:
-        suspicious = (status == 302 && headers['Location']&.include?('/signin') ? 1 : 0)
-
+        location_header = headers['Location'].to_s
+        suspicious = (status == 302 && location_header.match?(/\/signin(\?|$)/) ? 1 : 0)
         # In Rails, AJAX requests pass an HTTP_X_REQUESTED_WITH header, or end in .js
         is_js_request = env['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest' || current_path.end_with?('.js')
         request_type  = is_js_request ? :js : :html

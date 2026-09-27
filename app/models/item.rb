@@ -110,7 +110,48 @@ class Item < ActiveRecord::Base
 
     dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where (updated_at > '#{MAX_SPOT_CONSOLIDATION_TIME.minutes.ago.to_s}' or ('#{post.asset_codes.first}' = ANY(code) and updated_at > '#{MAX_SPOT_LIFETIME.minutes.ago.to_s}')) and \"activatorCallsign\" = '#{post.callsign}' and (frequency = '#{round_freq}' or frequency is null or frequency = '' or frequency = '0.0' or '#{round_freq}' = '' or '#{round_freq}' = '0.0') and (mode = '#{post.mode}' or mode is null or mode = '' or '#{post.mode}'='') order by created_at desc limit 1" ]
 
-    if dups and dups.count>0 then
+    reuse = false
+    if dups and dups.count>0
+      puts "SPOTCHECK: DUPS"
+
+      #check for exact matches within that result set
+      puts "DUPS: #{dups.to_json}"
+      fulldups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where id in (?) and code @> ARRAY[?::varchar] and code <@ ARRAY[?::varchar]", dups.map{|d| d.id}, post.asset_codes, post.asset_codes ]
+      if fulldups and fulldups.count>0 #prioritise full duplicate
+        dups = fulldups
+        reuse = true
+      else
+        reuse = true
+        #check that new assets overlap with old (VK/ZL)
+        if post.asset_codes.all?{ |item| item.match(/VK|ZL|AU|NZ/) }
+          puts "SPOTCHECK: NZ/AU"
+
+          if !Asset.overlap_all?(dups.first.code, post.asset_codes)
+            puts "SPOTCHECK: No everlap"
+
+            reuse = false
+          end
+        end
+
+        #check that n-fers are all programmes that allow n-fers
+        if reuse == true
+          dup = dups.first
+          combined_codes = (dup.code + post.asset_codes).uniq
+          combined_classes = Asset.get_pnp_classes_from_codes(combined_codes)
+          puts "SPOTCHECK: COM #{combined_classes.to_json}"
+
+          repeated_classes = combined_classes.group_by { |e| e }.select { |_k, v| v.size > 1 }.keys
+          puts "SPOTCHECK: REP #{repeated_classes.to_json}"
+
+          reuse = false if !AssetType.all_allow_multi?(repeated_classes)
+          puts "SPOTCHECK: REUSE #{reuse.to_json}"
+
+        end
+      end
+    end
+
+    #reuse existing spot if allowed, otherwise create new spot
+    if reuse == true
       cs=dups.first
     else
       cs=ConsolidatedSpot.new
@@ -122,12 +163,15 @@ class Item < ActiveRecord::Base
     cs.mode = post.mode if post.mode and post.mode != ''
     cs.time += [if post.referenced_time then post.referenced_time else self.created_at end]
     cs.callsign += [post.updated_by_name]
-    cs.code += post.asset_codes
-    cs.name += [post.site]
+    if !(post.asset_codes-cs.code).empty?
+      as = Asset.assets_from_code(post.asset_codes.join(', '))
+      types =  as.map{|a| a[:pnp_class]}
+      cs.code += post.asset_codes
+      cs.name += [post.site]
+      cs.spot_type += types
+    end
+
     cs.comments += [post.updated_by_name+": "+(post.description||"") + " ("+post.created_at.strftime("%H:%M:%S")+")"]
-    as = Asset.assets_from_code(cs.code.join(', '))
-    types =  as.map{|a| a[:pnp_class]}
-    cs.spot_type += types
     cs.post_id += [id.to_s]
 
     cs.save
@@ -144,7 +188,7 @@ class Item < ActiveRecord::Base
   def self.send_emails_now(itemid)
     item=Item.find(itemid)
     if item and item.topic_id
-     # if ENV['RAILS_ENV'] == 'production'
+     if ENV['RAILS_ENV'] == 'production'
         raw_image = item.raw_image
         summary = item.summary
         subs = UserTopicLink.where(topic_id: item.topic_id)
@@ -154,6 +198,6 @@ class Item < ActiveRecord::Base
           @user.send_notification(summary, item.url, if @user.push_include_comments then item.comments else nil end, if @user.push_include_map then raw_image else nil end) if sub.notification
         end
       end
-    #end
+    end
   end
 end

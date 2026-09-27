@@ -70,11 +70,13 @@ class ExternalSpot < ApplicationRecord
       cs.mode = mode if mode and mode != ''
       cs.time += [time]
       cs.callsign += [callsign]
-      cs.code += [code]
-      cs.name += [(name||"")]
+      if !cs.code.include?(code)
+        cs.code += [code]
+        cs.name += [(name||"")]
+        cs.spot_type += [spot_type]
+      end
       cs.comments += ["["+(if is_pnp then "PnP-" else "" end)+(spot_type||"")+"] "+((callsign||"")+": "+(comments||"") + " ("+(time.strftime("%H:%M:%S")||"")+")")[0..254]]
   
-      cs.spot_type += [spot_type]
       cs.save 
     end
   end

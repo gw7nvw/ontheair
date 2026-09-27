@@ -7,43 +7,9 @@ class UsersControllerTest < ActionController::TestCase
   ##################################################################
   # INDEX / FIND
   ##################################################################
-  test "Should get index page" do
+  test "Non logged in Should not get index page" do
     get :index
-    assert_response :success
-
-    #Breadcrumbs
-    assert_select '#crumbs', /Home/
-    assert_select '#crumbs', /Users/
-
-    #Action control bar
-    #does not show logged in version
-    assert_select '#controls', {count: 0, text: /Edit/}
-    assert_select '#controls', {count: 0, text: /Add/}
-    assert_select '#controls', {count: 0, text: /Download/}
-
-    assert_select '#controls', /Smaller Map/
-    assert_select '#controls', /Larger Map/
-    assert_select '#controls', /Back/
-
-    #search
-    assert_select '#searchtext'
-    assert_select '#find', {value: 'Find'}
-
-    #should get list of users
-    table=get_table_test(@response.body, 'user_table')
-    assert_equal 5, get_row_count_test(table), "5 rows"
-    row=get_row_test(table,2)
-    assert_match /ZL3CC/, get_col_test(row,1), "Correct callsign"
-    assert_match /Bob/, get_col_test(row,2), "Name"
-    assert_match /checked=\"checked\"/, get_col_test(row,4), "Registered"
-    assert_no_match /bob@bob.net/, get_col_test(row,5), "No email for not admin"
-    assert_no_match /checked=\"checked\"/, get_col_test(row,5), "Not editor"
-    assert_match /checked=\"checked\"/, get_col_test(row,6), "Active"
-    row=get_row_test(table,3)
-    assert_match /ZL4DIS/, get_col_test(row,1), "Correct callsign"
-    row=get_row_test(table,4)
-    assert_match /ZL4NVW/, get_col_test(row,1), "Correct callsign"
-    assert_match /checked=\"checked\"/, get_col_test(row,5), "editor"
+    assert_response :redirect
   end
 
   test "Logged in user Should get index page" do

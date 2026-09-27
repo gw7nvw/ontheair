@@ -22,7 +22,6 @@ def self.all_allow_multi?(pnp_classes)
   result = connection.select_all(sanitized_sql)
 
   result.first["result"]
-
 end
 
 end

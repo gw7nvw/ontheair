@@ -109,7 +109,6 @@ module MapHelper
 
   # Download an individual map tile
   def download_tile(x, y, z, tile_server, id, reverse = true)
-    begin
       # fill in reqired x, y, z to URL
       url = tile_server.gsub('{x}', x.to_s).gsub('{y}', y.to_s).gsub('{z}', z.to_s)
       if reverse then 
@@ -117,11 +116,11 @@ module MapHelper
       else
         filename = '/tmp/' + id + '/' + z.to_s + '_' + y.to_s + '_' + x.to_s
       end
-      puts url, filename
 
       # download tile
       # Open the local file for binary writing as before
       File.open(filename + '.png', 'wb') do |file|
+      begin
         # Use URI.open explicitly and pass headers as a standard Ruby 3 options hash
         remote_data = URI.open(
           url, 
@@ -130,14 +129,14 @@ module MapHelper
         ).read
   
         file.write(remote_data)
+      rescue
+        unless file.nil?
+          file.close unless file.closed?
+        end
+        # if we fail to download a tile (happens with bad grid ref or outside NZ)
+        # infill with a blank tile
+        system("cp #{Rails.root.to_s}/public/icons/blank.png #{filename}.png")
       end
-    # if we fail to download a tile (happens with bad grid ref or outside NZ)
-    # infill with a blank tile
-    rescue
-      unless f.nil?
-        f.close unless f.closed?
-      end
-      system("cp /var/www/html/hota/public/assets/blank.png #{filename}.png")
     end
 
     # return path to downloaded tile

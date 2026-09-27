@@ -182,8 +182,8 @@ class ApiSpotsPostTest < ActionDispatch::IntegrationTest
     assert_response :success
     
     spot=Post.last
-    assert_equal spot.attributes.excluding(["id", "time", "comments", "post_id", "created_at", "updated_at", "referenced_date", "referenced_time", "referenced_datetime", "title"]), 
-      {"description" => "DEBUG testing spotting API", "created_by_id" => user1.id, "updated_by_id" => user1.id, "filename" => nil, "image_file_name" => nil, "image_content_type" => nil, "image_file_size" => nil, "image_updated_at" => nil, "do_not_publish" => nil, "duration" => nil, "site" => "#{asset1.name} [#{asset1.code}] {RE44nt}", "code" => nil, "mode" => "SSB", "freq" => "7.09", "is_hut" => nil, "is_park" => nil, "is_island" => nil, "is_summit" => nil, "hut" => nil, "park" => nil, "island" => nil, "summit" => nil, "callsign" => "ZL2TEST", "asset_codes" => [asset1.code], "user_id" => nil, "do_not_lookup" => true, "location" => nil, "loc_source" => nil}
+    assert_equal spot.attributes.excluding(["id", "time", "comments", "post_id", "created_at", "updated_at", "referenced_date", "referenced_time", "referenced_datetime", "title", "image_file_name", "image_file_size", "image_updated_at", "image_content_type", "filename"]), 
+      {"description" => "DEBUG testing spotting API", "created_by_id" => user1.id, "updated_by_id" => user1.id, "do_not_publish" => nil, "duration" => nil, "site" => "#{asset1.name} [#{asset1.code}] {RE44nt}", "code" => nil, "mode" => "SSB", "freq" => "7.09", "is_hut" => nil, "is_park" => nil, "is_island" => nil, "is_summit" => nil, "hut" => nil, "park" => nil, "island" => nil, "summit" => nil, "callsign" => "ZL2TEST", "asset_codes" => [asset1.code], "user_id" => nil, "do_not_lookup" => true, "location" => nil, "loc_source" => nil}
       "first row should match"
       assert_equal spot.topic_id, TEST_SPOT_TOPIC
       assert_match /SPOT: ZL2TEST spotted portable at #{asset1.name} \[#{asset1.code}\] on 7.09\/SSB at .+/, spot.title

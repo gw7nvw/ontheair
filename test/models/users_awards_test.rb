@@ -39,21 +39,23 @@ class UserAwardTest < ActiveSupport::TestCase
       user2.update_score
       user1.check_awards
       user2.check_awards
+
       count+=1
       if count<10 then
         assert user1.has_award(activator_award.id)[:status]==false, "User has not got this award with "+count.to_s+" contacts" 
         assert user2.has_award(chaser_award.id)[:status]==false, "User has not got this award with "+count.to_s+" contacts" 
       end
     end
+    awarded=user2.has_award(chaser_award.id)
+    assert awarded[:status]==true, "User has got this award after "+count.to_s+" contacts"
+    assert awarded[:latest]=="Bronze (10)", "10 threshold achieved"
+    assert awarded[:next]=="Silver (30)", "Next threshold is 30"
+
     awarded=user1.has_award(activator_award.id)
     assert awarded[:status]==true, "User has got this award after "+count.to_s+" contacts"
     assert awarded[:latest]=="Bronze (10)", "10 threshold achieved"
     assert awarded[:next]=="Silver (30)", "Next threshold is 30"
 
-    awarded=user2.has_award(chaser_award.id)
-    assert awarded[:status]==true, "User has got this award after "+count.to_s+" contacts"
-    assert awarded[:latest]=="Bronze (10)", "10 threshold achieved"
-    assert awarded[:next]=="Silver (30)", "Next threshold is 30"
   end
 
   test "user earns award by passing threshold for activations + chases (bagged)" do

@@ -79,7 +79,11 @@ module SessionsHelper
                      end
     user_token ||= UserToken.find_by(remember_token: remember_token)
     @current_user_token ||= user_token
-    @current_user ||= User.find_by(id: user_token.user_id) if user_token
+    begin
+      @current_user ||= User.find_by(id: user_token.user_id) if user_token
+    rescue
+      cookies.delete(remember_token)
+    end
     @current_user
   end
 end

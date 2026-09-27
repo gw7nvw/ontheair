@@ -65,7 +65,7 @@ class Asset < ActiveRecord::Base
     self.az_radius=1.0*self.type.dist_buffer/1000 if az_radius==nil and self.type.dist_buffer
   end
 
-    def add_overlaps(flush = true)
+  def add_overlaps(flush = true)
     if flush == true
       las = AssetOverlap.where(contained_code: code)
       Rails.logger.warn "DEBUG: deleting #{las.count} old parent links"
@@ -78,13 +78,13 @@ class Asset < ActiveRecord::Base
     return unless is_active
 
     overlap_assets = Asset.find_by_sql ["
-        SELECT b.code as code
+        SELECT b.code as code 
         FROM assets a
         INNER join assets b
-        ON
-          b.is_active=true
+        ON 
+          b.is_active=true 
           AND b.id != a.id
-          AND ST_Overlaps(
+          AND ST_Intersects(
             coalesce(a.az_boundary, a.boundary, a.location),
             coalesce(b.az_boundary, b.boundary, b.location))
         WHERE a.id=?", self.id ]
@@ -1688,15 +1688,15 @@ def self.overlap_all?(codes1, codes2)
       CROSS JOIN unnest(ARRAY[:codes2]) AS c2(code2)
   
       -- 2. Look for combinations that are MISSING from the asset_links table
-      LEFT JOIN asset_links al 
+      LEFT JOIN asset_overlaps al 
         ON (al.contained_code = c1.code1 AND al.containing_code = c2.code2) or (al.contained_code = c2.code2 AND al.containing_code = c1.code1)
-      WHERE al.contained_code IS NULL  -- Filters for missing records
+      WHERE al.contained_code IS NULL and code1 != code2  -- Filters for missing records
     ) as result;
   SQL
-
+    
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
     sanitized_sql = sanitize_sql_array([sql, { codes1: codes1, codes2: codes2 }])
-
+  
     # 3. Pull raw string text directly from the execution block
     result = connection.select_all(sanitized_sql)
 
