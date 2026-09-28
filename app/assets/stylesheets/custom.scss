@@ -29,7 +29,7 @@ $lightblue: #4444ff;
 }
 
 #ota_logo {
-  position: absolute !important;
+  position: fixed !important;
   right: 1rem !important;
   transform: none !important;
   z-index: 9999; /* Layers it safely over the sliding menu elements */
@@ -990,7 +990,7 @@ input {
   }
 
   #ota_name {
-    position: absolute !important;
+    position: fixed !important;
     transform: none !important;
     z-index: 9999;
     right: 64px;

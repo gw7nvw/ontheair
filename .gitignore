@@ -42,11 +42,9 @@ app/javascript/map-script-800.js
 !/tmp/storage/.keep
 
 /node_modules
-/public/assets
 /public/packs
 /public/packs-test
 .eslintcache
-/public/assets
 /public/rails-assets/
 /public/system/
 # /test/vcr_cassettes
