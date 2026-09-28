@@ -121,6 +121,8 @@
       Displaying first <%=@limit%> only.  Please refine your search
     <% end %>
 
+    <div class="photo-bar">
+
     <table class="places" id="place_table">
       <tr>
         <th>Type</th>
@@ -159,6 +161,7 @@
         </tr>
       <% end end %>
     </table>
+    </div>
 
     <div class="name_pagination"> <%= will_paginate(@assets) %></div>
   <% end %>

@@ -19,7 +19,8 @@ import XYZ from "ol/source/XYZ";
 import TileGrid from "ol/tilegrid/TileGrid";
 import { get as getProjection } from 'ol/proj';
 window.getProjection = getProjection;  
-  
+
+
 // Site-specfic stuff follows - should be in separate file
 //  
   
@@ -36,6 +37,13 @@ var site_select_append=false;
 var site_current_style=null;
 var site_current_click_layer=null;
 
+//swipe
+var touchStartX = 0;
+var touchStartY = 0;
+var swipeHandled = false;
+const MIN_DISTANCE = 100;   // Pixels moved horizontally before we intercept
+const ALLOWED_RATIO = 1.5;  // Must be mostly horizontal
+
 //layers
 var district_layer;
 var region_layer;
@@ -49,11 +57,7 @@ var region_detail_layer;
 var polygon_layer;
 var polygon_simple_layer;
 var polygon_detail_layer;
-//var vkpolygon_layer;
-//var vkpolygon_simple_layer;
-//var vkpolygon_detail_layer;
 var points_layer;
-//var vkpoints_layer;
 var site_map_layers={};
 var site_default_point_layers=['lake','lighthouse','summit','hump','volcano'];
 var site_all_point_layers=['park','hut','island','summit','hump','lake','lighthouse','volcano'];
@@ -177,6 +181,8 @@ function site_init() {
 
     });
 
+    add_swipe();
+
     window.site_map_layers = site_map_layers;
     window.site_purple_star = site_purple_star;
     window.site_highlight_polygon = site_highlight_polygon;
@@ -196,12 +202,6 @@ function site_init() {
     window.map_is_ready = true;
     window.dispatchEvent(new CustomEvent('map:loaded'));
   }
-// } 
- //catch(err) {
-//   site_smaller_map();
-// }
-// finally {
-// }
 }
 
 function site_zoom_end_callback() {
@@ -215,6 +215,58 @@ function site_zoom_end_callback() {
       document.getElementById('point_layers').style="color: #000000; font-style: normal";
     };
   };
+}
+
+function add_swipe() {
+window.addEventListener('touchstart', function(e) {
+    // 1. EXCLUDE MAP: If touch started inside the map div, abort completely
+    if (e.target.closest('#map_div') || e.target.closest('.photo-bar')) {
+        swipeHandled = true; // Blocks the rest of this gesture sequence
+        return;
+    }
+
+    // 2. MULTI-TOUCH GUARD: Abort if more than one finger is used
+    if (e.touches.length > 1) {
+        swipeHandled = true;
+        return;
+    }
+
+    touchStartX = e.changedTouches[0].clientX;
+    touchStartY = e.changedTouches[0].clientY;
+    swipeHandled = false;
+}, { passive: true });
+
+window.addEventListener('touchmove', function(e) {
+    // Abort if the gesture started on the map, is already handled, or a second finger joined
+    if (swipeHandled || e.touches.length > 1) {
+        return;
+    }
+
+    const currentX = e.changedTouches[0].clientX;
+    const currentY = e.changedTouches[0].clientY;
+
+    const diffX = currentX - touchStartX;
+    const diffY = currentY - touchStartY;
+
+    // Check if the user has moved far enough horizontally to test for a swipe
+    if (Math.abs(diffX) > MIN_DISTANCE) {
+
+        // Ensure it's a distinct horizontal swipe, not a vertical scroll
+        if (Math.abs(diffX) > Math.abs(diffY) * ALLOWED_RATIO) {
+
+            // Cancel native scrolling on the menu bar during the swipe
+            if (e.cancelable) e.preventDefault();
+
+            swipeHandled = true;
+
+            if (diffX > 0) {
+                site_bigger_map(); // Swipe Right
+            } else {
+                site_smaller_map(); // Swipe Left
+            }
+        }
+    }
+}, { passive: false });
 }
 
 function place_init(plloc, keep,style) 

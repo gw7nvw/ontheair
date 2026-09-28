@@ -28,6 +28,17 @@ $lightblue: #4444ff;
   height: 100% !important;
 }
 
+#ota_logo {
+  position: absolute !important;
+  right: 1rem !important;
+  transform: none !important;
+  z-index: 9999; /* Layers it safely over the sliding menu elements */
+}
+
+#ota_name {
+  display: none
+}
+
 .spinner_modal {
     display:    none;
     position:   fixed;
@@ -972,25 +983,41 @@ input {
     min-height: 42px;
 }
 /* mobile specific */
-@media only screen and (max-width: 540px), 
+@media only screen and (max-width: 770px), 
        only screen and (max-width: 1024px) and (hover: none) and (pointer: coarse) {
   .flag {
-    display: none;
+  //  display: none;
+  }
+
+  #ota_name {
+    position: absolute !important;
+    transform: none !important;
+    z-index: 9999;
+    right: 64px;
+    display: flex;
+    height: 40px;
+    margin-top: 10px;
   }
 
   #menus {
     /* rules that only apply for canvases narrower than 1000px */
     font-size: 1rem;
   }
-//  .navbar .nav > li > a {
-//   padding: 10px 4px 10px;
-//  }
+ 
+ .navbar-collapse {
+    /* 1. Calculate maximum available vertical height (100% viewport minus top navbar height) */
+    max-height: calc(100vh - 60px) !important;
 
-// #rg-image {
-//   width:20px !important;
-//   padding-top: 4px !important;
-//  } 
-  
+    /* 2. Enable safe, independent vertical scrolling context */
+    overflow-y: auto !important;
+
+    /* 3. Smooth out touch momentum scrolling physics for iOS/Safari mobile views */
+    -webkit-overflow-scrolling: touch;
+
+    /* Optional UI Polish: Prevent horizontal text elements from creating layout wiggle */
+    overflow-x: hidden !important;
+  }
+
   .erow li {
    line-height: 1;
   }
@@ -1030,23 +1057,9 @@ input {
     font-size: 0.9em !important;
     line-height: 1.1em !important;
   }
-//  #actionbar
-//  {
- //      height: 54px !important;
-//  }
-
-  #right_scroll {
-  }
-//  #actionbar-form
-//  {
-  //     height: 54px !important;
-  //     margin-top: -54px !important;
-//  }
   
   .photo-bar {
-   # padding-left:25px;
     height:auto;
-   # width: calc(100% - 25px);
     width: 100%;
     overflow-x:auto;
     overflow-y:hidden;
@@ -1060,31 +1073,9 @@ input {
     margin-right:10px;
   }
 
-#crumbs
-{
+#crumbs {
   display: none;
 }
-//#our_logo {
-//  width: 0px;
-//  height: 0px;
-//  margin-left: 0px;
-//  margin-right: 0px;
-//  padding-top: 0px;
-//  padding-right: 0px;
-//  padding-left: 0px;
-//}
-//#rg-image {
-// float:left;
-// width:0px;
-// height:0px;
-// margin-left:0px;
-//}
-//#rg-text {
-// float:left;
-// width:0px;
-// height:0px;
-// margin-left:0px;
-//}
 
 
 

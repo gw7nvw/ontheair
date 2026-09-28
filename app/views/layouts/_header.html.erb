@@ -130,11 +130,17 @@
 
             </ul>
           </div>
-          <a class="navbar-brand ml-auto mr-0" href="#">
-            <img src='/icons/antenna32.png'>
-          </a>
         </div>
 <!--        </div>-->
       </div>
     </header>
+    <div id="ota_name">
+      <%= link_to '...OnTheAir', '/', remote: true, :id => 'home_link2', :onclick => "linkHandler('home_link')", class: "navbar-brand ml-auto mr-0", style: "color: rgba(255, 255, 255, 0.75) !important;"%></li>
+
+    </div>
+    <div id="ota_logo">
+      <a class="navbar-brand ml-auto mr-0" href="#">
+        <img src='/icons/antenna32.png'>
+      </a>
+    </div>
 
