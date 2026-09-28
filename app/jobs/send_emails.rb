@@ -5,9 +5,10 @@ class SendEmails
   @queue = :ota_scheduled
 
   def self.perform(itemid)
-    puts 'SEND EMAILS: Got called for item: ' + itemid.to_s
+    Resque.logger.info 'SEND EMAILS: Got called for item: ' + itemid.to_s
+    Resque.logger.info "SEND PRODENV: #{PRODENV}"
       if PRODENV and PRODENV=='UAT' then
-        logger.info "EMAIL: not sending in UAT environment - #{itemid}"
+        Resque.logger.info "EMAIL: not sending in UAT environment - #{itemid}"
       else
         Item.send_emails_now(itemid)
       end
