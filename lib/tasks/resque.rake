@@ -9,5 +9,5 @@ namespace :resque do
     ENV['QUEUE'] ||= '*'
   end
 
-  task scheduler: :setup
+  task :scheduler_setup => :setup
 end
