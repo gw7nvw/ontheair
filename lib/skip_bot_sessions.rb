@@ -1,4 +1,3 @@
-  module Middleware
     class SkipBotSessions
   BOT_REGEX = /googlebot|bingbot|yandex|baidu|slurp|duckduckgo|ia_archiver|crawler|spider|bot/i
   CHALLENGE_THRESHOLD = 5
@@ -14,8 +13,8 @@
 #    ip_address = env['HTTP_CF_CONNECTING_IP'] || env['REMOTE_ADDR']
     ip_address = env['HTTP_X_FORWARDED_FOR'] || env['HTTP_CLIENT_IP'] || env['REMOTE_ADDR']
     ip_address = ip_address.to_s.split(',').first&.strip
-    Rails.logger.info "MIDDLEWARE #{ip_address}"
- 
+    Rails.logger.info "NO MIDDLEWARE #{ip_address}"
+
     begin
       unless current_path.start_with?('/api') or current_path.start_with?('/posts/sms') 
         # 1. Fetch the exact tracking record upfront
@@ -115,4 +114,3 @@
     [status, headers, response]
   end
 end
-  end
