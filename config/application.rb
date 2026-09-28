@@ -37,7 +37,8 @@ module Ontheair
     config.active_record.schema_format = :sql
 #    config.middleware.insert_after ActionDispatch::Session::ActiveRecordStore, SkipBotSessions
     #    # Add before a specific middleware
-config.middleware.insert_before ActionDispatch::Cookies, SkipBotSessions
+    Rails.autoloaders.main.ignore(Rails.root.join("lib/skip_bot_sessions.rb"))
+    config.middleware.insert_before ActionDispatch::Cookies, SkipBotSessions
 #    initializer "skip_bot_sessions.configure_middleware", after: :build_middleware_stack do |app|
 #      app.config.middleware.insert_after(
 #        :active_record_store,
