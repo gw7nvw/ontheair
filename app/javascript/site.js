@@ -18,7 +18,7 @@ import TileLayer from "ol/layer/Tile";
 import XYZ from "ol/source/XYZ";
 import TileGrid from "ol/tilegrid/TileGrid";
 import { get as getProjection } from 'ol/proj';
-  
+window.getProjection = getProjection;  
   
 // Site-specfic stuff follows - should be in separate file
 //  
@@ -193,6 +193,8 @@ function site_init() {
     window.site_green_circle = site_green_circle;
     window.site_yellow_circle = site_yellow_circle;
 
+    window.map_is_ready = true;
+    window.dispatchEvent(new CustomEvent('map:loaded'));
   }
 // } 
  //catch(err) {

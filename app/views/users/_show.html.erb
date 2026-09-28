@@ -1,5 +1,15 @@
 <script> 
-  reset_map_controllers();
+  function onload_tasks() {
+    reset_map_controllers();
+    if ($(window).width() < 960) {
+      site_smaller_map();
+    }
+  }
+  if (window.map_is_ready) {
+    onload_tasks();
+  } else {
+    window.addEventListener('map:loaded', onload_tasks, { once: true });
+  }
   document.getElementById("page_status").innerHTML = '';
   document.body.classList.remove('loading');
 </script>

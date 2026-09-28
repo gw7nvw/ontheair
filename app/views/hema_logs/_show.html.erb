@@ -124,6 +124,14 @@
 
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
-  reset_map_controllers(); 
+  function onload_tasks() {
+    reset_map_controllers();
+  }
+  if (window.map_is_ready) {
+    onload_tasks();
+  } else {
+    window.addEventListener('map:loaded', onload_tasks, { once: true });
+  }
+
 </script>
 

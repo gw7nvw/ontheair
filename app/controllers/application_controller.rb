@@ -5,6 +5,7 @@ class ApplicationController < ActionController::Base
   before_action :determine_country
   helper_method :current_country 
   helper_method :safe_session_get
+#  after_action :audit_session_cookie_size  #troibleshooting use
 
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
@@ -134,6 +135,7 @@ class ApplicationController < ActionController::Base
           else
             unless ['/styles.js', '/query', '/layerswitcher', '/legend'].include?(request.fullpath.split('?').first)
               session[:last_index_page].push("#{uri.path}?#{uri.query}".chomp("?").gsub('?back=true','').gsub('&back=true',''))
+              session[:last_index_page]=session[:last_index_page][-20..-1] if session[:last_index_page].count>20
             end
           end
         end
@@ -248,6 +250,29 @@ class ApplicationController < ActionController::Base
                          else
                            'ZL' # Default fallback
                          end
+    end
+  end
+
+  def audit_session_cookie_size
+    # 1. Grab the live session tracking hash container object
+    active_session = session.to_hash
+
+    if active_session.any?
+      Rails.logger.error "\n--- 🍪 LIVE SESSION MONITOR (Controller Layer) ---"
+
+      active_session.each do |key, value|
+        # Calculate the text byte size footprint of each key payload
+        byte_size = Marshal.dump(value).bytesize rescue value.to_s.bytesize
+
+        if byte_size > 200
+          Rails.logger.error "⚠️ BLOAT DETECTED! Key: '#{key}' is hoarding space! Size: #{byte_size} bytes."
+          Rails.logger.error "Content Preview: #{value.to_s[0..200]}..."
+        else
+          Rails.logger.error "  Key: '#{key}' | Size: #{byte_size} bytes."
+        end
+      end
+
+      Rails.logger.error "---------------------------------------------------\n"
     end
   end
 end

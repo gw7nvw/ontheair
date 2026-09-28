@@ -772,6 +772,21 @@ input, textarea, select:not(.body-select), .uneditable-input {
   @include box_sizing;
 }
 
+input[type="submit"],
+.btn-submit {
+  width: max-content !important; /* Forces the box to tightly fit the content words */
+  display: inline-block !important; /* Ensures it sits natively inline next to adjacent labels */
+  margin-bottom: 0px !important;
+  background-color: #aaa;
+}
+
+.btn-primary {
+  background-color: #0069d9 !important;
+}
+.btn-small {
+  background-color: #aaa;
+}
+
 input:read-only {
   border-style: dotted !important;
   cursor: default;

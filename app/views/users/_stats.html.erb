@@ -1,5 +1,24 @@
 <script> 
-  reset_map_controllers();
+    function onload_tasks() {
+    reset_map_controllers();
+    if ($(window).width() < 960) {
+      site_smaller_map();
+    }
+    <% if @chaseSites then @chaseSites.each do |chaseSite| %>
+      <% if chaseSite.location then %> map_add_feature_from_wkt('<%=chaseSite.location%>', 'EPSG:4326',site_red_circle); <% end %>
+    <% end end %>
+    <% if @qualifySites then @qualifySites.each do |qualifySite| %>
+      <% if qualifySite.location then %> map_add_feature_from_wkt('<%=qualifySite.location%>', 'EPSG:4326',site_green_circle); <% end %>
+    <% end end %>
+    <% if @activationSites then @activationSites.each do |activationSite| %>
+      <% if activationSite.location then %> map_add_feature_from_wkt('<%=activationSite.location%>', 'EPSG:4326',site_yellow_circle); <% end %>
+    <% end end %>
+  }
+  if (window.map_is_ready) {
+    onload_tasks();
+  } else {
+    window.addEventListener('map:loaded', onload_tasks, { once: true });
+  }
   document.getElementById("page_status").innerHTML = '';
   document.body.classList.remove('loading');
 </script>
@@ -110,14 +129,5 @@
 </div>
 
 <script>
-  <% if @chaseSites then @chaseSites.each do |chaseSite| %>
-      <% if chaseSite.location then %> map_add_feature_from_wkt('<%=chaseSite.location%>', 'EPSG:4326',site_red_circle); <% end %>
-  <% end end %>
-  <% if @qualifySites then @qualifySites.each do |qualifySite| %>
-      <% if qualifySite.location then %> map_add_feature_from_wkt('<%=qualifySite.location%>', 'EPSG:4326',site_green_circle); <% end %>
-  <% end end %>
-  <% if @activationSites then @activationSites.each do |activationSite| %>
-      <% if activationSite.location then %> map_add_feature_from_wkt('<%=activationSite.location%>', 'EPSG:4326',site_yellow_circle); <% end %>
-  <% end end %>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
 </script>

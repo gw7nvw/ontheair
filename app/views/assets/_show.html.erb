@@ -626,15 +626,22 @@
 <% if !@bot %>
 
   <script>
-    document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
-    place_init('<%=@asset.location%>',  0, site_purple_star);
-    <% if @asset.boundary_simple then %>
-        place_init('<%=@asset.boundary_simple%>',  1,site_highlight_polygon);
+    function onload_tasks() {
+      place_init('<%=@asset.location%>',  0, site_purple_star);
+      <% if @asset.boundary_simple then %>
+          place_init('<%=@asset.boundary_simple%>',  1,site_highlight_polygon);
+      <% end %>
+      <% if @asset.az_boundary_simple then %>
+        place_init('<%=@asset.az_boundary_simple%>',  1,site_az_style);
+      <% end %>
+    }
+     if (window.map_is_ready) {
+       onload_tasks();
+     } else {
+       window.addEventListener('map:loaded', onload_tasks, { once: true });
+     }
 
-    <% end %>
-    <% if @asset.az_boundary_simple then %>
-      place_init('<%=@asset.az_boundary_simple%>',  1,site_az_style);
-  <% end %>
+    document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
   
     function editlinks() {
       if (document.getElementById('showlinks').style.display=="none") {

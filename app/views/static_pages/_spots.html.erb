@@ -1,90 +1,98 @@
 <% params='/spots?'+raw(@parameters)%>
 
 <script>
-
-// 1. Create a global safety buffer (e.g., don't fetch more than once every 10 seconds)
-if (typeof site_lastRefreshTime === 'undefined') {
-  var site_lastRefreshTime = 0;
-  const MIN_REFRESH_INTERVAL = 60000;
-  var site_isCurrentlyFetching = false;
-}
-
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') {
-    const now = Date.now();
-    // Safety Guard A: If a request is already running, do nothing
-    if (site_isCurrentlyFetching) return;
+  function refreshData() {
+    //only if we're still on spots page
+    if(document.getElementById('spots')) {
+      $.ajax({
+        beforeSend: function (xhr){
+          xhr.setRequestHeader("Content-Type","application/javascript");
+          xhr.setRequestHeader("Accept","text/javascript");
+        },
+        type: "GET",
+        timeout: 20000,
+        url: "<%=params%>",
+        complete: function(jqXHR, thrownError) {
+          // Unlock the gate when the request finishes (win or lose)
+          site_isCurrentlyFetching = false; 
   
- 
-    // Safety Guard B: If it refreshed too recently, do nothing
-    if (now - site_lastRefreshTime < MIN_REFRESH_INTERVAL) return;
-    
-    // Lock the gate before starting the AJAX call
-    site_isCurrentlyFetching = true;
-    site_lastRefreshTime = now;
-    
-    startTimer();
-    refreshData();
-  } else {
-    //  The user switched tabs, minimised, or changed apps
-    pauseTimer();
-  }
-});
-
-function refreshData() {
-  //only if we're still on spots page
-  if(document.getElementById('spots')) {
-    $.ajax({
-      beforeSend: function (xhr){
-        xhr.setRequestHeader("Content-Type","application/javascript");
-        xhr.setRequestHeader("Accept","text/javascript");
-      },
-      type: "GET",
-      timeout: 20000,
-      url: "<%=params%>",
-      complete: function(jqXHR, thrownError) {
-        // Unlock the gate when the request finishes (win or lose)
-        site_isCurrentlyFetching = false; 
-
-        /* complete also fires when error ocurred, so only clear if no error has been shown */
-        if(thrownError=="timeout" || thrownError=="error") {
-          document.getElementById('retrieved').innerHTML="<p><b>TIMED OUT</b></p>";
+          /* complete also fires when error ocurred, so only clear if no error has been shown */
+          if(thrownError=="timeout" || thrownError=="error") {
+            document.getElementById('retrieved').innerHTML="<p><b>TIMED OUT</b></p>";
+          }
         }
-      }
-    });
+      });
+    } else {
+      // If the element wasn't found, make sure to unlock the flag just in case
+      site_isCurrentlyFetching = false;
+     };
+  }
+    
+  function startTimer() {
+    try {
+      pauseTimer();
+      refreshInterval = setTimeout(refreshData, 60000); /* time in milliseconds (ie 60 seconds)*/
+    }
+    catch(err) {
+    } 
+    finally {
+    }
+  }
+    
+  function pauseTimer() {
+    if (refreshInterval) {
+      clearTimeout(refreshInterval);
+      refreshInterval = null; // Clear the variable
+    }
+  }
+
+  function onload_tasks() {
+    closeAllHandlers();
+    reset_map_controllers();
+
+    if ($(window).width() < 960) {
+      site_smaller_map();
+    }
+  }
+
+  // 1. Create a global safety buffer (e.g., don't fetch more than once every 10 seconds)
+  if (typeof site_lastRefreshTime === 'undefined') {
+    var site_lastRefreshTime = 0;
+    window.MIN_REFRESH_INTERVAL = 60000;
+    var site_isCurrentlyFetching = false;
+  }
+    
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      const now = Date.now();
+      // Safety Guard A: If a request is already running, do nothing
+      if (site_isCurrentlyFetching) return;
+    
+   
+      // Safety Guard B: If it refreshed too recently, do nothing
+      if (now - site_lastRefreshTime < MIN_REFRESH_INTERVAL) return;
+      
+      // Lock the gate before starting the AJAX call
+      site_isCurrentlyFetching = true;
+      site_lastRefreshTime = now;
+      
+      startTimer();
+      refreshData();
+    } else {
+      //  The user switched tabs, minimised, or changed apps
+      pauseTimer();
+    }
+  });
+
+  if (window.map_is_ready) {
+    onload_tasks();
   } else {
-    // If the element wasn't found, make sure to unlock the flag just in case
-    site_isCurrentlyFetching = false;
-  };
-}
-
-function startTimer() {
-  try {
-    pauseTimer();
-    refreshInterval = setTimeout(refreshData, 60000); /* time in milliseconds (ie 60 seconds)*/
-  }
-  catch(err) {
-  } 
-  finally {
+    window.addEventListener('map:loaded', onload_tasks, { once: true });
   }
 
-}
-
-function pauseTimer() {
-  if (refreshInterval) {
-    clearTimeout(refreshInterval);
-    refreshInterval = null; // Clear the variable
-  }
-}
-startTimer();
-</script>
-<script>
-   //reset_map_controllers();
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
-   //document.title = '... On The Air'
-   //document.getElementById('logo').innerHTML='... On The Air'
-
+  startTimer();
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
 </script>
 
 <div id="actionbar" class="span7">
@@ -190,9 +198,5 @@ startTimer();
 </div>
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
-  
-  if ($(window).width() < 960) {
-    site_smaller_map();
-  }
 </script>
 

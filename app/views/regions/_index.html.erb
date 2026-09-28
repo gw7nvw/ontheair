@@ -1,10 +1,18 @@
 
 <script>
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
-   document.title = <%= raw(@site_title) %>
-   document.getElementById('logo').innerHTML = <%= raw(@site_title) %>
-   reset_map_controllers();
+  function onload_tasks() {
+    reset_map_controllers();
+  }
+
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
+  document.title = <%= raw(@site_title) %>
+  document.getElementById('logo').innerHTML = <%= raw(@site_title) %>
+  if (window.map_is_ready) {
+    onload_tasks();
+  } else {
+    window.addEventListener('map:loaded', onload_tasks, { once: true });
+  }
 </script>
 
 <div id="actionbar" class="span7">

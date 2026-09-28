@@ -84,6 +84,41 @@ this.hot = new this.Handsontable(gridContainer, gridOptions);
             this.statusConsoleTarget.innerText ='Changes will be autosaved';
           }, 1000);
         });
+      },
+      afterCreateRow: (row, amount) => {
+        // 'row' is the zero-based index of the newly added row
+        const newRow = row-1;
+        const lastRow = newRow - 1;
+        // Ensure a previous row exists to copy values from
+        if (lastRow >= 0 && this.hot) {
+
+          // 1. Retrieve the existing parent cell entries securely using standard getters
+          const lastMode      = this.hot.getDataAtRowProp(lastRow, 'mode');
+          const lastFrequency = this.hot.getDataAtRowProp(lastRow, 'frequency');
+          const lastTime      = this.hot.getDataAtRowProp(lastRow, 'time');
+          // 2. Fetch the current fresh values of the new row (usually blank)
+          const currentMode      = this.hot.getDataAtRowProp(newRow, 'mode');
+          const currentFrequency = this.hot.getDataAtRowProp(newRow, 'frequency');
+          const currentTime      = this.hot.getDataAtRowProp(newRow, 'time');
+
+          const batchUpdates = [];
+
+          // 3. Fallback checks matching your legacy logic
+          if (!currentMode && lastMode) {
+            batchUpdates.push([newRow, 'mode', lastMode]);
+          }
+          if (!currentFrequency && lastFrequency) {
+            batchUpdates.push([newRow, 'frequency', lastFrequency]);
+          }
+          if (!currentTime && lastTime) {
+            batchUpdates.push([newRow, 'time', lastTime]);
+          }
+
+          // 4. Fire a single atomic update. It populates cells and runs .render() automatically!
+          if (batchUpdates.length > 0) {
+            this.hot.setDataAtRowProp(batchUpdates);
+          }
+        }
       }
     };
   }

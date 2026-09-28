@@ -964,8 +964,8 @@ class LogsControllerTest < ActionController::TestCase
     log=create_test_log(user1, asset_codes: [asset3.code], date: '2022-01-01'.to_date, power1: '10w', loc_desc1: "roadside spot", is_qrp1: true, is_portable1: true)
     sign_in user1
 
-    data = transform_handsontable_payload([[nil, '00:01', user2.callsign, true, true, 'FM', 145.5, '59', '57', 'John', 'Good spot', false, nil ,"" , [asset1.code,asset2.code], nil, nil, nil]])
-
+#    data = transform_handsontable_payload([[nil, '00:01', user2.callsign, true, true, 'FM', 145.5, '59', '57', 'John', 'Good spot', false, nil ,"" , [asset1.code,asset2.code], nil, nil, nil]])
+    data =   [{"timetext" => "00:01", "callsign2" => user2.callsign, "is_qrp2" => true, "is_portable2" => true, "mode" => "FM", "frequency" => "145.5", "signal2" => 59, "signal1" => 57, "name2" => "John", "loc_desc2" => "Good spot", "asset2_codes" => [asset1.code,asset2.code], "acton" => ""}]
     post :save, params: {id: log.id, data: data, :format => :json}
     assert_response :success
 
@@ -1001,7 +1001,9 @@ class LogsControllerTest < ActionController::TestCase
     id = contact.id
     sign_in user1
 
-    data = transform_handsontable_payload([[contact.id, '00:01', user2.callsign, true, true, 'FM', 145.5, '59', '57', 'John', 'Good spot',false,nil ,"" , [asset1.code,asset2.code], nil, nil, nil]])
+#    data = transform_handsontable_payload([[contact.id, '00:01', user2.callsign, true, true, 'FM', 145.5, '59', '57', 'John', 'Good spot',false,nil ,"" , [asset1.code,asset2.code], nil, nil, nil]])
+    data =   [{"id" => contact.id, "timetext" => "00:01", "callsign2" => user2.callsign, "is_qrp2" => true, "is_portable2" => true, "mode" => "FM", "frequency" => "145.5", "signal2" => 59, "signal1" => 57, "name2" => "John", "loc_desc2" => "Good spot", "asset2_codes" => [asset1.code,asset2.code], "acton" => ""}]
+
     post :save, params: {id: log.id, data: data, :format => :json}
     assert_response :success
 

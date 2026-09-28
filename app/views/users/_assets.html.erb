@@ -1,5 +1,18 @@
 <script> 
-  reset_map_controllers();
+  function onload_tasks() {
+    reset_map_controllers();
+    if ($(window).width() < 960) {
+      site_smaller_map();
+    }
+    <% if @assets then @assets.each do |asset| %>
+      <% if asset.location then %> map_add_feature_from_wkt('<%=asset.location%>', 'EPSG:4326',site_green_circle); <% end %>
+    <% end end %>
+  }
+  if (window.map_is_ready) {
+    onload_tasks();
+  } else {
+    window.addEventListener('map:loaded', onload_tasks, { once: true });
+  }
   document.getElementById("page_status").innerHTML = '';
   document.body.classList.remove('loading');
 </script>
@@ -68,10 +81,5 @@
 <script>
   document.getElementById('valid_count').innerHTML=`<%=valid_count.to_s%>`
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
-
-  <% if @assets then @assets.each do |asset| %>
-      <% if asset.location then %> map_add_feature_from_wkt('<%=asset.location%>', 'EPSG:4326',site_green_circle); <% end %>
-  <% end end %>
-
 </script>
 

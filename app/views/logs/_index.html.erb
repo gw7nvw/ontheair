@@ -1,18 +1,24 @@
 <script>
-   closeAllHandlers();
-   reset_map_controllers();
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
-   document.title = '... On the Air'
-   document.getElementById('logo').innerHTML='... On The Air'
+  function onload_tasks() {
+    closeAllHandlers();
+    reset_map_controllers();
+    $(function () {
+      $('#right_panel .pagination a').on('click', function () {
+        $.getScript(this.href);
+        return false;
+      });
+    })
+  }
+  if (window.map_is_ready) {
+    onload_tasks();
+  } else {
+    window.addEventListener('map:loaded', onload_tasks, { once: true });
+  }
 
-$(function () {
-  $('#right_panel .pagination a').on('click', function () {
-    $.getScript(this.href);
-    return false;
-  });
-})
-
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
+  document.title = '... On the Air'
+  document.getElementById('logo').innerHTML='... On The Air'
 </script>
  
 <div id="actionbar" class="span7">

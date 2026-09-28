@@ -1,16 +1,41 @@
 <script>
-  reset_map_controllers();
+  function onload_tasks() {
+    closeAllHandlers();
+    reset_map_controllers();
+    $(function () {
+      $('#right_panel .pagination a').on('click', function () {
+        $.getScript(this.href);
+        return false;
+      });
+    });
+    <% if @contacts then %>
+      <% @contacts.each do |contact| %>
+        <% if @user and @user.id==contact.user2_id then
+          l2=contact.location1
+          l1=contact.location2
+        else
+          l1=contact.location1
+          l2=contact.location2
+        end %>
+        <% if l1 then %> 
+          map_add_feature_from_wkt('<%=l1%>', 'EPSG:4326',site_green_circle);
+        <% end %>
+        <% if l2 then %>
+          map_add_feature_from_wkt('<%=l2%>', 'EPSG:4326',site_red_circle);
+        <% end %>
+      <% end %>
+    <% end %>
+  }
+  if (window.map_is_ready) {
+    onload_tasks();
+  } else {
+    window.addEventListener('map:loaded', onload_tasks, { once: true });
+  }
+
   document.getElementById("page_status").innerHTML = '';
   document.body.classList.remove('loading');
   document.title = '... On the Air'
   document.getElementById('logo').innerHTML='... On The Air'
-
-  $(function () {
-    $('#right_panel .pagination a').on('click', function () {
-      $.getScript(this.href);
-      return false;
-    });
-  });
 </script>
  
 <div id="actionbar" class="span7">
@@ -125,21 +150,4 @@
 
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
-  <% if @contacts then %>
-    <% @contacts.each do |contact| %>
-      <% if @user and @user.id==contact.user2_id then
-        l2=contact.location1
-        l1=contact.location2
-      else
-        l1=contact.location1
-        l2=contact.location2
-      end %>
-      <% if l1 then %> 
-        map_add_feature_from_wkt('<%=l1%>', 'EPSG:4326',site_green_circle);
-      <% end %>
-      <% if l2 then %>
-        map_add_feature_from_wkt('<%=l2%>', 'EPSG:4326',site_red_circle);
-      <% end %>
-    <% end %>
-  <% end %>
 </script>

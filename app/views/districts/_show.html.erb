@@ -47,7 +47,7 @@
       <div class="rowtext"> 
         <form action="/districts/<%=@district.district_code%>" method="get" accept-charset="UTF-8"  data-remote="true">
           <input id="callsign" name="callsign" type="text" value=<%=@callsign%> />
-          <input name="commit" value="Show" id="submit" type="submit" onclick="linkHandler(&#39;clear&#39;)">
+          <input name="commit" value="Show" id="submit" class="btn btn-small" type="submit" onclick="linkHandler(&#39;clear&#39;)">
         </form>
       </div>
     <% else %>
@@ -129,10 +129,17 @@
 </div>
 
 <script>
+  function onload_tasks() {
+    reset_map_controllers();
+    <% if @district.boundary then %>
+      place_init('<%=@district.boundary%>',  1,site_highlight_polygon);
+    <% end %>
+  }
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
-  reset_map_controllers();
-  <% if @district.boundary then %>
-    place_init('<%=@district.boundary%>',  1,site_highlight_polygon);
-  <% end %>
+  if (window.map_is_ready) {
+    onload_tasks();
+  } else {
+    window.addEventListener('map:loaded', onload_tasks, { once: true });
+  }
 </script>
 

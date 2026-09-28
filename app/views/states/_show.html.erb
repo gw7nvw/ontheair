@@ -1,8 +1,17 @@
 <script> 
-   document.getElementById("page_status").innerHTML = '';
-   document.body.classList.remove('loading');
-   document.title = <%= raw(@site_title) %>
-   document.getElementById('logo').innerHTML = <%= raw(@site_title) %>
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
+  document.title = <%= raw(@site_title) %>
+  document.getElementById('logo').innerHTML = <%= raw(@site_title) %>
+  function onload_tasks() {
+     reset_map_controllers();
+  }
+  if (window.map_is_ready) {
+    onload_tasks();
+  } else {
+    window.addEventListener('map:loaded', onload_tasks, { once: true });
+  }
+
 </script>
 
 <div id="actionbar" class="span7">
@@ -38,7 +47,7 @@
       <div class="rowtext"> 
         <form action="/states/<%=@state.code%>" method="get" accept-charset="UTF-8"  data-remote="true">
           <input id="callsign" name="callsign" type="text" value=<%=@callsign%> />
-          <input name="commit" id="submit" value="Show" type="submit" onclick="linkHandler(&#39;clear&#39;)">
+          <input name="commit" id="submit" class="btn btn-small" value="Show" type="submit" onclick="linkHandler(&#39;clear&#39;)">
         </form>
       </div>
     <% else %>
