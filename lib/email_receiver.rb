@@ -304,8 +304,8 @@ class EmailReceiver
 
   def initialize(content)
     mail    = Mail.read_from_string(content)
-    from    = mail.from&.first
-    to      = mail.to&.first
+    from    = mail.from&.first ||  ARGV[0]
+    to      = mail.to&.first ||  ARGV[1]
     subject = mail.subject
     file = nil
     if mail.multipart?
