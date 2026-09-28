@@ -1,6 +1,6 @@
 # lib/tasks/resque.rake
 require 'resque/tasks'
-require 'resque_scheduler/tasks'
+require 'resque/scheduler/tasks'
 
 namespace :resque do
   task setup: :environment do
@@ -9,5 +9,5 @@ namespace :resque do
     ENV['QUEUE'] ||= '*'
   end
 
-  task :scheduler_setup => :setup
+  task scheduler: :setup
 end
