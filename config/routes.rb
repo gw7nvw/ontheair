@@ -1,5 +1,6 @@
 # typed: false
 require 'resque/server'
+require 'resque/scheduler/server'
 
 Ontheair::Application.routes.draw do
 #resque
