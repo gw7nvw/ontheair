@@ -1,4 +1,5 @@
-class SkipBotSessions
+  module Middleware
+    class SkipBotSessions
   BOT_REGEX = /googlebot|bingbot|yandex|baidu|slurp|duckduckgo|ia_archiver|crawler|spider|bot/i
   CHALLENGE_THRESHOLD = 5
   BLOCK_PERIOD = 1440
@@ -111,4 +112,4 @@ class SkipBotSessions
     [status, headers, response]
   end
 end
-
+  end
