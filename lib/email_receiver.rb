@@ -324,7 +324,7 @@ class EmailReceiver
         self.class.perform(from, to, subject, message, file)
       else
         # In Production (or outside Rails completely via Postfix), push to Redis
-        Resque.enqueue(EmailReceive, from, to, subject, message, file)
+        Resque.enqueue(EmailReceiver, from, to, subject, message, file)
       end
     end
   end
@@ -332,5 +332,5 @@ end
 
 # This line intercepts the execution block ONLY when Postfix drives the file via command line
 if __FILE__ == $0
-  EmailReceive.new(STDIN.read)
+  EmailReceiver.new(STDIN.read)
 end
