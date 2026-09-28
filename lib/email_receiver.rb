@@ -18,7 +18,8 @@ class EmailReceiver
     # This is where your downstream processing logic handles the message variables.
     # (Leaving this definition intact so Resque knows how to handle the class queue!)
     Rails.logger.info "Processing email from #{from} inside environment: #{Rails.env}" if defined?(Rails)
-    
+   
+    Rails.logger.error "FROM: #{from} TO: #{to} SUBKECT: #{subject} BODY: #{body}" 
     via = ''
     posttype = nil
     if to[0..3].casecmp('SPOT').zero?

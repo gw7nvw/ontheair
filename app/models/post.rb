@@ -242,58 +242,62 @@ class Post < ActiveRecord::Base
   end
 
   def send_to_all(debug, from, callsign, assets, freq, mode, description, topic, idate, itime, tzname)
-    result = true
-    messages = ''
-    return if do_not_publish == true
-    if topic && topic.is_spot
-      # SPOT
-      assets.each do |ac|
-        asset_type = Asset.get_asset_type_from_code(ac)
-        puts 'DEBUG :' + asset_type + ':'
-        matched = false
-        if (asset_type == 'pota park') || (asset_type == 'POTA')
-          puts 'DEBUG: send ' + ac + ' to POTA'
-          pota_response = send_to_pota(debug, from.callsign, callsign, ac, freq, mode, description)
-          result = (result && pota_response[:result])
-          messages += pota_response[:messages]
-          matched = true
-        elsif (asset_type == 'WWFF') || (asset_type == 'wwff park')
-          puts 'DEBUG: send ' + ac + ' to WWFF'
-          wwff_response = send_to_wwff(debug, from.callsign, callsign, ac, freq, mode, description)
- # for now, send WWFF to PnP as well
-          result = (result && wwff_response[:result])
-          messages += wwff_response[:messages]
-          matched = false
-        elsif (asset_type == 'SOTA') || (asset_type == 'summit')
-          puts 'DEBUG: send ' + ac + ' to SOTA'
-          sota_response = send_to_sota(debug, from.acctnumber, callsign, ac, freq, mode, description)
-          result = (result && sota_response[:result])
-          messages += sota_response[:messages]
-          matched = true
-        elsif (asset_type == 'HEMA') || (asset_type == 'hump')
-          puts 'DEBUG: send ' + ac + ' to HEMA'
-          hema_response = Post.send_to_hema(debug, from.acctnumber, callsign, ac, freq, mode, description)
-          result = (result && hema_response[:result])
-          messages += hema_response[:messages]
-        elsif (asset_type == 'llota lake')
-          puts 'DEBUG: send ' + ac + ' to LLOTA'
-          llota_response = Post.send_to_llota(debug, from.callsign, callsign, ac, freq, mode, description)
-          result = (result && llota_response[:result])
-          messages += llota_response[:messages]
-          matched = true
-        end
-        next unless (result == false) || (matched == false)
-        puts 'DEBUG: send ' + ac + ' to PnP'
-        pnp_response = Post.send_to_pnp(debug, ac, callsign, freq, mode, description, topic, idate, itime, tzname, self.updated_by_name)
-        result = (result && pnp_response[:result])
-        messages += pnp_response[:messages]
-      end
+    if PRODENV and PRODENV=='UAT' then
+      logger.info "NOTIFICATION: not sending in UAT environment - #{[debug, from, callsign, assets, freq, mode, description, topic, idate, itime, tzname]}"
     else
-      # ALERT so only send to PNP
-      assets.each do |ac|
-        pnp_response = Post.send_to_pnp(debug, ac, callsign, freq, mode, description, topic, idate, itime, tzname, self.updated_by_name)
-        result = (result && pnp_response[:result])
-        messages += pnp_response[:messages]
+      result = true
+      messages = ''
+      return if do_not_publish == true
+      if topic && topic.is_spot
+        # SPOT
+        assets.each do |ac|
+          asset_type = Asset.get_asset_type_from_code(ac)
+          puts 'DEBUG :' + asset_type + ':'
+          matched = false
+          if (asset_type == 'pota park') || (asset_type == 'POTA')
+            puts 'DEBUG: send ' + ac + ' to POTA'
+            pota_response = send_to_pota(debug, from.callsign, callsign, ac, freq, mode, description)
+            result = (result && pota_response[:result])
+            messages += pota_response[:messages]
+            matched = true
+          elsif (asset_type == 'WWFF') || (asset_type == 'wwff park')
+            puts 'DEBUG: send ' + ac + ' to WWFF'
+            wwff_response = send_to_wwff(debug, from.callsign, callsign, ac, freq, mode, description)
+   # for now, send WWFF to PnP as well
+            result = (result && wwff_response[:result])
+            messages += wwff_response[:messages]
+            matched = false
+          elsif (asset_type == 'SOTA') || (asset_type == 'summit')
+            puts 'DEBUG: send ' + ac + ' to SOTA'
+            sota_response = send_to_sota(debug, from.acctnumber, callsign, ac, freq, mode, description)
+            result = (result && sota_response[:result])
+            messages += sota_response[:messages]
+            matched = true
+          elsif (asset_type == 'HEMA') || (asset_type == 'hump')
+            puts 'DEBUG: send ' + ac + ' to HEMA'
+            hema_response = Post.send_to_hema(debug, from.acctnumber, callsign, ac, freq, mode, description)
+            result = (result && hema_response[:result])
+            messages += hema_response[:messages]
+          elsif (asset_type == 'llota lake')
+            puts 'DEBUG: send ' + ac + ' to LLOTA'
+            llota_response = Post.send_to_llota(debug, from.callsign, callsign, ac, freq, mode, description)
+            result = (result && llota_response[:result])
+            messages += llota_response[:messages]
+            matched = true
+          end
+          next unless (result == false) || (matched == false)
+          puts 'DEBUG: send ' + ac + ' to PnP'
+          pnp_response = Post.send_to_pnp(debug, ac, callsign, freq, mode, description, topic, idate, itime, tzname, self.updated_by_name)
+          result = (result && pnp_response[:result])
+          messages += pnp_response[:messages]
+        end
+      else
+        # ALERT so only send to PNP
+        assets.each do |ac|
+          pnp_response = Post.send_to_pnp(debug, ac, callsign, freq, mode, description, topic, idate, itime, tzname, self.updated_by_name)
+          result = (result && pnp_response[:result])
+          messages += pnp_response[:messages]
+        end
       end
     end
     { result: result, messages: messages }
