@@ -1,6 +1,6 @@
 # lib/tasks/resque.rake
 require 'resque/tasks'
-require 'resque/scheduler/tasks'
+require 'resque_scheduler/tasks'
 
 namespace :resque do
   task setup: :environment do
