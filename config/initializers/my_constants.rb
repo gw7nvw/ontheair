@@ -1,6 +1,6 @@
 # typed: strict
 #prod vs UAT
-  PRODENV = 'PROD'
+  PRODENV = 'SECONDARY'
 #topics
   SPOT_TOPIC=35
   TEST_SPOT_TOPIC=43
