@@ -11,7 +11,7 @@
     user_agent = env['HTTP_USER_AGENT'] || 'Unknown'
     current_path = env['PATH_INFO']
 #    ip_address = env['HTTP_CF_CONNECTING_IP'] || env['REMOTE_ADDR']
-    ip_address = env['HTTP_X_FORWARDED_FOR'] || env['HTTP_CLIENT_IP'] || env['REMOTE_ADDR']
+    ip_address =  env['HTTP_CF_CONNECTING_IP'] || env['HTTP_X_FORWARDED_FOR'] || env['HTTP_CLIENT_IP'] || env['REMOTE_ADDR']
     ip_address = ip_address.to_s.split(',').first&.strip
     Rails.logger.info "NO MIDDLEWARE #{ip_address}"
 
