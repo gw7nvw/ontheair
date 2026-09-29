@@ -48,7 +48,8 @@ class ApplicationController < ActionController::Base
     if @current_country=='VK' then as.title = as.title.gsub('ZL','VK') end
     @site_title="'"+as.title+"'"
     @site_title_unquoted=as.title
-    @site_title_image=as.imagepath
+    @site_title_image=as.imagepath  if !@site_title_image
+
     @site_name=as.name
 
     # parameters
@@ -251,6 +252,7 @@ class ApplicationController < ActionController::Base
                            'ZL' # Default fallback
                          end
     end
+    @site_title_image = 'assets/vk_banner.jpg' if @current_country=='VK'
   end
 
   def audit_session_cookie_size
