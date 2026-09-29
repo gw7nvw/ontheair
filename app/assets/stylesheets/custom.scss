@@ -24,7 +24,8 @@ $lightblue: #4444ff;
 }
 
 /* Target desktop resolutions where dropdown submenus clip off the left wall */
-@media (min-width: 768px) {
+@media only screen and not (max-width: 768px),
+       only screen and not (max-width: 1024px) and (hover: none) and (pointer: coarse) {
   /* Identify your first few navbar dropdown lists */
   header#ota_header.navbar ul.navbar-nav > li.dropdown:nth-child(-n+3) .dropdown-menu {
     /* 1. Prevent the box from snapping to the default hard-left zero alignment point */
