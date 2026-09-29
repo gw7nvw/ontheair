@@ -252,7 +252,7 @@ class ApplicationController < ActionController::Base
                            'ZL' # Default fallback
                          end
     end
-    @site_title_image = 'assets/vk_banner.jpg' if @current_country=='VK'
+    @site_title_image = 'icons/vk_banner.jpg' if @current_country=='VK'
   end
 
   def audit_session_cookie_size
