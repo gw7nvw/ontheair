@@ -18,7 +18,8 @@ class ChallengesController < ApplicationController
       session[:human_challenge_token] = nil
       
       # Reset the suspicious tracker counters in the database for this IP
-      request_ip = request.remote_ip
+      request_ip = request.env['HTTP_CF_CONNECTING_IP'] || request.remote_ip
+
       UserAgent.where(user_ip: request_ip).update_all(
         access_count: 0,
         suspicious_access_count: 0,
@@ -44,7 +45,9 @@ class ChallengesController < ApplicationController
   private
 
   def render_trap
-    request_ip = request.remote_ip
+#    request_ip = request.remote_ip
+    request_ip = request.env['HTTP_CF_CONNECTING_IP'] || request.remote_ip
+
     record = UserAgent.find_or_create_by!(user_ip: request_ip)
 
     # Instantly tag them as a malicious bot in the DB
