@@ -51,6 +51,7 @@ import proj4 from "proj4";
 import MousePosition from 'ol/control/MousePosition';
 import Geolocation from 'ol/Geolocation';
 import Feature from 'ol/Feature';
+import Point from 'ol/Geometry/Point';
 import Overlay from 'ol/Overlay';
 import { transform, transformExtent } from 'ol/proj';
 
@@ -171,7 +172,7 @@ positionFeature.setStyle(
 map_geolocation.on('change', function () {
   const coordinates = map_geolocation.getPosition();
   const proj_coords = transform(coordinates, 'EPSG:4326',map_projection_name);
-  positionFeature.setGeometry(coordinates ? new ol.geom.Point(proj_coords) : null);
+  positionFeature.setGeometry(coordinates ? new Point(proj_coords) : null);
 });
 
 function map_add_scratch_layer() {
@@ -1013,7 +1014,7 @@ function map_get_current_extent(proj) {
              index=0
            }
            thegeom=firstfea.getGeometry().getLineString(index);
-           thefea=new ol.Feature({
+           thefea=new Feature({
              geometry: thegeom
            })
          }
