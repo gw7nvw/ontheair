@@ -1099,3 +1099,4 @@ window.mapspast_extent = mapspast_extent;
 window.mapspast_resolutions = mapspast_resolutions;
 window.map_filters = map_filters;
 window.map_last_centre = map_last_centre;
+window.map_show_position = map_show_position
