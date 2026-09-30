@@ -171,9 +171,39 @@ positionFeature.setStyle(
 
 map_geolocation.on('change', function () {
   const coordinates = map_geolocation.getPosition();
+
+  // 1. Guard Clause: If coordinates are undefined or null, clean up features and exit instantly
+  if (!coordinates) {
+    positionFeature.setGeometry(null);
+    return;
+  }
+
+  // 2. THE RESOURCE PROTECTION FILTER:
+  // Convert coordinates to a fast string token to check if the user has physically moved.
+  // If the browser is just spamming identical Wi-Fi triangulation frames, stop execution here!
+  const current_coords_string = coordinates.join(',');
+  if (current_coords_string === last_processed_coords_string) {
+    return;
+  }
+  last_processed_coords_string = current_coords_string;
+
   const proj_coords = transform(coordinates, 'EPSG:4326',map_projection_name);
-  positionFeature.setGeometry(coordinates ? new Point(proj_coords) : null);
+  positionFeature.setGeometry(new Point(proj_coords));
 });
+
+// Catch device tracking errors gracefully
+map_geolocation.on('error', function (error) {
+  console.warn('Geolocation error tracking hook: ' + error.message);
+
+  // If the browser complains about a timeout or unavailable high-accuracy,
+  // dynamically relax the constraints so it drops back to passive cell/IP lookups!
+  if (error.code === 1 || error.code === 2) {
+    map_geolocation.setTrackingOptions({
+      enableHighAccuracy: false,
+    });
+  }
+});
+
 
 function map_add_scratch_layer() {
   map_scratch_source=new VectorSource({
