@@ -71,7 +71,20 @@ Rails.application.configure do
   #   port: 587,
   #   authentication: :plain
   # }
+ config.action_mailer.smtp_settings = {
+    address:              '127.0.0.1', # Force IPv4 loopback to avoid network routing confusion
+    port:                 587,
+    domain:               'ontheair.nz',
+    user_name:            Rails.application.credentials.dig(:smtp, :user_name),
+    password:             Rails.application.credentials.dig(:smtp, :password),
 
+    authentication:       'login',
+    enable_starttls_auto: true,
+
+    # 🛠️ THE CRITICAL OPENSSL 3 BYPASS:
+    # This prevents Ruby 3.4 from throwing alert 42 over local loopback certificates!
+    openssl_verify_mode:  'none'
+  }
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
   config.i18n.fallbacks = true

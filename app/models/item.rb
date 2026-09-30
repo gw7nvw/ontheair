@@ -179,6 +179,8 @@ class Item < ActiveRecord::Base
 
   #Schedule delayed sending of emails
   def send_emails
+    puts "END: #{ENV['RAILS_ENV']}"
+    logger.error "SENDING EMAILS #{ENV['RAILS_ENV']}"
     if ENV['RAILS_ENV'] == 'production'
       Resque.enqueue(SendEmails, self.id)
     end
