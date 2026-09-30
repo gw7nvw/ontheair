@@ -29,6 +29,7 @@
   }
     
   function startTimer() {
+//    console.log("START");
     try {
       pauseTimer();
       refreshInterval = setTimeout(refreshData, 60000); /* time in milliseconds (ie 60 seconds)*/
@@ -40,6 +41,7 @@
   }
     
   function pauseTimer() {
+//    console.log("PAUSE");
     if (refreshInterval) {
       clearTimeout(refreshInterval);
       refreshInterval = null; // Clear the variable
@@ -57,20 +59,25 @@
 
   // 1. Create a global safety buffer (e.g., don't fetch more than once every 10 seconds)
   if (typeof site_lastRefreshTime === 'undefined') {
+//    console.log("INIT");
     var site_lastRefreshTime = 0;
     window.MIN_REFRESH_INTERVAL = 60000;
     var site_isCurrentlyFetching = false;
+    var refreshInterval = null;
   }
     
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
+//      console.log("VISIBILITYCHANGE");
       const now = Date.now();
       // Safety Guard A: If a request is already running, do nothing
       if (site_isCurrentlyFetching) return;
+//      console.log("NOTCURRENTLYFETCHING");
     
    
       // Safety Guard B: If it refreshed too recently, do nothing
       if (now - site_lastRefreshTime < MIN_REFRESH_INTERVAL) return;
+//      console.log("PASTLASTTIME");
       
       // Lock the gate before starting the AJAX call
       site_isCurrentlyFetching = true;
@@ -78,6 +85,7 @@
       
       startTimer();
       refreshData();
+      site_isCurrentlyFetching = false;
     } else {
       //  The user switched tabs, minimised, or changed apps
       pauseTimer();
