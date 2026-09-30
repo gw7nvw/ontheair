@@ -51,7 +51,7 @@ import proj4 from "proj4";
 import MousePosition from 'ol/control/MousePosition';
 import Geolocation from 'ol/Geolocation';
 import Feature from 'ol/Feature';
-import Point from 'ol/Geom/Point';
+import Point from 'ol/geom/Point';
 import Overlay from 'ol/Overlay';
 import { transform, transformExtent } from 'ol/proj';
 
