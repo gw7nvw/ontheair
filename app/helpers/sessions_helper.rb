@@ -23,6 +23,7 @@ module SessionsHelper
     session[:user_id] = user.id
     flush_old_tokens(user)
     request_ip = request.remote_ip
+
     user_agent = request.user_agent || 'Unknown'
     UserAgent.where(user_ip: request_ip).update_all(
         access_count: 0,
