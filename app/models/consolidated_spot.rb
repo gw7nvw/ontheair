@@ -151,7 +151,7 @@ sql = <<-SQL
     SELECT 
      (
        jsonb_build_object(
-         'actTime', f.t_val, 
+         'actTime', replace(f.t_val, ' UTC', ''),
          'actId', f.id, 
          'actCallsign', f."activatorCallsign", 
          'actMode', f.mode,
