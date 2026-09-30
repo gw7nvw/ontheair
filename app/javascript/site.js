@@ -615,7 +615,7 @@ function site_mapKey() {
 }
 
 function site_show_position() {
-  if(document.getElementById("mapPosition").style.backgroundColor=="#ffffff") {
+  if(map_show_postion==false) {
      document.getElementById("mapPosition").style.backgroundColor="#008800"
   } else {
      document.getElementById("mapPosition").style.backgroundColor="#ffffff"

@@ -133,6 +133,7 @@ var epsg3857;
 
 //Map position stuff
 var map_show_position=false;
+window.map_show_position = map_show_position
 
 const map_geolocation = new Geolocation({
   // enableHighAccuracy must be set to true to have the heading value.
@@ -144,6 +145,7 @@ const map_geolocation = new Geolocation({
 
 function map_enable_tracking() {
   map_show_position=!map_show_position;
+  window.map_show_position = map_show_position
   map_position_layer.setVisible(map_show_position);
   map_geolocation.setTracking(map_show_position);
 }
@@ -1131,4 +1133,3 @@ window.mapspast_extent = mapspast_extent;
 window.mapspast_resolutions = mapspast_resolutions;
 window.map_filters = map_filters;
 window.map_last_centre = map_last_centre;
-window.map_show_position = map_show_position
