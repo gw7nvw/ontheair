@@ -168,6 +168,7 @@ positionFeature.setStyle(
   })
 );
 
+var last_processed_coords_string = '';
 
 map_geolocation.on('change', function () {
   const coordinates = map_geolocation.getPosition();
