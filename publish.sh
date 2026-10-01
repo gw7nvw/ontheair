@@ -31,6 +31,7 @@ RAILS_ENV=production bundle exec rails assets:precompile
 
 # 6. RELOAD PHUSION PASSENGER INSTANTLY WITHOUT DOWNTIME
 sudo service apache2 restart
+sudo service resque-worker restart
 
 echo "Deployment completed successfully!"
 
