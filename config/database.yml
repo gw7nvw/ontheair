@@ -99,6 +99,23 @@ production:
     database: ontheair_production_cable
     migrations_paths: db/cable_migrate
 
+uat:
+  primary: &primary_uat
+    <<: *default
+    database: hota_uat
+    username: ontheair
+  cache:
+    <<: *primary_uat
+    database: ontheair_uat_cache
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *primary_uat
+    database: ontheair_uat_queue
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *primary_uat
+    database: ontheair_uat_cable
+    migrations_paths: db/cable_migrate
 dem15:
   <<: *default
   adapter: postgis
