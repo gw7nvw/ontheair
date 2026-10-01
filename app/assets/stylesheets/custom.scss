@@ -52,6 +52,8 @@ $lightblue: #4444ff;
   display: none
 }
 
+.modal {
+  z-index:      10000 important!
 .spinner_modal {
     display:    none;
     position:   fixed;
