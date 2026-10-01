@@ -23,7 +23,11 @@ class ApplicationController < ActionController::Base
 
   helper_method :retrieve_last_index_page_or_default
 
+
   def global_variables
+  if ENV['RAILS_ENV'] != 'production' then
+    flash[:error] = "RUNNING IN #{ENV['RAILS_ENV']} ENVIRONMENT"
+  end
     as=AdminSettings.first
     @default_layer = params[:baselayer] if params[:baselayer]
     if current_user then
