@@ -242,8 +242,8 @@ class Post < ActiveRecord::Base
   end
 
   def send_to_all(debug, from, callsign, assets, freq, mode, description, topic, idate, itime, tzname)
-    if PRODENV and PRODENV=='UAT' then
-      logger.info "NOTIFICATION: not sending in UAT environment - #{[debug, from, callsign, assets, freq, mode, description, topic, idate, itime, tzname]}"
+    if ENV['RAILS_ENV'] != 'production'
+        Resque.logger.info "API: not sending in #{ENV['RAILS_ENV']} environment - #{[debug, from, callsign, assets, freq, mode, description, topic, idate, itime, tzname]}"
     else
       result = true
       messages = ''

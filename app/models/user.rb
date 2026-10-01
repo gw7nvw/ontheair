@@ -1663,8 +1663,8 @@ class User < ActiveRecord::Base
   ##########################################################################
 
   def send_notification(notification, message_url, comments, image)
-    if PRODENV and PRODENV=='UAT' then
-      logger.info "NOTIFICATION: not sending in UAT environment - #{notification}"
+    if ENV['RAILS_ENV'] != 'production'
+        Resque.logger.info "NOTIFICATION: not sending in #{ENV['RAILS_ENV']} environment - #{notification}"
     else
       puts "got into send notification"
       if comments then notification += ": "+comments end
