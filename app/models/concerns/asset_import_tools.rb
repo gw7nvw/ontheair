@@ -564,7 +564,8 @@ module AssetImportTools
   end 
   def Asset.import_llota(dxcc_filter, update = true, force = false, silent = true)
     url = 'https://llota.app/api/public/references?version=lite'
-    data = JSON.parse(open(url).read)
+    data = fetch_external_url(url)
+    data = JSON.parse(data)
     if data
       puts 'Found ' + data.count.to_s + ' lakes'
       count = 0
@@ -580,26 +581,38 @@ module AssetImportTools
           else
             puts "Updating #{a.code}"
           end
+          has_changed=false
           if new or update then
             a.asset_type="llota lake"
             a.code = l["reference_code"]
             a.is_active = true
-            if a.code[0..3]=='LLNZ'
-              a2 = Asset.find_by(code: a.code.gsub('LLNZ-','ZLL/'))
-              if a2 then
-                puts "Found matching lake #{a2.code}"
-                a.description = a2.description
-                a.boundary = a2.boundary
+            if a.boundary == nil
+              if a.code[0..3]=='LLNZ'
+                a2 = Asset.find_by(code: a.code.gsub('LLNZ-','ZLL/'))
+                if a2 then
+                  puts "Found matching lake #{a2.code}"
+                  a.description = a2.description
+                  a.boundary = a2.boundary
                 a.is_active = a2.is_active
+                end
               end
             end
             a.name = l["name"]
             a.location = "POINT(#{l["longitude"]} #{l["latitude"]})"
             dxcc = DxccPrefix.find_by("iso_code = ? and prefix in ('ZL', 'VK')",a.code[2..3])
             a.country = dxcc.prefix if dxcc
-            a.save 
+            if a.changed?
+              changed=a.changed
+              has_changed=true
+              if a.save then
+                AdminTask.create(task_type: 'new', affected_id: a.code, affected_table: 'asset', affected_url: a.url, description: "New LLOTA site") if new
+                AdminTask.create(task_type: 'update', affected_id: a.code, affected_table: 'asset', affected_url: a.url, description: "Updated LLOTA site #{changed}") if !new
+              else
+                AdminTask.create(task_type: 'error', affected_id: a.code, affected_table: 'asset', description: "Failed to create new LLOTA site: #{a.to_json}")
+              end
+            end
           end
-          if (a.boundary == nil or force == true)  and a.country=='VK'
+          if has_changed and (a.boundary == nil or force == true)  and a.country=='VK'
             a.boundary = nil
             a.boundary_simplified = nil
             a.boundary_quite_simplified = nil
@@ -621,21 +634,24 @@ module AssetImportTools
                 puts count.to_s + ' - ' + pp.name + ' == ' + a.name if silent != true
                 count += 1
               end
+              if silent==true
+                AdminTask.create(task_type: 'action', affected_id: a.code, affected_table: 'asset', affected_url: a.url, action_url: (a.url||"")+'/map_associate', description: "Could not auto-assign HYDRO boundary, multiple found")
+              end
               if !lake and silent == false then
                 puts "Select match (or 'a' to skip):"
                 id = gets
                 lake = [lakes[id.to_i]] if id && (id.length > 1) && (id[0] != 'a')
               end
             end
- 
-            
             if lake   
                puts "Matching #{a.name} with #{lake.name}"
                a.boundary = lake.wkb_geometry
-               a.save
             else
                puts "ERROR: NOT FOUND !!!!!!!!!!#{ a.name} !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-               a.save
+               AdminTask.create(task_type: 'error', affected_id: a.code, affected_table: 'asset', description: "LLOTA site needsa boundary")
+            end
+            if a.changed?
+              a.save
             end
           end
         end

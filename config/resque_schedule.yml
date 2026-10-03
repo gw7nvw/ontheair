@@ -51,3 +51,9 @@ do_import_pota:
   class: UpdatePota
   args:
   description: Runs the perform method in UpdatePota  monthly
+
+do_import_llota:
+  cron: 0 1 0 1 *
+  class: UpdateLlota
+  args:
+  description: Runs the perform method in UpdateLlota  monthly

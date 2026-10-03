@@ -1,3 +1,6 @@
       <span id="larger_map"><%=  link_to "Larger Map", "#", class: "btn btn-small btn-primary",   :onclick => "site_bigger_map(); return false;"%></span>
       <span id="smaller_map"><%=  link_to "Smaller Map", "#", class: "btn btn-small btn-primary",   :onclick => "site_smaller_map(); return false;"%></span>
+  <% if current_user and current_user.is_web_admin%> 
+    <span id="tasks"><%=  link_to "Tasks", "/admin_tasks", class: "btn btn-small btn-primary", remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler('tasks')"%></span>
+  <% end %>
       <span id="Back"><%=  link_to "Back", retrieve_last_index_page_or_default, remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler('back')"%></span>
