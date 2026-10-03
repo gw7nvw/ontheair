@@ -7,8 +7,8 @@ module AssetImportTools
   def Asset.import_illw(dxccs=['AU','NZ'], update = false)
     urls = ['https://wllw.org/index.php/en/', 'https://wllw.org/index.php/en/list-page-2', 'https://wllw.org/index.php/en/list-3']
 
-    urls.each do |url|
-      result  = open(url).read
+    urls.each do |url|    
+      result = fetch_external_url(url)
       table_count = get_table_count(result)
       for count in 1..table_count do
         table = get_table(result,count)
@@ -22,10 +22,10 @@ module AssetImportTools
            code = get_clean_text(get_col(row,6))
            next if !code or (not dxccs.include?(code[0..1]))
            if !namecell or namecell.match("line-through") or namecell.upcase.match('DELETED')
-             puts "DELETED: #{get_clean_text(get_col(row,2))}"
              code = get_clean_text(get_col(row,6))
              a=Asset.find_by(code: code)
              if a
+               AdminTask.create(task_type: 'deleted', affected_id: code, affected_table: 'asset', affected_url: a.url, description: "Deleted IILW site")
                a.is_active=false
                a.valid_to = Time.now if a.valid_to.blank?
                a.save
@@ -44,8 +44,9 @@ module AssetImportTools
            loc_url = get_col(row,5)
            loc = extract_lat_long(loc_url)
            if !loc then
+             AdminTask.create(task_type: 'error', affected_id: code, affected_table: 'asset',  description: "Failed to add/update IILW site (bad location) #{loc_url.to_json}")
              puts " ************************ MISSING **************************"
-             puts loc_url
+             puts loc_url.to_json
              puts " ************************ MISSING **************************"
            end
            if loc
@@ -59,9 +60,13 @@ module AssetImportTools
              a.country = dxcc
              a.code = code
              a.location="POINT(#{loc[:long]} #{loc[:lat]})" 
-
-             if !a.save
-               put "ERROR saving #{a.to_json}"
+             if a.changed?
+               if a.save then
+                 AdminTask.create(task_type: 'new', affected_id: a.code, affected_table: 'asset', affected_url: a.url, description: "New ILLW site") if new
+                 AdminTask.create(task_type: 'update', affected_id: a.code, affected_table: 'asset', affected_url: a.url, description: "Updated ILLW site #{changed}") if !new
+               else
+                 AdminTask.create(task_type: 'error', affected_id: a.code, affected_table: 'asset', description: "Failed to create new ILLW site: #{a.to_json}")
+               end
              end
            end
          end 
@@ -232,9 +237,8 @@ module AssetImportTools
   def Asset.import_sota(dxcc, update=false)
     require 'csv'
     dxcc_len=dxcc.length-1
-    url = "https://www.sotadata.org.uk/summitslist.csv"
-
-    data = open(url).read
+    url = "https://storage.sota.org.uk/summitslist.csv"
+    data = fetch_external_url(url)
     data = "SummitCode"+data.split('SummitCode')[1]
     fields = data.parse_csv
     values = CSV(data).read
@@ -264,11 +268,19 @@ module AssetImportTools
             a.is_active = false if a.valid_to and a.valid_to<=Time.now.strftime("%Y-%m-%d")
             puts a.code
             loc_change = a.changed.include?('location')
-            a.save
+            if a.changed?
+              if a.save then
+                AdminTask.create(task_type: 'new', affected_id: a.code, affected_table: 'asset', affected_url: a.url, description: "New SOTA site") if new
+                AdminTask.create(task_type: 'update', affected_id: a.code, affected_table: 'asset', affected_url: a.url, description: "Updated SOTA site #{changed}") if !new
+              else
+                AdminTask.create(task_type: 'error', affected_id: a.code, affected_table: 'asset', description: "Failed to create new SOTA site: #{a.to_json}")
+              end
+            end
             a.reload
+
             if a.country == 'VK' and loc_change
-             a.add_vk_sota_actvation_zone(25)
-            end 
+              a.add_vk_sota_actvation_zone(25)
+            end
           end
         end
       end
@@ -279,29 +291,31 @@ module AssetImportTools
   def Asset.import_siota
     require 'csv'
     url = "https://www.silosontheair.com/data/silos.csv"
-    data = open(url).read
+    data = fetch_external_url(url)
     fields = data.parse_csv
     values = CSV(data).read
 
     rowcount = 0
     values.each do |silo|
+      new = false
       if rowcount!=0
         code = silo[fields.index("SILO_CODE")]
         asset = Asset.find_by(code: code)
         description = silo[fields.index("COMMENT")]
-        ase_desc = ""
+        asc_desc = ""
         asc_desc = description.force_encoding("ISO-8859-1") if description
         if !asset then
           asset = Asset.new
           puts "New Silo"
+          new = true
         end
         puts code
         asset.location="POINT (#{silo[fields.index("LNG")]} #{silo[fields.index("LAT")]})"
         asset.name=silo[fields.index("NAME")]
         asset.code=code
-        asset.state=nil
+#        asset.state=nil
         asset.country='VK'
-        asset.description=asc_desc
+        asset.description=asc_desc if !asc_desc.blank?
         asset.valid_from = silo[fields.index("NOT_BEFORE")]
         asset.valid_to = silo[fields.index("NOT_AFTER")]
         if asset.valid_to == nil then 
@@ -312,7 +326,15 @@ module AssetImportTools
         asset.asset_type="silo"
         asset.url = 'assets/' + asset.get_safecode
         puts asset.to_json
-        asset.save
+        if asset.changed?
+          changed = asset.changed
+          if asset.save then
+            AdminTask.create(task_type: 'new', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "New SiOTA site") if new
+            AdminTask.create(task_type: 'update', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "Updated SiOTA site #{changed}") if !new
+          else
+            AdminTask.create(task_type: 'error', affected_id: asset.code, affected_table: 'asset', description: "Failed to create new SiOTA site: #{silo.to_json}")
+          end
+        end
       end
       rowcount+=1
     end

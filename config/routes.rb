@@ -202,6 +202,7 @@ match "/wwff_logs/:id/download", :to => "wwff_logs#download", :as => "wwff_downl
 
 resources :regions
 resources :states
+resources :admin_tasks
 
 resources :geology, only: [:index, :show]
 

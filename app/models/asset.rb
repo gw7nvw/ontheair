@@ -1,5 +1,5 @@
 # typed: true
-class Asset < ActiveRecord::Base
+class Asset < ApplicationRecord
   include AssetGisTools
   include AssetImportTools
   include AssetConsoleTools

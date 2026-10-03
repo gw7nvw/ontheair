@@ -1,0 +1,62 @@
+<script>
+  function onload_tasks() {
+    closeAllHandlers();
+    reset_map_controllers();
+  }
+  if (window.map_is_ready) {
+    onload_tasks();
+  } else {
+    window.addEventListener('map:loaded', onload_tasks, { once: true });
+  }
+
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
+  document.title = '... On the Air'
+  document.getElementById('logo').innerHTML='... On The Air'
+</script>
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <b><%=link_to "Admin Tasks", '/admin_tasks', remote: true, :onclick => "linkHandler('admin_tasks')"%></b>
+     </div>
+   <div id="controls">
+       <% if signed_in? and current_user.is_admin  then %>
+            <%=  link_to "Add", '/awards/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+       <% end %>
+       <%=render 'map_controls'%>
+   </div>
+</div>
+
+<div id="right_scroll">
+  <%= render 'flash' %>
+  <h2>Admin Tasks</h2>
+   <table class="cleanskin1" id="award_table">
+    <tr>
+      <th> Task </th>
+      <th> Item </th>
+      <th> Action </th>
+      <th> Description </th>
+    </tr>
+    <% if @admin_tasks then @admin_tasks.each do |at| %>
+      <tr>
+        <td>
+          <%= at.task_type %>
+        </td>
+        <td>
+          <%= link_to "#{at.affected_table}:#{at.affected_id}", '/'+at.affected_url.to_s, remote: true,  :id => "#{at.affected_table}:#{at.affected_id}", :onclick => "linkHandler('home')" %>
+        </td>
+        <td>
+         <% if !at.action_url.blank? %> <%= link_to "Here", at.action_url, remote: true,  :id => "#{at.affected_table}:#{at.affected_id}A", :onclick => "linkHandler('home')" %> <% end %>
+        </td>
+        <td>
+          <%= at.description %>
+        </td>
+      </tr>
+      <% end end %>
+  </table>
+</div>
+
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>

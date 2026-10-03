@@ -1,0 +1,2 @@
+class AdminTask < ApplicationRecord
+end

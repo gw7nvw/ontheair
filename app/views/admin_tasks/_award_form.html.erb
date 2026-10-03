@@ -1,0 +1,104 @@
+<script> 
+   document.getElementById("page_status").innerHTML = '';
+   document.body.classList.remove('loading');
+</script>
+
+<div class="fullform">
+  <%= form_for(@award) do |f| %>
+    <div id="actionbar" class="span7">
+      <div id="crumbs">
+        <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+        &nbsp;--&gt;&nbsp;
+        <%=  link_to  "Awards", '/awards', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+        &nbsp;--&gt;&nbsp;
+        <%if @award.id%>
+          <%=link_to @award.name, '/awards/'+@award.id.to_s, remote: true, :id => 'user', :onclick => "linkHandler('user')" %>
+          &nbsp;--&gt;&nbsp;
+          <b>Edit</b>
+        <% else %>
+           <b>New</b>
+        <% end %>
+      </div>
+
+      <div id="controls">
+        <% if params[:referring]=='index' or !@award.id %>
+          <%=  link_to "Cancel", '/awards', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+        <% else %>
+          <%=  link_to "Cancel", '/awards/'+@award.id.to_s, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+        <% end %> 
+
+        <%=render 'map_controls'%>
+      </div>
+    </div>
+
+
+
+    <div id="right_scroll">
+      <%= hidden_field_tag(:referring, @referring) %>
+      <%= render 'flash' %>
+      <%= render 'shared/error_messages' %>
+
+      <%= f.label :id, "Award ID"%>
+      <%if current_user and current_user.is_admin%><%= f.text_field :id %><%else%><%= f.text_field :id, readonly: true %><% end %>
+
+      <%= f.label :name%>
+      <%= f.text_field :name %>
+
+      <%= f.label :description%>
+      <%= f.text_area :description %>
+
+      <%= f.label :programme%>
+      <%= f.text_field :programme %>
+
+      <%= f.label :count_based, "Threshold based award" %>
+      <%= f.check_box :count_based%><br/><br/>
+
+      <%= f.label :all_district, "All of district award" %>
+      <%= f.check_box :all_district%><br/><br/>
+
+      <%= f.label :all_region, "All of region award" %>
+      <%= f.check_box :all_region%><br/><br/>
+
+      <%= f.label :all_programme, "All of programme award" %>
+      <%= f.check_box :all_programme%><br/><br/>
+
+      <%= f.label :p2p, "Portable-to-portable award" %>
+      <%= f.check_box :p2p%><br/><br/>
+
+      <i>For bagged leave activated/completed blank, for completed tick both</i><br/>
+      <%= f.label :activated, "For activations" %>
+      <%= f.check_box :activated%><br/><br/>
+
+      <%= f.label :chased, "For chases" %>
+      <%= f.check_box :chased%><br/><br/>
+
+      <%= f.label :user_qrp, "Logging user must be QRP?" %>
+      <%= f.check_box :user_qrp%><br/><br/>
+
+      <%= f.label :contact_qrp, "Entire contact must be QRP?" %>
+      <%= f.check_box :contact_qrp%><br/><br/>
+
+      <%= f.label :allow_repeat_visits, "Allow repeat visits to same QTH?" %>
+      <%= f.check_box :allow_repeat_visits%><br/><br/>
+
+      <%= f.label :active %>
+      <% if current_user and current_user.is_admin%> 
+        <%= f.check_box :is_active%><br/><br/>
+      <% else %>
+        <%= f.check_box :is_active, :readonly => true%><br/><br/>
+      <% end %>
+
+      <%= f.submit @submit_button, id: "submit", class: "btn btn-small btn-primary btn-hightlight" %>
+      <%  if(@submit_button == "Save Changes" and current_user and current_user.is_admin) %>
+        <%= f.submit "Delete", confirm: "Delete award: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>
+      <% end %>
+ 
+    </div>
+  <% end %>
+</div>
+
+<script>
+  closeAllHandlers();
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>
+
