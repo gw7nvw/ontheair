@@ -35,13 +35,19 @@ do_import_siota:
   description: Runs the perform method in UpdateSiota  monthly
 
 do_import_sota:
-  cron: 15 0 1 * *
+  cron: 15 0 0 1 *
   class: UpdateSota
   args:
   description: Runs the perform method in UpdateSota  monthly
 
 do_import_illw:
-  cron: 30 0 1 * *
+  cron: 30 0 0 1 *
   class: UpdateIllw
   args:
   description: Runs the perform method in UpdateIllw  monthly
+
+do_import_pota:
+  cron: 45 0 0 1 *
+  class: UpdatePota
+  args:
+  description: Runs the perform method in UpdatePota  monthly
