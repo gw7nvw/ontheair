@@ -140,7 +140,7 @@ class ApplicationController < ActionController::Base
           else
             unless ['/styles.js', '/query', '/layerswitcher', '/legend'].include?(request.fullpath.split('?').first)
               session[:last_index_page].push("#{uri.path}?#{uri.query}".chomp("?").gsub('?back=true','').gsub('&back=true',''))
-              session[:last_index_page]=session[:last_index_page][-20..-1] if session[:last_index_page].count>20
+              session[:last_index_page]=session[:last_index_page][-20..-1] if session[:last_index_page].count>12
             end
           end
         end

@@ -24,6 +24,8 @@ class Asset < ApplicationRecord
   SIOTA_ASSET_URL = 'https://www.silosontheair.com/silos/#'
   ILLW_ASSET_URL = 'https://illw.net'
 
+  NZTM_LAT_RANGE = (-47.33..-34.1)
+  NZTM_LNG_RANGE = (166.37..178.63)
   ################################################################
   # Pre- and Post save callbacks
   ################################################################
@@ -437,22 +439,27 @@ class Asset < ApplicationRecord
     r.name.gsub('Region', '') if r
   end
 
+
   # NZTM coordinates: x
   def x
     if(Projection.find_by_id(2193)) then srs=2193 else srs=4326 end
     if location
-      fromproj4s = Projection.find_by_id(4326).proj4
-      toproj4s = Projection.find_by_id(srs).proj4
+      if within_nztm_bounds?(location)
+        fromproj4s = Projection.find_by_id(4326).proj4
+        toproj4s = Projection.find_by_id(srs).proj4
 
-      # 2. Safety check: ensure '+type=crs' is appended to satisfy modern PROJ libraries
-      fromproj4s += " +type=crs" unless fromproj4s.include?("+type=crs")
-      toproj4s   += " +type=crs" unless toproj4s.include?("+type=crs")
+        # 2. Safety check: ensure '+type=crs' is appended to satisfy modern PROJ libraries
+        fromproj4s += " +type=crs" unless fromproj4s.include?("+type=crs")
+        toproj4s   += " +type=crs" unless toproj4s.include?("+type=crs")
+  
+        fromproj = RGeo::CoordSys::Proj4.new(fromproj4s)
+        toproj = RGeo::CoordSys::Proj4.new(toproj4s)
 
-      fromproj = RGeo::CoordSys::Proj4.new(fromproj4s)
-      toproj = RGeo::CoordSys::Proj4.new(toproj4s)
-
-      xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, location.x, location.y)
-      xyarr[0]
+        xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, location.x, location.y)
+        return xyarr[0]
+      else
+        return location.x
+      end
     end
   end
 
@@ -460,18 +467,22 @@ class Asset < ApplicationRecord
   def y
     if(Projection.find_by_id(2193)) then srs=2193 else srs=4326 end
     if location
-      fromproj4s = Projection.find_by_id(4326).proj4
-      toproj4s = Projection.find_by_id(srs).proj4
-
-      # 2. Safety check: ensure '+type=crs' is appended to satisfy modern PROJ libraries
-      fromproj4s += " +type=crs" unless fromproj4s.include?("+type=crs")
-      toproj4s   += " +type=crs" unless toproj4s.include?("+type=crs")
-
-      fromproj = RGeo::CoordSys::Proj4.new(fromproj4s)
-      toproj = RGeo::CoordSys::Proj4.new(toproj4s)
-
-      xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, location.x, location.y)
-      xyarr[1]
+      if within_nztm_bounds?(location)
+        fromproj4s = Projection.find_by_id(4326).proj4
+        toproj4s = Projection.find_by_id(srs).proj4
+  
+        # 2. Safety check: ensure '+type=crs' is appended to satisfy modern PROJ libraries
+        fromproj4s += " +type=crs" unless fromproj4s.include?("+type=crs")
+        toproj4s   += " +type=crs" unless toproj4s.include?("+type=crs")
+  
+        fromproj = RGeo::CoordSys::Proj4.new(fromproj4s)
+        toproj = RGeo::CoordSys::Proj4.new(toproj4s)
+  
+        xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, location.x, location.y)
+        return xyarr[1]
+      else
+        return location.y
+      end
     end
   end
 
@@ -1809,4 +1820,16 @@ def fetch_associated_users(primary_callsign:, secondary_callsign:)
   # 5. Bulk-fetch the final User records sorted cleanly by callsign
   User.where(id: user_ids).order(:callsign)
 end
+
+def within_nztm_bounds?(coordinates)
+    # Ensure the point isn't nil
+    return false if coordinates.nil?
+
+    # ActiveRecord native point attributes are exposed as an object or array:
+    # coordinates.x is Longitude, coordinates.y is Latitude
+    lng = coordinates.x
+    lat = coordinates.y
+
+    NZTM_LNG_RANGE.cover?(lng) && NZTM_LAT_RANGE.cover?(lat)
+  end
 end

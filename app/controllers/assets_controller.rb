@@ -22,6 +22,7 @@ class AssetsController < ApplicationController
     end
   end
   def map_associate
+    @items=[]
     @asset=Asset.find_by(code: params[:id].gsub('_','/'))
     @item = Asset.new if !@item
     if @asset.nil?
@@ -32,7 +33,33 @@ class AssetsController < ApplicationController
     @datasources=['capad','vk_state_parks','vk_hydro']
   end
 
+  def map_poly_by_id
+    @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+    source = params[:select_type]
+    id = params[:select_id]
+    @item = Asset.new
+    if source == 'capad'
+      item = Capad.find_by(ogc_fid: id)        
+        @item.boundary = item.wkb_geometry 
+        @item.name = item.name
+        @item.old_code = item.pa_id.to_s
+    elsif source == 'vk_state_parks'
+      item = VkStatePark.find_by(id: id)
+        @item.boundary = item.boundary 
+        @item.name = item.name
+        @item.old_code = item.unique_name
+    elsif source == 'vk_hydro'
+      item = VkLake.find_by(id: id)
+        @item.boundary = item.wkb_geometry
+        @item.name = item.name
+        @item.old_code = item.objectid.to_s
+    end
+    map_associate()
+    render 'map_associate'
+  end
+
   def map_find_poly
+    @items=[]
     @asset=Asset.find_by(code: params[:id].gsub('_','/'))
     @datasources=['capad','vk_state_parks','vk_hydro']
     a = params[:asset]
@@ -53,9 +80,10 @@ class AssetsController < ApplicationController
         @item.name = item.first.name
         @item.old_code = item.first.objectid.to_s
       end
+      @items=item
     elsif datasource == 'capad' then
 
-      item = Capad.find_by_sql [ "select ST_Multi(wkb_geometry) as wkb_geometry, pa_id, name from capad where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), wkb_geometry)" ]
+      item = Capad.find_by_sql [ "select ogc_fid, ST_Multi(wkb_geometry) as wkb_geometry, pa_id, name from capad where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), wkb_geometry)" ]
 
       puts item.to_json
 
@@ -65,6 +93,7 @@ class AssetsController < ApplicationController
         @item.name = item.first.name
         @item.old_code = item.first.pa_id.to_s
       end
+      @items=item
     elsif datasource == 'vk_state_parks' then
       item = VkStatePark.find_by_sql [ "select st_multi(boundary) as boundary, name, unique_name from vk_state_park where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), boundary)" ]
 
@@ -76,6 +105,7 @@ class AssetsController < ApplicationController
         @item.name = item.first.name
         @item.old_code = item.first.unique_name
       end
+      @items=item
     end
     render 'map_associate'
   end

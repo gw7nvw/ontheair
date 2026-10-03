@@ -31,12 +31,30 @@
 <div id="right_scroll">
   <%= render 'flash' %>
   <h2>Admin Tasks</h2>
+   <%= form_tag '/admin_tasks', :name => 'findform', :remote => true, :method => 'get', :style => 'margin-bottom: 0px' %>
+    <br/>
+    <div class="rowtitle">Task:</div>
+    <div class="rowtext">
+      <%= collection_select(:admin_task, :task_type, @actions, :task_type, :task_type,{include_blank: true, selected: @action}) %>
+    </div>
+
+    <div class="rowtitle">Type:</div>
+    <div class="rowtext">
+      <%= collection_select( :admin_task, :affected_table, @classes, :affected_table, :affected_table,{include_blank: true, default: @task}) %>
+    </div>
+
+    <div class="buttonshort">
+      <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+    </div>
+  </form>
+
    <table class="cleanskin1" id="award_table">
     <tr>
       <th> Task </th>
       <th> Item </th>
       <th> Action </th>
       <th> Description </th>
+      <th></th>
     </tr>
     <% if @admin_tasks then @admin_tasks.each do |at| %>
       <tr>
@@ -51,6 +69,9 @@
         </td>
         <td>
           <%= at.description %>
+        </td>
+        <td>
+          <%= link_to "Done", "/admin_tasks/#{at.id}/delete", class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')" %>
         </td>
       </tr>
       <% end end %>

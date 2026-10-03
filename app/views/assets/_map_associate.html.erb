@@ -63,6 +63,7 @@
 
     <%= hidden_field :asset, :location, :readonly => true %>
 
+
     <div class="rowtitle">x:</div>
     <div class="rowtext">
     <%= text_field :asset, :x, :size => 8 %>
@@ -84,6 +85,15 @@
     </div>
 
   </form>
+
+  <%= @items.count %> matches found.
+  <ul>
+    <% @items.each do |item| %>
+      <% id = item.ogc_fid %>
+      <% id = item.id if !id %>
+      <li> <%= link_to @item.name, "poly_by_id?select_type=#{item.class.table_name}&select_id=#{id}",  remote: true, :onclick => "linkHandler('clear')" %> </li>
+    <% end %>
+  </ul>
   <%= form_tag 'apply_poly', :name => 'asset', :id => 'asset', :remote => true, :method => 'post', :style => 'margin-bottom: 0px' %>
     <div class="rowtext">
     <%= text_area_tag :boundary, @item.boundary  %>
@@ -103,7 +113,7 @@
 
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
-  place_init('<%=@asset.location%>',  0);
   place_init('<%=@item.boundary%>',  0);
+  place_init('<%=@asset.location%>',  1);
 </script>
 

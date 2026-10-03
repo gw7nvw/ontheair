@@ -614,11 +614,11 @@ function map_enable_draw(type, style, loc_dest, x_dest, y_dest, move) {
 		y=feature.values_.geometry.flatCoordinates[1];
                 xy=transform([x, y],map_view_projection_name,dest_projection);
                 debug_f=feature
-		loc=type+"("+feature.values_.geometry.flatCoordinates.toString()+")";
+		loc=type+"("+xy.toString()+")";
 		// write back to webpage
                 if(loc_dest!=null)  document.getElementById(loc_dest).value=loc; 
-                if(x_dest!=null)  document.getElementById(x_dest).value=x; 
-                if(y_dest!=null)  document.getElementById(y_dest).value=y;
+                if(x_dest!=null)  document.getElementById(x_dest).value=xy[0]; 
+                if(y_dest!=null)  document.getElementById(y_dest).value=xy[1];
 
 	 });
 	map_draw.on('drawstart',function(event){

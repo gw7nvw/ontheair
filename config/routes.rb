@@ -34,6 +34,7 @@ resources :assets, only: [:index, :show, :edit, :new, :create, :update]
 match "/assets/:id/associations", :to => "assets#associations", :via => "get"
 match "/assets/:id/map_associate", :to => "assets#map_associate", :via => "get"
 match "/assets/:id/find_poly", :to => "assets#map_find_poly", :via => "get"
+match "/assets/:id/poly_by_id", :to => "assets#map_poly_by_id", :via => "get"
 match "/assets/:id/apply_poly", :to => "assets#map_apply_poly", :via => "post"
 match "/assets/:id/rate", to: "assets#rate", via: "post"
 match "/assets/:id/derate", to: "assets#derate", via: "get"
@@ -203,6 +204,7 @@ match "/wwff_logs/:id/download", :to => "wwff_logs#download", :as => "wwff_downl
 resources :regions
 resources :states
 resources :admin_tasks
+get 'admin_tasks/:id/delete', to: 'admin_tasks#delete'
 
 resources :geology, only: [:index, :show]
 

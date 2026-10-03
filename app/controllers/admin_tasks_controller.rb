@@ -5,7 +5,22 @@ class AdminTasksController < ApplicationController
   before_action :signed_in_user
 
   def index
-    @admin_tasks = AdminTask.where(pending: true)
+    admin_task = params[:admin_task] || {}
+    @action = admin_task[:task_type]
+    @class = admin_task[:affected_table]
+    @action = 'All' if @action.blank?
+    @class = 'All' if @class.blank?
+    @admin_tasks = AdminTask.find_by_sql [ " select * from admin_tasks where pending=true and (task_type=? or ?='All') and (affected_table=? or ?='All') ", @action, @action, @class, @class ]
+    @actions = (AdminTask.find_by_sql [ 'select distinct task_type from admin_tasks' ])
+    @classes = (AdminTask.find_by_sql [ 'select distinct affected_table from admin_tasks' ])
+  end
+
+  def delete
+    at = AdminTask.find_by(id: params[:id])
+    at.update_column(:pending, false)
+    index()
+    flash[:success] = "Marked as done"
+    render 'index'
   end
 
   def show

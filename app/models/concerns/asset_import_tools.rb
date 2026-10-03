@@ -79,7 +79,8 @@ module AssetImportTools
     need_resume = true if resume_at != nil
     urls = ['https://api.pota.app/park/grids/-43/143/-39/149/0', 'https://api.pota.app/park/grids/-39/113/-11/155/0']
     urls.each do |url|
-      data = JSON.parse(open(url).read)
+      data = fetch_external_url(url)
+      data = JSON.parse(data)
       next unless data
       puts 'Found ' + data['features'].count.to_s + ' parks'
       features = data['features']
@@ -112,7 +113,7 @@ module AssetImportTools
               puts p.name
               if redraw or new or p.boundary == nil
                 #trigger recalc parks
-                p.location = "POINT (#{geometry['coordinates'][0]} #{geometry['coordinates'][1]})"
+                p.location = "POINT (#{geometry['coordinates'][0]} #{geometry['coordinates'][1]})" if p.location == nil
                 if p.name.include?("State Beach") or p.name.include?("Wild and Scenic River")
                    puts "SKIPPING NON-OFFICIAL PARK: #{p.name}"
                 else 
@@ -123,16 +124,31 @@ module AssetImportTools
                   p.area = nil
                   p.az_boundary = nil
                   p.az_area = nil
-                  p.old_code = nil
-                  p.save 
-                
-                  p.find_vk_capad_park(silent)
-                  p.reload
-                  p.find_vk_state_park(silent)if !p.boundary
+#                  p.old_code = nil 
+                  if p.changed?
+                    changed=p.changed
+                    if p.save then
+                      AdminTask.create(task_type: 'new', affected_id: p.code, affected_table: 'asset', affected_url: p.url, description: "New POTA site") if new
+                      AdminTask.create(task_type: 'update', affected_id: p.code, affected_table: 'asset', affected_url: p.url, description: "Updated POTA site #{changed}") if !new
+                    else
+                      AdminTask.create(task_type: 'error', affected_id: p.code, affected_table: 'asset', description: "Failed to create new POTA site: #{p.to_json}")
+                    end
+                    result = p.find_vk_capad_park(silent)
+                    p.reload
+                    result2 = p.find_vk_state_park(silent)if !p.boundary
+                  end
                 end
               else
                 #just save
-                p.save
+                if p.changed?
+                  changed=p.changed
+                  if p.save then
+                    AdminTask.create(task_type: 'new', affected_id: p.code, affected_table: 'asset', affected_url: p.url, description: "New POTA site") if new
+                    AdminTask.create(task_type: 'update', affected_id: p.code, affected_table: 'asset', affected_url: p.url, description: "Updated POTA site #{changed}") if !new
+                  else
+                    AdminTask.create(task_type: 'error', affected_id: p.code, affected_table: 'asset', description: "Failed to create new POTA site: #{p.to_json}")
+                  end
+                end
               end
             end
           end
@@ -1079,6 +1095,7 @@ class Asset
        if found == false then
          if ignore == true then
            puts "WARNING: ignoring this park which requires user selection"
+           AdminTask.create(task_type: 'action', affected_id: self.code, affected_table: 'asset', affected_url: self.url, action_url: (self.url||"")+'/map_associate', description: "Could not auto-assign CAPAD boundary, multiple found")
          else 
            puts "Asset: "+self.name+" ("+shortname+")"
            count=0
@@ -1105,6 +1122,7 @@ class Asset
        else
          if ignore == true then
            puts "WARNING: ignoring this park which requires user selection"
+           AdminTask.create(task_type: 'action', affected_id: self.code, affected_table: 'asset', affected_url: self.url, action_url: (self.url||"")+'/map_associate', description: "Could not auto-assign CAPAD boundary, multiple found")
          else 
            puts "Does not match, use anyway (N/y): "+self.name+" = "+cs.first.name+" "+cs.first.capad_type
            id = gets
@@ -1210,6 +1228,7 @@ class Asset
         else
           if ignore == true then
             puts "WARNING: ignoring this park which requires user selection"
+            AdminTask.create(task_type: 'action', affected_id: self.code, affected_table: 'asset', affected_url: self.url, action_url: (self.url||"")+'/map_associate', description: "Could not auto-assign STATEPARK boundary, multiple found")
             found = false
           else 
             puts "Does not match, use anyway (N/y): "+self.name+" = "+(sps.first.name || "")
@@ -1231,6 +1250,7 @@ class Asset
       else
         if ignore == true then
           puts "WARNING: ignoring this park which requires user selection"
+          AdminTask.create(task_type: 'action', affected_id: self.code, affected_table: 'asset', affected_url: self.url, action_url: (self.url||"")+'/map_associate', description: "Could not auto-assign STATEPARK boundary, multiple found")
           found = false
         else 
           puts "Asset: "+self.name
