@@ -124,6 +124,7 @@ class AssetsController < ApplicationController
       @asset.save
       @asset.reload
       @asset.save
+      flash[:success] = "New boundary assigned"
     end
     render 'map_associate'
     else

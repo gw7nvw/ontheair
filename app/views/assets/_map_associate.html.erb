@@ -89,8 +89,9 @@
   <%= @items.count %> matches found.
   <ul>
     <% @items.each do |item| %>
-      <% id = item.ogc_fid %>
-      <% id = item.id if !id %>
+      <% id = item.try(:ogc_fid) %>
+      <% id = item.try(:id) if !id %>
+      <% id = 0 if !id %>
       <li> <%= link_to @item.name, "poly_by_id?select_type=#{item.class.table_name}&select_id=#{id}",  remote: true, :onclick => "linkHandler('clear')" %> </li>
     <% end %>
   </ul>
