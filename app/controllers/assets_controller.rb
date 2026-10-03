@@ -111,6 +111,7 @@ class AssetsController < ApplicationController
   end
 
   def map_apply_poly
+    @items=[]
     if signed_in? && current_user.is_modifier
     @asset=Asset.find_by(code: params[:id].gsub('_','/'))
     @datasources=['capad','vk_state_parks','vk_hydro']
