@@ -187,7 +187,7 @@ def self.import_hota_alerts(alerts)
   alerts.each do |alert|
     code = alert.asset_codes.first
     dxcc = ""
-    continent = "OC"
+    continent = Continent.find_by(code: "OC")
     asset = Asset.find_by(code: code)
     programme="ZLOTA" #default
     if asset then
