@@ -148,6 +148,9 @@ function site_init() {
     }
 
     if(typeof(def_zoom)!='undefined') {
+       if(def_zoom<5) { 
+	 def_zoom = 6;
+       }
        map_zoom(def_zoom);
     }
     if(typeof(def_centre)!='undefined') {
