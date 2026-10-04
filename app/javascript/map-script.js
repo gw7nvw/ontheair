@@ -918,7 +918,7 @@ function map_zoom_to_default_extent() {
 }
 
 function map_zoom(zoom) {
-     map_map.getView().setZoom(zoom-5);
+     map_map.getView().setZoom(zoom);
 }
 function map_add_feature_from_wkt(wkt, source_proj, style) {
   var format = new WKT();
