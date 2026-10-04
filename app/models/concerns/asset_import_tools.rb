@@ -136,6 +136,7 @@ module AssetImportTools
                     result = p.find_vk_capad_park(silent)
                     p.reload
                     result2 = p.find_vk_state_park(silent)if !p.boundary
+                    AdminTask.create(task_type: 'action', affected_id: self.code, affected_table: 'asset', affected_url: self.url, action_url: (self.url||"")+'/map_associate', description: "Could not auto-assign boundary, none found") if !p.boundary
                   end
                 end
               else
@@ -271,7 +272,7 @@ module AssetImportTools
             new = true
             a.code = code
             a.asset_type='summit'
-            a.country 
+            #a.country 
           end
           if new or update
             a.name=s[fields.index("SummitName")]
@@ -415,10 +416,11 @@ module AssetImportTools
 
   # update - update attributes of existing records (we always add new ones)
   # redraw - update location and re-derive boundary for existing assets (we always do this for now assets)
-  def Asset.import_wwff(dxcc = 'ZL', update = false, redraw = false, start="", theend="zzzz")
+  def Asset.import_wwff(dxcc = 'ZL', update = false, redraw = false, silent=false, start="", theend="zzzz")
     require 'csv'
     url = 'https://wwff.co/wwff-data/wwff_directory.csv'
-    data = open(url).read
+    data = fetch_external_url(url)
+
     fields = data.parse_csv
     values = CSV(data).read
 
@@ -427,12 +429,14 @@ module AssetImportTools
       row_count+=1
       next if row_count==1  or row[fields.index("reference")]<start or row[fields.index("reference")]>theend
       next unless row[fields.index("dxcc")] == dxcc
-      next unless row[fields.index("status")] == 'active'
+#      next unless row[fields.index("status")] == 'active'
       next if row[fields.index("reference")][0..5]=='Select'
       code = row[fields.index("reference")]
       name = row[fields.index("name")]
       next unless name && code
-      puts 'Code: ' + code + ', name: ' + name
+      safename = name.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
+
+      puts 'Code: ' + code + ', name: ' + safename.to_json
       p = Asset.find_by(code: code)
       new = false
       if p
@@ -450,13 +454,32 @@ module AssetImportTools
         p.asset_type='wwff park'
         p.valid_from = row[fields.index("validFrom")] if row[fields.index("validFrom")]!="0000-00-00" and row[fields.index("validFrom")]!=nil
         p.valid_to = row[fields.index("validTo")].to_datetime if row[fields.index("validTo")]!="0000-00-00" and row[fields.index("validTo")]!=nil
-        if (!p.valid_to and row[fields.index("validTo")]!="0000-00-00") and row[fields.index("status")] == 'active'
+        if (!p.valid_to and row[fields.index("status")] == 'active')
           p.is_active = true
         else
           p.is_active = false
         end
-        p.save
-        if new == true or redraw==true
+        p.description = row[fields.index("notes")] if row[fields.index("notes")]
+        if p.changed?
+          loc_changed = p.changed.include?('location')
+
+          if !new and !loc_changed #quick save without callbacks
+            changes = p.changes_to_save.transform_values(&:last).except('location')
+            changes['updated_at'] = Time.current 
+            p.update_columns(changes) if changes.any?
+          else
+            changed = p.changed
+            puts "CHANGED: #{p.changed}"
+            if p.save then
+              AdminTask.create(task_type: 'new', affected_id: p.code, affected_table: 'asset', affected_url: p.url, description: "New WWFF site") if new
+              AdminTask.create(task_type: 'update', affected_id: p.code, affected_table: 'asset', affected_url: p.url, description: "Updated WWFF site #{changed}") if !new
+            else
+              AdminTask.create(task_type: 'error', affected_id: p.code, affected_table: 'asset', description: "Failed to create new WWFF site: #{p.to_json}")
+            end
+          end
+        end
+        p.reload
+        if (new == true or redraw==true) and p.is_active==true
           p.location = "POINT(#{row[fields.index('longitude')]} #{row[fields.index('latitude')]})"
           # trigger new lookup of location metadata
           p.boundary = nil
@@ -470,14 +493,16 @@ module AssetImportTools
           p.az_boundary = nil
           p.az_area = nil
           p.old_code = nil
+          loc_change = p.changed.include?('location')
           p.save
           if p.country == 'ZL'
-            p.find_zlota_park
+            p.find_zlota_park(silent)
             p.reload
           elsif p.country == 'VK'
-            p.find_vk_capad_park
+            p.find_vk_capad_park(silent)
             p.reload
-            p.find_vk_state_park if !p.boundary
+            p.find_vk_state_park(silent) if !p.boundary
+            AdminTask.create(task_type: 'action', affected_id: p.code, affected_table: 'asset', affected_url: p.url, action_url: (p.url||"")+'/map_associate', description: "Could not auto-assign boundary, none found") if !p.boundary
           end
         else
           puts 'Existing WWFF park'
@@ -634,13 +659,14 @@ module AssetImportTools
                 puts count.to_s + ' - ' + pp.name + ' == ' + a.name if silent != true
                 count += 1
               end
-              if silent==true
-                AdminTask.create(task_type: 'action', affected_id: a.code, affected_table: 'asset', affected_url: a.url, action_url: (a.url||"")+'/map_associate', description: "Could not auto-assign HYDRO boundary, multiple found")
-              end
-              if !lake and silent == false then
-                puts "Select match (or 'a' to skip):"
-                id = gets
-                lake = [lakes[id.to_i]] if id && (id.length > 1) && (id[0] != 'a')
+              if !lake 
+                if silent==true 
+                  AdminTask.create(task_type: 'action', affected_id: a.code, affected_table: 'asset', affected_url: a.url, action_url: (a.url||"")+'/map_associate', description: "Could not auto-assign HYDRO boundary, multiple found")
+                else
+                  puts "Select match (or 'a' to skip):"
+                  id = gets
+                  lake = [lakes[id.to_i]] if id && (id.length > 1) && (id[0] != 'a')
+                end
               end
             end
             if lake   
@@ -922,6 +948,7 @@ module AssetImportTools
     a
   end
 
+
   def Asset.add_wwff_parks
     ps = WwffPark.all
     ps.each do |p|
@@ -981,56 +1008,6 @@ module AssetImportTools
 end
 
 class Asset
-  def find_zlota_park
-    # p.location='POINT('+feature["Longitude"].to_s+' '+feature["Latitude"].to_s+')'
-    # try to match against park
-    searchname = name.gsub("'", "''")
-    zps = Asset.find_by_sql [" select id, name, code, asset_type, location from assets where asset_type='park' and name='#{searchname}' and is_active=true"]
-    if !zps || zps.count.zero?
-      # look for best name match
-      short_name = searchname
-      short_name = short_name.gsub('Forest', '')
-      short_name = short_name.gsub('Conservation', '')
-      short_name = short_name.gsub('Park', '')
-      short_name = short_name.gsub('Area', '')
-      short_name = short_name.gsub('Scenic', '')
-      short_name = short_name.gsub('Reserve', '')
-      short_name = short_name.gsub('Marine', '')
-      short_name = short_name.gsub('Wildlife', '')
-      short_name = short_name.gsub('Ecological', '')
-      short_name = short_name.gsub('National', '')
-      short_name = short_name.gsub('Wilderness', '')
-      short_name = short_name.gsub('Te', '')
-      puts 'no exact match, try like: ' + short_name
-      zps = Asset.find_by_sql [" select id, name, code, asset_type, location from assets where asset_type='park' and name ilike '%%#{short_name.strip}%%' and is_active=true"]
-      id = nil
-      if zps && (zps.count > 1)
-        puts '==========================================================='
-        count = 0
-        zps.each do |pp|
-          puts count.to_s + ' - ' + pp.name + ' == ' + self.name
-          count += 1
-        end
-        puts "Select match (or 'a' to skip):"
-        id = gets
-        zps = [zps[id.to_i]] if id && (id.length > 1) && (id[0] != 'a')
-      end
-    end
-    if !zps || zps.count.zero? || (id && id[0] == 'a')
-      puts 'enter asset id to match: '
-      code = gets
-      zps = Asset.where(code: code.strip)
-    end
-
-    if zps && (zps.count == 1)
-      park = zps.first
-      location = park.location
-      puts "Matched #{name} with #{park.name}"
-    else
-      puts 'Could not find match. No location'
-    end
-  end 
-
   def add_vk_capad_park_by_id(id)
     puts "#{self.code} #{self.state} #{self.name}"
     cs = Capad.where("pa_id like '#{id}'")
@@ -1069,6 +1046,65 @@ class Asset
       end
     end
   end
+
+  def find_zlota_park(ignore=false)
+    searchname = self.name.gsub("'", "''")
+    zps = Asset.find_by_sql [" select id, name, code, asset_type, location from assets where asset_type='park' and name='#{searchname}' and is_active=true"]
+    if !zps || zps.count.zero?
+      # look for best name match
+      short_name = searchname
+      short_name = short_name.gsub('Forest', '')
+      short_name = short_name.gsub('Conservation', '')
+      short_name = short_name.gsub('Park', '')
+      short_name = short_name.gsub('Area', '')
+      short_name = short_name.gsub('Scenic', '')
+      short_name = short_name.gsub('Reserve', '')
+      short_name = short_name.gsub('Marine', '')
+      short_name = short_name.gsub('Wildlife', '')
+      short_name = short_name.gsub('Ecological', '')
+      short_name = short_name.gsub('National', '')
+      short_name = short_name.gsub('Wilderness', '')
+      short_name = short_name.gsub('Te', '')
+      puts 'no exact match, try like: ' + short_name
+      zps = Asset.find_by_sql [" select id, name, code, asset_type, location from assets where asset_type='park' and name ilike '%%#{short_name.strip}%%' and is_active=true"]
+      res_id = nil
+      if zps && (zps.count > 1)
+        if ignore == false
+          puts '==========================================================='
+          count = 0
+          zps.each do |pp|
+            puts count.to_s + ' - ' + pp.name + ' == ' + self.name
+            count += 1
+          end
+          puts "Select match (or 'a' to skip):"
+          res_id = gets
+          zps = [zps[res_id.to_i]] if res_id && (res_id.length > 1) && (res_id[0] != 'a')
+        else
+          AdminTask.create(task_type: 'action', affected_id: self.code, affected_table: 'asset', affected_url: self.url, action_url: (self.url||"")+'/map_associate', description: "Could not auto-assign ZLP park boundary, multiple found")
+        end
+      end
+    end
+    if !zps || zps.count.zero? || (res_id && res_id[0] == 'a')
+      if ignore == false
+        puts 'enter asset id to match: '
+        res_code = gets
+        zps = Asset.where(code: res_code.strip)
+      else
+        AdminTask.create(task_type: 'action', affected_id: self.code, affected_table: 'asset', affected_url: self.url, action_url: (self.url||"")+'/map_associate', description: "Could not auto-assign ZLP park boundary, none found")
+      end
+    end
+
+    if zps && (zps.count == 1)
+      park = Asset.find_by(id: zps.first.id)
+      self.location = park.location
+      self.boundary = park.boundary
+      self.save
+      puts "Matched #{name} with #{park.name}"
+    else
+      puts 'Could not find match. No location'
+    end
+  end
+
 
   def find_vk_capad_park(ignore=false)
     puts "CAPAD PARK ---------------------------------------------"

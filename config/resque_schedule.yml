@@ -57,3 +57,9 @@ do_import_llota:
   class: UpdateLlota
   args:
   description: Runs the perform method in UpdateLlota  monthly
+
+do_import_wwff:
+  cron: 15 1 0 1 *
+  class: UpdateWwff
+  args:
+  description: Runs the perform method in UpdateWwff  monthly
