@@ -153,7 +153,7 @@ nzgdb:
   postgis_extension: postgis      # default is postgis
   schema_search_path: public,postgis
   pool: 5
-  database: crownparks
+  database: nzgdb
   database_tasks: false
     #  nzgdb:
     #<<: *default

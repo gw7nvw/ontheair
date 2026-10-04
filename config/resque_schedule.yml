@@ -63,3 +63,9 @@ do_import_wwff:
   class: UpdateWwff
   args:
   description: Runs the perform method in UpdateWwff  monthly
+
+do_import_nzgdb:
+  cron: 30 1 0 0 1
+  class: UpdateNzgdb
+  args:
+  description: Runs the perform method in UpdateNzgdb  yearly

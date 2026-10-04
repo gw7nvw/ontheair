@@ -19,7 +19,22 @@ class ApplicationRecord < ActiveRecord::Base
 
   # 5. Handle the response output matrix
   if response.is_a?(Net::HTTPSuccess)
-    response.body # Returns the raw unparsed string (JSON, XML, or plain text)
+    content_type = response['Content-Type']
+    charset = content_type&.match(/charset=([^;\s]+)/i)&.captures&.first
+    data = response.body
+    if charset
+      begin
+        # 2. Transcode the body from the server's encoding into UTF-8 for safe manipulation
+        data = data.encode('UTF-8', charset, invalid: :replace, undef: :replace, replace: '')
+      rescue ArgumentError
+        # Fallback if Ruby doesn't recognize the server's charset string
+        data.force_encoding('UTF-8')
+      end
+    else
+      # If no header was sent, fallback to assuming UTF-8
+      data.force_encoding('UTF-8')
+    end
+    data # Returns the raw unparsed string (JSON, XML, or plain text)
   else
     # Log connection errors gracefully to your Rails environment log files
     Rails.logger.error "External HTTP Fetch Failed: #{response.code} for #{url_string}"
