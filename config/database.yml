@@ -164,7 +164,7 @@ nzgdb:
     # pool: 5
     # database: nzgdb
     # database_tasks: false
-lakes:
+topo50_data:
   <<: *default
   adapter: postgis
   encoding: unicode
