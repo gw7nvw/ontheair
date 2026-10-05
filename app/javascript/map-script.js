@@ -609,17 +609,18 @@ function map_enable_draw(type, style, loc_dest, x_dest, y_dest, move) {
                             featureProjection: map_view_projection_name
                      });
 
-                persist_feature=feature; 
-		x=feature.values_.geometry.flatCoordinates[0];
-		y=feature.values_.geometry.flatCoordinates[1];
-                xy=transform([x, y],map_view_projection_name,dest_projection);
-                debug_f=feature
-		loc=type+"("+xy.toString()+")";
-		// write back to webpage
-                if(loc_dest!=null)  document.getElementById(loc_dest).value=loc; 
-                if(x_dest!=null)  document.getElementById(x_dest).value=xy[0]; 
-                if(y_dest!=null)  document.getElementById(y_dest).value=xy[1];
+//		x=feature.values_.geometry.flatCoordinates[0];
+//		y=feature.values_.geometry.flatCoordinates[1];
+                old_geom=feature.getGeometry();
+		new_geom=old_geom.transform(map_view_projection_name,dest_projection);
+		window.debug_f=new_geom
 
+                const wkt_string = format.writeGeometry(new_geom);
+		// write back to webpage
+                if(loc_dest!=null) document.getElementById(loc_dest).value=wkt_string; 
+  		xy = new_geom.getFlatCoordinates()
+                if(x_dest!=null) document.getElementById(x_dest).value=xy[0]; 
+                if(y_dest!=null) document.getElementById(y_dest).value=xy[1];
 	 });
 	map_draw.on('drawstart',function(event){
           event.feature.setStyle(style);
