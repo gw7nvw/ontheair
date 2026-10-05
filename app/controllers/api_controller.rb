@@ -361,6 +361,13 @@ class ApiController < ApplicationController
     render json: res 
   end
 
+  def pnp_single_callsign
+    id=params[:id] || "invalidrecord"
+    res = User.find_by_sql [ %Q{select callsign as "callSign", firstname as name, '' as "alsoKnownAs", '0000-00-00' as "lastDate", '2026-06-01' as "lastUpdateDate" from users where firstname is not null and activated = true and callsign=? }, id.upcase ]
+
+    render json: res 
+  end
+
   def pnp_callsign
     res = User.find_by_sql [ %Q{select callsign as "callSign", firstname as name, '' as "alsoKnownAs", '0000-00-00' as "lastDate", '2026-06-01' as "lastUpdateDate" from users where firstname is not null and activated = true and callsign ~ '.[A-Z]+[0-9]+[A-Z]+'} ]
 

@@ -157,7 +157,107 @@ module AssetImportTools
       end
     end
   end
-  
+ 
+  def Asset.import_lake(update = true, redraw = false, silent=false) 
+    Nzgdb.where(feat_type: 'Lake', is_active: true).each do |place|
+      asset = Asset.find_by(ref_id: place.feat_id)
+      if !asset
+        asset = Asset.new
+        puts "ADDING NEW LAKE"
+        new = true
+      end
+      if new == true or update == true or asset.boundary == nil then
+        asset.asset_type = 'lake'
+        asset.is_active = true
+        asset.name = place.name
+        asset.location = "POINT(#{place.crd_longitude} #{place.crd_latitude})" if new
+        asset.ref_id = place.feat_id
+        asset.description = place.info_description
+        if asset.changed?
+          changed=asset.changed
+          puts asset.code
+          puts "CHANGED: #{changed}"
+          loc_changed = asset.changed.include?('location')
+
+          if !new and !loc_changed #quick save without callbacks
+            changes = asset.changes_to_save.transform_values(&:last).except('location')
+            changes['updated_at'] = Time.current 
+            res = asset.update_columns(changes) if changes.any?
+          else
+            res = asset.save 
+          end
+          if res
+            AdminTask.create(task_type: 'new', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "New ZLOTA lake") if new
+            #AdminTask.create(task_type: 'update', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "Updated ZLOTA lake #{changed}") if !new
+          else
+            AdminTask.create(task_type: 'error', affected_id: asset.code, affected_table: 'asset', description: "Failed to create new ZLOTA lake: #{asset.to_json}")
+          end
+        end 
+        if new == true or redraw == true or asset.boundary == nil
+          #look up topo50 boundary
+          Asset.get_lake_polygons(asset, !new)
+        end
+      end
+    end
+
+    #now retire non-nzgdb lakes
+  end
+
+  def Asset.get_lake_polygons(lake, quiet)
+    lakes = LakePolygon.find_by_sql ["select * from lake_polygons where is_active=true and ST_Within(ST_GeomFromText('" + lake.location.as_text + "',4326), boundary);"]
+    if !lakes || lakes.count.zero?
+      lakes = LakePolygon.find_by_sql [" SELECT *
+       FROM lake_polygons dp
+       WHERE is_active=true and ST_DWithin(ST_GeomFromText('" + lake.location.as_text + "', 4326), boundary, 5000, false)
+       ORDER BY ST_Distance(ST_GeomFromText('" + lake.location.as_text + "', 4326), boundary) LIMIT 50; "]
+    end
+    if !lakes || lakes.count.zero?
+      AdminTask.create(task_type: 'error', affected_id: lake.code, affected_table: 'asset', description: "No polygons found for ZLOTA lake: #{lake.code}") if !quiet
+      puts "NO POLYGONS FOUND AT LOCATION" if !quiet
+      return false
+    end
+
+    found = false
+    lakes.each do |lk|
+      l_name = lake.name.tr('ū', 'u')
+      l_name = l_name.gsub(' / ', ' ')
+      l_name = l_name.tr('/', ' ')
+      l_name = l_name.gsub(' (', ' ')
+      l_name = l_name.gsub(' (', ' ')
+      l_name = l_name.tr(')', ' ')
+      l_name = l_name.tr(')', ' ')
+      l_name = l_name.gsub(/[^0-9a-z]/i, '').gsub('Lakes', '').gsub('Lake', '')
+      lake_name = lk.name.tr('ū', 'u')
+      lake_name = lake_name.gsub(' / ', ' ')
+      lake_name = lake_name.tr('/', ' ')
+      lake_name = lake_name.gsub(' (', ' ')
+      lake_name = lake_name.gsub(' (', ' ')
+      lake_name = lake_name.tr(')', ' ')
+      lake_name = lake_name.tr(')', ' ')
+      lake_name = lake_name.gsub(/[^0-9a-z]/i, '').gsub('Lakes', '').gsub('Lake', '')
+
+      lake_arr = lake_name.split(' ').sort
+      l_arr = l_name.split(' ').sort
+
+      next unless (found == false) && ((l_name == lake_name) || (lake_arr & l_arr == l_arr) || lake_arr & l_arr == lake_arr || l_name.include?(lake_name) || lake_name.include?(l_name))
+
+      if lk.name != lake.name then 
+        puts 'Matched ' + (lake.name || 'unnamed') + ' with ' + (lk.name || 'unnamed') 
+        AdminTask.create(task_type: 'update', affected_id: lake.code, affected_table: 'asset', description: "Matched #{(lake.name || 'unnamed')} with #{(lk.name || 'unnamed')}")
+      end
+      lake.boundary = lk.boundary
+      lake.save
+      found = true
+    end
+    if found == false then 
+      AdminTask.create(task_type: 'error', affected_id: lake.code, affected_table: 'asset', description: "Failed to find #{(lake.name || 'unnamed')}. Best was #{lakes.first.name}")
+      puts 'Failed to find ' + (lake.name || 'unnamed') + '. Best was ' + lakes.first.name 
+    end
+    true
+  end
+
+
+ 
   def Asset.export_llota(dxcc, filename)
     as = Asset.where(country: dxcc, asset_type: 'llota lake', is_active: true)
 

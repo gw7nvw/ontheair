@@ -165,6 +165,7 @@ match '/api/SUMMITID/:lat/:long', to: 'api#pnp_summitid',    via:'get', :constra
 match '/api/WITHIN/:lat/:long', to: 'api#pnp_within',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
 match '/api/parkid/:lat/:long', to: 'api#pnp_parkid',    via:'get', :constraints => { :lat => /[^\/]+/, :long => /[^\/]+/ }
 match '/api/CALLSIGN', to: 'api#pnp_callsign',    via:'get'
+match '/api/CALLSIGN/:id', to: 'api#pnp_single_callsign',    via:'get'
 match '/api/USERS', to: 'api#pnp_callsign',    via:'get'
 match '/api2/users/verify', to: 'api2#pnp_users_verify',    via:'get'
 match '/api2/users/index', to: 'api2#pnp_users_index',    via:'get'

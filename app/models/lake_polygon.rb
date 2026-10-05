@@ -3,6 +3,7 @@
 # typed: false
 class LakePolygon < ActiveRecord::Base
   require 'csv'
+  establish_connection :topo50_data
 
   def self.import(filename)
     count = 0
