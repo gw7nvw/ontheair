@@ -171,6 +171,6 @@ topo50_data:
   postgis_extension: postgis      # default is postgis
   schema_search_path: public,postgis
   pool: 5
-  database: lakes
+  database: topo50_data
   database_tasks: false
 

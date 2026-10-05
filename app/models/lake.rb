@@ -4,7 +4,7 @@
 class Lake < ActiveRecord::Base
   require 'csv'
 
-  establish_connection :topo50_date
+  establish_connection :topo50_data
 
   def self.import
     Nzgdb.where(feat_type: 'Lake', is_active: true).each do |place|
