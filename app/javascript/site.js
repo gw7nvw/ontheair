@@ -904,10 +904,10 @@ function submitHandler(entity_name) {
            } else {
              document.getElementById("page_status").innerHTML = 'Timeout';
              document.body.classList.remove("loading");
-             window.currentActiveModal = map_create_dialog(
-               "Loading",
-               '<div id="page_status2">Timeout</div>'
-             );
+//             window.currentActiveModal = map_create_dialog(
+//               "Loading",
+//               '<div id="page_status2">Timeout</div>'
+//             );
            }
          }
          if(thrownError=="error") {
