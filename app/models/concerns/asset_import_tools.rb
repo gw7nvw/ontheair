@@ -159,6 +159,7 @@ module AssetImportTools
   end
  
   def Asset.import_lake(update = true, redraw = false, silent=false) 
+    included_asset_codes = []
     Nzgdb.where(feat_type: 'Lake', is_active: true).each do |place|
       asset = Asset.find_by(ref_id: place.feat_id)
       if !asset
@@ -166,13 +167,15 @@ module AssetImportTools
         puts "ADDING NEW LAKE"
         new = true
       end
+      #log this code as present for missing code deletion test later
+      included_asset_codes << asset.code  if asset.code
       if new == true or update == true or asset.boundary == nil then
         asset.asset_type = 'lake'
         asset.is_active = true
         asset.name = place.name
         asset.location = "POINT(#{place.crd_longitude} #{place.crd_latitude})" if new
         asset.ref_id = place.feat_id
-        asset.description = place.info_description
+        asset.description = (place.info_description||"")+"; "+(place.info_origin||"")
         if asset.changed?
           changed=asset.changed
           puts asset.code
@@ -186,6 +189,8 @@ module AssetImportTools
           else
             res = asset.save 
           end
+          #log this code as present for missing code deletion test later
+          included_asset_codes << asset.code  if new
           if res
             AdminTask.create(task_type: 'new', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "New ZLOTA lake") if new
             #AdminTask.create(task_type: 'update', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "Updated ZLOTA lake #{changed}") if !new
@@ -201,6 +206,27 @@ module AssetImportTools
     end
 
     #now retire non-nzgdb lakes
+    all_asset_codes=Asset.where(asset_type: 'lake', is_active: true).pluck(:code)
+    missing_asset_codes=all_asset_codes - included_asset_codes
+    if missing_asset_codes.count>10 then
+      puts "ERROR: halting - too many deletions requested"
+      AdminTask.create(task_type: 'error', affected_table: 'asset', description: "UPDATE LAKE RESULTED IN #{missing_asset_codes.count} deletions - ABANDONING!")
+    else
+      missing_asset_codes.each do |code|
+        asset=Asset.find_by(code:  code)
+        asset.update_column(:is_active, false)
+        asset.update_column(:valid_to, Time.now)
+        n=Nzgdb.find_by(feat_id: asset.ref_id)
+        descr=asset.description
+        if n then
+           descr=(n.info_description||"")+"; "+(n.info_origin||"")
+        end
+        descr="RETIRED LAKE: #{code} - not is current NZGDB; "+descr
+        asset.update_column(:description, descr)
+        puts "RETIRED LAKE: #{code} - not is current NZGDB"
+        AdminTask.create(task_type: 'deleted', affected_id: code, affected_url: asset.url, affected_table: 'asset', description: "RETIRED LAKE: #{code} - not is current NZGDB")
+      end
+   end 
   end
 
   def Asset.get_lake_polygons(lake, quiet)

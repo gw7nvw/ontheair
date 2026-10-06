@@ -6,7 +6,7 @@ class UpdateNzgdb
 
   def self.perform()
     Nzgdb.update
-    #Now update lakes
+    Asset.import_lake(true,false,true)
     #Now update islands
   end
 end
