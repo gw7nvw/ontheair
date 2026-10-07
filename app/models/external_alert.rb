@@ -3,6 +3,7 @@ class ExternalAlert < ApplicationRecord
   before_save {before_save_actions}
 
   attribute :codes, :string, array: true, default: -> { [] }
+  after_find :set_default_codes
 
   def get_codes
     if codes and codes.count>0 then codes else [code] end
@@ -201,5 +202,12 @@ def self.import_hota_alerts(alerts)
   end 
   all_alerts
 end
+  after_initialize :set_default_display_name, if: :new_record?
+
+  private
+
+  def set_default_codes
+    self.codes = [self.code] 
+  end
 end
 
