@@ -30,7 +30,7 @@ class AssetsController < ApplicationController
       redirect_to '/assets'
       return true
     end
-    @datasources=['capad','vk_state_parks','vk_hydro']
+    @datasources=['capad','vk_state_parks','vk_hydro', 'zl_lake', 'zl_park', 'zl_island']
   end
 
   def map_poly_by_id
@@ -53,6 +53,16 @@ class AssetsController < ApplicationController
         @item.boundary = item.wkb_geometry
         @item.name = item.name
         @item.old_code = item.objectid.to_s
+    elsif source == 'zl_island'
+      item = IslandPolygon.find_by(id: id)
+        @item.boundary = item.boundary
+        @item.name = item.name
+        @item.ref_id = item.topo50_fid
+    elsif source == 'zl_lake'
+      item = LakePolygon.find_by(id: id)
+        @item.boundary = item.boundary
+        @item.name = item.name
+        @item.old_code = item.topo50_fid
     end
     map_associate()
     render 'map_associate'
@@ -61,7 +71,8 @@ class AssetsController < ApplicationController
   def map_find_poly
     @items=[]
     @asset=Asset.find_by(code: params[:id].gsub('_','/'))
-    @datasources=['capad','vk_state_parks','vk_hydro']
+    @datasources=['capad','vk_state_parks','vk_hydro', 'zl_lake', 'zl_park', 'zl_island']
+
     a = params[:asset]
     x = a[:x]
     y = a[:y]
@@ -106,6 +117,31 @@ class AssetsController < ApplicationController
         @item.old_code = item.first.unique_name
       end
       @items=item
+    elsif datasource == 'zl_lake' then
+      item = LakePolygon.find_by_sql [ "select st_multi(boundary) as boundary, name, topo50_fid from island_polygons where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), boundary)" ]
+
+      puts item.to_json
+
+      @item = Asset.new
+      if item and item.count>0
+        @item.boundary = item.first.boundary
+        @item.name = item.first.name
+        @item.old_code = item.first.topo50_fid.to_s
+      end
+      @items=item
+    elsif datasource == 'zl_island' then
+      item = IslandPolygon.find_by_sql [ "select st_multi(boundary) as boundary, name, topo50_fid from island_polygons where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), boundary)" ]
+
+      puts item.to_json
+
+      @item = Asset.new
+      if item and item.count>0
+        @item.boundary = item.first.boundary
+        @item.name = item.first.name
+        @item.old_code = item.first.topo50_fid.to_s
+      end
+      @items=item
+
     end
     render 'map_associate'
   end
@@ -114,7 +150,7 @@ class AssetsController < ApplicationController
     @items=[]
     if signed_in? && current_user.is_modifier
     @asset=Asset.find_by(code: params[:id].gsub('_','/'))
-    @datasources=['capad','vk_state_parks','vk_hydro']
+    @datasources=['capad','vk_state_parks','vk_hydro', 'zl_lake', 'zl_park', 'zl_island']
     @item = Asset.new
   
     if @asset then

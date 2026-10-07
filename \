@@ -158,58 +158,8 @@ module AssetImportTools
     end
   end
 
-  def Asset.remove_duplicate_islands()
-    ref_ids=Asset.find_by_sql ["select * from (select count(id) as id, ref_id from assets where asset_type='island' and is_active=true group by ref_id) where id>1"]
-    ref_ids=ref_ids.pluck(:ref_id)[2..-1]
-    ref_ids.each do |ref_id|
-      assets = Asset.where(ref_id: ref_id, asset_type: 'island', is_active: true)
-      nzgdb = Nzgdb.find_by(feat_id: ref_id, is_active: true)
-      count = 0
-      puts "================================================"
-      assets.each do |asset|
-        puts "#{count.to_s} - #{asset.name} (#{asset.code} #{asset.location} matches #{nzgdb.crd_longitude} #{nzgdb.crd_latitude}"
-        count += 1
-      end
-      island=nil
-      puts "Select item to retire (or 'a' to skip):"
-      id = gets
-      island = assets[id.to_i] if id && (id.length > 1) && (id[0] != 'a')
-      if island
-        puts "DELETE #{island.code} #{island.name}"
-        island.update_column(:is_active, false)
-        island.update_column(:valid_to, Time.now)
-        island.update_column(:description, "Retired as duplicate. #{island.description}")
-      end
-    end
-  end
-
-  def Asset.find_retired_islands
-    assets=Asset.where(asset_type: 'island', is_active: true)
-    missing=[]
-    assets.each do |asset|
-      ns = Nzgdb.where(feat_id: asset.ref_id, is_active: true)
-      next if ns.count>0
-      missing << asset.code 
-    end
-    if missing.count>10
-      puts missing
-      puts "ERROR: halting - too many deletions requested"
-      AdminTask.create(task_type: 'error', affected_table: 'asset', description: "UPDATE ISLAND RESULTED IN #{missing.count} deletions - ABANDONING!")
-
-    else
-      missing.each do |code|
-        island=Asset.find_by(code: code)
-        puts "DELETE #{island.code} #{island.name}"
-        island.update_column(:is_active, false)
-        island.update_column(:valid_to, Time.now)
-        island.update_column(:description, "Retired as this island has been removed from the NZ Gazeteer (NZGDB). #{island.description}")
-      end
-    end
-  end
-
-
   def Asset.update_island_ids()
-    assets=Asset.where(asset_type: 'island', ref_id: nil, is_active: true)
+    assets=Asset.where(asset_type: 'island', ref_id: nil)
     assets.each do |asset|
       ns=Nzgdb.find_by_sql [" select * from nzgdbs where name=? and ST_DWithin(?, ST_Point(crd_longitude, crd_latitude, 4326), 0.01)", asset.name, asset.location]
       n=ns.first
@@ -218,21 +168,19 @@ module AssetImportTools
         puts "#{asset.name} == #{n.name} #{n.feat_id} -> #{n2.name}"
         asset.update_column(:ref_id, n.feat_id)
       else
-        nears = Nzgdb.find_by_sql [ "select * from nzgdbs where crd_longitude>? and crd_longitude<? and crd_latitude>? and crd_latitude<? order by (abs(crd_latitude - ?)+abs(crd_longitude - ?)) limit 10", asset.location.x-0.01, asset.location.x+0.01, asset.location.y-0.01, asset.location.y+0.01, asset.location.y, asset.location.x ]
-        count = 0
-        puts "================================================"
+        nears = Nzgdb.find_by_sql [ "select * from nzgdbs where crd_longitude>? and crd_longitude<? and crd_latitude>? and crd_latitude<? order by (abs(crd_latitude - ?)+abs(crd_longitude-?)) limit 10", asset.location.x-0.01, asset.location.x+0.01, asset.location.y-0.01, asset.location.y+0.01, asset.location.y, asset.location.x ]
+
         nears.each do |pp|
-          as=Asset.where(ref_id: pp.feat_id, is_active: true).count
-          puts "#{count.to_s} - #{pp.name} (#{pp.feat_id}: #{as} matches) == #{asset.name}"
+          puts count.to_s + ' - ' + pp.name + ' == ' + asset.name
           count += 1
         end
         island=nil
         puts "Select match (or 'a' to skip):"
         id = gets
-        island = nears[id.to_i] if id && (id.length > 1) && (id[0] != 'a')
+        island = [nears[id.to_i]] if id && (id.length > 1) && (id[0] != 'a')
         if island then
           n2=Nzgdb.find_by(feat_id: island.feat_id, is_active: true)
-          puts "#{asset.name} == #{island.name} #{island.feat_id} -> #{n2.name}"
+          puts "#{asset.name} == #{n.name} #{n.feat_id} -> #{n2.name}"
           asset.update_column(:ref_id, n2.feat_id)
         end
       end
@@ -240,14 +188,29 @@ module AssetImportTools
   end
 
   def Asset.import_island(update = true, redraw = false, silent=false) 
+    included_asset_codes = []
     Nzgdb.where(feat_type: 'Island', is_active: true).order(:name).each do |place|
       asset = Asset.find_by(ref_id: place.feat_id, asset_type: 'island')
+      if !asset and !silent
+        assets = Asset.find_by_sql ["select * from assets where ST_DWithin(location, ST_GeomFromText('POINT(#{place.crd_longitude} #{place.crd_latitude})', 4326), 0.01) and asset_type='island' and ref_id is null order by ST_Distance(location, ST_GeomFromText('POINT(#{place.crd_longitude} #{place.crd_latitude})', 4326)) desc limit 1"]
+        asset = assets.first
+        if asset
+          puts "Nearest Match: #{asset.name} [#{asset.location} -  #{place.name} [#{place.crd_longitude} #{place.crd_latitude}]. 'y' to accept"
+          if asset.name!=place.name
+            cont = gets
+            asset=nil if cont[0]!='y' 
+          end
+        end
+      end
+                                   
+      asset = Asset.find_by("ST_DWithin(location, ST_GeomFromText('POINT(#{place.crd_longitude} #{place.crd_latitude})', 4326), 0.03) and name=?", place.name) if !asset
       if !asset
         asset = Asset.new
         puts "ADDING NEW ISLAND"
         new = true
       end
       #log this code as present for missing code deletion test later
+      included_asset_codes << asset.code  if asset.code
       if new == true or update == true or asset.boundary == nil then
         puts "UPDATING #{asset.name} for #{place.name}" if asset.name!=place.name
         asset.asset_type = 'island'
@@ -271,8 +234,9 @@ module AssetImportTools
             res = asset.save 
           end
           #log this code as present for missing code deletion test later
+          included_asset_codes << asset.code  if new
           if res
-            AdminTask.create(task_type: 'new', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "New ZLOTA island #{asset.name}") if new
+            AdminTask.create(task_type: 'new', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "New ZLOTA island") if new
             #AdminTask.create(task_type: 'update', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "Updated ZLOTA island #{changed}") if !new
           else
             AdminTask.create(task_type: 'error', affected_id: asset.code, affected_table: 'asset', description: "Failed to create new ZLOTA island: #{asset.to_json}")
@@ -286,7 +250,30 @@ module AssetImportTools
     end
 
     #now retire non-nzgdb islands
-    find_retired_islands
+    all_asset_codes=Asset.where(asset_type: 'island', is_active: true).pluck(:code)
+    missing_asset_codes=all_asset_codes - included_asset_codes
+#    if missing_asset_codes.count>10 then
+#      puts all_asset_codes
+#      puts included_asset_codes
+#      puts missing_asset_codes
+#      puts "ERROR: halting - too many deletions requested"
+#      AdminTask.create(task_type: 'error', affected_table: 'asset', description: "UPDATE ISLAND RESULTED IN #{missing_asset_codes.count} deletions - ABANDONING!")
+#    else
+      missing_asset_codes.each do |code|
+        asset=Asset.find_by(code:  code)
+        asset.update_column(:is_active, false)
+        asset.update_column(:valid_to, Time.now)
+        n=Nzgdb.find_by(feat_id: asset.ref_id)
+        descr=asset.description
+        if n then
+           descr=(n.info_description||"")+"; "+(n.info_origin||"")
+        end
+        descr="RETIRED ISLAND: #{code} - not is current NZGDB; "+descr
+        asset.update_column(:description, descr)
+        puts "RETIRED ISLAND: #{code} - not is current NZGDB"
+        AdminTask.create(task_type: 'deleted', affected_id: code, affected_url: asset.url, affected_table: 'asset', description: "RETIRED ISLAND: #{code} - not is current NZGDB")
+      end
+#   end 
   end
 
   def Asset.get_island_polygons(island, quiet)
@@ -376,7 +363,7 @@ module AssetImportTools
           #log this code as present for missing code deletion test later
           included_asset_codes << asset.code  if new
           if res
-            AdminTask.create(task_type: 'new', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "New ZLOTA lake #{asset.name}") if new
+            AdminTask.create(task_type: 'new', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "New ZLOTA lake") if new
             #AdminTask.create(task_type: 'update', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "Updated ZLOTA lake #{changed}") if !new
           else
             AdminTask.create(task_type: 'error', affected_id: asset.code, affected_table: 'asset', description: "Failed to create new ZLOTA lake: #{asset.to_json}")
