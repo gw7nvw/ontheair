@@ -1,4 +1,5 @@
 if ENV['RAILS_API_ONLY'] == 'true' 
+  Ontheair::Application.routes.draw do
   # Only load your 10 lightweight endpoints 
   resources :api, only: [:index]
   match '/api/assets', to: 'api#asset',    via:'get'
@@ -56,7 +57,15 @@ if ENV['RAILS_API_ONLY'] == 'true'
   match '/api2/continents/index', to: 'api2#pnp_continents_index',    via:'get'
   match '/api2/logs/create', to: 'api2#pnp_logs_create',    via:'get'
   match '/api2/logs/create', to: 'api2#pnp_logs_create',    via:'post'
+  end
 else 
+  # typed: false
+  require 'resque/server'
+  require 'resque/scheduler/server'
+  
+  Ontheair::Application.routes.draw do
+  #resque
+  mount Resque::Server.new, at: "/resque"
   resources :api, only: [:index]
   match '/api/assets', to: 'api#asset',    via:'get'
   match '/api/assettypes', to: 'api#assettype',    via:'get'
@@ -113,13 +122,6 @@ else
   match '/api2/continents/index', to: 'api2#pnp_continents_index',    via:'get'
   match '/api2/logs/create', to: 'api2#pnp_logs_create',    via:'get'
   match '/api2/logs/create', to: 'api2#pnp_logs_create',    via:'post'
-  # typed: false
-  require 'resque/server'
-  require 'resque/scheduler/server'
-  
-  Ontheair::Application.routes.draw do
-  #resque
-  mount Resque::Server.new, at: "/resque"
   
   #static pages
   root 'static_pages#home'
@@ -277,4 +279,5 @@ else
   get "password_resets/edit"
   get "password_reset/new"
   get "password_reset/edit"
+  end
 end
