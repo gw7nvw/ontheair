@@ -57,7 +57,7 @@ class Asset < ApplicationRecord
       if self.type.use_volcanic_field then 
         self.code = Asset.get_next_code(asset_type, field_code)
       else
-        self.code = Asset.get_next_code(asset_type, region)
+        self.code = Asset.get_next_code(asset_type, (region||'ZZ')[-2..-1])
       end
     end
     self.safecode = code.tr('/', '_') 

@@ -36,9 +36,13 @@ module Ontheair
     # config.eager_load_paths << Rails.root.join("extras")
     config.active_record.schema_format = :sql
 #    config.middleware.insert_after ActionDispatch::Session::ActiveRecordStore, SkipBotSessions
-    #    # Add before a specific middleware
-    Rails.autoloaders.main.ignore(Rails.root.join("lib/skip_bot_sessions.rb"))
-    config.middleware.insert_before ActionDispatch::Cookies, SkipBotSessions
+    # Disable middlewarer in API VHOST, enable otherwise
+    if ENV['RAILS_API_ONLY'] == true
+      config.api_only = true
+    else
+      Rails.autoloaders.main.ignore(Rails.root.join("lib/skip_bot_sessions.rb"))
+      config.middleware.insert_before ActionDispatch::Cookies, SkipBotSessions
+    end
 #    initializer "skip_bot_sessions.configure_middleware", after: :build_middleware_stack do |app|
 #      app.config.middleware.insert_after(
 #        :active_record_store,

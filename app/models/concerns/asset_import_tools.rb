@@ -157,11 +157,168 @@ module AssetImportTools
       end
     end
   end
- 
+
+  def Asset.update_island_ids()
+    assets=Asset.where(asset_type: 'island', ref_id: nil)
+    assets.each do |asset|
+      ns=Nzgdb.find_by_sql [" select * from nzgdbs where name=? and ST_DWithin(?, ST_Point(crd_longitude, crd_latitude, 4326), 0.01)", asset.name, asset.location]
+      n=ns.first
+      if n then 
+        n2=Nzgdb.find_by(feat_id: n.feat_id, is_active: true)
+        puts "#{asset.name} == #{n.name} #{n.feat_id} -> #{n2.name}"
+        asset.update_column(:ref_id, n.feat_id)
+      else
+        puts "NOT FOUND: #{asset.name}"
+      end
+    end
+  end
+
+  def Asset.import_island(update = true, redraw = false, silent=false) 
+    included_asset_codes = []
+    Nzgdb.where(feat_type: 'Island', is_active: true).order(:name).each do |place|
+      asset = Asset.find_by(ref_id: place.feat_id, asset_type: 'island')
+      if !asset and !silent
+        assets = Asset.find_by_sql ["select * from assets where ST_DWithin(location, ST_GeomFromText('POINT(#{place.crd_longitude} #{place.crd_latitude})', 4326), 0.01) and asset_type='island' and ref_id is null order by ST_Distance(location, ST_GeomFromText('POINT(#{place.crd_longitude} #{place.crd_latitude})', 4326)) desc limit 1"]
+        asset = assets.first
+        if asset
+          puts "Nearest Match: #{asset.name} [#{asset.location} -  #{place.name} [#{place.crd_longitude} #{place.crd_latitude}]. 'y' to accept"
+          if asset.name!=place.name
+            cont = gets
+            asset=nil if cont[0]!='y' 
+          end
+        end
+      end
+                                   
+      asset = Asset.find_by("ST_DWithin(location, ST_GeomFromText('POINT(#{place.crd_longitude} #{place.crd_latitude})', 4326), 0.03) and name=?", place.name) if !asset
+      if !asset
+        asset = Asset.new
+        puts "ADDING NEW ISLAND"
+        new = true
+      end
+      #log this code as present for missing code deletion test later
+      included_asset_codes << asset.code  if asset.code
+      if new == true or update == true or asset.boundary == nil then
+        puts "UPDATING #{asset.name} for #{place.name}" if asset.name!=place.name
+        asset.asset_type = 'island'
+        asset.is_active = true if new
+        old_name=asset.name || ""
+        asset.name = place.name
+        asset.location = "POINT(#{place.crd_longitude} #{place.crd_latitude})" if new
+        asset.ref_id = place.feat_id
+        asset.description = (place.info_description||"")+"; "+(place.info_origin||"")
+        if asset.changed?
+          changed=asset.changed
+          puts asset.code
+          puts "CHANGED: #{changed} from #{old_name} to #{asset.name}"
+          loc_changed = asset.changed.include?('location')
+
+          if !new and !loc_changed #quick save without callbacks
+            changes = asset.changes_to_save.transform_values(&:last).except('location')
+            changes['updated_at'] = Time.current 
+            res = asset.update_columns(changes) if changes.any?
+          else
+            res = asset.save 
+          end
+          #log this code as present for missing code deletion test later
+          included_asset_codes << asset.code  if new
+          if res
+            AdminTask.create(task_type: 'new', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "New ZLOTA island") if new
+            #AdminTask.create(task_type: 'update', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "Updated ZLOTA island #{changed}") if !new
+          else
+            AdminTask.create(task_type: 'error', affected_id: asset.code, affected_table: 'asset', description: "Failed to create new ZLOTA island: #{asset.to_json}")
+          end
+        end 
+        if new == true or redraw == true or asset.boundary == nil
+          #look up topo50 boundary
+          Asset.get_island_polygons(asset, !new)
+        end
+      end
+    end
+
+    #now retire non-nzgdb islands
+    all_asset_codes=Asset.where(asset_type: 'island', is_active: true).pluck(:code)
+    missing_asset_codes=all_asset_codes - included_asset_codes
+#    if missing_asset_codes.count>10 then
+#      puts all_asset_codes
+#      puts included_asset_codes
+#      puts missing_asset_codes
+#      puts "ERROR: halting - too many deletions requested"
+#      AdminTask.create(task_type: 'error', affected_table: 'asset', description: "UPDATE ISLAND RESULTED IN #{missing_asset_codes.count} deletions - ABANDONING!")
+#    else
+      missing_asset_codes.each do |code|
+        asset=Asset.find_by(code:  code)
+        asset.update_column(:is_active, false)
+        asset.update_column(:valid_to, Time.now)
+        n=Nzgdb.find_by(feat_id: asset.ref_id)
+        descr=asset.description
+        if n then
+           descr=(n.info_description||"")+"; "+(n.info_origin||"")
+        end
+        descr="RETIRED ISLAND: #{code} - not is current NZGDB; "+descr
+        asset.update_column(:description, descr)
+        puts "RETIRED ISLAND: #{code} - not is current NZGDB"
+        AdminTask.create(task_type: 'deleted', affected_id: code, affected_url: asset.url, affected_table: 'asset', description: "RETIRED ISLAND: #{code} - not is current NZGDB")
+      end
+#   end 
+  end
+
+  def Asset.get_island_polygons(island, quiet)
+    islands = IslandPolygon.find_by_sql ["select * from island_polygons where ST_Within(ST_GeomFromText('" + island.location.as_text + "',4326), boundary);"]
+    if !islands || islands.count.zero?
+      islands = IslandPolygon.find_by_sql [" SELECT *
+       FROM island_polygons dp
+       WHERE is_active=true and ST_DWithin(ST_GeomFromText('" + island.location.as_text + "', 4326), boundary, 5000, false)
+       ORDER BY ST_Distance(ST_GeomFromText('" + island.location.as_text + "', 4326), boundary) LIMIT 50; "]
+    end
+    if !islands || islands.count.zero?
+      AdminTask.create(task_type: 'error', affected_id: island.code, affected_url: island.url, affected_table: 'asset', description: "No polygons found for ZLOTA island: #{island.code}") if !quiet
+      puts "NO POLYGONS FOUND AT LOCATION" if !quiet
+      return false
+    end
+
+    found = false
+    islands.each do |lk|
+      l_name = (lk.name||"").tr('ū', 'u')
+      l_name = l_name.gsub(' / ', ' ')
+      l_name = l_name.tr('/', ' ')
+      l_name = l_name.gsub(' (', ' ')
+      l_name = l_name.gsub(' (', ' ')
+      l_name = l_name.tr(')', ' ')
+      l_name = l_name.tr(')', ' ')
+      l_name = l_name.gsub(/[^0-9a-z]/i, '')
+      island_name = (island.name||"").tr('ū', 'u')
+      island_name = island_name.gsub(' / ', ' ')
+      island_name = island_name.tr('/', ' ')
+      island_name = island_name.gsub(' (', ' ')
+      island_name = island_name.gsub(' (', ' ')
+      island_name = island_name.tr(')', ' ')
+      island_name = island_name.tr(')', ' ')
+      island_name = island_name.gsub(/[^0-9a-z]/i, '')
+
+      island_arr = island_name.split(' ').sort
+      l_arr = l_name.split(' ').sort
+
+      next unless (found == false) && ((l_name == island_name) || (island_arr & l_arr == l_arr) || island_arr & l_arr == island_arr || l_name.include?(island_name) || island_name.include?(l_name))
+
+      if lk.name != island.name then 
+        puts 'Matched ' + (island.name || 'unnamed') + ' with ' + (lk.name || 'unnamed') 
+        AdminTask.create(task_type: 'update', affected_id: island.code, affected_url: island.url, affected_table: 'asset', description: "Matched #{(island.name || 'unnamed')} with #{(lk.name || 'unnamed')}")
+      end
+      island.boundary = lk.boundary
+      island.save
+      found = true
+    end
+    if found == false then 
+      AdminTask.create(task_type: 'error', affected_id: island.code, affected_url: island.url, affected_table: 'asset', description: "Failed to find #{(island.name || 'unnamed')}. Best was #{islands.first.name}") if !quiet
+      puts 'Failed to find ' + (island.name || 'unnamed') + '. Best was ' + islands.first.name 
+    end
+    true
+  end
+
   def Asset.import_lake(update = true, redraw = false, silent=false) 
     included_asset_codes = []
     Nzgdb.where(feat_type: 'Lake', is_active: true).each do |place|
-      asset = Asset.find_by(ref_id: place.feat_id)
+      asset = Asset.find_by(ref_id: place.feat_id, asset_type: 'lake')
       if !asset
         asset = Asset.new
         puts "ADDING NEW LAKE"
@@ -238,7 +395,7 @@ module AssetImportTools
        ORDER BY ST_Distance(ST_GeomFromText('" + lake.location.as_text + "', 4326), boundary) LIMIT 50; "]
     end
     if !lakes || lakes.count.zero?
-      AdminTask.create(task_type: 'error', affected_id: lake.code, affected_table: 'asset', description: "No polygons found for ZLOTA lake: #{lake.code}") if !quiet
+      AdminTask.create(task_type: 'error', affected_id: lake.code, affected_url: lake.url, affected_table: 'asset', description: "No polygons found for ZLOTA lake: #{lake.code}") if !quiet
       puts "NO POLYGONS FOUND AT LOCATION" if !quiet
       return false
     end
@@ -269,14 +426,14 @@ module AssetImportTools
 
       if lk.name != lake.name then 
         puts 'Matched ' + (lake.name || 'unnamed') + ' with ' + (lk.name || 'unnamed') 
-        AdminTask.create(task_type: 'update', affected_id: lake.code, affected_table: 'asset', description: "Matched #{(lake.name || 'unnamed')} with #{(lk.name || 'unnamed')}")
+        AdminTask.create(task_type: 'update', affected_id: lake.code, affected_url: lake.url, affected_table: 'asset', description: "Matched #{(lake.name || 'unnamed')} with #{(lk.name || 'unnamed')}")
       end
       lake.boundary = lk.boundary
       lake.save
       found = true
     end
     if found == false then 
-      AdminTask.create(task_type: 'error', affected_id: lake.code, affected_table: 'asset', description: "Failed to find #{(lake.name || 'unnamed')}. Best was #{lakes.first.name}")
+      AdminTask.create(task_type: 'error', affected_id: lake.code, affected_url: lake.url, affected_table: 'asset', description: "Failed to find #{(lake.name || 'unnamed')}. Best was #{lakes.first.name}")
       puts 'Failed to find ' + (lake.name || 'unnamed') + '. Best was ' + lakes.first.name 
     end
     true
