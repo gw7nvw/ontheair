@@ -202,7 +202,6 @@ def self.import_hota_alerts(alerts)
   end 
   all_alerts
 end
-  after_initialize :set_default_display_name, if: :new_record?
 
   private
 
