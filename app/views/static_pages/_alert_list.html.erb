@@ -37,6 +37,8 @@
           <%=alert[:name]%> -
           <%=alert[:comments]%>
           <i><small><%if signed_in? and validlink  %> 
+            <%=link_to '(spot)','/posts/new?topic_id='+SPOT_TOPIC.to_s+'&alert='+alert[:id].to_s, remote: true,  :id => 'spot', :onclick => "linkHandler('spot')" %>
+
             <%#=link_to '(spot)','/posts/new?topic_id='+SPOT_TOPIC.to_s+'&alert='+alert[:id].to_s, remote: true,  :id => 'spot', :onclick => "linkHandler('spot')" %>
           <% end%></small></i>
         </td>

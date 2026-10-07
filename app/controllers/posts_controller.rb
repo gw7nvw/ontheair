@@ -203,10 +203,31 @@ class PostsController < ApplicationController
       end
     end
     @post.asset_codes = [params[:code].tr('_', '/')] if params[:code]
+    if params[:alert]
+      @post.do_not_lookup = true
+      @post.referenced_time = Time.now.in_time_zone('UTC').at_beginning_of_minute
+      @post.referenced_date = Time.now.in_time_zone('UTC').at_beginning_of_minute
+
+      if params[:alert].to_i > 0
+        alert = ExternalAlert.find_by(id: params[:alert].to_i)
+        if alert
+          @post.callsign = alert.activatingCallsign
+          @post.asset_codes = [alert.code] if alert.code
+        end
+      else
+        item = Item.find_by(id: -params[:alert].to_i)
+        alert = item.post if item
+        if alert
+          @post.callsign = alert.callsign
+          @post.asset_codes = alert.asset_codes
+        end
+      end
+    end 
     if params[:spot]
       @post.do_not_lookup = true
       @post.referenced_time = Time.now.in_time_zone('UTC').at_beginning_of_minute
       @post.referenced_date = Time.now.in_time_zone('UTC').at_beginning_of_minute
+
       if params[:spot].to_i > 0
         spot = ConsolidatedSpot.find_by(id: params[:spot].to_i)
         if spot
