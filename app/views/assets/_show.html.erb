@@ -120,7 +120,7 @@
     
   <% if !@bot %>
     <% if @asset.public_access==true %>
-      <% if @asset.access_road_ids !=nil then %>
+      <% if !@asset.access_road_ids.blank? then %>
         <div class="erow" id="roadids">
           <div class="rowtitle"></div>
           <div class="rowtext" style="color:#00bb00"> 
@@ -132,11 +132,11 @@
         </div>
       <% end %>
   
-      <% if @asset.access_track_ids != nil then %>
+      <% if !@asset.access_track_ids.blank? then %>
         <div class="erow" id="trackids">
           <div class="rowtitle"></div>
           <div class="rowtext" style="color:#00bb00"> 
-            Via DOC track(s): 
+            Via track(s): 
             <span style="color:#333">
               <%= @asset.access_track_names.titlecase %>
             </span>
@@ -144,7 +144,7 @@
         </div>
       <% end %>
 
-      <% if @asset.access_park_ids != nil then %>
+      <% if !@asset.access_park_ids.blank? then %>
         <div class="erow" id="parkids">
           <div class="rowtitle"></div>
           <div class="rowtext" style="color:#00bb00"> 
@@ -156,7 +156,7 @@
         </div>
       <% end %>
 
-      <% if @asset.access_capad_park_ids != nil and @asset.access_capad_park_ids != [] then %>
+      <% if !@asset.access_capad_park_ids.blank? %>
         <div class="erow" id="capadparkids">
           <div class="rowtitle"></div>
           <div class="rowtext" style="color:#00bb00"> 
@@ -167,7 +167,7 @@
           </div>
         </div>
       <% end %>
-      <% if @asset.access_vk_state_park_ids != nil and @asset.access_vk_state_park_ids != [] then %>
+      <% if !@asset.access_vk_state_park_ids.blank? %>
         <div class="erow" id="stateparkids">
           <div class="rowtitle"></div>
           <div class="rowtext" style="color:#00bb00"> 
@@ -179,7 +179,7 @@
         </div>
       <% end %>
 
-      <% if @asset.access_road_ids == nil and @asset.access_legal_road_ids != nil then %>
+      <% if @asset.access_road_ids.blank? and !@asset.access_legal_road_ids.blank? then %>
         <div class="erow" id="legalrods">
           <div class="rowtitle"></div>
           <div class="rowtext" style="color:#00bb00"> 
