@@ -431,10 +431,10 @@ class Asset < ApplicationRecord
     return "" if self.access_track_ids.blank?
     if self.country=='ZL'
       tracks = DocTrack.where('ogc_fid in (?)', self.access_track_ids.map{|rid| rid.to_i})
-      return (tracks.pluck(:techobject).uniq.join(', ')||"")
+      return (tracks.pluck(:techobject).map{ |str| str.blank? ? 'Unnamed track(s)' : str }.uniq.join(', ')||"")
     elsif self.country=='VK'
       tracks = VkRoad.where('road_id in (?)', self.access_track_ids)
-      return (tracks.pluck(:full_street_name).uniq.join(', ')||"")
+      return (tracks.pluck(:full_street_name).map{ |str| str.blank? ? 'Unnamed track(s)' : str }.uniq.join(', ')||"")
     end
     return ""
   end
@@ -444,10 +444,10 @@ class Asset < ApplicationRecord
     return "" if self.access_road_ids.blank?
     if self.country=='ZL'
       roads = Road.where('t50_fid in (?)', self.access_road_ids.map{|rid| rid.to_i})
-      return (roads.pluck(:name).uniq.join(', ')||"")
+      return (roads.pluck(:name).map{ |str| str.blank? ? 'Unnamed road(s)' : str }.uniq.join(', ')||"")
     elsif self.country=='VK'
       roads = VkRoad.where('road_id in (?)', self.access_road_ids)
-      return (roads.pluck(:full_street_name).uniq.join(', ')||"")
+      return (roads.pluck(:full_street_name).map{ |str| str.blank? ? 'Unnamed road(s)' : str }.uniq.join(', ')||"")
     end
     return ""
   end
