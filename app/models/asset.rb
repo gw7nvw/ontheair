@@ -428,26 +428,26 @@ class Asset < ApplicationRecord
   end
 
   def access_track_names
-    return nil if self.access_track_ids.blank?
+    return "" if self.access_track_ids.blank?
     if self.country=='ZL'
       tracks = DocTrack.where('ogc_fid in (?)', self.access_track_ids.map{|rid| rid.to_i})
-      return tracks.pluck(:techobject).uniq.join(', ')
+      return (tracks.pluck(:techobject).uniq.join(', ')||"")
     elsif self.country=='VK'
       tracks = VkRoad.where('road_id in (?)', self.access_track_ids)
-      return tracks.pluck(:full_street_name).uniq.join(', ')
+      return (tracks.pluck(:full_street_name).uniq.join(', ')||"")
     end
     return ""
   end
 
   # name of region (without getting it's boundary)
   def access_road_names
-    return nil if self.access_road_ids.blank?
+    return "" if self.access_road_ids.blank?
     if self.country=='ZL'
       roads = Road.where('t50_fid in (?)', self.access_road_ids.map{|rid| rid.to_i})
-      return roads.pluck(:name).uniq.join(', ')
+      return (roads.pluck(:name).uniq.join(', ')||"")
     elsif self.country=='VK'
       roads = VkRoad.where('road_id in (?)', self.access_road_ids)
-      return roads.pluck(:full_street_name).uniq.join(', ')
+      return (roads.pluck(:full_street_name).uniq.join(', ')||"")
     end
     return ""
   end

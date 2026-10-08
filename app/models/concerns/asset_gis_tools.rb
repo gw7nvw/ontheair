@@ -96,7 +96,6 @@ module AssetGisTools
     # roads
     record = Asset.find_by_sql [ "select coalesce(az_boundary, boundary, location)::text as temp_loc from assets where id=?", self.id]
     our_geometry = record.first[:temp_loc] if record.first
-    puts our_geometry
 
 
     if country=='ZL'

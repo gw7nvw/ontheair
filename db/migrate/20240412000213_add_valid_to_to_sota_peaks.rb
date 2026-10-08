@@ -1,7 +1,0 @@
-# typed: false
-class AddValidToToSotaPeaks < ActiveRecord::Migration[5.0]
-  def change
-    add_column :sota_peaks, :valid_from, :datetime
-    add_column :sota_peaks, :valid_to, :datetime
-  end
-end

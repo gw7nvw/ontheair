@@ -439,7 +439,7 @@ CREATE TABLE public.assets (
     boundary_simplified public.geometry(MultiPolygon,4326),
     boundary_very_simplified public.geometry(MultiPolygon,4326),
     district character varying(255),
-    nearest_road_id integer,
+    nearest_road_id character varying,
     road_distance integer,
     valid_from timestamp without time zone,
     valid_to timestamp without time zone,
@@ -2128,44 +2128,6 @@ ALTER SEQUENCE public.sessions_id_seq OWNED BY public.sessions.id;
 
 
 --
--- Name: sota_peaks; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.sota_peaks (
-    id integer NOT NULL,
-    summit_code character varying(255),
-    name character varying(255),
-    short_code character varying(255),
-    alt character varying(255),
-    points integer,
-    created_at timestamp without time zone,
-    updated_at timestamp without time zone,
-    location public.geometry(Point,4326),
-    valid_from timestamp without time zone,
-    valid_to timestamp without time zone
-);
-
-
---
--- Name: sota_peaks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.sota_peaks_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: sota_peaks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.sota_peaks_id_seq OWNED BY public.sota_peaks.id;
-
-
---
 -- Name: sota_regions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3253,13 +3215,6 @@ ALTER TABLE ONLY public.sessions ALTER COLUMN id SET DEFAULT nextval('public.ses
 
 
 --
--- Name: sota_peaks id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.sota_peaks ALTER COLUMN id SET DEFAULT nextval('public.sota_peaks_id_seq'::regclass);
-
-
---
 -- Name: sota_regions id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -3783,14 +3738,6 @@ ALTER TABLE ONLY public.external_activations
 
 ALTER TABLE ONLY public.external_chases
     ADD CONSTRAINT sota_chases_pkey PRIMARY KEY (id);
-
-
---
--- Name: sota_peaks sota_peaks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.sota_peaks
-    ADD CONSTRAINT sota_peaks_pkey PRIMARY KEY (id);
 
 
 --
@@ -4371,6 +4318,7 @@ CREATE INDEX vk_code_indx ON public.vk_assets USING btree (code);
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261008045434'),
 ('20261003003844'),
 ('20260927034145'),
 ('20260926211603'),

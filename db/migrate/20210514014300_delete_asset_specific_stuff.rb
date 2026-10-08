@@ -17,8 +17,6 @@ class DeleteAssetSpecificStuff < ActiveRecord::Migration[5.0]
     remove_column :logs, :island1_id
     remove_column :logs, :park1_id
     remove_column :logs, :summit1_id
-    remove_column :sota_peaks, :park_id
-    remove_column :sota_peaks, :island_id
     remove_column :users, :huts_bagged
     remove_column :users, :huts_bagged_total
     remove_column :users, :huts_first_bagged
