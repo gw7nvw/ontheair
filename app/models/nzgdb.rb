@@ -8,6 +8,11 @@ class Nzgdb < ApplicationRecord
 
   attr_accessor :theorder
   def self.update
+    read_count = 0
+    new_count=0
+    updated_count=0
+    deleted_count=0
+
     url = "https://gazetteer.linz.govt.nz/gaz.csv"
     data = fetch_external_url(url)
     fields = data.parse_csv
@@ -18,6 +23,7 @@ class Nzgdb < ApplicationRecord
     values.each do |s|
       rowcount+=1
       next if rowcount==1
+      read_count+=1
       name_id = s[fields.index("name_id")]
       name = s[fields.index("name")]
       attributes = fields.zip(s).to_h
@@ -29,11 +35,13 @@ class Nzgdb < ApplicationRecord
           puts "FAILED TO CREATE: #{safe_attributes.to_json}"
         else
           puts "NEW RECORD: #{name}"
+          new_count+=1
         end
       else
         n.update(safe_attributes)
         if n.saved_changes?
           puts "UPDATED RECORD: #{name} - #{n.saved_changes.keys.to_json}"
+          updated_count+=1
         end
       end
       if n.saved_changes.keys.include?('status')
@@ -43,26 +51,13 @@ class Nzgdb < ApplicationRecord
       if (n.status=='Unofficial Replaced' or n.status=='Unofficial Discontinued') and n.is_active==true
         n.update_column(:is_active, false) 
         puts "Retiring #{name}"
+        deleted_count+=1
       end
     end
 
     Nzgdb.remove_duplicates()
-  end
+    AdminTask.create(task_type: 'report', affected_table: 'nzgdb', description: "Updated NZGDB. Read: #{read_count}, New: #{new_count}, Updated: #{updated_count}, Deleted: #{deleted_count}")
 
-  def self.import(filename)
-    CSV.foreach(filename, headers: true) do |row|
-      place = row.to_hash
-      unless ['Unofficial Replaced', 'Unofficial Discontinued'].include?(row['status'])
-        newplace = {}
-        place.each do |key, value|
-          key = key.gsub(/[^0-9a-z _]/i, '')
-          newplace[key] = value
-        end
-        p = Nzgdb.new(newplace)
-        p.save
-        puts p.id
-      end
-    end
   end
 
   def self.remove_duplicates

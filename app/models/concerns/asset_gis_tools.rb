@@ -94,10 +94,42 @@ module AssetGisTools
   # direct to db so callback-safe
   def get_access
     # roads
-    ActiveRecord::Base.connection.execute("update assets set access_road_ids=(select array_agg(r.id) as road_ids from assets a, roads r where (ST_intersects (a.az_boundary, r.linestring) or ST_intersects (a.location, r.linestring)) and a.code='#{code}') where code='#{code}'")
+    record = Asset.find_by_sql [ "select coalesce(az_boundary, boundary, location)::text as temp_loc from assets where id=?", self.id]
+    our_geometry = record.first[:temp_loc] if record.first
+    puts our_geometry
+
+
+    if country=='ZL'
+      #access
+      roads=Road.where("ST_Intersects(ST_GeomFromEWKT(?), wkb_geometry)", our_geometry)
+      ids=roads.pluck(:t50_fid)
+      self.update_column(:access_road_ids, ids)
+
+      #distance
+      closest_road = Road
+        .select(Arel.sql("t50_fid, ST_Distance(wkb_geometry::geography, ST_GeomFromEWKT(?)::geography) AS distance", our_geometry))
+             .order(Arel.sql("wkb_geometry <-> ST_GeomFromEWKT(?)", our_geometry))
+             .first
+      self.update_column(:nearest_road_id, closest_road.t50_fid) 
+      self.update_column(:road_distance, closest_road.distance) 
+    elsif country=='VK'
+      roads=VkRoad.where("ST_Intersects(ST_GeomFromEWKT(?), shape) and subtype='ROAD'", our_geometry)
+      ids=roads.pluck(:road_id)
+      self.update_column(:access_road_ids, ids)
+
+      #distance
+      closest_road = VkRoad
+             .select(Arel.sql("road_id, ST_Distance(shape::geography, ST_GeomFromEWKT(?)::geography) AS distance", our_geometry))
+             .order(Arel.sql("shape <-> ST_GeomFromEWKT(?)", our_geometry))
+             .first
+      self.update_column(:nearest_road_id, closest_road.road_id) 
+      self.update_column(:road_distance, closest_road.distance) 
+    end
 
     # legal_roads
-    ActiveRecord::Base.connection.execute("update assets set access_legal_road_ids=(select array_agg(r.id) as legal_road_ids from assets a, legal_roads r where (ST_intersects (a.az_boundary, r.boundary) or ST_intersects (a.location, r.boundary)) and a.code='#{code}') where code='#{code}'")
+    if country=='ZL'
+      ActiveRecord::Base.connection.execute("update assets set access_legal_road_ids=(select array_agg(r.id) as legal_road_ids from assets a, legal_roads r where (ST_intersects (a.az_boundary, r.boundary) or ST_intersects (a.location, r.boundary)) and a.code='#{code}') where code='#{code}'")
+    end
 
     if country=='VK'
       # capad parks - cross database so very slow
@@ -148,10 +180,22 @@ module AssetGisTools
     end
 
     # parks
-    ActiveRecord::Base.connection.execute("update assets set access_park_ids=(select array_agg(r.id) as park_ids from assets a, assets r where (ST_intersects (a.az_boundary, r.boundary) or ST_intersects (a.location, r.boundary)) and a.code='#{code}' and r.asset_type='park') where code='#{code}'")
+    if country=='ZL'
+      ActiveRecord::Base.connection.execute("update assets set access_park_ids=(select array_agg(r.id) as park_ids from assets a, assets r where (ST_intersects (a.az_boundary, r.boundary) or ST_intersects (a.location, r.boundary)) and a.code='#{code}' and r.asset_type='park') where code='#{code}'")
+    end
 
     # tracks
-    ActiveRecord::Base.connection.execute("update assets set access_track_ids=(select array_agg(r.id) as track_ids from assets a, doc_tracks r where (ST_intersects (a.az_boundary, r.linestring) or ST_intersects (a.location, r.linestring)) and a.code='#{code}') where code='#{code}'")
+    if country=='ZL'
+      #access
+      tracks=DocTrack.where("ST_Intersects(ST_GeomFromEWKT(?), wkb_geometry)", our_geometry)
+      ids=tracks.pluck(:ogc_fid)
+      self.update_column(:access_track_ids, ids)
+
+    elsif country=='VK'
+      roads=VkRoad.where("ST_Intersects(ST_GeomFromEWKT(?), shape) and (subtype='PATHWAY' or subtype='FIRE TRAIL')", our_geometry)
+      ids=roads.pluck(:road_id)
+      self.update_column(:access_track_ids, ids)
+    end
 
     reload
     if access_road_ids.nil? && access_legal_road_ids.nil? && access_track_ids.nil? && access_park_ids.nil? && access_capad_park_ids.blank? && access_vk_state_park_ids.blank?

@@ -5,6 +5,11 @@ module AssetImportTools
   extend ActiveSupport::Concern
 
   def Asset.import_illw(dxccs=['AU','NZ'], update = false)
+    read_count = 0
+    new_count=0
+    updated_count=0
+    deleted_count=0
+
     urls = ['https://wllw.org/index.php/en/', 'https://wllw.org/index.php/en/list-page-2', 'https://wllw.org/index.php/en/list-3']
 
     urls.each do |url|    
@@ -21,11 +26,13 @@ module AssetImportTools
            namecell = get_col(row,2)
            code = get_clean_text(get_col(row,6))
            next if !code or (not dxccs.include?(code[0..1]))
+           read_count+=1
            if !namecell or namecell.match("line-through") or namecell.upcase.match('DELETED')
              code = get_clean_text(get_col(row,6))
              a=Asset.find_by(code: code)
              if a
                AdminTask.create(task_type: 'deleted', affected_id: code, affected_table: 'asset', affected_url: a.url, description: "Deleted IILW site")
+               deleted_count+=1 if a.is_active==true
                a.is_active=false
                a.valid_to = Time.now if a.valid_to.blank?
                a.save
@@ -53,7 +60,11 @@ module AssetImportTools
              puts ">>>>>> #{name} #{dxcc} #{continent} #{code} #{loc[:long]} #{loc[:lat]}" 
              a=Asset.find_by(code: code)
              next if a and update==false
-             a=Asset.new if !a
+             if !a
+               a=Asset.new 
+               new_count+=1
+             end
+             
              a.asset_type="illw lighthouse"
              a.is_active=true
              a.name = name
@@ -61,6 +72,7 @@ module AssetImportTools
              a.code = code
              a.location="POINT(#{loc[:long]} #{loc[:lat]})" 
              if a.changed?
+               update_count+=1 if !new
                if a.save then
                  AdminTask.create(task_type: 'new', affected_id: a.code, affected_table: 'asset', affected_url: a.url, description: "New ILLW site") if new
                  AdminTask.create(task_type: 'update', affected_id: a.code, affected_table: 'asset', affected_url: a.url, description: "Updated ILLW site #{changed}") if !new
@@ -73,19 +85,33 @@ module AssetImportTools
         end 
       end
     end
+    AdminTask.create(task_type: 'report', affected_table: 'asset', description: "Updated #{dxccs} ILLW lighthouses. Read: #{read_count}, New: #{new_count}, Updated: #{updated_count}, Deleted: #{deleted_count}")
+
   end
 
   def Asset.import_vk_pota(update = true, redraw = false, silent=false, resume_at = nil)
+    read_count = 0
+    new_count=0
+    updated_count=0
+    deleted_count=0
+
     need_resume = true if resume_at != nil
-    urls = ['https://api.pota.app/park/grids/-43/143/-39/149/0', 'https://api.pota.app/park/grids/-39/113/-11/155/0']
+    urls = ['https://api.pota.app/park/grids/-43/143/-39/149/0', 'https://api.pota.app/park/grids/-23/113/-11/155/0','https://api.pota.app/park/grids/-30/113/-23/135/0','https://api.pota.app/park/grids/-30/135/-23/155/0','https://api.pota.app/park/grids/-39/113/-35/135/0','https://api.pota.app/park/grids/-39/135/-35/155/0','https://api.pota.app/park/grids/-35/113/-30/155/0']
     urls.each do |url|
+      data = nil
       data = fetch_external_url(url)
-      data = JSON.parse(data)
+      begin
+        data = JSON.parse(data) if data
+      rescue
+        AdminTask.create(task_type: 'error', affected_table: 'asset', description: "POTA download failed for #{url}")
+        data = nil
+      end
       next unless data
       puts 'Found ' + data['features'].count.to_s + ' parks'
       features = data['features']
       features = features.sort_by { |f| f['properties']['reference']}
       features.each do |feature|
+        read_count+=1
         properties = feature['properties']
         geometry = feature['geometry']
         puts properties.to_json
@@ -98,6 +124,7 @@ module AssetImportTools
             unless p
               p = Asset.new
               new = true
+              new_count+=1
               puts 'New park'
             else
               puts 'Existing POTA park'
@@ -126,6 +153,7 @@ module AssetImportTools
                   p.az_area = nil
 #                  p.old_code = nil 
                   if p.changed?
+                    updated_count+=1 if !new
                     changed=p.changed
                     if p.save then
                       AdminTask.create(task_type: 'new', affected_id: p.code, affected_table: 'asset', affected_url: p.url, description: "New POTA site") if new
@@ -156,6 +184,7 @@ module AssetImportTools
         end
       end
     end
+    AdminTask.create(task_type: 'report', affected_table: 'asset', description: "Updated VK WWFF parks. Read: #{read_count}, New: #{new_count}, Updated: #{updated_count}, Deleted: #{deleted_count}")
   end
 
   def Asset.remove_duplicate_islands()
@@ -184,6 +213,7 @@ module AssetImportTools
   end
 
   def Asset.find_retired_islands
+    count = 0
     assets=Asset.where(asset_type: 'island', is_active: true)
     missing=[]
     assets.each do |asset|
@@ -198,6 +228,7 @@ module AssetImportTools
 
     else
       missing.each do |code|
+        count+=1
         island=Asset.find_by(code: code)
         puts "DELETE #{island.code} #{island.name}"
         island.update_column(:is_active, false)
@@ -205,6 +236,7 @@ module AssetImportTools
         island.update_column(:description, "Retired as this island has been removed from the NZ Gazeteer (NZGDB). #{island.description}")
       end
     end
+    count
   end
 
 
@@ -240,12 +272,19 @@ module AssetImportTools
   end
 
   def Asset.import_island(update = true, redraw = false, silent=false) 
+    read_count = 0
+    new_count=0
+    updated_count=0
+    deleted_count=0
+
     Nzgdb.where(feat_type: 'Island', is_active: true).order(:name).each do |place|
+      read_count+=1
       asset = Asset.find_by(ref_id: place.feat_id, asset_type: 'island')
       if !asset
         asset = Asset.new
         puts "ADDING NEW ISLAND"
         new = true
+        new_count+=1
       end
       #log this code as present for missing code deletion test later
       if new == true or update == true or asset.boundary == nil then
@@ -258,6 +297,7 @@ module AssetImportTools
         asset.ref_id = place.feat_id
         asset.description = (place.info_description||"")+"; "+(place.info_origin||"")
         if asset.changed?
+          updated_count+=1 if !new
           changed=asset.changed
           puts asset.code
           puts "CHANGED: #{changed} from #{old_name} to #{asset.name}"
@@ -286,7 +326,8 @@ module AssetImportTools
     end
 
     #now retire non-nzgdb islands
-    find_retired_islands
+    deleted_count=find_retired_islands
+    AdminTask.create(task_type: 'report', affected_table: 'asset', description: "Updated ZLOTA lakes. Read: #{read_count}, New: #{new_count}, Updated: #{updated_count}, Deleted: #{deleted_count}")
   end
 
   def Asset.get_island_polygons(island, quiet)
@@ -343,13 +384,20 @@ module AssetImportTools
   end
 
   def Asset.import_lake(update = true, redraw = false, silent=false) 
+    read_count = 0
+    new_count=0
+    updated_count=0
+    deleted_count=0
+
     included_asset_codes = []
     Nzgdb.where(feat_type: 'Lake', is_active: true).each do |place|
+      read_count+=1
       asset = Asset.find_by(ref_id: place.feat_id, asset_type: 'lake')
       if !asset
         asset = Asset.new
         puts "ADDING NEW LAKE"
         new = true
+        new_count+=1
       end
       #log this code as present for missing code deletion test later
       included_asset_codes << asset.code  if asset.code
@@ -361,6 +409,7 @@ module AssetImportTools
         asset.ref_id = place.feat_id
         asset.description = (place.info_description||"")+"; "+(place.info_origin||"")
         if asset.changed?
+          updated_count+=1 if !new
           changed=asset.changed
           puts asset.code
           puts "CHANGED: #{changed}"
@@ -408,9 +457,12 @@ module AssetImportTools
         descr="RETIRED LAKE: #{code} - not is current NZGDB; "+descr
         asset.update_column(:description, descr)
         puts "RETIRED LAKE: #{code} - not is current NZGDB"
+        deleted_count+=1
         AdminTask.create(task_type: 'deleted', affected_id: code, affected_url: asset.url, affected_table: 'asset', description: "RETIRED LAKE: #{code} - not is current NZGDB")
       end
-   end 
+    end 
+    AdminTask.create(task_type: 'report', affected_table: 'asset', description: "Updated ZLOTA lakes. Read: #{read_count}, New: #{new_count}, Updated: #{updated_count}, Deleted: #{deleted_count}")
+
   end
 
   def Asset.get_lake_polygons(lake, quiet)
@@ -499,7 +551,7 @@ module AssetImportTools
           unnamed_road=0
           access+= "Via public road(s):\n"
           a.access_road_ids.each do |rid|
-            r=Road.find_by(id: rid)
+            r=Road.find_by(t50_fid: rid)
             if r and r.name and r.name.length>0
               road_names+=[r.name.downcase.titlecase]
             else unnamed_road+=1 end
@@ -514,7 +566,7 @@ module AssetImportTools
           unnamed_track=0
           track_names=[]
           a.access_track_ids.each do |rid|
-            r=DocTrack.find_by(id: rid)
+            r=DocTrack.find_by(ogc_fid: rid)
             if r and r.name and r.name.length>0
               track_names+=[r.name.downcase.titlecase]
             else
@@ -563,6 +615,11 @@ module AssetImportTools
 
   def Asset.import_sota(dxcc, update=false)
     require 'csv'
+    read_count = 0
+    new_count=0
+    updated_count=0
+    deleted_count=0
+
     dxcc_len=dxcc.length-1
     url = "https://storage.sota.org.uk/summitslist.csv"
     data = fetch_external_url(url)
@@ -575,11 +632,13 @@ module AssetImportTools
         new = false
         code = s[fields.index("SummitCode")]
         if code[0..dxcc_len]==dxcc
+          read_count+=1
           a=Asset.find_by(code: code)
           if !a then
             a=Asset.new
             puts "NEW SUMMIT #{code}"
             new = true
+            new_count+=1
             a.code = code
             a.asset_type='summit'
             #a.country 
@@ -596,6 +655,7 @@ module AssetImportTools
             puts a.code
             loc_change = a.changed.include?('location')
             if a.changed?
+              updated_count+=1 if !new
               if a.save then
                 AdminTask.create(task_type: 'new', affected_id: a.code, affected_table: 'asset', affected_url: a.url, description: "New SOTA site") if new
                 AdminTask.create(task_type: 'update', affected_id: a.code, affected_table: 'asset', affected_url: a.url, description: "Updated SOTA site #{changed}") if !new
@@ -613,10 +673,16 @@ module AssetImportTools
       end
       rowcount+=1
     end
+    AdminTask.create(task_type: 'report', affected_table: 'asset', description: "Updated #{dxcc} SOTA summits. Read: #{read_count}, New: #{new_count}, Updated: #{updated_count}, Deleted: #{deleted_count}")
   end
 
   def Asset.import_siota
     require 'csv'
+    read_count = 0
+    new_count=0
+    updated_count=0
+    deleted_count=0
+
     url = "https://www.silosontheair.com/data/silos.csv"
     data = fetch_external_url(url)
     fields = data.parse_csv
@@ -626,6 +692,7 @@ module AssetImportTools
     values.each do |silo|
       new = false
       if rowcount!=0
+        read_count+=1
         code = silo[fields.index("SILO_CODE")]
         asset = Asset.find_by(code: code)
         description = silo[fields.index("COMMENT")]
@@ -635,6 +702,7 @@ module AssetImportTools
           asset = Asset.new
           puts "New Silo"
           new = true
+          new_count+=1
         end
         puts code
         asset.location="POINT (#{silo[fields.index("LNG")]} #{silo[fields.index("LAT")]})"
@@ -652,8 +720,8 @@ module AssetImportTools
         end
         asset.asset_type="silo"
         asset.url = 'assets/' + asset.get_safecode
-        puts asset.to_json
         if asset.changed?
+          updated_count+=1 if !new
           changed = asset.changed
           if asset.save then
             AdminTask.create(task_type: 'new', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "New SiOTA site") if new
@@ -665,6 +733,8 @@ module AssetImportTools
       end
       rowcount+=1
     end
+    AdminTask.create(task_type: 'report', affected_table: 'asset', description: "Updated SiOTA silos. Read: #{read_count}, New: #{new_count}, Updated: #{updated_count}, Deleted: #{deleted_count}")
+
   end
 
   # rerun boundary searches using PnP coordinate data
@@ -734,6 +804,11 @@ module AssetImportTools
     fields = data.parse_csv
     values = CSV(data).read
 
+    read_count = 0
+    new_count=0
+    updated_count=0
+    deleted_count=0
+
     row_count=0
     values.each do |row|
       row_count+=1
@@ -745,6 +820,7 @@ module AssetImportTools
       name = row[fields.index("name")]
       next unless name && code
       safename = name.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
+      read_count+=1
 
       puts 'Code: ' + code + ', name: ' + safename.to_json
       p = Asset.find_by(code: code)
@@ -756,6 +832,7 @@ module AssetImportTools
         puts row.to_json
         p = Asset.new
         new = true
+        new_count+=1
       end
       if new or update then
         p.code = code.strip
@@ -772,6 +849,7 @@ module AssetImportTools
         p.description = row[fields.index("notes")] if row[fields.index("notes")]
         if p.changed?
           loc_changed = p.changed.include?('location')
+          updated_count+=1 if !new
 
           if !new and !loc_changed #quick save without callbacks
             changes = p.changes_to_save.transform_values(&:last).except('location')
@@ -819,6 +897,7 @@ module AssetImportTools
         end
       end
     end
+    AdminTask.create(task_type: 'report', affected_table: 'asset', description: "Updated #{dxcc} WWFF parks. Read: #{read_count}, New: #{new_count}, Updated: #{updated_count}, Deleted: #{deleted_count}")
   end
   
   def Asset.import_krmnpa(update = true)
@@ -898,6 +977,11 @@ module AssetImportTools
 
   end 
   def Asset.import_llota(dxcc_filter, update = true, force = false, silent = true)
+    read_count = 0
+    new_count=0
+    updated_count=0
+    deleted_count=0
+
     url = 'https://llota.app/api/public/references?version=lite'
     data = fetch_external_url(url)
     data = JSON.parse(data)
@@ -906,6 +990,7 @@ module AssetImportTools
       count = 0
       data.each do |l|
         if l["reference_code"][0..4]=='LL'+dxcc_filter+'-' then
+          read_count+=1
           count += 1
           new = false
           a = Asset.find_by(code: l["reference_code"])
@@ -913,6 +998,7 @@ module AssetImportTools
             puts "Creating #{l["reference_code"]}"
             a = Asset.new 
             new = true
+            new_count+=1
           else
             puts "Updating #{a.code}"
           end
@@ -937,6 +1023,7 @@ module AssetImportTools
             dxcc = DxccPrefix.find_by("iso_code = ? and prefix in ('ZL', 'VK')",a.code[2..3])
             a.country = dxcc.prefix if dxcc
             if a.changed?
+              updated_count+=1 if !new
               changed=a.changed
               has_changed=true
               if a.save then
@@ -993,184 +1080,10 @@ module AssetImportTools
         end
       end
     end
+    AdminTask.create(task_type: 'report', affected_table: 'asset', description: "Updated #{dxcc_filter} LLOTA lakes. Read: #{read_count}, New: #{new_count}, Updated: #{updated_count}, Deleted: #{deleted_count}")
   end
         
 
-  def Asset.add_parks
-    ps = Park.find_by_sql ['select id from parks;']
-    ps.each do |pid|
-      p = Park.find_by_id(pid)
-      a = Asset.find_by(asset_type: 'park', code: p.dist_code)
-      a ||= Asset.find_by(asset_type: 'park', code: p.code)
-      if !a
-        a = Asset.new
-        new = true
-        logger.debug 'New'
-      else
-        new = false
-      end
-      a.asset_type = 'park'
-      a.code = p.dist_code
-      a.old_code = p.code
-      if p.master_id
-        cp = Crownpark.find_by_id(p.master_id)
-        pp = Park.find_by_id(cp.napalis_id) if cp
-        if pp
-          a.master_code = pp.dist_code
-        else
-          logger.error 'ERROR: failed to find park ' + p.master_id.to_s + ' master for ' + p.dist_code + ' ' + p.name
-          p.master_id = nil
-          a.master_code = nil
-        end
-      end
-      a.safecode = a.code.tr('/', '_')
-      a.url = 'assets/' + a.safecode
-      a.name = p.name.gsub("'", "''")
-      a.description = (p.description || '').gsub("'", "''")
-      (a.is_active = p.is_active) && !p.is_mr
-      a.category = (p.owner || '').gsub("'", "''")
-      a.location = p.location
-      a.save if new
-      ActiveRecord::Base.connection.execute("update assets set code='" + a.code + "', old_code='" + (a.old_code || '') + "',master_code='" + (a.master_code || '') + "', safecode='" + a.safecode + "', url='" + a.url + "', name='" + a.name + "', description='" + (a.description || '') + "', is_active=" + a.is_active.to_s + ", category='" + (a.category || '') + "', location=(select location from parks where id=" + p.id.to_s + '),  boundary=(select boundary from parks where id=' + p.id.to_s + ') where id=' + a.id.to_s + ';')
-      a.post_save_acions
-      logger.debug a.code
-    end
-    true
-  end
-
-  def Asset.add_huts
-    ps = Hut.all
-    ps.each do |p|
-      a = Asset.find_by(asset_type: 'hut', code: p.code)
-      a ||= Asset.new
-      a.asset_type = 'hut'
-      a.code = p.code
-      a.url = '/huts/' + p.id.to_s
-      a.name = p.name
-      a.description = p.description
-      a.is_active = p.is_active
-      a.location = p.location
-      a.altitude = p.altitude
-      a.save
-      logger.debug a.code
-    end
-    true
-  end
-
-  def Asset.add_islands
-    ps = Island.all
-    ps.each do |p|
-      a = Asset.find_by(asset_type: 'island', code: p.code)
-      a ||= Asset.new
-      a.asset_type = 'island'
-      a.code = p.code_dist
-      a.old_code = p.code
-      a.url = 'asset/' + a.code
-      a.name = p.name
-      a.description = p.info_description
-      a.is_active = p.is_active
-      a.location = p.WKT
-      a.boundary = p.boundary
-      a.save
-      logger.debug a.code
-    end
-    true
-  end
-
-  def Asset.add_lakes
-    ls = Lake.where(is_active: true)
-    ls.each do |l|
-      Asset.add_lake(l)
-    end
-  end
-
-  def Asset.add_lake(l)
-    a = Asset.find_by(asset_type: 'lake', code: l.code)
-    new = false
-    unless a
-      a = Asset.new
-      new = true
-      logger.debug 'New'
-    end
-    a.asset_type = 'lake'
-    a.code = l.code
-    a.safecode = a.code.tr('/', '_')
-    a.url = '/assets/' + a.safecode
-    a.is_active = true
-    a.name = l.name
-    a.location = l.location if new
-    a.boundary = l.boundary if new
-    a.ref_id = l.topo50_fid
-    a.save
-    logger.debug a.code
-    a
-  end
-
-  def Asset.add_sota_peak(p)
-    a = Asset.find_by(asset_type: 'summit', code: p.summit_code)
-    unless a
-      logger.debug 'New peak: ' + p.summit_code
-      a = Asset.new
-    end
-    a.asset_type = 'summit'
-    a.code = p.summit_code
-    a.safecode = a.code.tr('/', '_')
-    a.is_active = true
-    a.name = p.name
-    a.location = p.location
-    a.points = p.points
-    a.altitude = p.alt
-    if p.valid_to != '0001-01-01 00:00:00'
-      logger.debug 'retured summit: ' + a.code
-      a.valid_to = p.valid_to
-    else
-      a.valid_to = nil
-    end
-    a.valid_from = p.valid_from if p.valid_from != '0001-01-01 00:00:00'
-    if a.changed? && (a.changed - ['valid_from']).count.positive?
-      logger.debug'Changed: ' + a.changed.to_json
-      a.save
-      logger.debug 'Create/Updated: ' + a.code
-    end
-    a
-  end
-
-  def Asset.add_pota_parks
-    ps = PotaPark.all
-    ps.each do |p|
-      Asset.add_pota_park(p)
-    end
-  end
-
-  def Asset.add_pota_park(p, existing_asset)
-    a = Asset.find_by(asset_type: 'pota park', code: p.reference)
-    a ||= Asset.new
-    a.asset_type = 'pota park'
-    a.code = p.reference
-    a.safecode = p.reference.tr('/', '_')
-    a.is_active = true
-    if a.id && ((a.name != p.name) || (a.location != p.location))
-      logger.warn 'Exiting asset needs updating'
-      name = p.name.gsub("'", "''")
-      if existing_asset
-        ActiveRecord::Base.connection.execute("update assets set code='" + p.reference + "', name='" + name + "', is_active=true, location=ST_GeomFromText('POINT(#{p.location.x} #{p.location.y})',4326), boundary=(select boundary from assets where id=" + existing_asset.id.to_s + ') where id=' + a.id.to_s + ';')
-      else
-        ActiveRecord::Base.connection.execute("update assets set code='" + p.reference + "', name='" + name + "', is_active=true, location=ST_GeomFromText('POINT(#{p.location.x} #{p.location.y})',4326) where id=" + a.id.to_s + ';')
-      end
-    elsif !a.id
-      logger.debug 'Adding data to new asset'
-      a.name = p.name
-      a.location = p.location
-      a.save
-      if existing_asset
-        ActiveRecord::Base.connection.execute('update assets set boundary=(select boundary from assets where id=' + existing_asset.id.to_s + ') where id=' + a.id.to_s + ';')
-        a.post_save_actions
-      end
-    end
-
-    logger.debug a.code
-    a
-  end
 
   def Asset.add_humps(valid_from=Time.now)
     ps = Hump.where('code is not null')
@@ -1258,14 +1171,6 @@ module AssetImportTools
     a
   end
 
-
-  def Asset.add_wwff_parks
-    ps = WwffPark.all
-    ps.each do |p|
-      Asset.add_wwff_park(p, nil)
-    end
-  end
-
   def Asset.add_lighthouse(p, _existing_asset)
     a = Asset.find_by(asset_type: 'lighthouse', code: p.code)
     unless a
@@ -1287,38 +1192,8 @@ module AssetImportTools
     a
   end
 
-  def Asset.add_wwff_park(p, existing_asset)
-    a = Asset.find_by(asset_type: 'wwff park', code: p.code)
-    a ||= Asset.new
-    a.asset_type = 'wwff park'
-    a.code = p.code
-    a.is_active = true
 
-    if a.id && ((a.name != p.name) || (a.location != p.location))
-      logger.debug 'Exiting asset needs updating'
-      name = p.name.gsub("'", "''")
-      if existing_asset
-        ActiveRecord::Base.connection.execute("update assets set code='" + p.code + "', name='" + name + "', is_active=true, location=ST_GeomFromText('POINT(#{p.location.x} #{p.location.y})',4326), boundary=(select boundary from assets where id=" + existing_asset.id.to_s + ') where id=' + a.id.to_s + ';')
-      else
-        ActiveRecord::Base.connection.execute("update assets set code='" + p.code + "', name='" + name + "', is_active=true, location=ST_GeomFromText('POINT(#{p.location.x} #{p.location.y})',4326) where id=" + a.id.to_s + ';')
-      end
-    elsif !a.id
-      logger.debug 'Adding data to new asset'
-      a.name = p.name
-      a.location = p.location
-      a.save
-      if existing_asset
-        ActiveRecord::Base.connection.execute('update assets set boundary=(select boundary from assets where id=' + existing_asset.id.to_s + ') where id=' + a.id.to_s + ';')
-        a.post_save_actions
-      end
-    end
-    logger.debug a.code
-    a
-  end
-end
-
-class Asset
-  def add_vk_capad_park_by_id(id)
+  def Asset.add_vk_capad_park_by_id(id)
     puts "#{self.code} #{self.state} #{self.name}"
     cs = Capad.where("pa_id like '#{id}'")
     if cs.count==1
@@ -1357,7 +1232,7 @@ class Asset
     end
   end
 
-  def find_zlota_park(ignore=false)
+  def Asset.find_zlota_park(ignore=false)
     searchname = self.name.gsub("'", "''")
     zps = Asset.find_by_sql [" select id, name, code, asset_type, location from assets where asset_type='park' and name='#{searchname}' and is_active=true"]
     if !zps || zps.count.zero?
@@ -1416,7 +1291,7 @@ class Asset
   end
 
 
-  def find_vk_capad_park(ignore=false)
+  def Asset.find_vk_capad_park(ignore=false)
     puts "CAPAD PARK ---------------------------------------------"
    messages = ""
    if true #!self.name.include?("Beach") and !self.name.include?("Wild and Scenic River")
@@ -1505,7 +1380,7 @@ class Asset
    messages
   end
   
-  def capad_expand_abbreviations(name)
+  def Asset.capad_expand_abbreviations(name)
     name=name.gsub(" Remote and Natural Area - Schedule 6, National Parks Act", " Remote and Natural Area")
     name=name.upcase
     name=name.gsub('5(1)(H)',' ')
@@ -1561,21 +1436,21 @@ class Asset
     name=name.gsub(/[^A-Za-z0-9 ]/, ' ').upcase
   end
 
-  def get_capad_boundary(pa_id)
+  def Asset.get_capad_boundary(pa_id)
     capad = nil
     capads = Capad.find_by_sql [ %Q{ select ST_Multi(ST_Buffer(ST_Simplify(st_union("wkb_geometry"),0.0002),0)) as "wkb_geometry" from capad where pa_id ='#{pa_id}' group by pa_id} ]
     capad = capads.first.wkb_geometry if capads
     capad
   end
 
-  def get_state_park_boundary(unique_name)
+  def Asset.get_state_park_boundary(unique_name)
     capad = nil
     capads = VkStatePark.find_by_sql [ "select ST_Multi(ST_Union(boundary)) as boundary from vk_state_park where unique_name='#{unique_name.gsub("'","''")}' group by unique_name" ]
     capad = capads.first.boundary if capads
     capad
   end
 
-  def find_vk_state_park(ignore=false)
+  def Asset.find_vk_state_park(ignore=false)
     puts "STATEPARK =============================================="
     sps = VkStatePark.find_by_sql [ %q{select * from vk_state_park where st_within ( st_geomfromtext('}+self.location.to_s+%q{', 4326), boundary);} ]  if self.location
 
@@ -1695,7 +1570,7 @@ class Asset
    end 
   end
 
-  def add_govt_parks
+  def Asset.add_govt_parks
     if country == 'ZL'
       find_zlota_park
       reload
@@ -1707,6 +1582,7 @@ class Asset
   end
 
 end
+
 private
 
   def get_table(body,id)
@@ -1853,3 +1729,4 @@ def extract_lat_long(url_string)
 
   nil # Return nil if no patterns match
 end
+

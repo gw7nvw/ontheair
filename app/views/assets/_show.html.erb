@@ -126,7 +126,7 @@
           <div class="rowtext" style="color:#00bb00"> 
             Via public road(s): 
             <span style="color:#333">
-              <%= @asset.formatted_names_from_array("access_road_ids", "Road", "roads") %>
+              <%= @asset.access_road_names.titlecase %>
             </span>
           </div>
         </div>
@@ -138,7 +138,7 @@
           <div class="rowtext" style="color:#00bb00"> 
             Via DOC track(s): 
             <span style="color:#333">
-              <%= @asset.formatted_names_from_array("access_track_ids", "DocTrack", "tracks") %>
+              <%= @asset.access_track_names.titlecase %>
             </span>
           </div>
         </div>

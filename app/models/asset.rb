@@ -427,6 +427,31 @@ class Asset < ApplicationRecord
     r ? r.name : ''
   end
 
+  def access_track_names
+    return nil if self.access_track_ids.blank?
+    if self.country=='ZL'
+      tracks = DocTrack.where('ogc_fid in (?)', self.access_track_ids.map{|rid| rid.to_i})
+      return tracks.pluck(:techobject).uniq.join(', ')
+    elsif self.country=='VK'
+      tracks = VkRoad.where('road_id in (?)', self.access_track_ids)
+      return tracks.pluck(:full_street_name).uniq.join(', ')
+    end
+    return ""
+  end
+
+  # name of region (without getting it's boundary)
+  def access_road_names
+    return nil if self.access_road_ids.blank?
+    if self.country=='ZL'
+      roads = Road.where('t50_fid in (?)', self.access_road_ids.map{|rid| rid.to_i})
+      return roads.pluck(:name).uniq.join(', ')
+    elsif self.country=='VK'
+      roads = VkRoad.where('road_id in (?)', self.access_road_ids)
+      return roads.pluck(:full_street_name).uniq.join(', ')
+    end
+    return ""
+  end
+
   # name of region (without getting it's boundary)
   def state_name
     r = State.find_by(code: state)
@@ -1723,20 +1748,6 @@ end
   ################################################################
 
   # See lib/asset_import_tools.rb
-  # def self.add_parks
-  # def self.add_huts
-  # def self.add_islands
-  # def self.add_lakes
-  # def self.add_lake(l)
-  # def self.add_sota_peak(p)
-  # def self.add_pota_parks
-  # def self.add_pota_park(p, existing_asset)
-  # def self.add_humps
-  # def self.add_hump(p, existing_asset)
-  # def self.add_lighthouses
-  # def self.add_lighthouse(p, existing_asset)
-  # def self.add_wwff_parks
-  # def self.add_wwff_park(p, existing_asset)
 
   ###################################################################
   # GIS DATA HANDLING
