@@ -128,7 +128,7 @@ dem15:
   host: localhost
   database: dem15
   database_tasks: false
-capad:
+vk_gis:
   <<: *default
   adapter: postgis
   encoding: unicode
@@ -164,7 +164,7 @@ nzgdb:
     # pool: 5
     # database: nzgdb
     # database_tasks: false
-topo50_data:
+zl_gis:
   <<: *default
   adapter: postgis
   encoding: unicode

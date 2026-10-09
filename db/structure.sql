@@ -841,6 +841,45 @@ CREATE TABLE public.crownparks (
 
 
 --
+-- Name: data_sources; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.data_sources (
+    id bigint NOT NULL,
+    name character varying,
+    database_name character varying,
+    table_name character varying,
+    last_update timestamp(6) without time zone,
+    index_column character varying,
+    name_column character varying,
+    geom_column character varying,
+    is_zl boolean,
+    is_vk boolean,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: data_sources_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.data_sources_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: data_sources_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.data_sources_id_seq OWNED BY public.data_sources.id;
+
+
+--
 -- Name: districts; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -877,39 +916,6 @@ CREATE SEQUENCE public.districts_id_seq
 --
 
 ALTER SEQUENCE public.districts_id_seq OWNED BY public.districts.id;
-
-
---
--- Name: doc_tracks; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.doc_tracks (
-    id integer NOT NULL,
-    name character varying(255),
-    object_type character varying(255),
-    created_at timestamp without time zone,
-    updated_at timestamp without time zone,
-    linestring public.geometry(MultiLineString,4326)
-);
-
-
---
--- Name: doc_tracks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.doc_tracks_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: doc_tracks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.doc_tracks_id_seq OWNED BY public.doc_tracks.id;
 
 
 --
@@ -2055,38 +2061,6 @@ ALTER SEQUENCE public.regions_id_seq OWNED BY public.regions.id;
 
 
 --
--- Name: roads; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.roads (
-    id bigint NOT NULL,
-    name character varying(255),
-    created_at timestamp without time zone,
-    updated_at timestamp without time zone,
-    linestring public.geometry(MultiLineString,4326)
-);
-
-
---
--- Name: roads_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.roads_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: roads_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.roads_id_seq OWNED BY public.roads.id;
-
-
---
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2998,17 +2972,17 @@ ALTER TABLE ONLY public.crownparks ALTER COLUMN id SET DEFAULT nextval('public.d
 
 
 --
+-- Name: data_sources id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.data_sources ALTER COLUMN id SET DEFAULT nextval('public.data_sources_id_seq'::regclass);
+
+
+--
 -- Name: districts id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.districts ALTER COLUMN id SET DEFAULT nextval('public.districts_id_seq'::regclass);
-
-
---
--- Name: doc_tracks id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.doc_tracks ALTER COLUMN id SET DEFAULT nextval('public.doc_tracks_id_seq'::regclass);
 
 
 --
@@ -3198,13 +3172,6 @@ ALTER TABLE ONLY public.ratings ALTER COLUMN id SET DEFAULT nextval('public.rati
 --
 
 ALTER TABLE ONLY public.regions ALTER COLUMN id SET DEFAULT nextval('public.regions_id_seq'::regclass);
-
-
---
--- Name: roads id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.roads ALTER COLUMN id SET DEFAULT nextval('public.roads_id_seq'::regclass);
 
 
 --
@@ -3485,19 +3452,19 @@ ALTER TABLE ONLY public.continents
 
 
 --
+-- Name: data_sources data_sources_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.data_sources
+    ADD CONSTRAINT data_sources_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: districts districts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.districts
     ADD CONSTRAINT districts_pkey PRIMARY KEY (id);
-
-
---
--- Name: doc_tracks doc_tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.doc_tracks
-    ADD CONSTRAINT doc_tracks_pkey PRIMARY KEY (id);
 
 
 --
@@ -3706,14 +3673,6 @@ ALTER TABLE ONLY public.ratings
 
 ALTER TABLE ONLY public.regions
     ADD CONSTRAINT regions_pkey PRIMARY KEY (id);
-
-
---
--- Name: roads roads_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.roads
-    ADD CONSTRAINT roads_pkey PRIMARY KEY (id);
 
 
 --
@@ -4318,6 +4277,7 @@ CREATE INDEX vk_code_indx ON public.vk_assets USING btree (code);
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261009045042'),
 ('20261008045434'),
 ('20261003003844'),
 ('20260927034145'),

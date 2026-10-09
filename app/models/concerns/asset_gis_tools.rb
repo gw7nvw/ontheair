@@ -197,7 +197,7 @@ module AssetGisTools
     end
 
     reload
-    if access_road_ids.nil? && access_legal_road_ids.nil? && access_track_ids.nil? && access_park_ids.nil? && access_capad_park_ids.blank? && access_vk_state_park_ids.blank?
+    if access_road_ids.blank? && access_legal_road_ids.blank? && access_track_ids.blank? && access_park_ids.blank? && access_capad_park_ids.blank? && access_vk_state_park_ids.blank?
       ActiveRecord::Base.connection.execute("update assets set public_access=false where code='#{code}'")
     else
       ActiveRecord::Base.connection.execute("update assets set public_access=true where code='#{code}'")
