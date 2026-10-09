@@ -4,7 +4,7 @@
 class VkStatePark < ActiveRecord::Base
   require 'csv'
   self.primary_key = "id"
-  establish_connection :capad
+  establish_connection :vk_gis
   self.table_name = "vk_state_park"
 
   def self.import_vic(filename)

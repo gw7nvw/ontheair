@@ -4,6 +4,6 @@
 class Lake < ActiveRecord::Base
   require 'csv'
 
-  establish_connection :topo50_data
+  establish_connection :zl_gis
 
 end

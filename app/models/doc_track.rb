@@ -2,6 +2,6 @@
 
 # typed: false
 class DocTrack < ActiveRecord::Base
-  establish_connection :topo50_data
+  establish_connection :zl_gis
 
 end

@@ -4,6 +4,6 @@ class VkLake < ActiveRecord::Base
 # typed: true
   require 'csv'
 
-  establish_connection :topo50_data
+  establish_connection :vk_gis
   self.table_name = 'vk_lakes'
 end

@@ -3,7 +3,7 @@
 # typed: false
 class IslandPolygon < ActiveRecord::Base
   require 'csv'
-  establish_connection :topo50_data
+  establish_connection :zl_gis
 
   def self.import(filename)
     count = 0
