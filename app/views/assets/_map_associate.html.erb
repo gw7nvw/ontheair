@@ -99,7 +99,8 @@
     <div class="rowtext">
     <%= text_area_tag :boundary, @item.boundary  %>
     </div>
-    <%= text_field_tag :old_code, @item.old_code %>
+    <%= text_field_tag :geom_id, @item.geom_id %>
+    <%= text_field_tag :geom_source, @item.geom_source %>
     <div class="buttonshort">
       <%= submit_tag "Apply", :id => "apply", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
     </div>

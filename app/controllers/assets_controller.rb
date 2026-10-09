@@ -22,155 +22,104 @@ class AssetsController < ApplicationController
     end
   end
   def map_associate
-    @items=[]
-    @asset=Asset.find_by(code: params[:id].gsub('_','/'))
-    @item = Asset.new if !@item
-    if @asset.nil?
-      flash[:error] = 'Sorry - ' + code + ' does not exist in our database'
+    if !signed_in? || !(current_user.is_web_admin || current_user.is_admin)
+      flash[:error] = 'You do not have permissions to modify this asset'
       redirect_to '/assets'
+    else
+      @items=[]
+      @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+      @item = Asset.new if !@item
+      if @asset.nil?
+        flash[:error] = 'Sorry - ' + code + ' does not exist in our database'
+        redirect_to '/assets'
       return true
+      end
+      @datasources=DataSource.all.pluck(:name).sort
     end
-    @datasources=['capad','vk_state_parks','vk_hydro', 'zl_lake', 'zl_park', 'zl_island']
   end
 
   def map_poly_by_id
-    @asset=Asset.find_by(code: params[:id].gsub('_','/'))
-    source = params[:select_type]
-    id = params[:select_id]
-    @item = Asset.new
-    if source == 'capad'
-      item = Capad.find_by(ogc_fid: id)        
-        @item.boundary = item.wkb_geometry 
-        @item.name = item.name
-        @item.old_code = item.pa_id.to_s
-    elsif source == 'vk_state_parks'
-      item = VkStatePark.find_by(id: id)
-        @item.boundary = item.boundary 
-        @item.name = item.name
-        @item.old_code = item.unique_name
-    elsif source == 'vk_hydro'
-      item = VkLake.find_by(id: id)
-        @item.boundary = item.wkb_geometry
-        @item.name = item.name
-        @item.old_code = item.objectid.to_s
-    elsif source == 'zl_island'
-      item = IslandPolygon.find_by(id: id)
-        @item.boundary = item.boundary
-        @item.name = item.name
-        @item.ref_id = item.topo50_fid
-    elsif source == 'zl_lake'
-      item = LakePolygon.find_by(id: id)
-        @item.boundary = item.boundary
-        @item.name = item.name
-        @item.old_code = item.topo50_fid
+    if !signed_in? || !(current_user.is_web_admin || current_user.is_admin)
+      flash[:error] = 'You do not have permissions to modify this asset'
+      redirect_to '/assets'
+    else
+      @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+      source = params[:select_type]
+      id = params[:select_id]
+      @item = Asset.new
+      datasource = DataSource.find_by(name: source)
+      if datasource
+        model_class = datasource.mdl_name.constantize
+  
+        item = model_class.find_by("#{data_source.index_column} = ?",id)        
+        @item.boundary = item.public_send(datasource.geom_column)
+        @item.name = item.public_send(datasource.name_column)
+        @item.geom_id = item.public_send(datasource.index_column)
+        @item.geom_source = datasource.name
+      end
+      map_associate()
+      render 'map_associate'
     end
-    map_associate()
-    render 'map_associate'
   end
 
   def map_find_poly
-    @items=[]
-    @asset=Asset.find_by(code: params[:id].gsub('_','/'))
-    @datasources=['capad','vk_state_parks','vk_hydro', 'zl_lake', 'zl_park', 'zl_island']
-
-    a = params[:asset]
-    x = a[:x]
-    y = a[:y]
-    location = a[:location]
-    datasource = params[:ds][:datasource]
-    puts "DATASOURCE: #{datasource}"
-    if datasource == 'vk_hydro' then
-
-      item = VkLake.find_by_sql [ "select * from vk_lakes where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), wkb_geometry)" ]
-
-      puts item.to_json
-
-      @item = Asset.new
-      if item and item.count>0
-        @item.boundary = item.first.wkb_geometry 
-        @item.name = item.first.name
-        @item.old_code = item.first.objectid.to_s
+    if !signed_in? || !(current_user.is_web_admin || current_user.is_admin)
+      flash[:error] = 'You do not have permissions to modify this asset'
+      redirect_to '/assets'
+    else
+      @items=[]
+      @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+      @datasources=DataSource.all.pluck(:name).sort
+  
+      a = params[:asset]
+      x = a[:x]
+      y = a[:y]
+      location = a[:location]
+      source = params[:ds][:datasource]
+      datasource = DataSource.find_by(name: source)
+      if datasource
+        model_class = datasource.mdl_name.constantize
+  
+        item = model_class.find_by_sql [ "select * from #{datasource.table_name}  where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), #{datasource.geom_column})" ]
+  
+        @item = Asset.new
+        if item and item.count>0
+          this_item=item.first
+          @item.boundary = this_item.public_send(datasource.geom_column)
+          @item.name = this_item.public_send(datasource.name_column)
+          @item.geom_id = this_item.public_send(datasource.index_column)
+          @item.geom_source = datasource.name
+        end
       end
       @items=item
-    elsif datasource == 'capad' then
-
-      item = Capad.find_by_sql [ "select ogc_fid, ST_Multi(wkb_geometry) as wkb_geometry, pa_id, name from capad where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), wkb_geometry)" ]
-
-      puts item.to_json
-
-      @item = Asset.new
-      if item and item.count>0
-        @item.boundary = item.first.wkb_geometry 
-        @item.name = item.first.name
-        @item.old_code = item.first.pa_id.to_s
-      end
-      @items=item
-    elsif datasource == 'vk_state_parks' then
-      item = VkStatePark.find_by_sql [ "select st_multi(boundary) as boundary, name, unique_name from vk_state_park where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), boundary)" ]
-
-      puts item.to_json
-
-      @item = Asset.new
-      if item and item.count>0
-        @item.boundary = item.first.boundary 
-        @item.name = item.first.name
-        @item.old_code = item.first.unique_name
-      end
-      @items=item
-    elsif datasource == 'zl_lake' then
-      item = LakePolygon.find_by_sql [ "select st_multi(boundary) as boundary, name, topo50_fid from island_polygons where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), boundary)" ]
-
-      puts item.to_json
-
-      @item = Asset.new
-      if item and item.count>0
-        @item.boundary = item.first.boundary
-        @item.name = item.first.name
-        @item.old_code = item.first.topo50_fid.to_s
-      end
-      @items=item
-    elsif datasource == 'zl_island' then
-      item = IslandPolygon.find_by_sql [ "select st_multi(boundary) as boundary, name, topo50_fid from island_polygons where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), boundary)" ]
-
-      puts item.to_json
-
-      @item = Asset.new
-      if item and item.count>0
-        @item.boundary = item.first.boundary
-        @item.name = item.first.name
-        @item.old_code = item.first.topo50_fid.to_s
-      end
-      @items=item
-
+      puts "DATASOURCE: #{datasource}"
+      render 'map_associate'
     end
-    render 'map_associate'
   end
 
   def map_apply_poly
-    @items=[]
-    if signed_in? && current_user.is_modifier
-    @asset=Asset.find_by(code: params[:id].gsub('_','/'))
-    @datasources=['capad','vk_state_parks','vk_hydro', 'zl_lake', 'zl_park', 'zl_island']
-    @item = Asset.new
-  
-    if @asset then
-      @asset.boundary = params[:boundary]
-      @asset.old_code = params[:old_code]
-      puts @asset.to_json
-      @asset.save
-      @asset.reload
-      @asset.save
-      flash[:success] = "New boundary assigned"
-    end
-    render 'map_associate'
-    else
-      flash[:error] = 'You do not have permissions to create a new asset'
+    if !signed_in? || !(current_user.is_web_admin || current_user.is_admin)
+      flash[:error] = 'You do not have permissions to modify this asset'
       redirect_to '/assets'
+    else
+      @items=[]
+      @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+      @datasources=DataSource.all.pluck(:name).sort
+      @item = Asset.new
+  
+      if @asset then
+        @asset.boundary = params[:boundary]
+        @asset.geom_id = params[:geom_id]
+        @asset.geom_source = params[:geom_source]
+        puts @asset.to_json
+        @asset.save
+        @asset.reload
+        @asset.save
+        flash[:success] = "New boundary assigned"
+      end
+      render 'map_associate'
     end
   end
-        
-  
-    
 
   def rate
     show

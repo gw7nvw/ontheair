@@ -135,7 +135,7 @@ vk_gis:
   postgis_extension: postgis      # default is postgis
   schema_search_path: public,postgis
   pool: 5
-  database: capad
+  database: vk_gis
   database_tasks: false
 crownparks:
   <<: *default
@@ -171,6 +171,6 @@ zl_gis:
   postgis_extension: postgis      # default is postgis
   schema_search_path: public,postgis
   pool: 5
-  database: topo50_data
+  database: zl_gis
   database_tasks: false
 

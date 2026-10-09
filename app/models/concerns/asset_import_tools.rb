@@ -151,7 +151,7 @@ module AssetImportTools
                   p.area = nil
                   p.az_boundary = nil
                   p.az_area = nil
-#                  p.old_code = nil 
+#                  p.geom_id = nil 
                   if p.changed?
                     updated_count+=1 if !new
                     changed=p.changed
@@ -188,11 +188,11 @@ module AssetImportTools
   end
 
   def Asset.remove_duplicate_islands()
-    ref_ids=Asset.find_by_sql ["select * from (select count(id) as id, ref_id from assets where asset_type='island' and is_active=true group by ref_id) where id>1"]
-    ref_ids=ref_ids.pluck(:ref_id)[2..-1]
-    ref_ids.each do |ref_id|
-      assets = Asset.where(ref_id: ref_id, asset_type: 'island', is_active: true)
-      nzgdb = Nzgdb.find_by(feat_id: ref_id, is_active: true)
+    name_ids=Asset.find_by_sql ["select * from (select count(id) as id, name_id from assets where asset_type='island' and is_active=true group by name_id) where id>1"]
+    name_ids=name_ids.pluck(:name_id)[2..-1]
+    name_ids.each do |name_id|
+      assets = Asset.where(name_id: name_id, asset_type: 'island', is_active: true)
+      nzgdb = Nzgdb.find_by(feat_id: name_id, is_active: true)
       count = 0
       puts "================================================"
       assets.each do |asset|
@@ -217,7 +217,7 @@ module AssetImportTools
     assets=Asset.where(asset_type: 'island', is_active: true)
     missing=[]
     assets.each do |asset|
-      ns = Nzgdb.where(feat_id: asset.ref_id, is_active: true)
+      ns = Nzgdb.where(feat_id: asset.name_id, is_active: true)
       next if ns.count>0
       missing << asset.code 
     end
@@ -241,20 +241,21 @@ module AssetImportTools
 
 
   def Asset.update_island_ids()
-    assets=Asset.where(asset_type: 'island', ref_id: nil, is_active: true)
+    assets=Asset.where(asset_type: 'island', name_id: nil, is_active: true)
     assets.each do |asset|
       ns=Nzgdb.find_by_sql [" select * from nzgdbs where name=? and ST_DWithin(?, ST_Point(crd_longitude, crd_latitude, 4326), 0.01)", asset.name, asset.location]
       n=ns.first
       if n then 
         n2=Nzgdb.find_by(feat_id: n.feat_id, is_active: true)
         puts "#{asset.name} == #{n.name} #{n.feat_id} -> #{n2.name}"
-        asset.update_column(:ref_id, n.feat_id)
+        asset.update_column(:name_id, n.feat_id)
+        asset.update_column(:name_source, 'NZGDB')
       else
         nears = Nzgdb.find_by_sql [ "select * from nzgdbs where crd_longitude>? and crd_longitude<? and crd_latitude>? and crd_latitude<? order by (abs(crd_latitude - ?)+abs(crd_longitude - ?)) limit 10", asset.location.x-0.01, asset.location.x+0.01, asset.location.y-0.01, asset.location.y+0.01, asset.location.y, asset.location.x ]
         count = 0
         puts "================================================"
         nears.each do |pp|
-          as=Asset.where(ref_id: pp.feat_id, is_active: true).count
+          as=Asset.where(name_id: pp.feat_id, is_active: true).count
           puts "#{count.to_s} - #{pp.name} (#{pp.feat_id}: #{as} matches) == #{asset.name}"
           count += 1
         end
@@ -265,7 +266,8 @@ module AssetImportTools
         if island then
           n2=Nzgdb.find_by(feat_id: island.feat_id, is_active: true)
           puts "#{asset.name} == #{island.name} #{island.feat_id} -> #{n2.name}"
-          asset.update_column(:ref_id, n2.feat_id)
+          asset.update_column(:name_id, n2.feat_id)
+          asset.update_column(:name_source, 'NZGDB')
         end
       end
     end
@@ -279,7 +281,7 @@ module AssetImportTools
 
     Nzgdb.where(feat_type: 'Island', is_active: true).order(:name).each do |place|
       read_count+=1
-      asset = Asset.find_by(ref_id: place.feat_id, asset_type: 'island')
+      asset = Asset.find_by(name_id: place.feat_id, asset_type: 'island')
       if !asset
         asset = Asset.new
         puts "ADDING NEW ISLAND"
@@ -294,7 +296,8 @@ module AssetImportTools
         old_name=asset.name || ""
         asset.name = place.name
         asset.location = "POINT(#{place.crd_longitude} #{place.crd_latitude})" if new
-        asset.ref_id = place.feat_id
+        asset.name_id = place.feat_id
+        asset.name_source = 'NZGDB'
         asset.description = (place.info_description||"")+"; "+(place.info_origin||"")
         if asset.changed?
           updated_count+=1 if !new
@@ -392,7 +395,7 @@ module AssetImportTools
     included_asset_codes = []
     Nzgdb.where(feat_type: 'Lake', is_active: true).each do |place|
       read_count+=1
-      asset = Asset.find_by(ref_id: place.feat_id, asset_type: 'lake')
+      asset = Asset.find_by(name_id: place.feat_id, asset_type: 'lake')
       if !asset
         asset = Asset.new
         puts "ADDING NEW LAKE"
@@ -406,7 +409,9 @@ module AssetImportTools
         asset.is_active = true
         asset.name = place.name
         asset.location = "POINT(#{place.crd_longitude} #{place.crd_latitude})" if new
-        asset.ref_id = place.feat_id
+        asset.name_id = place.feat_id
+        asset.name_source = 'NZGDB'
+
         asset.description = (place.info_description||"")+"; "+(place.info_origin||"")
         if asset.changed?
           updated_count+=1 if !new
@@ -449,7 +454,7 @@ module AssetImportTools
         asset=Asset.find_by(code:  code)
         asset.update_column(:is_active, false)
         asset.update_column(:valid_to, Time.now)
-        n=Nzgdb.find_by(feat_id: asset.ref_id)
+        n=Nzgdb.find_by(feat_id: asset.name_id)
         descr=asset.description
         if n then
            descr=(n.info_description||"")+"; "+(n.info_origin||"")
@@ -774,7 +779,8 @@ module AssetImportTools
             a.area = nil
             a.az_boundary = nil
             a.az_area = nil
-            a.old_code = nil 
+            a.geom_id = nil 
+            a.geom_source = nil
             # trigger new lookup of location metadata
             a.region = nil
             a.district = nil
@@ -880,7 +886,9 @@ module AssetImportTools
           p.area = nil
           p.az_boundary = nil
           p.az_area = nil
-          p.old_code = nil
+          p.geom_id = nil
+          p.geom_id = nil
+
           loc_change = p.changed.include?('location')
           p.save
           if p.country == 'ZL'
@@ -1199,7 +1207,8 @@ module AssetImportTools
     if cs.count==1
       #just assign it
       self.boundary = get_capad_boundary(cs.first.pa_id)
-      self.old_code = cs.first.pa_id
+      self.geom_id = cs.first.pa_id
+      self.geom_source='CAPAD'
       self.save
     elsif cs.count>1
       #select from list
@@ -1211,7 +1220,8 @@ module AssetImportTools
       id = gets
       if id.to_i>0 then
         c=cs[id.to_i-1]
-        self.old_code = c.pa_id
+        self.geom_id = c.pa_id
+        self.geom_source='CAPAD'
         self.boundary = get_capad_boundary(c.pa_id)
         self.save
         puts "assigned "+c.name+" to "+self.name
@@ -1297,8 +1307,8 @@ module AssetImportTools
    if true #!self.name.include?("Beach") and !self.name.include?("Wild and Scenic River")
     found=false
     shortname = capad_expand_abbreviations(self.name.upcase)
-    if self.old_code and self.old_code.to_i>0 then
-      cs = Capad.find_by_sql [ %q{select "objectid", ST_Buffer(ST_Simplify("wkb_geometry",0.0002),0) as "wkb_geometry", "pa_id", "pa_pid", "name", "capad_type", "type_abbr", "iucn", "nrs_pa", "nrs_mpa", "gaz_area", "gis_area", "gaz_date", "latest_gaz", "state", "authority", "datasource", "governance", "comments", "environ", "overlap", "mgt_plan", "res_number", "zone_type", "epbc", "longitude", "latitude", "pa_system", "shape_leng", "shape_area" from capad where pa_id = }+self.old_code.to_s+%q{;} ]
+    if self.geom_id and self.geom_id.to_i>0 then
+      cs = Capad.find_by_sql [ %q{select "objectid", ST_Buffer(ST_Simplify("wkb_geometry",0.0002),0) as "wkb_geometry", "pa_id", "pa_pid", "name", "capad_type", "type_abbr", "iucn", "nrs_pa", "nrs_mpa", "gaz_area", "gis_area", "gaz_date", "latest_gaz", "state", "authority", "datasource", "governance", "comments", "environ", "overlap", "mgt_plan", "res_number", "zone_type", "epbc", "longitude", "latitude", "pa_system", "shape_leng", "shape_area" from capad where pa_id = }+self.geom_id.to_s+%q{;} ]
       if cs and cs.count>0 then
         puts "Found by CAPAD ID"
         self.boundary = get_capad_boundary(cs.first.pa_id)
@@ -1322,7 +1332,8 @@ module AssetImportTools
          puts c_shortname.split(" ").uniq.sort.to_s
          puts c.pa_id
          if found==false and shortname.split(" ").uniq.sort == c_shortname.split(" ").uniq.sort
-           self.old_code = c.pa_id
+           self.geom_id = c.pa_id
+           self.geom_source='CAPAD'
            self.boundary = get_capad_boundary(c.pa_id)
            self.save
            puts "assigned "+c.name+" to "+self.name
@@ -1342,7 +1353,8 @@ module AssetImportTools
            id = gets
            if id.to_i>0 then
               c=cs[id.to_i-1]
-              self.old_code = c.pa_id
+              self.geom_id = c.pa_id
+              self.geom_source='CAPAD'
               self.boundary = get_capad_boundary(c.pa_id)
               self.save
               puts "assigned "+c.name+" to "+self.name
@@ -1353,7 +1365,8 @@ module AssetImportTools
         cs = Capad.find_by_sql [ %q{select "objectid", ST_Buffer(ST_Simplify("wkb_geometry",0.0002),0) as "wkb_geometry", "pa_id", "pa_pid", "name", "capad_type", "type_abbr", "iucn", "nrs_pa", "nrs_mpa", "gaz_area", "gis_area", "gaz_date", "latest_gaz", "state", "authority", "datasource", "governance", "comments", "environ", "overlap", "mgt_plan", "res_number", "zone_type", "epbc", "longitude", "latitude", "pa_system", "shape_leng", "shape_area" from capad where st_within ( st_geomfromtext('}+self.location.to_s+%q{', 4326), wkb_geometry) limit 1;} ]
        if (shortname == cs.first.name) or (shortname == cs.first.name+" "+cs.first.capad_type) or (shortname == (cs.first.name+" "+cs.first.capad_type)[0..shortname.length-1])then
          puts "Found: "+self.name+" = "+cs.first.name+" "+cs.first.capad_type
-         self.old_code = cs.first.pa_id
+         self.geom_id = cs.first.pa_id
+         self.geom_source='CAPAD'
          self.boundary = get_capad_boundary(cs.first.pa_id)
          self.save
        else
@@ -1364,7 +1377,8 @@ module AssetImportTools
            puts "Does not match, use anyway (N/y): "+self.name+" = "+cs.first.name+" "+cs.first.capad_type
            id = gets
            if (id[0] == 'y')  then
-             self.old_code = cs.first.pa_id
+             self.geom_id = cs.first.pa_id
+             self.geom_source='CAPAD'
              self.boundary = get_capad_boundary(cs.first.pa_id)
              self.save
            end
@@ -1477,8 +1491,9 @@ module AssetImportTools
         end
         if found == true
           puts "#{self.name} == #{sps.first.unique_name}"
-          self.old_code = sps.first.unique_name
-          self.boundary = get_state_park_boundary(self.old_code)
+          self.geom_id = sps.first.unique_name
+          self.geom_source='VK State Parks'
+          self.boundary = get_state_park_boundary(self.geom_id)
           self.save
           found = true
         end
@@ -1498,9 +1513,10 @@ module AssetImportTools
           id = gets
           if id.to_i>0 then
             c=sps[id.to_i-1]
-            self.old_code = c.unique_name
+            self.geom_id = c.unique_name
+            self.geom_source='VK State Parks'
             sp = VkStatePark.find_by_sql [ %q{select ST_Multi(ST_Buffer(ST_Simplify(st_union("boundary"),0.0002),0)) as "boundary" from vk_state_park where id = }+c.id.to_s ]
-            self.boundary = get_state_park_boundary(self.old_code)
+            self.boundary = get_state_park_boundary(self.geom_id)
             self.save
             puts "assigned "+c.name+" to "+self.name
           end

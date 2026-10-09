@@ -456,7 +456,11 @@ CREATE TABLE public.assets (
     country character varying(255),
     state character varying(255),
     access_capad_park_ids character varying(255)[] DEFAULT '{}'::character varying[],
-    access_vk_state_park_ids character varying(255)[] DEFAULT '{}'::character varying[]
+    access_vk_state_park_ids character varying(255)[] DEFAULT '{}'::character varying[],
+    geom_id character varying,
+    geom_source character varying,
+    name_id character varying,
+    name_source character varying
 );
 
 
@@ -856,7 +860,8 @@ CREATE TABLE public.data_sources (
     is_zl boolean,
     is_vk boolean,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    mdl_name character varying
 );
 
 
@@ -4277,6 +4282,7 @@ CREATE INDEX vk_code_indx ON public.vk_assets USING btree (code);
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261009060443'),
 ('20261009045042'),
 ('20261008045434'),
 ('20261003003844'),
