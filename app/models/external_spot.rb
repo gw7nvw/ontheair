@@ -185,7 +185,6 @@ class ExternalSpot < ApplicationRecord
         puts 'ERROR: WWFF Timeout'
       else
       end
-
       wwff_spots = spots || []
 
       #HEMA
@@ -207,6 +206,19 @@ class ExternalSpot < ApplicationRecord
         end
       rescue
         puts 'ERROR: HEMA Timeout'
+      else
+      end
+
+      #Parks N Peaks
+      spots=[]
+      begin
+        Timeout.timeout(30) do
+          url = 'http://www.parksnpeaks.org/api/ALL'
+          raw_response = fetch_external_url(url)
+          pnp_spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
+        end
+      rescue
+        puts 'ERROR: PnP Timeout'
       else
       end
 
@@ -269,15 +281,20 @@ class ExternalSpot < ApplicationRecord
           comments: spot['remarks'][0..255],
           spot_type: 'WWFF'
         )
-        # temporary cludge to get WWFF spots into PnP - 
-        # remove once PnP has native support
-        #if result and result.id then
-        #  if ENV['RAILS_ENV'] == 'production'          
-        #    Resque.enqueue(SendWwffSpot, result.id)
-        #  else
-        #    send_wwff_spot_now(result.id)
-        #  end
-        #end
+      end
+      pnp_spots.each do |spot|
+        ExternalSpot.create(
+          time: spot['actTime'].to_datetime ? spot['actTime'].to_datetime.in_time_zone('UTC') : nil,
+          callsign: spot['actSpoter'].strip,
+          activatorCallsign: spot['actCallsign'].strip,
+          code: (spot['actSiteID'] && !spot['actSiteID'].empty? ? spot['actSiteID'] : spot['actLocation']).gsub('?','X'),
+          name: spot['altLocation'] && !spot['altLocation'].empty? ? spot['altLocation'] : spot['actLocation'],
+          frequency: spot['actFreq'],
+          mode: spot['actMode'],
+          comments: spot['actComments'][0..255],
+          spot_type: spot['actClass'],
+          is_pnp: true
+        )
       end
 
 
