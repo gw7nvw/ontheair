@@ -210,12 +210,13 @@ class ExternalSpot < ApplicationRecord
       end
 
       #Parks N Peaks
-      spots=[]
+      pnp_spots=[]
       begin
         Timeout.timeout(30) do
           url = 'http://www.parksnpeaks.org/api/ALL'
           raw_response = fetch_external_url(url)
           pnp_spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
+          puts pnp_spots.to_json
         end
       rescue
         puts 'ERROR: PnP Timeout'
