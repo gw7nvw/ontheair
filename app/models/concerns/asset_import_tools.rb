@@ -298,7 +298,7 @@ module AssetImportTools
         asset.location = "POINT(#{place.crd_longitude} #{place.crd_latitude})" if new
         asset.name_id = place.feat_id
         asset.name_source = 'NZGDB'
-        asset.description = (place.info_description||"")+"; "+(place.info_origin||"")
+        asset.description = (place.info_description||"")+"; "+(place.info_origin||"") if asset.is_active
         if asset.changed?
           updated_count+=1 if !new
           changed=asset.changed
@@ -376,6 +376,10 @@ module AssetImportTools
         AdminTask.create(task_type: 'update', affected_id: island.code, affected_url: island.url, affected_table: 'asset', description: "Matched #{(island.name || 'unnamed')} with #{(lk.name || 'unnamed')}")
       end
       island.boundary = lk.boundary
+      island.geom_source='IslandPolygon'
+      island.geom_id=lk.topo50_fid
+      island.save
+
       island.save
       found = true
     end
@@ -412,7 +416,7 @@ module AssetImportTools
         asset.name_id = place.feat_id
         asset.name_source = 'NZGDB'
 
-        asset.description = (place.info_description||"")+"; "+(place.info_origin||"")
+        asset.description = (place.info_description||"")+"; "+(place.info_origin||"") if asset.is_active
         if asset.changed?
           updated_count+=1 if !new
           changed=asset.changed
@@ -513,6 +517,8 @@ module AssetImportTools
         AdminTask.create(task_type: 'update', affected_id: lake.code, affected_url: lake.url, affected_table: 'asset', description: "Matched #{(lake.name || 'unnamed')} with #{(lk.name || 'unnamed')}")
       end
       lake.boundary = lk.boundary
+      lake.geom_source='LakePolygon'
+      lake.geom_id=lk.topo50_fid
       lake.save
       found = true
     end
@@ -715,7 +721,6 @@ module AssetImportTools
         asset.code=code
 #        asset.state=nil
         asset.country='VK'
-        asset.description=asc_desc if !asc_desc.blank?
         asset.valid_from = silo[fields.index("NOT_BEFORE")]
         asset.valid_to = silo[fields.index("NOT_AFTER")]
         if asset.valid_to == nil then 
@@ -723,6 +728,7 @@ module AssetImportTools
         else
           asset.is_active=false
         end
+        asset.description=asc_desc if !asc_desc.blank? and asset.is_active
         asset.asset_type="silo"
         asset.url = 'assets/' + asset.get_safecode
         if asset.changed?
@@ -852,7 +858,7 @@ module AssetImportTools
         else
           p.is_active = false
         end
-        p.description = row[fields.index("notes")] if row[fields.index("notes")]
+        p.description = row[fields.index("notes")] if row[fields.index("notes")] and p.is_active
         if p.changed?
           loc_changed = p.changed.include?('location')
           updated_count+=1 if !new
