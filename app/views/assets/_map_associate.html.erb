@@ -101,6 +101,9 @@
     </div>
     <%= text_field_tag :geom_id, @item.geom_id %>
     <%= text_field_tag :geom_source, @item.geom_source %>
+    <%= label_tag "Add to existing boundary (default is replace)" %>
+    <%= check_box_tag :add_to_existing %>
+
     <div class="buttonshort">
       <%= submit_tag "Apply", :id => "apply", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
     </div>

@@ -16,7 +16,7 @@ gem "stimulus-rails"
 gem "jbuilder"
 # Adds PostGIS spatial data capabilities to ActiveRecord
 gem "activerecord-postgis-adapter"
-gem "rgeo"
+gem "rgeo", "~> 3.0"
 gem "rgeo-proj4" # Adds the missing RGeo::CoordSys::Proj4 constant
 gem "kt-paperclip", "~> 7.2"
 gem "bcrypt"

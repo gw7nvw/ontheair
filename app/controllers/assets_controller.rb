@@ -106,11 +106,24 @@ class AssetsController < ApplicationController
       @asset=Asset.find_by(code: params[:id].gsub('_','/'))
       @datasources=DataSource.all.pluck(:name).sort
       @item = Asset.new
-  
+      add = params[:add_to_existing]
+      
       if @asset then
-        @asset.boundary = params[:boundary]
+        if add then
+          factory = @asset.boundary.factory
+
+          # 2. Safely extract all individual polygons into an array
+          existing_polygons = @asset.boundary.respond_to?(:each) ? @asset.boundary.to_a : [@asset.boundary]
+          @asset.boundary = params[:boundary]
+
+          # 3. Flatten them together and build a new MultiPolygon
+          @asset.boundary = factory.multi_polygon(existing_polygons + @asset.boundary)
+        else
+          @asset.boundary = params[:boundary]
+        end
         @asset.geom_id = params[:geom_id]
         @asset.geom_source = params[:geom_source]
+        add = params[:add]
         puts @asset.to_json
         @asset.save
         @asset.reload
