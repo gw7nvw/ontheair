@@ -204,7 +204,7 @@ class ApplicationController < ActionController::Base
     newparams.delete(:action)
     newparams.delete(:controller)
     newparams.delete(:id)
-    newparams.to_unsafe_h.to_query
+    newparams.to_query
   end
   
   def do_not_cache
