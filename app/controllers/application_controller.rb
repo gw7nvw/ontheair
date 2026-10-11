@@ -200,7 +200,7 @@ class ApplicationController < ActionController::Base
   end
 
   def params_to_query
-    newparams = params.dup
+    newparams = request.query_parameters.dup
     newparams.delete(:action)
     newparams.delete(:controller)
     newparams.delete(:id)
