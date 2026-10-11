@@ -110,14 +110,10 @@ class AssetsController < ApplicationController
       
       if @asset then
         if add then
-          factory = @asset.boundary.factory
-
-          # 2. Safely extract all individual polygons into an array
-          existing_polygons = @asset.boundary.respond_to?(:each) ? @asset.boundary.to_a : [@asset.boundary]
-          @asset.boundary = params[:boundary]
-
-          # 3. Flatten them together and build a new MultiPolygon
-          @asset.boundary = factory.multi_polygon(existing_polygons + @asset.boundary)
+          a2 = Asset.new
+          a2.boundary = params[:boundary]
+          @asset.boundary = @asset.boundary.union(a2.boundary)
+          a2 = nil
         else
           @asset.boundary = params[:boundary]
         end
