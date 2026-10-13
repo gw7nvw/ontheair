@@ -16,7 +16,7 @@ class ConsolidatedSpot < ActiveRecord::Base
     if !self.dxcc or !self.continent then
       reference = code.first if code
       if reference  then
-        dxccs = DxccPrefix.find_by("'#{reference}' like concat(iso_code,'-%%') or '#{reference}' like concat(iso_code,'LL-%%')")
+        dxccs = DxccPrefix.find_by("'#{reference}' like concat(iso_code,'-%%') or '#{reference}' like concat('LL',iso_code,'-%%')")
         dxccs = DxccPrefix.find_by("'#{reference}' like concat(prefix,'FF-%%') or '#{reference}' like concat(prefix,'/%%') or '#{reference}' like concat(prefix,'_/%%')") if !dxccs
 
         #VK SIOTA

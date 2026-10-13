@@ -47,15 +47,18 @@ class AssetsController < ApplicationController
       source = params[:select_type]
       id = params[:select_id]
       @item = Asset.new
-      datasource = DataSource.find_by(name: source)
+      datasource = DataSource.find_by('lower(name) = ?', source.downcase)
       if datasource
         model_class = datasource.mdl_name.constantize
   
-        item = model_class.find_by("#{data_source.index_column} = ?",id)        
-        @item.boundary = item.public_send(datasource.geom_column)
-        @item.name = item.public_send(datasource.name_column)
-        @item.geom_id = item.public_send(datasource.index_column)
-        @item.geom_source = datasource.name
+        item = model_class.find_by(ogc_fid: id) 
+        item = model_class.find_by(id: id)  if !item
+        if item       
+          @item.boundary = item.public_send(datasource.geom_column)
+          @item.name = item.public_send(datasource.name_column)
+          @item.geom_id = item.public_send(datasource.index_column)
+          @item.geom_source = datasource.name
+        end
       end
       map_associate()
       render 'map_associate'

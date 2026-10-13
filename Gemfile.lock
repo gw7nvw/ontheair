@@ -493,7 +493,7 @@ DEPENDENCIES
   resque
   resque-scheduler
   rexml (~> 3.3)
-  rgeo (~> 3.0)
+  rgeo
   rgeo-proj4
   rubocop-rails-omakase
   selenium-webdriver
