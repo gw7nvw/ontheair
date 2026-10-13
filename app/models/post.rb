@@ -38,7 +38,7 @@ class Post < ActiveRecord::Base
       maidenhead = (assets && (assets.count > 0) && assets.first[:asset] ? " {#{assets.first[:asset].maidenhead}}" : '')
       sites += ["#{(assets && (assets.count > 0) ? (assets.first[:name] || '') : '')} [#{ac}]#{maidenhead}"]
     end
-    self.site = sites.join('; ')
+    self.site = sites.join('; ') if !sites.blank?
   end
 
   def update_item
