@@ -60,6 +60,7 @@ class StaticPagesController < ApplicationController
     @site_title_quoted="'"+@site_title_unquoted+"'"
   
     if @dxcc=='VK' then 
+      @items = Item.find_by_sql ["select * from items where (topic_id = #{VK_NEWS_TOPIC} )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;"]
       render "vk_home"
     else
       @max_rows = 30
@@ -73,7 +74,7 @@ class StaticPagesController < ApplicationController
       @awards = AwardUserLink.find_by_sql [ "select * from award_user_links where created_at>'#{ack_time}'; "]
       @award_users = User.find_by_sql [ "select * from users where id in (select distinct user_id from award_user_links where created_at>'#{ack_time}') order by callsign limit 20;"]
   
-      @items = Item.find_by_sql ["select * from items where (topic_id = 4 )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;"]
+      @items = Item.find_by_sql ["select * from items where (topic_id = #{NEWS_TOPIC} )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;"]
       render "home"
     end
   end

@@ -19,7 +19,7 @@ class PostsController < ApplicationController
 
     via = 'SMS'
     puts 'DEBUG SMS'
-    body = params[:text]
+    body = params[:text] || params[:Body]
     lines = body.split(/\r?\n/)
     msgs = lines[0].split
     logger.debug "DEBUG msgs "+msgs.to_json
@@ -34,7 +34,7 @@ class PostsController < ApplicationController
     end
 
     # passkey = nil
-    acctnumber = params[:from]
+    acctnumber = params[:from] || params[:From]
     acctnumber = acctnumber&.strip&.delete(' ')
     logger.debug 'DEBUG from number: #{acctnumber}'
     user = User.find_by(acctnumber: acctnumber)

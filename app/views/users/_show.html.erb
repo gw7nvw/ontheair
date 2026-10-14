@@ -247,8 +247,22 @@
         <% end %></td>
       </tr>
       <tr>
+        <% topic=Topic.find_by_id(VK_NEWS_TOPIC) %>
+        <td> VK NEWS </td>
+        <td> <% if topic.subscribed(@user) then  %>
+          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'delete__news', :onclick => "linkHandler('delete_news')"  %> 
+        <% else %> 
+          No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'add_news', :onclick => "linkHandler('add_news')"  %>
+        <% end %></td>
+        <td> <% if topic.subscribed_notification(@user) then %>
+          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'delete__news', :onclick => "linkHandler('delete_news')"  %> 
+        <% else %> 
+          No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'add_news', :onclick => "linkHandler('add_news')"  %>
+        <% end %></td>
+      </tr>
+      <tr>
         <% topic=Topic.find_by_id(NEWS_TOPIC) %>
-        <td> NEWS </td>
+        <td> ZL NEWS </td>
         <td> <% if topic.subscribed(@user) then  %>
           Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'delete__news', :onclick => "linkHandler('delete_news')"  %> 
         <% else %> 
