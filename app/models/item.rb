@@ -173,10 +173,11 @@ class Item < ActiveRecord::Base
 
     #handle unrecognised locations
     logger.debug "DEBUG - UNKNOWN LOACTION - FALLBACK"
-    if reuse==false and cs.name.empty?
-      cs.code = [""]
-      cs.name = [post.site]
-      cs.spot_type = ["UNKNOWN"]
+    if cs.code&.all?(&:blank?) != false
+      cs.name += [post.site]
+      cs.name.uniq!
+      cs.code = [""]*cs.name.length
+      cs.spot_type = ["UNKNOWN"]*cs.name.length
     end
 
     cs.comments += [post.updated_by_name+": "+(post.description||"") + " ("+post.created_at.strftime("%H:%M:%S")+")"]

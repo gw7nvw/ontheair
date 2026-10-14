@@ -26,6 +26,15 @@ class ConsolidatedSpot < ActiveRecord::Base
         self.dxcc = dxccs.prefix if dxccs
         self.continent = dxccs.continent_code if dxccs
       end 
+
+      #fall back on callsign analysis
+      if !self.dxcc
+        dxcc = DxccPrefix.from_call(self.activatorCallsign)
+        if dxcc
+          self.dxcc = dxcc.prefix
+          self.continent = dxcc.continent_code
+        end
+      end
     end
   end
 
