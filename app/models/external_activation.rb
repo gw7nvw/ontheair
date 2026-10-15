@@ -199,7 +199,7 @@ class ExternalActivation < ApplicationRecord
           # Fire a direct form-urlencoded POST request
           response = Net::HTTP.post_form(uri, {
             client_id: 'sotadata',
-            client_secret: SOTA_SECRET,
+            client_secret: Rails.application.credentials.sota_secret,
             refresh_token: refresh_token
           })
 

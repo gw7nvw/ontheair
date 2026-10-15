@@ -329,7 +329,7 @@ class Post < ActiveRecord::Base
       http.use_ssl = true
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
-      req = Net::HTTP::Post.new("#{url.path}?", 'Content-Type' => 'application/json', 'connection' => 'keep-alive', 'X-API-Key' => "#{WWFF_API_KEY}", 'User-Agent' => 'ontheair.nz')
+      req = Net::HTTP::Post.new("#{url.path}?", 'Content-Type' => 'application/json', 'connection' => 'keep-alive', 'X-API-Key' => "#{Rails.application.credentials.wwff_api_key}", 'User-Agent' => 'ontheair.nz')
 
       payloadspot = {
         'activator': callsign.upcase,
@@ -480,7 +480,7 @@ class Post < ActiveRecord::Base
       #        end
 
       if !debug
-        req = Net::HTTP::Post.new("#{url.path}?", 'Content-Type' => 'application/json', 'User-Agent' => 'ontheair.nz', 'X-API-Key' => LLOTA_API_KEY)
+        req = Net::HTTP::Post.new("#{url.path}?", 'Content-Type' => 'application/json', 'User-Agent' => 'ontheair.nz', 'X-API-Key' => Rails.application.credentials.llota_api_key)
         req.body = payloadspot.to_json
         begin
           res = http.request(req)
@@ -545,7 +545,10 @@ class Post < ActiveRecord::Base
     puts ':' + asset_type + ':'
     if (asset_type == 'SOTA') || (asset_type == 'summit')
       begin
-        jscreds = Keycloak::Client.get_token(SOTA_USER, SOTA_PASSWORD, SOTA_CLIENT_ID, SOTA_SECRET)
+        jscreds = Keycloak::Client.get_token(Rails.application.credentials.sota_user, 
+                                             Rails.application.credentials.sota_password,
+                                             Rails.application.credentials.sota_client_id, 
+                                             Rails.application.credentials.sota_secret)
         creds = JSON.parse(jscreds)
         access_token = creds['access_token']
         id_token = creds['id_token']
@@ -608,8 +611,8 @@ class Post < ActiveRecord::Base
 
             # Fire a direct form-urlencoded POST request
             response = Net::HTTP.post_form(uri, {
-              client_id: SOTA_CLIENT_ID,
-              client_secret: SOTA_SECRET,
+              client_id: Rails.application.credentials.sota_client_id,
+              client_secret: Rails.application.credentials.sota_sota_secret,
               refresh_token: refresh_token
             })
 

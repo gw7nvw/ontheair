@@ -187,11 +187,11 @@ module AssetImportTools
     AdminTask.create(task_type: 'report', affected_table: 'asset', description: "Updated VK WWFF parks. Read: #{read_count}, New: #{new_count}, Updated: #{updated_count}, Deleted: #{deleted_count}")
   end
 
-  def Asset.remove_duplicate_islands()
-    name_ids=Asset.find_by_sql ["select * from (select count(id) as id, name_id from assets where asset_type='island' and is_active=true group by name_id) where id>1"]
+  def Asset.remove_duplicate_assets_by_nzgdb_id(asset_type)
+    name_ids=Asset.find_by_sql ["select * from (select count(id) as id, name_id from assets where asset_type=asset_type and is_active=true group by name_id) where id>1"]
     name_ids=name_ids.pluck(:name_id)[2..-1]
     name_ids.each do |name_id|
-      assets = Asset.where(name_id: name_id, asset_type: 'island', is_active: true)
+      assets = Asset.where(name_id: name_id, asset_type: asset_type, is_active: true)
       nzgdb = Nzgdb.find_by(feat_id: name_id, is_active: true)
       count = 0
       puts "================================================"
@@ -199,22 +199,22 @@ module AssetImportTools
         puts "#{count.to_s} - #{asset.name} (#{asset.code} #{asset.location} matches #{nzgdb.crd_longitude} #{nzgdb.crd_latitude}"
         count += 1
       end
-      island=nil
+      place=nil
       puts "Select item to retire (or 'a' to skip):"
       id = gets
-      island = assets[id.to_i] if id && (id.length > 1) && (id[0] != 'a')
-      if island
-        puts "DELETE #{island.code} #{island.name}"
-        island.update_column(:is_active, false)
-        island.update_column(:valid_to, Time.now)
-        island.update_column(:description, "Retired as duplicate. #{island.description}")
+      place = assets[id.to_i] if id && (id.length > 1) && (id[0] != 'a')
+      if place
+        puts "DELETE #{place.code} #{place.name}"
+        place.update_column(:is_active, false)
+        place.update_column(:valid_to, Time.now)
+        place.update_column(:description, "Retired as duplicate. #{place.description}")
       end
     end
   end
 
-  def Asset.find_retired_islands
+  def Asset.find_retired_nzgdb(asset_type)
     count = 0
-    assets=Asset.where(asset_type: 'island', is_active: true)
+    assets=Asset.where(asset_type: asset_type, is_active: true)
     missing=[]
     assets.each do |asset|
       ns = Nzgdb.where(feat_id: asset.name_id, is_active: true)
@@ -224,74 +224,41 @@ module AssetImportTools
     if missing.count>10
       puts missing
       puts "ERROR: halting - too many deletions requested"
-      AdminTask.create(task_type: 'error', affected_table: 'asset', description: "UPDATE ISLAND RESULTED IN #{missing.count} deletions - ABANDONING!")
+      AdminTask.create(task_type: 'error', affected_table: 'asset', description: "UPDATE #{asset_type} RESULTED IN #{missing.count} deletions - ABANDONING!")
 
     else
       missing.each do |code|
         count+=1
-        island=Asset.find_by(code: code)
-        puts "DELETE #{island.code} #{island.name}"
-        island.update_column(:is_active, false)
-        island.update_column(:valid_to, Time.now)
-        island.update_column(:description, "Retired as this island has been removed from the NZ Gazeteer (NZGDB). #{island.description}")
+        asset=Asset.find_by(code: code)
+        puts "DELETE #{asset.code} #{asset.name}"
+        asset.update_column(:is_active, false)
+        asset.update_column(:valid_to, Time.now)
+        asset.update_column(:description, "Retired as this asset has been removed from the NZ Gazeteer (NZGDB). #{asset.description}")
       end
     end
     count
   end
 
 
-  def Asset.update_island_ids()
-    assets=Asset.where(asset_type: 'island', name_id: nil, is_active: true)
-    assets.each do |asset|
-      ns=Nzgdb.find_by_sql [" select * from nzgdbs where name=? and ST_DWithin(?, ST_Point(crd_longitude, crd_latitude, 4326), 0.01)", asset.name, asset.location]
-      n=ns.first
-      if n then 
-        n2=Nzgdb.find_by(feat_id: n.feat_id, is_active: true)
-        puts "#{asset.name} == #{n.name} #{n.feat_id} -> #{n2.name}"
-        asset.update_column(:name_id, n.feat_id)
-        asset.update_column(:name_source, 'NZGDB')
-      else
-        nears = Nzgdb.find_by_sql [ "select * from nzgdbs where crd_longitude>? and crd_longitude<? and crd_latitude>? and crd_latitude<? order by (abs(crd_latitude - ?)+abs(crd_longitude - ?)) limit 10", asset.location.x-0.01, asset.location.x+0.01, asset.location.y-0.01, asset.location.y+0.01, asset.location.y, asset.location.x ]
-        count = 0
-        puts "================================================"
-        nears.each do |pp|
-          as=Asset.where(name_id: pp.feat_id, is_active: true).count
-          puts "#{count.to_s} - #{pp.name} (#{pp.feat_id}: #{as} matches) == #{asset.name}"
-          count += 1
-        end
-        island=nil
-        puts "Select match (or 'a' to skip):"
-        id = gets
-        island = nears[id.to_i] if id && (id.length > 1) && (id[0] != 'a')
-        if island then
-          n2=Nzgdb.find_by(feat_id: island.feat_id, is_active: true)
-          puts "#{asset.name} == #{island.name} #{island.feat_id} -> #{n2.name}"
-          asset.update_column(:name_id, n2.feat_id)
-          asset.update_column(:name_source, 'NZGDB')
-        end
-      end
-    end
-  end
-
-  def Asset.import_island(update = true, redraw = false, silent=false) 
+  def Asset.import_from_nzgdb(asset_type='island', nzgdb_type='Island', update = true, redraw = false, silent=false) 
     read_count = 0
     new_count=0
     updated_count=0
     deleted_count=0
 
-    Nzgdb.where(feat_type: 'Island', is_active: true).order(:name).each do |place|
+    Nzgdb.where(feat_type: nzgdb_type, is_active: true).order(:name).each do |place|
       read_count+=1
-      asset = Asset.find_by(name_id: place.feat_id, asset_type: 'island')
+      asset = Asset.find_by(name_id: place.feat_id, asset_type: asset_type)
       if !asset
         asset = Asset.new
-        puts "ADDING NEW ISLAND"
+        puts "ADDING NEW #{asset_type}"
         new = true
         new_count+=1
       end
       #log this code as present for missing code deletion test later
       if new == true or update == true or asset.boundary == nil then
         puts "UPDATING #{asset.name} for #{place.name}" if asset.name!=place.name
-        asset.asset_type = 'island'
+        asset.asset_type = asset_type
         asset.is_active = true if new
         old_name=asset.name || ""
         asset.name = place.name
@@ -315,222 +282,91 @@ module AssetImportTools
           end
           #log this code as present for missing code deletion test later
           if res
-            AdminTask.create(task_type: 'new', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "New ZLOTA island #{asset.name}") if new
-            #AdminTask.create(task_type: 'update', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "Updated ZLOTA island #{changed}") if !new
+            AdminTask.create(task_type: 'new', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "New ZLOTA #{asset_type} #{asset.name}") if new
+            #AdminTask.create(task_type: 'update', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "Updated ZLOTA #{asset_type} #{changed}") if !new
           else
-            AdminTask.create(task_type: 'error', affected_id: asset.code, affected_table: 'asset', description: "Failed to create new ZLOTA island: #{asset.to_json}")
+            AdminTask.create(task_type: 'error', affected_id: asset.code, affected_table: 'asset', description: "Failed to create new ZLOTA #{asset_type}: #{asset.to_json}")
           end
         end 
         if new == true or redraw == true or asset.boundary == nil
           #look up topo50 boundary
-          Asset.get_island_polygons(asset, !new)
+          Asset.get_topo50_polygons(asset_type, asset, !new)
         end
       end
     end
 
-    #now retire non-nzgdb islands
-    deleted_count=find_retired_islands
-    AdminTask.create(task_type: 'report', affected_table: 'asset', description: "Updated ZLOTA lakes. Read: #{read_count}, New: #{new_count}, Updated: #{updated_count}, Deleted: #{deleted_count}")
+    #now retire non-nzgdb assets
+    deleted_count=find_retired_nzgdb(asset_type)
+    AdminTask.create(task_type: 'report', affected_table: 'asset', description: "Updated ZLOTA #{asset_type}s. Read: #{read_count}, New: #{new_count}, Updated: #{updated_count}, Deleted: #{deleted_count}")
   end
 
-  def Asset.get_island_polygons(island, quiet)
-    islands = IslandPolygon.find_by_sql ["select * from island_polygons where ST_Within(ST_GeomFromText('" + island.location.as_text + "',4326), boundary);"]
-    if !islands || islands.count.zero?
-      islands = IslandPolygon.find_by_sql [" SELECT *
-       FROM island_polygons dp
-       WHERE is_active=true and ST_DWithin(ST_GeomFromText('" + island.location.as_text + "', 4326), boundary, 5000, false)
-       ORDER BY ST_Distance(ST_GeomFromText('" + island.location.as_text + "', 4326), boundary) LIMIT 50; "]
-    end
-    if !islands || islands.count.zero?
-      AdminTask.create(task_type: 'error', affected_id: island.code, affected_url: island.url, affected_table: 'asset', description: "No polygons found for ZLOTA island: #{island.code}") if !quiet
-      puts "NO POLYGONS FOUND AT LOCATION" if !quiet
-      return false
-    end
-
-    found = false
-    islands.each do |lk|
-      l_name = (lk.name||"").tr('ū', 'u')
-      l_name = l_name.gsub(' / ', ' ')
-      l_name = l_name.tr('/', ' ')
-      l_name = l_name.gsub(' (', ' ')
-      l_name = l_name.gsub(' (', ' ')
-      l_name = l_name.tr(')', ' ')
-      l_name = l_name.tr(')', ' ')
-      l_name = l_name.gsub(/[^0-9a-z]/i, '')
-      island_name = (island.name||"").tr('ū', 'u')
-      island_name = island_name.gsub(' / ', ' ')
-      island_name = island_name.tr('/', ' ')
-      island_name = island_name.gsub(' (', ' ')
-      island_name = island_name.gsub(' (', ' ')
-      island_name = island_name.tr(')', ' ')
-      island_name = island_name.tr(')', ' ')
-      island_name = island_name.gsub(/[^0-9a-z]/i, '')
-
-      island_arr = island_name.split(' ').sort
-      l_arr = l_name.split(' ').sort
-
-      next unless (found == false) && ((l_name == island_name) || (island_arr & l_arr == l_arr) || island_arr & l_arr == island_arr || l_name.include?(island_name) || island_name.include?(l_name))
-
-      if lk.name != island.name then 
-        puts 'Matched ' + (island.name || 'unnamed') + ' with ' + (lk.name || 'unnamed') 
-        AdminTask.create(task_type: 'update', affected_id: island.code, affected_url: island.url, affected_table: 'asset', description: "Matched #{(island.name || 'unnamed')} with #{(lk.name || 'unnamed')}")
-      end
-      island.boundary = lk.boundary
-      island.geom_source='IslandPolygon'
-      island.geom_id=lk.topo50_fid
-      island.save
-
-      island.save
-      found = true
-    end
-    if found == false then 
-      AdminTask.create(task_type: 'error', affected_id: island.code, affected_url: island.url, affected_table: 'asset', description: "Failed to find #{(island.name || 'unnamed')}. Best was #{islands.first.name}") if !quiet
-      puts 'Failed to find ' + (island.name || 'unnamed') + '. Best was ' + islands.first.name 
-    end
-    true
-  end
-
-  def Asset.import_lake(update = true, redraw = false, silent=false) 
-    read_count = 0
-    new_count=0
-    updated_count=0
-    deleted_count=0
-
-    included_asset_codes = []
-    Nzgdb.where(feat_type: 'Lake', is_active: true).each do |place|
-      read_count+=1
-      asset = Asset.find_by(name_id: place.feat_id, asset_type: 'lake')
-      if !asset
-        asset = Asset.new
-        puts "ADDING NEW LAKE"
-        new = true
-        new_count+=1
-      end
-      #log this code as present for missing code deletion test later
-      included_asset_codes << asset.code  if asset.code
-      if new == true or update == true or asset.boundary == nil then
-        asset.asset_type = 'lake'
-        asset.is_active = true
-        asset.name = place.name
-        asset.location = "POINT(#{place.crd_longitude} #{place.crd_latitude})" if new
-        asset.name_id = place.feat_id
-        asset.name_source = 'NZGDB'
-
-        asset.description = (place.info_description||"")+"; "+(place.info_origin||"") if asset.is_active
-        if asset.changed?
-          updated_count+=1 if !new
-          changed=asset.changed
-          puts asset.code
-          puts "CHANGED: #{changed}"
-          loc_changed = asset.changed.include?('location')
-
-          if !new and !loc_changed #quick save without callbacks
-            changes = asset.changes_to_save.transform_values(&:last).except('location')
-            changes['updated_at'] = Time.current 
-            res = asset.update_columns(changes) if changes.any?
-          else
-            res = asset.save 
-          end
-          #log this code as present for missing code deletion test later
-          included_asset_codes << asset.code  if new
-          if res
-            AdminTask.create(task_type: 'new', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "New ZLOTA lake #{asset.name}") if new
-            #AdminTask.create(task_type: 'update', affected_id: asset.code, affected_table: 'asset', affected_url: asset.url, description: "Updated ZLOTA lake #{changed}") if !new
-          else
-            AdminTask.create(task_type: 'error', affected_id: asset.code, affected_table: 'asset', description: "Failed to create new ZLOTA lake: #{asset.to_json}")
-          end
-        end 
-        if new == true or redraw == true or asset.boundary == nil
-          #look up topo50 boundary
-          Asset.get_lake_polygons(asset, !new)
-        end
-      end
-    end
-
-    #now retire non-nzgdb lakes
-    all_asset_codes=Asset.where(asset_type: 'lake', is_active: true).pluck(:code)
-    missing_asset_codes=all_asset_codes - included_asset_codes
-    if missing_asset_codes.count>10 then
-      puts "ERROR: halting - too many deletions requested"
-      AdminTask.create(task_type: 'error', affected_table: 'asset', description: "UPDATE LAKE RESULTED IN #{missing_asset_codes.count} deletions - ABANDONING!")
+  def Asset.get_topo50_polygons(asset_type, asset, quiet)
+    case asset_type
+    when 'island' 
+      mod_name = IslandPolygon
+      table_name = "island_polygons"
+    when 'lake' 
+      mod_name = LakePolygon
+      table_name = "lake_polygons"
     else
-      missing_asset_codes.each do |code|
-        asset=Asset.find_by(code:  code)
-        asset.update_column(:is_active, false)
-        asset.update_column(:valid_to, Time.now)
-        n=Nzgdb.find_by(feat_id: asset.name_id)
-        descr=asset.description
-        if n then
-           descr=(n.info_description||"")+"; "+(n.info_origin||"")
-        end
-        descr="RETIRED LAKE: #{code} - not is current NZGDB; "+descr
-        asset.update_column(:description, descr)
-        puts "RETIRED LAKE: #{code} - not is current NZGDB"
-        deleted_count+=1
-        AdminTask.create(task_type: 'deleted', affected_id: code, affected_url: asset.url, affected_table: 'asset', description: "RETIRED LAKE: #{code} - not is current NZGDB")
-      end
-    end 
-    AdminTask.create(task_type: 'report', affected_table: 'asset', description: "Updated ZLOTA lakes. Read: #{read_count}, New: #{new_count}, Updated: #{updated_count}, Deleted: #{deleted_count}")
-
-  end
-
-  def Asset.get_lake_polygons(lake, quiet)
-    lakes = LakePolygon.find_by_sql ["select * from lake_polygons where is_active=true and ST_Within(ST_GeomFromText('" + lake.location.as_text + "',4326), boundary);"]
-    if !lakes || lakes.count.zero?
-      lakes = LakePolygon.find_by_sql [" SELECT *
-       FROM lake_polygons dp
-       WHERE is_active=true and ST_DWithin(ST_GeomFromText('" + lake.location.as_text + "', 4326), boundary, 5000, false)
-       ORDER BY ST_Distance(ST_GeomFromText('" + lake.location.as_text + "', 4326), boundary) LIMIT 50; "]
+      raise "Invalid asset type #{asset_type}" 
     end
-    if !lakes || lakes.count.zero?
-      AdminTask.create(task_type: 'error', affected_id: lake.code, affected_url: lake.url, affected_table: 'asset', description: "No polygons found for ZLOTA lake: #{lake.code}") if !quiet
+
+    places = mod_name.find_by_sql ["select * from #{table_name} where ST_Within(ST_GeomFromText('" + asset.location.as_text + "',4326), boundary);"]
+    if !places || places.count.zero?
+      places = mod_name.find_by_sql [" SELECT *
+       FROM #{table_name} dp
+       WHERE is_active=true and ST_DWithin(ST_GeomFromText('" + asset.location.as_text + "', 4326), boundary, 5000, false)
+       ORDER BY ST_Distance(ST_GeomFromText('" + asset.location.as_text + "', 4326), boundary) LIMIT 50; "]
+    end
+    if !places || places.count.zero?
+      AdminTask.create(task_type: 'error', affected_id: asset.code, affected_url: asset.url, affected_table: 'asset', description: "No polygons found for ZLOTA asset: #{asset.code}") if !quiet
       puts "NO POLYGONS FOUND AT LOCATION" if !quiet
       return false
     end
 
     found = false
-    lakes.each do |lk|
-      l_name = lake.name.tr('ū', 'u')
-      l_name = l_name.gsub(' / ', ' ')
-      l_name = l_name.tr('/', ' ')
-      l_name = l_name.gsub(' (', ' ')
-      l_name = l_name.gsub(' (', ' ')
-      l_name = l_name.tr(')', ' ')
-      l_name = l_name.tr(')', ' ')
-      l_name = l_name.gsub(/[^0-9a-z]/i, '').gsub('Lakes', '').gsub('Lake', '')
-      lake_name = lk.name.tr('ū', 'u')
-      lake_name = lake_name.gsub(' / ', ' ')
-      lake_name = lake_name.tr('/', ' ')
-      lake_name = lake_name.gsub(' (', ' ')
-      lake_name = lake_name.gsub(' (', ' ')
-      lake_name = lake_name.tr(')', ' ')
-      lake_name = lake_name.tr(')', ' ')
-      lake_name = lake_name.gsub(/[^0-9a-z]/i, '').gsub('Lakes', '').gsub('Lake', '')
+    places.each do |place|
+      place_name = (place.name||"").tr('ū', 'u')
+      place_name = place_name.gsub(' / ', ' ')
+      place_name = place_name.tr('/', ' ')
+      place_name = place_name.gsub(' (', ' ')
+      place_name = place_name.gsub(' (', ' ')
+      place_name = place_name.tr(')', ' ')
+      place_name = place_name.tr(')', ' ')
+      place_name = place_name.gsub(/[^0-9a-z]/i, '')
+      asset_name = (asset.name||"").tr('ū', 'u')
+      asset_name = asset_name.gsub(' / ', ' ')
+      asset_name = asset_name.tr('/', ' ')
+      asset_name = asset_name.gsub(' (', ' ')
+      asset_name = asset_name.gsub(' (', ' ')
+      asset_name = asset_name.tr(')', ' ')
+      asset_name = asset_name.tr(')', ' ')
+      asset_name = asset_name.gsub(/[^0-9a-z]/i, '')
 
-      lake_arr = lake_name.split(' ').sort
-      l_arr = l_name.split(' ').sort
+      asset_arr = asset_name.split(' ').sort
+      place_arr = place_name.split(' ').sort
 
-      next unless (found == false) && ((l_name == lake_name) || (lake_arr & l_arr == l_arr) || lake_arr & l_arr == lake_arr || l_name.include?(lake_name) || lake_name.include?(l_name))
+      next unless (found == false) && ((place_name == asset_name) || (asset_arr & place_arr == place_arr) || asset_arr & place_arr == asset_arr || place_name.include?(asset_name) || asset_name.include?(place_name))
 
-      if lk.name != lake.name then 
-        puts 'Matched ' + (lake.name || 'unnamed') + ' with ' + (lk.name || 'unnamed') 
-        AdminTask.create(task_type: 'update', affected_id: lake.code, affected_url: lake.url, affected_table: 'asset', description: "Matched #{(lake.name || 'unnamed')} with #{(lk.name || 'unnamed')}")
+      if place.name != asset.name then 
+        puts 'Matched ' + (asset.name || 'unnamed') + ' with ' + (place.name || 'unnamed') 
+        AdminTask.create(task_type: 'update', affected_id: asset.code, affected_url: asset.url, affected_table: 'asset', description: "Matched #{(asset.name || 'unnamed')} with #{(place.name || 'unnamed')}")
       end
-      lake.boundary = lk.boundary
-      lake.geom_source='LakePolygon'
-      lake.geom_id=lk.topo50_fid
-      lake.save
+      asset.boundary = place.boundary
+      asset.geom_source=mod_name
+      asset.geom_id=place.topo50_fid
+      asset.save
+
       found = true
     end
     if found == false then 
-      AdminTask.create(task_type: 'error', affected_id: lake.code, affected_url: lake.url, affected_table: 'asset', description: "Failed to find #{(lake.name || 'unnamed')}. Best was #{lakes.first.name}")
-      puts 'Failed to find ' + (lake.name || 'unnamed') + '. Best was ' + lakes.first.name 
+      AdminTask.create(task_type: 'error', affected_id: asset.code, affected_url: asset.url, affected_table: 'asset', description: "Failed to find #{(asset.name || 'unnamed')}. Best was #{places.first.name}") if !quiet
+      puts 'Failed to find ' + (asset.name || 'unnamed') + '. Best was ' + places.first.name 
     end
     true
   end
 
-
- 
   def Asset.export_llota(dxcc, filename)
     as = Asset.where(country: dxcc, asset_type: 'llota lake', is_active: true)
 
@@ -748,63 +584,6 @@ module AssetImportTools
 
   end
 
-  # rerun boundary searches using PnP coordinate data
-  # prams:
-  #  - ignore - set to true to run in automated form assume 'N' to any user questions
-  #  - overwrite - set to true to overwrite existing boundaries. Leave at false to only
-  #                process parks with no boundary
-  #  - start - supply reference to use a > condition to restart a part complete pass
-  #
-  # Asset.get_wwff_pnp_coordinates(true, true)   process all parks that can be done automatically
-  # Asset.get_wwff_pnp_coordinates() -           then handle the manual-intervention-required ones 
-  def Asset.get_wwff_pnp_coordinates(ignore=false, overwrite=false, start="", theend='zzzzzz')
-    errors = []
-    url = 'https://parksnpeaks.org/api/sites/WWFF'
-    data = JSON.parse(open(url).read)
-    if data
-      puts 'Found ' + data.count.to_s + ' parks'
-      count = 0
-      data = data.sort_by { |hsh| hsh["ID"] }
-      data.each do |l|
-        if l["ID"][0..3]=='VKFF'  and l["ID"]>=start and l["ID"]<=theend then 
-          count += 1
-          new = false
-          a = Asset.find_by(code: l["ID"])
-          if !a
-            puts "ERROR: unknown park found - #{l["ID"]}"
-          elsif overwrite==false and a.boundary!=nil
-            #skip
-          else
-            puts "Updating #{a.code}"
-            # ad corrected location from pnp
-            a.location = "POINT(#{l["Longitude"]} #{l["Latitude"]})"
-            a.boundary = nil
-            a.boundary_simplified = nil
-            a.boundary_quite_simplified = nil
-            a.boundary_very_simplified = nil
-            a.area = nil
-            a.az_boundary = nil
-            a.az_area = nil
-            a.geom_id = nil 
-            a.geom_source = nil
-            # trigger new lookup of location metadata
-            a.region = nil
-            a.district = nil
-            a.state = nil
-            a.save
-
-            # get boundaries from CAPAD, etc
-            a.find_vk_capad_park(ignore)
-            a.reload
-            a.find_vk_state_park(ignore)if !a.boundary
-            errors += [a.code] if !a.boundary
-          end
-        end
-      end
-    end
-    puts errors.to_s
-    errors
-  end
 
   # update - update attributes of existing records (we always add new ones)
   # redraw - update location and re-derive boundary for existing assets (we always do this for now assets)
@@ -1098,45 +877,194 @@ module AssetImportTools
   end
         
 
+  def Asset.import_hema(user, pass, dxcc, update=false)
+    regions = hema_get_regions(dxcc)
 
-  def Asset.add_humps(valid_from=Time.now)
-    ps = Hump.where('code is not null')
-    ps.each do |p|
-      Asset.add_hump(p, nil, valid_from)
+    uri = URI('http://www.hema.org.uk/indexDatabase.jsp')
+    http = Net::HTTP.new(uri.host, uri.port)
+    req = Net::HTTP::Get.new(uri.path)
+    response = http.request(req) 
+
+    cookie = response.get_fields('set-cookie')[0].split('; ')[0] + ';'
+
+    params = 'userID=' + user + '&password=' + pass
+
+    uri = URI('http://www.hema.org.uk/indexDatabase.jsp?logonAction=logon&action=')
+    http = Net::HTTP.new(uri.host, uri.port)
+    req = Net::HTTP::Post.new(
+      uri.path + '?logonAction=logon&action=',
+      'Content-Type' => 'application/x-www-form-urlencoded',
+      'Cookie' => cookie,
+      'Host' => 'www.hema.org.uk',
+      'Origin' => 'http://www.hema.org.uk',
+      'Referrer' => 'http://www.hema.org.uk/indexDatabase.jsp'
+    )
+    req.body = params
+    response = http.request(req)
+
+    summits = []
+    regions.each do |reg|
+      region = reg[:id]
+
+      uri = URI('http://www.hema.org.uk/selectSummit.jsp')
+      http = Net::HTTP.new(uri.host, uri.port)
+      req = Net::HTTP::Get.new(
+        uri.path + '?regionCode=' + region + '&action=activationNew&summitKey=0&countryCode=' + dxcc + '&genericKey=0',
+        'Cookie' => cookie,
+        'Host' => 'www.hema.org.uk',
+        'Origin' => 'http://www.hema.org.uk'
+      )
+      response = http.request(req)
+      rows = response.body.split("id='summitKey'")[1].split('</td>')[0].split(/\n/)
+
+      rows.each do |r|
+        next unless r['Option value']
+        value = r.split("'")[1]
+        codename = r.split('>')[1].split('<')[0]
+        code = dxcc + '/' + region + '-' + codename[0..2]
+        name = codename[6..-1]
+        summits += [{ id: value, code: code, name: name }]
+      end
+    end
+
+    summits.each do |summit|
+      if summit[:id].to_i>0 then
+        asset = Asset.find_by(code: summit[:code])
+        if asset
+          puts 'found ' + asset.code
+          asset.name_id = summit[:id].to_s
+          asset.name_source='hema'
+          asset.asset_type="hump"
+          asset.is_active=true
+          asset.url="assets/"+asset.code.gsub("/","_")
+          if asset.changed and update==true
+            changes = asset.changes_to_save.transform_values(&:last).except('location')
+            changes['updated_at'] = Time.current
+            res = asset.update_columns(changes) if changes.any?
+          end
+
+        else
+          puts 'not found: ' + summit[:code]
+          asset = Asset.new
+          asset.name_id = summit[:id].to_s
+          asset.name_source='hema'
+          asset.code = summit[:code]
+          asset.name = summit[:name]
+          asset.asset_type="hump"
+          asset.is_active=true
+          asset.url="assets/"+asset.code.gsub("/","_")
+          asset.save
+          puts "Created: "+asset.code+", "+asset.name
+        end
+      end
     end
   end
 
-  def Asset.add_hump(p, _existing_asset, valid_from)
-    puts p.code
-    a = Asset.find_by(asset_type: 'hump', code: p.code)
-    is_new = false
-    unless a
-      a = Asset.new
-      logger.debug 'Adding new hump'
-      is_new = true
-    end
-    a.asset_type = 'hump'
-    a.code = p.code
-    #use reference instead of NoName
-    if p.name == 'NoName' then
-      a.name = p.code
-    else
-      a.name = p.name
-    end
-    a.name = a.code if a.name.nil? || (a.name == '')
-    a.location = p.location
-    a.region = p.region
-    a.altitude = p.elevation
-    #don't reactivate deactivated humps
-    if a.is_active != false then
-      a.is_active = (a.name && !a.name.empty? ? true : false)
-    end
-    if is_new then a.valid_from = valid_from end
-    a.save if a.changed?
-    logger.debug a.code
-    logger.debug a.name
-    a
+  def Asset.hema_get_lat_long(user, pass, dxcc, update = false)
+    uri = URI('http://www.hema.org.uk/indexDatabase.jsp')
+    http = Net::HTTP.new(uri.host, uri.port)
+    req = Net::HTTP::Get.new(uri.path)
+    response = http.request(req)
+
+    cookie = response.get_fields('set-cookie')[0].split('; ')[0] + ';'
+
+
+      uri = URI("http://www.hema.org.uk/mapping.jsp")
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      req = Net::HTTP::Get.new(
+        uri.path + '?countryCode=' + dxcc + '&regionCode=0&summitKey=0&action=&genericKey=',
+        'Cookie' => cookie,
+        'Host' => 'www.hema.org.uk',
+        'Origin' => 'http://www.hema.org.uk'
+      )
+
+      response = http.request(req)
+      body = response.body
+      rows = body.split('var Latitude=')
+      rows[1..-1].each do |row|
+        fields = row.split(';')
+        lat = fields[0]
+        long = fields[1].split('=')[1]
+        name = fields[2].split('=')[1]
+        old_code = fields[7].split('summitKey=')[1].gsub("'","")
+        asset = Asset.find_by(name_id: old_code, name_source: 'hema')
+        if asset
+          if (asset.location==nil or update ==true) then
+            asset.location = "POINT (#{long} #{lat})"
+            puts "Updating asset #{asset.code} #{asset.name} = #{name}: #{asset.location.to_s}"
+            asset.save
+            asset.get_access
+          end
+       else
+          puts "Not found: "+old_code
+       end
+   end
   end
+
+  def Asset.hema_get_elevation(dxcc)
+   regions = hema_get_regions(dxcc)
+   regions.each do |region|
+    uri = URI("http://www.hema.org.uk/region.jsp?countryCode=#{dxcc}&regionCode=#{region[:id]}")
+    http = Net::HTTP.new(uri.host, uri.port)
+    req = Net::HTTP::Get.new(uri.path+"?countryCode=#{dxcc}&regionCode=#{region[:id]}")
+    response = http.request(req)
+    body = response.body
+    table = body.split('<table>')[3]
+    table = table.split('</table>')[0]
+    rows = table.split('<tr>')
+    count=1
+    rows.each do |row|
+      if count>1
+        name = row.split('>')[2]
+        name = name.split('<')[0]
+        id = name.split(' ')[0]
+        name = name[6..-1]
+        elevation=row.split("Number'>")[1]|| ""
+        elevation = elevation.split('<')[0] || "" if elevation
+
+        code = "#{dxcc}/#{region[:id]}-#{id}"
+        a = Asset.find_by(code: code)
+        if a then
+          a.altitude = elevation.gsub('m','').to_i if (!a.altitude or a.altitude==0) and elevation
+          if a.changed?
+            puts "SET Altitude to #{elevation.gsub('m','').to_i}"
+            a.update_column(:altitude, a.altitude)
+          end
+        end
+      end
+      count+=1
+    end
+   end
+  end
+
+  def Asset.hema_get_regions(dxcc)
+    regions=[]
+    uri = URI("http://www.hema.org.uk/country.jsp")
+    http = Net::HTTP.new(uri.host, uri.port)
+    req = Net::HTTP::Get.new(uri.path+"?countryCode=#{dxcc}")
+    response = http.request(req)
+    body = response.body
+    table = get_table(body,4)
+    row_count = get_row_count(table)
+    puts row_count
+    (2..row_count).each do |row_num|
+      row = get_row(table, row_num)
+      col = get_col(row,1)
+      contents = get_clean_text(col)
+      id_name = contents.split('-') if contents
+      if !id_name.blank?
+        id = id_name[0].strip
+        name = id_name[1].strip
+        regions << {id: id, name: name}
+      end
+    end
+    regions
+  end
+
+
+  #### LEGACY CODE - TO BE REPLACED WITH DIRECT IMPORTS
+
 
   def Asset.add_lighthouses
     ps = Lighthouse.where('code is not null')
@@ -1206,6 +1134,8 @@ module AssetImportTools
     a
   end
 
+
+  ##### Boundary tools
 
   def Asset.add_vk_capad_park_by_id(id)
     puts "#{self.code} #{self.state} #{self.name}"

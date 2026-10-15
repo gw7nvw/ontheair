@@ -30,8 +30,8 @@ class Nzgdb < ApplicationRecord
       safe_attributes = attributes.slice(*Nzgdb.attribute_names)
       n=Nzgdb.find_by(name_id: name_id.to_i)
       if !n then
-        result=Nzgdb.create(safe_attributes)
-        if !result
+        n=Nzgdb.create(safe_attributes)
+        if !n
           puts "FAILED TO CREATE: #{safe_attributes.to_json}"
         else
           puts "NEW RECORD: #{name}"

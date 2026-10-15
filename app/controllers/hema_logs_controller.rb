@@ -275,7 +275,7 @@ class HemaLogsController < ApplicationController
 
     return { result: "error", message: "Unknown HEMA summit: "+summitcode } unless summit
    
-    summitkey = summit.old_code
+    summitkey = summit.name_id
     return { result: "error", message: "HEMA summit missing from official HEMA database: "+summitcode } unless summitkey
 
     modes = { 'AM' => 1, 'FM' => 2, 'CW' => 3, 'SSB' => 4, 'USB' => 4, 'LSB' => 4, 'DATA' => 7, 'OTHER' => 9 }
