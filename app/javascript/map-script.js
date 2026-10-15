@@ -396,6 +396,7 @@ function map_add_vector_layer(name, url, field, style, visible,minzoom,maxzoom, 
   var minresolution=zeroresolution/Math.pow(2,maxzoom);
   if (filter) {
     var vectorSource = new VectorSource({
+      wrapX: true, // Crucial for enabling the horizontal world wrap
       loader: function(extent) {
 //        var my_extent=transformExtent(extent, projection, map_view_projection_name);
         $.ajax(url, {

@@ -931,13 +931,13 @@ module AssetImportTools
       if summit[:id].to_i>0 then
         asset = Asset.find_by(code: summit[:code])
         if asset
-          puts 'found ' + asset.code
           asset.name_id = summit[:id].to_s
           asset.name_source='hema'
           asset.asset_type="hump"
           asset.is_active=true
           asset.url="assets/"+asset.code.gsub("/","_")
           if asset.changed and update==true
+            puts "Updating #{asset.code}"
             changes = asset.changes_to_save.transform_values(&:last).except('location')
             changes['updated_at'] = Time.current
             res = asset.update_columns(changes) if changes.any?
