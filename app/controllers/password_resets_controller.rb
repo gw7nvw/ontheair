@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class PasswordResetsController < ApplicationController
   before_action :get_user,   only: %i[edit update]
   before_action :valid_user, only: %i[edit update]
@@ -12,16 +13,16 @@ class PasswordResetsController < ApplicationController
     @user = User.find_by(email: params[:password_reset][:email].downcase)
     if @user
       @user.create_reset_digest
-      if ENV['RAILS_ENV'] == 'test'
+      if ENV["RAILS_ENV"] == "test"
         session[:token]=@user.reset_token
       end
 
       @user.send_password_reset_email
-      flash[:info] = 'Email sent with password reset instructions'
+      flash[:info] = "Email sent with password reset instructions"
       redirect_to root_url
     else
-      flash.now[:error] = 'Email address not found'
-      render 'new', status: :ok
+      flash.now[:error] = "Email address not found"
+      render "new", status: :ok
     end
   end
 
@@ -30,15 +31,15 @@ class PasswordResetsController < ApplicationController
   def update
     if both_passwords_blank?
       flash.now[:error] = "Password/confirmation can't be blank"
-      render 'edit'
+      render "edit"
     elsif @user.update(user_params)
       # activate too as we use this as fallback activation link
       @user.activate
       sign_in @user
-      flash[:success] = 'Password has been reset.'
-      redirect_to '/users/' + CGI.escape(@user.callsign)
+      flash[:success] = "Password has been reset."
+      redirect_to "/users/" + CGI.escape(@user.callsign)
     else
-      render 'edit'
+      render "edit"
     end
   end
 
@@ -65,7 +66,7 @@ class PasswordResetsController < ApplicationController
   # Checks expiration of reset token.
   def check_expiration
     if @user.password_reset_expired?
-      flash[:error] = 'Password reset has expired.'
+      flash[:error] = "Password reset has expired."
       redirect_to new_password_reset_url
     end
   end

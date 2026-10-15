@@ -1,6 +1,7 @@
 
 
 # typed: false
+
 class UsersController < ApplicationController
   include ApplicationHelper
 
@@ -8,7 +9,7 @@ class UsersController < ApplicationController
 
   def test_notification
     @user = User.find_by(callsign: params[:id].upcase)
-    if @user.push_app_token and @user.push_app_token.length>0 and @user.push_user_token and @user.push_user_token.length>0 then 
+    if @user.push_app_token and @user.push_app_token.length>0 and @user.push_user_token and @user.push_user_token.length>0 then
       @user.send_notification("Test message from ontheair.nz", nil, nil, nil)
       flash[:success] = "Notification sent"
     else
@@ -20,11 +21,11 @@ class UsersController < ApplicationController
   def district_progress
     @dxcc = params[:dxcc] if params[:dxcc]
     @dxcc = @current_country if !@dxcc
-    @dxcc = 'ZL' if !@dxcc
-    @region = Region.find_by(sota_code: params[:region]) 
+    @dxcc = "ZL" if !@dxcc
+    @region = Region.find_by(sota_code: params[:region])
     @user = User.find_by(callsign: params[:id].upcase)
-    @activations = @user.area_activations('district', false, @dxcc, @region.sota_code)
-    @chases = @user.area_chases('district', false, @dxcc, @region.sota_code)
+    @activations = @user.area_activations("district", false, @dxcc, @region.sota_code)
+    @chases = @user.area_chases("district", false, @dxcc, @region.sota_code)
     class_filter = "('pota park', 'wwff park', 'lighthouse', 'silo', 'all')" if @dxcc=="ZL"
     class_filter = "('park', 'lake', 'lighthouse', 'island', 'hut', 'volcano', 'all')" if @dxcc=="VK"
     @award_classes = AssetType.where("name not in #{class_filter}").order(:name)
@@ -35,10 +36,10 @@ class UsersController < ApplicationController
   def region_progress
     @dxcc = params[:dxcc] if params[:dxcc]
     @dxcc = @current_country if !@dxcc
-    @dxcc = 'ZL' if !@dxcc
+    @dxcc = "ZL" if !@dxcc
     @user = User.find_by(callsign: params[:id].upcase)
-    @activations = @user.area_activations('region')
-    @chases = @user.area_chases('region', false, @dxcc)
+    @activations = @user.area_activations("region")
+    @chases = @user.area_chases("region", false, @dxcc)
     class_filter = "('silo', 'all')" if @dxcc=="ZL"
     class_filter = "('park', 'lake', 'lighthouse', 'island', 'hut', 'volcano', 'all')" if @dxcc=="VK"
     @award_classes = AssetType.where("name not in #{class_filter}").order(:name)
@@ -49,17 +50,17 @@ class UsersController < ApplicationController
   def wishlist
     @user = User.find_by(callsign: params[:id].upcase)
     wishlist = Wishlist.where(user_id: @user.id)
-    @assets = Asset.where("code in (#{wishlist.map{ |w| "'"+w.asset_code+"'"}.join(',')})").order(:name) if wishlist and wishlist.count>0
+    @assets = Asset.where("code in (#{wishlist.map { |w| "'"+w.asset_code+"'" }.join(',')})").order(:name) if wishlist and wishlist.count>0
   end
 
   def awards
     @dxcc = params[:dxcc] if params[:dxcc]
     @dxcc = @current_country if !@dxcc
-    @dxcc = 'ZL' if !@dxcc
+    @dxcc = "ZL" if !@dxcc
     @user = User.find_by(callsign: params[:id].upcase)
     @awards = Award.where(count_based: true, is_active: true).sort_by &:name
-    @district_awards = AwardUserLink.where(award_type: 'district', user_id: @user.id).sort_by { |a| a.district.name }
-    @region_awards = AwardUserLink.where(award_type: 'region', user_id: @user.id).sort_by { |a| a.region.name }
+    @district_awards = AwardUserLink.where(award_type: "district", user_id: @user.id).sort_by { |a| a.district.name }
+    @region_awards = AwardUserLink.where(award_type: "region", user_id: @user.id).sort_by { |a| a.region.name }
     @districts = District.get_assets_with_type(@dxcc)
     @regions = Region.get_assets_with_type(@dxcc)
   end
@@ -70,16 +71,16 @@ class UsersController < ApplicationController
     @asset_type = safe_param(params[:asset_type])
 
     # include all summit types
-    if @asset_type == 'summit'
+    if @asset_type == "summit"
       @asset_codes = []
       @valid_codes = []
       ats = AssetType.where(has_elevation: true)
       ats.each do |at|
-        include_external = at.name == 'summit'
+        include_external = at.name == "summit"
         @asset_codes += @user.assets_by_type(at.name, @count_type, true)
 
         # filter by min qso requirements
-        if @count_type == 'activated'
+        if @count_type == "activated"
           @valid_codes += @user.qualified(asset_type: at.name, include_external: include_external)
         else
           @valid_codes = @asset_codes
@@ -89,20 +90,19 @@ class UsersController < ApplicationController
       @asset_codes = @user.assets_by_type(@asset_type, @count_type, true)
 
       # filter by min qso requirements
-      @valid_codes = if @count_type == 'activated'
+      @valid_codes = if @count_type == "activated"
                        @user.qualified(asset_type: @asset_type)
-                     else
+      else
                        @asset_codes
-                     end
+      end
     end
 
-    @assets = Asset.find_by_sql [' select location, asset_type, minor, is_active, valid_from, valid_to, id, name, code, altitude from assets where code in (?) ', @asset_codes]
+    @assets = Asset.find_by_sql [ " select location, asset_type, minor, is_active, valid_from, valid_to, id, name, code, altitude from assets where code in (?) ", @asset_codes ]
     respond_to do |format|
       format.html
       format.js
       format.csv { send_data assets_to_csv(@assets), filename: "#{@asset_type}s-#{@user.callsign.upcase}-#{Date.today}.csv" }
     end
-
   end
 
   def p2p
@@ -111,18 +111,18 @@ class UsersController < ApplicationController
   end
 
   def index_prep
-    whereclause = 'true'
+    whereclause = "true"
     if params[:filter]
       @filter = safe_param(params[:filter])
-      whereclause = 'is_' + @filter + ' is true'
+      whereclause = "is_" + @filter + " is true"
     end
 
-    @searchtext = safe_param(params[:searchtext] || '')
-    if params[:searchtext] && (params[:searchtext] != '')
+    @searchtext = safe_param(params[:searchtext] || "")
+    if params[:searchtext] && (params[:searchtext] != "")
       whereclause = whereclause + " and ((lower(callsign) like '%%" + @searchtext.downcase + "%%'  or lower(email) like '%%" + @searchtext.downcase + "%%'))"
     end
 
-    @fullusers = User.find_by_sql ['select * from users where ' + whereclause + ' order by callsign']
+    @fullusers = User.find_by_sql [ "select * from users where " + whereclause + " order by callsign" ]
     @users = @fullusers.paginate(per_page: 40, page: params[:page])
   end
 
@@ -136,20 +136,20 @@ class UsersController < ApplicationController
   end
 
   def stats
-    users = User.find_by_sql ["select * from users where callsign='#{params[:id]}' or id=#{params[:id].to_i}"]
+    users = User.find_by_sql [ "select * from users where callsign='#{params[:id]}' or id=#{params[:id].to_i}" ]
     if !users || (users.count < 1)
       users = UserCallsign.where(callsign: params[:id])
       if users && (users.count > 0)
         user = users.first.user
         if user
-          redirect_to '/users/' + user.callsign
+          redirect_to "/users/" + user.callsign
         else
-          flash[:error] = 'Callsign ' + params[:id] + ' not found'
-          redirect_to '/'
+          flash[:error] = "Callsign " + params[:id] + " not found"
+          redirect_to "/"
         end
       else
-        flash[:error] = 'Callsign ' + params[:id] + ' not found'
-        redirect_to '/'
+        flash[:error] = "Callsign " + params[:id] + " not found"
+        redirect_to "/"
       end
     elsif users && (users.count > 0)
       @user = users.first
@@ -163,27 +163,27 @@ class UsersController < ApplicationController
       end
       chaseSites = @user.chased
       activationSites -= qualifySites
-      @chaseSites = Asset.find_by_sql [' select location from assets where code in (?); ', chaseSites]
-      @activationSites = Asset.find_by_sql [' select location from assets where code in (?);', activationSites]
-      @qualifySites = Asset.find_by_sql [' select location from assets where code in (?);', qualifySites]
+      @chaseSites = Asset.find_by_sql [ " select location from assets where code in (?); ", chaseSites ]
+      @activationSites = Asset.find_by_sql [ " select location from assets where code in (?);", activationSites ]
+      @qualifySites = Asset.find_by_sql [ " select location from assets where code in (?);", qualifySites ]
     end
   end
 
   def show
-    users = User.find_by_sql ["select * from users where callsign='#{params[:id]}' or id=#{params[:id].to_i}"]
+    users = User.find_by_sql [ "select * from users where callsign='#{params[:id]}' or id=#{params[:id].to_i}" ]
     if !users || (users.count < 1)
       users = UserCallsign.where(callsign: params[:id])
       if users && (users.count > 0)
         user = users.first.user
         if user
-          redirect_to '/users/' + user.callsign
+          redirect_to "/users/" + user.callsign
         else
-          flash[:error] = 'Callsign ' + params[:id] + ' not found'
-          redirect_to '/'
+          flash[:error] = "Callsign " + params[:id] + " not found"
+          redirect_to "/"
         end
       else
-        flash[:error] = 'Callsign ' + params[:id] + ' not found'
-        redirect_to '/'
+        flash[:error] = "Callsign " + params[:id] + " not found"
+        redirect_to "/"
       end
     elsif users && (users.count > 0)
       @user = users.first
@@ -194,7 +194,7 @@ class UsersController < ApplicationController
 
   def new
     @user = User.new
-    @user.timezone = Timezone.find_by(name: 'UTC').id
+    @user.timezone = Timezone.find_by(name: "UTC").id
   end
 
   def create
@@ -202,7 +202,7 @@ class UsersController < ApplicationController
     password_confirmation = params[:user][:password_confirmation]
 
     logger.info user_params.to_s
-#    user = User.find_by('email = ? and callsign = ? and activated is not true', user_params[:email]&.downcase,user_params[:callsign]&.upcase)
+    #    user = User.find_by('email = ? and callsign = ? and activated is not true', user_params[:email]&.downcase,user_params[:callsign]&.upcase)
     user = User.new(user_params)
 
     user.callsign = user.callsign.strip
@@ -211,9 +211,9 @@ class UsersController < ApplicationController
     # register an auto_created user
     @user = if existing_user && !existing_user.activated
               existing_user
-            else
+    else
               user
-            end
+    end
     @user.password = password
     @user.password_confirmation = password_confirmation
     @user.callsign = user.callsign
@@ -233,14 +233,14 @@ class UsersController < ApplicationController
       sign_in @user
 
       flash[:success] = if @user.read_only
-                          'Welcome to on the Air. Your account has been created as a restricted, non-amatuer user. Contact admin@ontheair if you expected full access'
-                        else
-                          'Welcome to On the Air'
-                        end
+                          "Welcome to on the Air. Your account has been created as a restricted, non-amatuer user. Contact admin@ontheair if you expected full access"
+      else
+                          "Welcome to On the Air"
+      end
 
-      redirect_to '/users/' + @user.callsign
+      redirect_to "/users/" + @user.callsign
     else
-      render 'new'
+      render "new"
     end
   end
 
@@ -251,25 +251,25 @@ class UsersController < ApplicationController
     if signed_in? && (current_user.is_admin || (current_user.callsign == params[:id]))
       # edit
     else
-      render 'show'
+      render "show"
     end
   end
 
   def update
     if signed_in? && (current_user.is_admin || (current_user.id == params[:id].to_i))
-      if params[:delete] == 'Delete'
+      if params[:delete] == "Delete"
         callsigns = UserCallsign.where(user_id: params[:id].to_i)
         callsigns.each(&:destroy)
         topics = UserTopicLink.where(user_id: params[:id].to_i)
         topics.each(&:destroy)
         user = User.find_by_id(params[:id].to_i)
         if user && user.destroy
-          flash[:success] = 'User deleted, callsign:' + params[:id]
+          flash[:success] = "User deleted, callsign:" + params[:id]
           index_prep
-          render 'index'
+          render "index"
         else
           edit
-          render 'edit'
+          render "edit"
         end
       else
         password = params[:user][:password]
@@ -296,86 +296,86 @@ class UsersController < ApplicationController
           end
 
           if @user.save
-            flash[:success] = 'User details updated'
+            flash[:success] = "User details updated"
 
             # Handle a successful update.
-            if params[:referring] == 'index'
+            if params[:referring] == "index"
               index_prep
-              render 'index'
+              render "index"
             else
               params[:id] = @user.callsign
               show
-              render 'show'
+              render "show"
             end
           else
             @referring = params[:referring] if params[:referring]
-            render 'edit'
+            render "edit"
           end
         end
       end
     else
-      redirect_to '/'
+      redirect_to "/"
     end
   end
 
-  #update users external spot filters
+  # update users external spot filters
   def update_external
     @user = current_user
     if current_user && current_user.is_admin || current_user.group_admin then @user = User.where(callsign: params[:id]).first end
-    @user.push_external_filter={programme: params[:programme], continent: params[:continent], mode: params[:mode], callsign: (params[:callsign]||"").gsub("*","%").gsub(" ",""), reference: (params[:reference]||"").gsub("*","%").gsub(" ",""), band: params[:band]}
-    @user.push_external_filter={continent: ['OC']} if @user.push_external_filter == "" or @user.push_external_filter==nil or @user.push_external_filter=={} or @user.push_external_filter.values.join('') == ""
-    @user.push_external_filter.delete(:reference) if @user.push_external_filter[:reference]=="" 
-    @user.push_external_filter.delete(:callsign) if @user.push_external_filter[:callsign]=="" 
-    @user.push_external_filter.delete(:mode) if @user.push_external_filter[:mode]=="" or @user.push_external_filter[:mode]==[""]
-    @user.push_external_filter.delete(:continent) if @user.push_external_filter[:continent]=="" or @user.push_external_filter[:continent]==[""]
-    @user.push_external_filter.delete(:programme) if @user.push_external_filter[:programme]=="" or @user.push_external_filter[:programme]==[""]
-    @user.push_external_filter.delete(:band) if @user.push_external_filter[:band]==""  or @user.push_external_filter[:band]==[""]
+    @user.push_external_filter={ programme: params[:programme], continent: params[:continent], mode: params[:mode], callsign: (params[:callsign]||"").gsub("*", "%").gsub(" ", ""), reference: (params[:reference]||"").gsub("*", "%").gsub(" ", ""), band: params[:band] }
+    @user.push_external_filter={ continent: [ "OC" ] } if @user.push_external_filter == "" or @user.push_external_filter==nil or @user.push_external_filter=={} or @user.push_external_filter.values.join("") == ""
+    @user.push_external_filter.delete(:reference) if @user.push_external_filter[:reference]==""
+    @user.push_external_filter.delete(:callsign) if @user.push_external_filter[:callsign]==""
+    @user.push_external_filter.delete(:mode) if @user.push_external_filter[:mode]=="" or @user.push_external_filter[:mode]==[ "" ]
+    @user.push_external_filter.delete(:continent) if @user.push_external_filter[:continent]=="" or @user.push_external_filter[:continent]==[ "" ]
+    @user.push_external_filter.delete(:programme) if @user.push_external_filter[:programme]=="" or @user.push_external_filter[:programme]==[ "" ]
+    @user.push_external_filter.delete(:band) if @user.push_external_filter[:band]==""  or @user.push_external_filter[:band]==[ "" ]
     if @user.push_external_filter[:reference]
       if @user.push_external_filter[:reference][0]!="%" then @user.push_external_filter[:reference]="%"+@user.push_external_filter[:reference] end
       if @user.push_external_filter[:reference][-1]!="%" then @user.push_external_filter[:reference]=@user.push_external_filter[:reference]+"%" end
     end
     @user.push_external_filter.compact!
-    if !@user.save 
+    if !@user.save
       flash[:error]=@user.errors
     end
     show
-    render 'show'
+    render "show"
   end
   # Add a user-topic-link (mailer)
   def add
     @user = current_user
     if current_user && current_user.is_admin || current_user.group_admin then @user = User.where(callsign: params[:id]).first end
 
-    if params[:method] == 'notification' and (@user.push_app_token.blank? or @user.push_user_token.blank?) then 
+    if params[:method] == "notification" and (@user.push_app_token.blank? or @user.push_user_token.blank?) then
       flash[:error] = "Pushover registration is required to receive instant notifications - see Pushover Config section to configure pushover or consult the user's guide for details of how to set up the pushover app"
       @topics = Topic.where(is_active = true)
       show
-      render 'show'
+      render "show"
     else
       if params[:topic_id] == "external" then
         @user.push_include_external = true
-        @user.push_external_filter={continent: 'OC'} if @user.push_external_filter == "" or @user.push_external_filter==nil or @user.push_external_filter=={} or @user.push_external_filter.values.join('') == ""
+        @user.push_external_filter={ continent: "OC" } if @user.push_external_filter == "" or @user.push_external_filter==nil or @user.push_external_filter=={} or @user.push_external_filter.values.join("") == ""
         @user.save
       else
         @topic = Topic.find_by_id(params[:topic_id])
-      
+
         if @user && @topic
           utl = UserTopicLink.new
           utl.user_id = @user.id
           utl.topic_id = @topic.id
-          utl.mail = true if params[:method] == 'mail'
-          utl.notification = true if params[:method] == 'notification'
+          utl.mail = true if params[:method] == "mail"
+          utl.notification = true if params[:method] == "notification"
           utl.save
         else
-          flash[:error] = 'Error locating user or topic specified'
+          flash[:error] = "Error locating user or topic specified"
         end
       end
       @topics = Topic.where(is_active: true)
       show
-      render 'show'
+      render "show"
     end
   end
- 
+
   # Delete a user-topic-link (mailer)
   def delete
     @user = current_user
@@ -384,50 +384,50 @@ class UsersController < ApplicationController
       @user.push_include_external = false
       @user.save
       show
-      render 'show'
+      render "show"
     else
       @topic = Topic.find_by_id(params[:topic_id])
 
       if @user && @topic
-        utls = UserTopicLink.find_by_sql ['select * from user_topic_links where user_id=' + @user.id.to_s + ' and topic_id=' + @topic.id.to_s + " and #{params[:method]} = true"]
+        utls = UserTopicLink.find_by_sql [ "select * from user_topic_links where user_id=" + @user.id.to_s + " and topic_id=" + @topic.id.to_s + " and #{params[:method]} = true" ]
         utls.each(&:destroy)
       else
-        flash[:error] = 'Error locating user or topic specified'
+        flash[:error] = "Error locating user or topic specified"
       end
       @topics = Topic.where(is_active: true)
       show
-      render 'show'
+      render "show"
     end
   end
 
   def assets_to_csv(items)
-    require 'csv'
-    csvtext = ''
+    require "csv"
+    csvtext = ""
     if items && items.first
-      columns = ["code", "name"]
+      columns = [ "code", "name" ]
         csvtext << columns.to_csv
         items.each do |item|
-          fields = [item.code, item.name]
+          fields = [ item.code, item.name ]
           csvtext << fields.to_csv
         end
-     end
+    end
       csvtext
   end
 
   def users_to_csv(items)
     if signed_in? && current_user.is_admin
-      require 'csv'
-      csvtext = ''
+      require "csv"
+      csvtext = ""
       if items && items.first
-        columns = []; items.first.attributes.each_pair { |name, _value| if !name.include?('password') && !name.include?('digest') && !name.include?('token') then columns << name end }
+        columns = []; items.first.attributes.each_pair { |name, _value| if !name.include?("password") && !name.include?("digest") && !name.include?("token") then columns << name end }
         csvtext << columns.to_csv
         items.each do |item|
-          fields = []; item.attributes.each_pair { |name, value| if !name.include?('password') && !name.include?('digest') && !name.include?('token') then fields << value end }
+          fields = []; item.attributes.each_pair { |name, value| if !name.include?("password") && !name.include?("digest") && !name.include?("token") then fields << value end }
           csvtext << fields.to_csv
         end
-     end
+      end
       csvtext
-   end
+    end
   end
 
   private

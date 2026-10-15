@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateVolcanos < ActiveRecord::Migration[5.0]
   def change
     create_table :volcanos do |t|
@@ -15,8 +16,7 @@ class CreateVolcanos < ActiveRecord::Migration[5.0]
       t.float :az_radius
       t.string :url
       t.string :description
-      t.point  "location",   :srid=>4326, :spatial => true
-
+      t.point  "location",   srid: 4326, spatial: true
     end
   end
 end

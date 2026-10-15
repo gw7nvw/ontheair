@@ -1,4 +1,5 @@
 # typed: strict
+
 require "test_helper"
 
 class UserTest < ActiveSupport::TestCase
@@ -50,7 +51,7 @@ class UserTest < ActiveSupport::TestCase
      assert_not user2.save, "Cannot save with non-E.164"
    end
 
-#valid_callsign function
+   # valid_callsign function
    test "valid callsign accepts major callsign formats" do
      user=User.new
      user.callsign="zl4test"
@@ -71,7 +72,5 @@ class UserTest < ActiveSupport::TestCase
      assert_not user.valid_callsign?, "rejects non-alphanumeric"
    end
 
-#AWARDS
-
-
+  # AWARDS
 end

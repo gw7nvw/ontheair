@@ -11,6 +11,6 @@ class CreateUserAgents < ActiveRecord::Migration[5.0]
     end
 
     # Indexing user_agent ensures fast lookups as rows scale
-    add_index :user_agents, [:user_ip, :user_agent], unique: true
+    add_index :user_agents, [ :user_ip, :user_agent ], unique: true
   end
 end

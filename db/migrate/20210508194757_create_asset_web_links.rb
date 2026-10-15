@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateAssetWebLinks < ActiveRecord::Migration[5.0]
   def change
     create_table :asset_web_links do |t|

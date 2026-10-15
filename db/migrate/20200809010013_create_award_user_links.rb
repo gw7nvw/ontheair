@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateAwardUserLinks < ActiveRecord::Migration[5.0]
   def change
     create_table :award_user_links do |t|

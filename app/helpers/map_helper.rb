@@ -11,12 +11,12 @@ module MapHelper
     lat_rad = lat_deg/180 * Math::PI
     n = 2.0 ** zoom
     x = ((lng_deg + 180.0) / 360.0 * n)
-    y = ((1.0 - Math::log(Math::tan(lat_rad) + (1 / Math::cos(lat_rad))) / Math::PI) / 2.0 * n)
+    y = ((1.0 - Math.log(Math.tan(lat_rad) + (1 / Math.cos(lat_rad))) / Math::PI) / 2.0 * n)
     int_x = x.to_i
     int_y = y.to_i
     offset_x = 256 * (xsize - 1) / 2 + (x - int_x) * 256
     offset_y = 256 * (ysize - 1) / 2 + (y - int_y) * 256
-  
+
     tile_server = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
     # 9 tiles, one in each direction around centre
     minx = int_x - (xsize - 1) / 2
@@ -37,8 +37,8 @@ module MapHelper
     system("montage /tmp/#{id}/#{zoom}*.png -mode Concatenate -tile #{xsize}x#{ysize} /tmp/#{id}.jpg")
     # add the dot, diameter 6 pixels
     system("convert /tmp/#{id}.jpg -fill blue -stroke red -draw 'circle #{offset_x},#{offset_y} #{offset_x + 6},#{offset_y + 6}' -quality 45 /tmp/#{id}-point.jpg")
-    system("rm -r /tmp/#{id}") #remove temporary files
-    system("rm -r /tmp/#{id}.jpg") #remove temporary files
+    system("rm -r /tmp/#{id}") # remove temporary files
+    system("rm -r /tmp/#{id}.jpg") # remove temporary files
 
     # return the filename of map image created
     "/tmp/#{id}-point.jpg"
@@ -57,8 +57,8 @@ module MapHelper
     c_x = ((gridx + 20037508) / (4891.97 * 2**(13 - z))).to_i
     c_y = ((gridy + 20037508) / (4891.97 * 2**(13 - z))).to_i
     system("mkdir /tmp/#{id}")
-#    tile_server = 'http://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{y}.png'
-    tile_server='https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{y}.png'
+    #    tile_server = 'http://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{y}.png'
+    tile_server="https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{y}.png"
     # 9 tiles, one in each direction around centre
     minx = c_x - (xsize - 1) / 2
     maxx = c_x + (xsize - 1) / 2
@@ -85,7 +85,7 @@ module MapHelper
     system("montage /tmp/#{id}/#{z}*.png -mode Concatenate -tile #{xsize}x#{ysize} /tmp/#{id}.jpg")
     # add the dot, diameter 6 pixels
     system("convert /tmp/#{id}.jpg -fill blue -stroke red -draw 'circle #{px},#{py} #{px + 6},#{py + 6}' -quality 45 /tmp/#{id}-point.jpg")
-     system("rm -r /tmp/#{id}") #remove temporary files
+     system("rm -r /tmp/#{id}") # remove temporary files
 
     # return the filename of map image created
     "/tmp/#{id}-point.jpg"
@@ -95,8 +95,8 @@ module MapHelper
   # not used
   def get_map_zoomed(gridx, gridy, min_zoom, max_zoom, id)
     system("mkdir /tmp/#{id}")
-    #tile_server = 'http://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{y}.png'
-    tile_server='https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{y}.png'
+    # tile_server = 'http://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{y}.png'
+    tile_server="https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{y}.png"
     (min_zoom..max_zoom).step(2).each do |z|
       x = ((gridx + 19740000) / (2.356 * 2**(24 - z)))
       y = ((gridy + 19680000) / (2.356 * 2**(24 - z)))
@@ -110,24 +110,24 @@ module MapHelper
   # Download an individual map tile
   def download_tile(x, y, z, tile_server, id, reverse = true)
       # fill in reqired x, y, z to URL
-      url = tile_server.gsub('{x}', x.to_s).gsub('{y}', y.to_s).gsub('{z}', z.to_s)
-      if reverse then 
-        filename = '/tmp/' + id + '/' + z.to_s + '_' + (9999 - y).to_s + '_' + x.to_s
+      url = tile_server.gsub("{x}", x.to_s).gsub("{y}", y.to_s).gsub("{z}", z.to_s)
+      if reverse then
+        filename = "/tmp/" + id + "/" + z.to_s + "_" + (9999 - y).to_s + "_" + x.to_s
       else
-        filename = '/tmp/' + id + '/' + z.to_s + '_' + y.to_s + '_' + x.to_s
+        filename = "/tmp/" + id + "/" + z.to_s + "_" + y.to_s + "_" + x.to_s
       end
 
       # download tile
       # Open the local file for binary writing as before
-      File.open(filename + '.png', 'wb') do |file|
+      File.open(filename + ".png", "wb") do |file|
       begin
         # Use URI.open explicitly and pass headers as a standard Ruby 3 options hash
         remote_data = URI.open(
-          url, 
-          "Referer" => "http://new.ontheair.nz", 
+          url,
+          "Referer" => "http://new.ontheair.nz",
           "User-Agent" => "ontheair"
         ).read
-  
+
         file.write(remote_data)
       rescue
         unless file.nil?
@@ -135,7 +135,7 @@ module MapHelper
         end
         # if we fail to download a tile (happens with bad grid ref or outside NZ)
         # infill with a blank tile
-        system("cp #{Rails.root.to_s}/public/icons/blank.png #{filename}.png")
+        system("cp #{Rails.root}/public/icons/blank.png #{filename}.png")
       end
     end
 
@@ -143,7 +143,7 @@ module MapHelper
     filename
   end
 
-  def transform_geom(x,y,srs,trs)
+  def transform_geom(x, y, srs, trs)
     # convert to WGS84 (EPSG4326) for database
     fromproj4s = Projection.find_by_id(srs).proj4
     toproj4s = Projection.find_by_id(trs).proj4
@@ -155,7 +155,7 @@ module MapHelper
   end
 
 
-  def transform_geom(x,y,srs,trs)
+  def transform_geom(x, y, srs, trs)
     # convert to WGS84 (EPSG4326) for database
     fromproj4s = Projection.find_by_id(srs).proj4
     toproj4s = Projection.find_by_id(trs).proj4
@@ -167,7 +167,7 @@ module MapHelper
   end
 
 
-  def transform_geom(x,y,srs,trs)
+  def transform_geom(x, y, srs, trs)
     # convert to WGS84 (EPSG4326) for database
     fromproj4s = Projection.find_by_id(srs).proj4
     toproj4s = Projection.find_by_id(trs).proj4
@@ -177,5 +177,4 @@ module MapHelper
 
     xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, x.to_f, y.to_f)
   end
-
 end

@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateSotaChases < ActiveRecord::Migration[5.0]
   def change
     create_table :sota_chases do |t|

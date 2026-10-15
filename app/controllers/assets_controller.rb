@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class AssetsController < ApplicationController
   include PostsHelper
   include ApplicationHelper
@@ -9,11 +10,11 @@ class AssetsController < ApplicationController
   before_action :signed_in_user, only: %i[edit update create new map_associate associations add_wish remove_wish rate map_associate map_find_poly map_apply_poly]
 
   def associations
-    @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+    @asset=Asset.find_by(code: params[:id].gsub("_", "/"))
     if @asset.nil?
-      flash[:error] = 'Sorry - ' + code + ' does not exist in our database'
-      redirect_to '/assets'
-      return true
+      flash[:error] = "Sorry - " + code + " does not exist in our database"
+      redirect_to "/assets"
+      true
     else
       @newchild=AssetLink.new
       @newchild.contained_code=@asset.code
@@ -23,15 +24,15 @@ class AssetsController < ApplicationController
   end
   def map_associate
     if !signed_in? || !(current_user.is_web_admin || current_user.is_admin)
-      flash[:error] = 'You do not have permissions to modify this asset'
-      redirect_to '/assets'
+      flash[:error] = "You do not have permissions to modify this asset"
+      redirect_to "/assets"
     else
       @items=[]
-      @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+      @asset=Asset.find_by(code: params[:id].gsub("_", "/"))
       @item = Asset.new if !@item
       if @asset.nil?
-        flash[:error] = 'Sorry - ' + code + ' does not exist in our database'
-        redirect_to '/assets'
+        flash[:error] = "Sorry - " + code + " does not exist in our database"
+        redirect_to "/assets"
       return true
       end
       @datasources=DataSource.all.pluck(:name).sort
@@ -40,20 +41,20 @@ class AssetsController < ApplicationController
 
   def map_poly_by_id
     if !signed_in? || !(current_user.is_web_admin || current_user.is_admin)
-      flash[:error] = 'You do not have permissions to modify this asset'
-      redirect_to '/assets'
+      flash[:error] = "You do not have permissions to modify this asset"
+      redirect_to "/assets"
     else
-      @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+      @asset=Asset.find_by(code: params[:id].gsub("_", "/"))
       source = params[:select_type]
       id = params[:select_id]
       @item = Asset.new
-      datasource = DataSource.find_by('lower(name) = ?', source.downcase)
+      datasource = DataSource.find_by("lower(name) = ?", source.downcase)
       if datasource
         model_class = datasource.mdl_name.constantize
-  
-        item = model_class.find_by(ogc_fid: id) 
+
+        item = model_class.find_by(ogc_fid: id)
         item = model_class.find_by(id: id)  if !item
-        if item       
+        if item
           @item.boundary = item.public_send(datasource.geom_column)
           @item.name = item.public_send(datasource.name_column)
           @item.geom_id = item.public_send(datasource.index_column)
@@ -61,30 +62,29 @@ class AssetsController < ApplicationController
         end
       end
       map_associate()
-      render 'map_associate'
+      render "map_associate"
     end
   end
 
   def map_find_poly
     if !signed_in? || !(current_user.is_web_admin || current_user.is_admin)
-      flash[:error] = 'You do not have permissions to modify this asset'
-      redirect_to '/assets'
+      flash[:error] = "You do not have permissions to modify this asset"
+      redirect_to "/assets"
     else
       @items=[]
-      @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+      @asset=Asset.find_by(code: params[:id].gsub("_", "/"))
       @datasources=DataSource.all.pluck(:name).sort
-  
+
       a = params[:asset]
       x = a[:x]
       y = a[:y]
-      location = a[:location]
       source = params[:ds][:datasource]
       datasource = DataSource.find_by(name: source)
       if datasource
         model_class = datasource.mdl_name.constantize
-  
+
         item = model_class.find_by_sql [ "select * from #{datasource.table_name}  where ST_Within(ST_SetSRID(ST_MakePoint(#{x}, #{y}), 4326), #{datasource.geom_column})" ]
-  
+
         @item = Asset.new
         if item and item.count>0
           this_item=item.first
@@ -96,21 +96,21 @@ class AssetsController < ApplicationController
       end
       @items=item
       puts "DATASOURCE: #{datasource}"
-      render 'map_associate'
+      render "map_associate"
     end
   end
 
   def map_apply_poly
     if !signed_in? || !(current_user.is_web_admin || current_user.is_admin)
-      flash[:error] = 'You do not have permissions to modify this asset'
-      redirect_to '/assets'
+      flash[:error] = "You do not have permissions to modify this asset"
+      redirect_to "/assets"
     else
       @items=[]
-      @asset=Asset.find_by(code: params[:id].gsub('_','/'))
+      @asset=Asset.find_by(code: params[:id].gsub("_", "/"))
       @datasources=DataSource.all.pluck(:name).sort
       @item = Asset.new
       add = params[:add_to_existing]
-      
+
       if @asset then
         if add then
           a2 = Asset.new
@@ -129,7 +129,7 @@ class AssetsController < ApplicationController
         @asset.save
         flash[:success] = "New boundary assigned"
       end
-      render 'map_associate'
+      render "map_associate"
     end
   end
 
@@ -137,18 +137,18 @@ class AssetsController < ApplicationController
     show
 
     user = current_user
-    if user 
+    if user
       if @asset
         rating = Rating.find_by(user_id: current_user.id, asset_code: @asset.code)
         if rating
-          rating.assign_attributes(rating_params) 
+          rating.assign_attributes(rating_params)
         else
           rating = Rating.new(rating_params) if !rating
         end
- 
+
         rating.user_id = current_user.id
         rating.asset_code = @asset.code
-     
+
         if rating.save
           flash[:success] = "Rated"
         else
@@ -159,7 +159,7 @@ class AssetsController < ApplicationController
       end
     end
     show
-    render 'show'    
+    render "show"
   end
 
 
@@ -167,12 +167,12 @@ class AssetsController < ApplicationController
     show
 
     user = current_user
-    if user 
+    if user
       if @asset
         ratings = Rating.where(user_id: current_user.id, asset_code: @asset.code)
         if ratings
           success = ratings.destroy_all
-          if success then 
+          if success then
             flash[:success] = "Rating removed"
           else
             flash[:error] = "Could not delete your rating"
@@ -185,7 +185,7 @@ class AssetsController < ApplicationController
       end
     end
     show
-    render 'show'    
+    render "show"
   end
 
 
@@ -193,7 +193,7 @@ class AssetsController < ApplicationController
     show
 
     user = current_user
-    if user 
+    if user
       if @asset
         wish = Wishlist.create(user_id: user.id, asset_code: @asset.code)
         if wish then
@@ -204,14 +204,14 @@ class AssetsController < ApplicationController
       end
     end
     show
-    render 'show'    
+    render "show"
   end
 
   def remove_wish
     show
 
     user = current_user
-    if user and @asset 
+    if user and @asset
       wishes = Wishlist.where(user_id: user.id, asset_code: @asset.code)
       if wishes.destroy_all
         flash[:success] = "Removed from your wishlist"
@@ -220,16 +220,16 @@ class AssetsController < ApplicationController
       end
     end
     if params[:referring] == "wishlist" then
-      redirect_to '/users/'+user.callsign+"/wishlist"
+      redirect_to "/users/"+user.callsign+"/wishlist"
     else
       show
-      render 'show'    
+      render "show"
     end
   end
 
   def index_prep
-    #do not allow bots to peruse all pages or use filters
-    if request.env['bot'] == 'suspected_bot' or request.env['bot'] == 'confirmed_bot'
+    # do not allow bots to peruse all pages or use filters
+    if request.env["bot"] == "suspected_bot" or request.env["bot"] == "confirmed_bot"
       params.slice!(:controller, :action)
       flash[:warning]="Your IP address has been flagged as a suspected automated bot. You can only access pages permitted by our robots ploicy. Search / filter will be disabled. Sign in, or click on the Spots link and complete the challenge to confirm that you are human."
       @limit = 40
@@ -239,26 +239,26 @@ class AssetsController < ApplicationController
     dxcc = @current_dxcc if !dxcc
     @dxcc_selected = dxcc
 
-    whereclause = 'true'
+    whereclause = "true"
 
-    whereclause = 'is_active is true' unless params[:active]
+    whereclause = "is_active is true" unless params[:active]
 
-    whereclause += ' and minor is not true' if params[:minor]
+    whereclause += " and minor is not true" if params[:minor]
     whereclause += " and country = '#{dxcc}'" if dxcc
     asset_type = params[:type]
 
-    if params[:asset_type] && params[:asset_type][:name] && (params[:asset_type][:name] != '') && (params[:asset_type][:name] != 'all')
+    if params[:asset_type] && params[:asset_type][:name] && (params[:asset_type][:name] != "") && (params[:asset_type][:name] != "all")
       asset_type = params[:asset_type][:name]
     end
 
     whereclause += " and asset_type = '" + asset_type + "'" if asset_type
 
-    asset_type = 'all' if !asset_type || (asset_type == '')
+    asset_type = "all" if !asset_type || (asset_type == "")
     @asset_type = AssetType.find_by(name: safe_param(asset_type))
 
-    @searchtext = safe_param(params[:searchtext] || '')
+    @searchtext = safe_param(params[:searchtext] || "")
     unless @limit
-      if params[:searchtext] && (params[:searchtext] != '')
+      if params[:searchtext] && (params[:searchtext] != "")
         @limit = 500 # 100
         whereclause = whereclause + " and (unaccent(lower(name)) like '%%" + @searchtext.downcase + "%%' or lower(code) like '%%" + @searchtext.downcase + "%%' or lower(old_code) like '%%" + @searchtext.downcase + "%%')"
       else
@@ -266,18 +266,18 @@ class AssetsController < ApplicationController
       end
     end
 
-    @fullassets = Asset.find_by_sql ['select id,name,code,asset_type,url,is_active,safecode,category,minor,district,region,altitude,location,description from assets where id in (select id from assets where ' + whereclause + " order by name limit #{@limit}) order by name"]
+    @fullassets = Asset.find_by_sql [ "select id,name,code,asset_type,url,is_active,safecode,category,minor,district,region,altitude,location,description from assets where id in (select id from assets where " + whereclause + " order by name limit #{@limit}) order by name" ]
     @assets = @fullassets.paginate(per_page: 40, page: params[:page])
-    counts = Asset.find_by_sql ['select count(id) as id from assets where ' + whereclause]
+    counts = Asset.find_by_sql [ "select count(id) as id from assets where " + whereclause ]
     # @count=0;
     @count = counts && counts.first ? counts.first.id : 0
   end
 
   def index
-    if params[:id] then redirect_to '/assets/' + params[:id].tr('/', '_')
+    if params[:id] then redirect_to "/assets/" + params[:id].tr("/", "_")
     else
 
-      @limit = 30_000 if request.path.match('gpx') || request.path.match('csv')
+      @limit = 30_000 if request.path.match("gpx") || request.path.match("csv")
 
       index_prep
       respond_to do |format|
@@ -292,44 +292,44 @@ class AssetsController < ApplicationController
   def refresh_pota
     if signed_in?
       a = Asset.find_by(safecode: params[:id])
-      if a && (a.asset_type == 'pota park')
+      if a && (a.asset_type == "pota park")
         ExternalActivation.update_pota_activation(a)
       end
     else
-      flash[:error] = 'You must be signed in to do this'
+      flash[:error] = "You must be signed in to do this"
     end
-    redirect_to '/assets/' + params[:id]
+    redirect_to "/assets/" + params[:id]
   end
 
   def refresh_sota
     if signed_in?
       a = Asset.find_by(safecode: params[:id])
-      if a && (a.asset_type == 'summit')
+      if a && (a.asset_type == "summit")
         ExternalActivation.update_sota_activation(a)
       end
     else
-      flash[:error] = 'You must be signed in to do this'
+      flash[:error] = "You must be signed in to do this"
     end
 
-    redirect_to '/assets/' + params[:id]
+    redirect_to "/assets/" + params[:id]
   end
 
   def show
-    #do not allow bots to peruse all pages or use filters
-    if request.env['bot'] == 'suspected_bot' or request.env['bot'] == 'confirmed_bot'
+    # do not allow bots to peruse all pages or use filters
+    if request.env["bot"] == "suspected_bot" or request.env["bot"] == "confirmed_bot"
       @bot = true
       flash[:warning]="Your IP address has been flagged as a suspected automated bot. You can only access pages permitted by our robots ploicy. Search / filter will be disabled. Sign in, or click on the Spots link and complete the challenge to confirm that you are human."
       params.slice!(:controller, :action, :id)
     end
 
-    code = (params[:id] || '').tr('_', '/')
+    code = (params[:id] || "").tr("_", "/")
     code = code.upcase
     @asset = Asset.find_by(code: code)
     if @asset.nil?
       @asset = Asset.find_by(old_code: code)
       if @asset.nil?
-        flash[:error] = 'Sorry - ' + code + ' does not exist in our database'
-        redirect_to '/assets'
+        flash[:error] = "Sorry - " + code + " does not exist in our database"
+        redirect_to "/assets"
         return true
       end
     end
@@ -339,8 +339,8 @@ class AssetsController < ApplicationController
       @newlink.asset_code = @asset.safecode
       ratings = Rating.where(asset_code: @asset.code)
       @rating_count = ratings.count
-      nice_scores = ratings.map{|r| r.nice_score}
-      accessibility_scores = ratings.map{|r| r.accessibility_score}
+      nice_scores = ratings.map { |r| r.nice_score }
+      accessibility_scores = ratings.map { |r| r.accessibility_score }
       if @rating_count>0 then
         @nice_score = nice_scores.sum(0.0)/nice_scores.size
         @accessibility_score = accessibility_scores.sum(0.0)/accessibility_scores.size
@@ -349,7 +349,7 @@ class AssetsController < ApplicationController
         @accessibility_score = 0
       end
       if current_user
-        @myrating = Rating.find_by(user_id: current_user.id, asset_code: @asset.code) 
+        @myrating = Rating.find_by(user_id: current_user.id, asset_code: @asset.code)
         @myrating = Rating.new(user_id: current_user.id, asset_code: @asset.code) if !@myrating
       else
         @myrating = Rating.new
@@ -362,13 +362,13 @@ class AssetsController < ApplicationController
     if signed_in? && current_user.is_modifier
       @referring = params[:referring] if params[:referring]
 
-      unless (@asset = Asset.where(code: params[:id].tr('_', '/')).first)
-        flash[:error] = 'Asset not found'
-        redirect_to '/assets'
+      unless (@asset = Asset.where(code: params[:id].tr("_", "/")).first)
+        flash[:error] = "Asset not found"
+        redirect_to "/assets"
       end
     else
-      flash[:error] = 'You do not have permissions to create a new asset'
-      redirect_to '/assets'
+      flash[:error] = "You do not have permissions to create a new asset"
+      redirect_to "/assets"
     end
   end
 
@@ -376,8 +376,8 @@ class AssetsController < ApplicationController
     if signed_in? && current_user.is_modifier
       @asset = Asset.new
     else
-      flash[:error] = 'You do not have permissions to create a new asset'
-      redirect_to '/assets'
+      flash[:error] = "You do not have permissions to create a new asset"
+      redirect_to "/assets"
     end
   end
 
@@ -390,22 +390,22 @@ class AssetsController < ApplicationController
 
       @asset.createdBy_id = current_user.id
       @asset.region = @asset.add_region unless @asset.region
-      if @asset.code.nil? || (@asset.code == '') then @asset.code = Asset.get_next_code(@asset.asset_type, @asset.region) end
+      if @asset.code.nil? || (@asset.code == "") then @asset.code = Asset.get_next_code(@asset.asset_type, @asset.region) end
       if @asset.save
         @asset.reload
-        flash[:success] = 'Success!'
-        if params[:referring] == 'index'
+        flash[:success] = "Success!"
+        if params[:referring] == "index"
           index_prep
-          render 'index'
+          render "index"
         else
-          redirect_to '/assets/' + @asset.safecode
+          redirect_to "/assets/" + @asset.safecode
         end
       else
-        render 'new'
+        render "new"
       end
     else
-      flash[:error] = 'You do not have permissions to create a new asset'
-      redirect_to '/assets'
+      flash[:error] = "You do not have permissions to create a new asset"
+      redirect_to "/assets"
     end
   end
 
@@ -426,18 +426,18 @@ class AssetsController < ApplicationController
 
         if asset && asset.destroy
           index_prep
-          flash[:success] = 'Asset deleted, id:' + params[:id]
-          redirect_to '/assets'
+          flash[:success] = "Asset deleted, id:" + params[:id]
+          redirect_to "/assets"
         else
           edit
-          flash[:error] = 'Failed to delete asset, id:' + params[:id]
-          render 'edit'
+          flash[:error] = "Failed to delete asset, id:" + params[:id]
+          render "edit"
         end
       elsif !@asset = Asset.find_by_id(params[:id])
-        flash[:error] = 'Asset not found: ' + params[:id]
+        flash[:error] = "Asset not found: " + params[:id]
 
         # tried to update a nonexistant asset
-        redirect_to '/assets'
+        redirect_to "/assets"
       else
 
         @asset.assign_attributes(asset_params)
@@ -448,21 +448,21 @@ class AssetsController < ApplicationController
         @asset.createdBy_id = current_user.id
 
         if @asset.save
-          flash[:success] = 'Asset details updated'
+          flash[:success] = "Asset details updated"
           # Handle a successful update.
-          if params[:referring] == 'index'
+          if params[:referring] == "index"
             index_prep
-            render 'index'
+            render "index"
           else
-            redirect_to '/assets/' + @asset.safecode
+            redirect_to "/assets/" + @asset.safecode
           end
         else
-          render 'edit'
+          render "edit"
         end
       end
     else
-      flash[:error] = 'You do not have permissions to update an asset'
-      redirect_to '/assets'
+      flash[:error] = "You do not have permissions to update an asset"
+      redirect_to "/assets"
     end
   end
 
@@ -484,7 +484,7 @@ class AssetsController < ApplicationController
 
     xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, x.to_f, y.to_f)
 
-    params[:location] = xyarr[0].to_s + ' ' + xyarr[1].to_s
-    @asset.location = 'POINT(' + params[:location] + ')'
+    params[:location] = xyarr[0].to_s + " " + xyarr[1].to_s
+    @asset.location = "POINT(" + params[:location] + ")"
   end
 end

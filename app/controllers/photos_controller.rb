@@ -1,15 +1,16 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class PhotosController < ApplicationController
-  require 'uri'
-  require 'net/http'
+  require "uri"
+  require "net/http"
 
   before_action :signed_in_user, only: %i[delete create update new edit]
   skip_before_action :verify_authenticity_token, only: %i[create update]
 
   def index
-    redirect_to '/topics'
+    redirect_to "/topics"
   end
 
   def show
@@ -17,8 +18,8 @@ class PhotosController < ApplicationController
 
     @image = Image.find_by_id(params[:id])
     unless @image
-      flash[:error] = 'Sorry - the topic or image that you tried to view no longer exists'
-      redirect_to '/'
+      flash[:error] = "Sorry - the topic or image that you tried to view no longer exists"
+      redirect_to "/"
     end
     @image.asset_codes = @image.get_asset_codes
   end
@@ -29,14 +30,14 @@ class PhotosController < ApplicationController
     @image = Image.new
     @topic = Topic.find_by_id(params[:topic_id])
     @image.title = params[:title] if params[:title]
-    @image.asset_codes = params[:asset].tr('_', '/') if params[:asset]
-    redirect_to '/' unless @topic
+    @image.asset_codes = params[:asset].tr("_", "/") if params[:asset]
+    redirect_to "/" unless @topic
   end
 
   def edit
     @referring = params[:referring] if params[:referring]
 
-    redirect_to '/' unless (@image = Image.where(id: params[:id]).first)
+    redirect_to "/" unless (@image = Image.where(id: params[:id]).first)
     @topic = Topic.find_by_id(@image.topic_id)
     @image.asset_codes = @image.get_asset_codes
   end
@@ -51,21 +52,21 @@ class PhotosController < ApplicationController
         @image.links.each(&:destroy)
 
         if @image.destroy
-          flash[:success] = 'Image deleted, id:' + params[:id]
-          redirect_to '/topics/' + topic.id.to_s
+          flash[:success] = "Image deleted, id:" + params[:id]
+          redirect_to "/topics/" + topic.id.to_s
         else
-          flash[:error] = 'Failed to delete image'
+          flash[:error] = "Failed to delete image"
           edit
-          render 'edit'
+          render "edit"
         end
       else
-        flash[:error] = 'Failed to delete image'
-        redirect_to '/'
+        flash[:error] = "Failed to delete image"
+        redirect_to "/"
       end
     else
-      flash[:error] = 'Failed to delete image'
-      redirect_to '/'
-     end
+      flash[:error] = "Failed to delete image"
+      redirect_to "/"
+    end
   end
 
   def update
@@ -73,29 +74,29 @@ class PhotosController < ApplicationController
       @image = Image.find_by_id(params[:id])
       topic = @image.topic
       if @image && (current_user.is_admin || (current_user.id == @image.created_by_id))
-        if params[:commit] == 'Delete Image'
+        if params[:commit] == "Delete Image"
           @item = @image.item
           @item.destroy
           @image.links.each(&:destroy)
           if @image.destroy
-            flash[:success] = 'Image deleted, id:' + params[:id]
+            flash[:success] = "Image deleted, id:" + params[:id]
             @topic = topic
             #      @items=topic.items
-            redirect_to '/topics/' + topic.id.to_s
+            redirect_to "/topics/" + topic.id.to_s
 
           else
-            flash[:error] = 'Failed to delete image'
+            flash[:error] = "Failed to delete image"
             edit
-            render 'edit'
+            render "edit"
           end
         else
           @image.assign_attributes(image_params)
 
           @image.updated_by_id = current_user.id
           if @image.save
-            flash[:success] = 'Image updated'
+            flash[:success] = "Image updated"
           else
-            flash[:error] = 'Could not update image'
+            flash[:error] = "Could not update image"
           end
           @image.links.each(&:destroy)
           assets = Asset.assets_from_code(@image.asset_codes)
@@ -108,16 +109,16 @@ class PhotosController < ApplicationController
           end
 
           # Handle a successful update.
-          render 'show'
+          render "show"
         end # delete or edit
       else
         flash[:error] = "Sorry - you don't have permissions to post to this topic"
-        redirect_to '/'
+        redirect_to "/"
       end # do we have permissions
     else
-      redirect_to '/'
-     end # signed in
-    end
+      redirect_to "/"
+    end # signed in
+  end
 
   def create
     @topic = Topic.find_by_id(params[:topic_id])
@@ -131,7 +132,7 @@ class PhotosController < ApplicationController
       if @image.save
         item = Item.new
         item.topic_id = @topic.id
-        item.item_type = 'image'
+        item.item_type = "image"
         item.item_id = @image.id
         item.save
 
@@ -144,19 +145,19 @@ class PhotosController < ApplicationController
           pal.save
         end
 
-        flash[:success] = 'Posted!'
+        flash[:success] = "Posted!"
         @edit = true
 
-        render 'show'
+        render "show"
       else
-        flash[:error] = 'Error creating image'
+        flash[:error] = "Error creating image"
         @edit = true
-        render 'new'
+        render "new"
       end
     else
-      redirect_to '/'
+      redirect_to "/"
     end
-    end
+  end
 
   private
 

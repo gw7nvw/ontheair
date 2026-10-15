@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateTopics < ActiveRecord::Migration[5.0]
   def change
     create_table :topics do |t|
@@ -18,7 +19,6 @@ class CreateTopics < ActiveRecord::Migration[5.0]
     t.boolean  "duration_required"
     t.boolean  "is_alert"
     t.boolean  "is_spot"
-
     end
   end
 end

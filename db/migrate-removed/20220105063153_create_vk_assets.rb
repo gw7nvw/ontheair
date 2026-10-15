@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateVkAssets < ActiveRecord::Migration[5.0]
   def change
     create_table :vk_assets do |t|
@@ -14,7 +15,7 @@ class CreateVkAssets < ActiveRecord::Migration[5.0]
       t.string :site_type
       t.float :latitude
       t.float :longitude
-      t.spatial :location, limit: {:srid=>4326, :type=>"point"}
+      t.spatial :location, limit: { srid: 4326, type: "point" }
 
       t.timestamps
     end

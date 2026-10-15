@@ -35,13 +35,13 @@ Rails.application.configure do
 
   # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]
-#  config.logger   = ActiveSupport::TaggedLogging.logger(STDOUT)
+  #  config.logger   = ActiveSupport::TaggedLogging.logger(STDOUT)
   config.logger   = ActiveSupport::TaggedLogging.logger(
     Rails.root.join("log", "production.log")
 )
 
   # Change to "debug" to log everything (including potentially personally-identifiable information!)
-#  config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "debug")
+  #  config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "debug")
   config.log_level = :info
 
   # Prevent health checks from clogging up the logs.
@@ -63,27 +63,27 @@ Rails.application.configure do
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "ontheair.nz" }
 
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+ # Specify outgoing SMTP server. Remember to add smtp/* credentials via rails credentials:edit.
+ # config.action_mailer.smtp_settings = {
+ #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
+ #   password: Rails.application.credentials.dig(:smtp, :password),
+ #   address: "smtp.example.com",
+ #   port: 587,
+ #   authentication: :plain
+ # }
  config.action_mailer.smtp_settings = {
-    address:              '127.0.0.1', # Force IPv4 loopback to avoid network routing confusion
+    address:              "127.0.0.1", # Force IPv4 loopback to avoid network routing confusion
     port:                 587,
-    domain:               'ontheair.nz',
+    domain:               "ontheair.nz",
     user_name:            Rails.application.credentials.dig(:smtp, :user_name),
     password:             Rails.application.credentials.dig(:smtp, :password),
 
-    authentication:       'login',
+    authentication:       "login",
     enable_starttls_auto: true,
 
     # 🛠️ THE CRITICAL OPENSSL 3 BYPASS:
     # This prevents Ruby 3.4 from throwing alert 42 over local loopback certificates!
-    openssl_verify_mode:  'none'
+    openssl_verify_mode:  "none"
   }
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

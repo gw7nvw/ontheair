@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateProjections < ActiveRecord::Migration[5.0]
   def change
     create_table :projections do |t|
@@ -7,7 +8,7 @@ class CreateProjections < ActiveRecord::Migration[5.0]
        t.string :wkt
        t.integer :epsg
 
-       t.integer  :createdBy_id
+       t.integer :createdBy_id
        t.timestamps
     end
   end

@@ -4,5 +4,4 @@ class AddTitleToAdminSettings < ActiveRecord::Migration[5.0]
     add_column :admin_settings, :name, :text
     add_column :admin_settings, :imagepath, :text
   end
-
 end

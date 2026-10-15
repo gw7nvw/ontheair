@@ -1,14 +1,15 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class CallsignsController < ApplicationController
   before_action :signed_in_user
 
   def edit
     @callsign = UserCallsign.find(params[:id])
     unless signed_in? && ((current_user.id == @callsign.user_id) || current_user.is_admin)
-      flash[:error] = 'You do not have permissions to edit this callsign'
-      redirect_to '/users'
+      flash[:error] = "You do not have permissions to edit this callsign"
+      redirect_to "/users"
     end
   end
 
@@ -25,13 +26,13 @@ class CallsignsController < ApplicationController
         else
           User.reassign_userids_used_by_callsign(@callsign.callsign)
         end
-        redirect_to '/users/' + @callsign.user.callsign
+        redirect_to "/users/" + @callsign.user.callsign
       else
-        render 'new'
+        render "new"
       end
     else
-      flash[:error] = 'You do not have permissions to take this action'
-      redirect_to '/'
+      flash[:error] = "You do not have permissions to take this action"
+      redirect_to "/"
     end
   end
 
@@ -43,33 +44,33 @@ class CallsignsController < ApplicationController
       if current_user.is_admin || (current_user.id == @callsign.user_id)
         usercall = @callsign.user.callsign
         if !@callsign.delete
-          flash[:error] = 'Delete failed'
+          flash[:error] = "Delete failed"
         else
-          flash[:success] = 'Deleted callsign!'
+          flash[:success] = "Deleted callsign!"
           if Rails.env.production?
             Resque.enqueue(UpdateUserids, oldcallsign)
           else
             User.reassign_userids_used_by_callsign(oldcallsign)
           end
         end
-        redirect_to '/users/' + usercall
+        redirect_to "/users/" + usercall
       else
-        flash[:error] = 'You do not have permissions to delete this callsign'
-        redirect_to '/users'
+        flash[:error] = "You do not have permissions to delete this callsign"
+        redirect_to "/users"
       end
     else
-      flash[:error] = 'You do not have permissions to delete this callsign'
-      redirect_to '/users'
+      flash[:error] = "You do not have permissions to delete this callsign"
+      redirect_to "/users"
     end
   end
 
   def update
     if signed_in?
       unless (@callsign = UserCallsign.find_by_id(params[:id]))
-        flash[:error] = 'Callsign does not exist: ' + params[:id]
+        flash[:error] = "Callsign does not exist: " + params[:id]
 
         # tried to update a nonexistant asset
-        redirect_to '/'
+        redirect_to "/"
       end
 
       oldcallsign = @callsign.callsign
@@ -77,7 +78,7 @@ class CallsignsController < ApplicationController
       if current_user.is_admin || (@callsign.user_id == current_user.id)
 
         if @callsign.save
-          flash[:success] = 'Callsign details updated'
+          flash[:success] = "Callsign details updated"
           if Rails.env.production?
             Resque.enqueue(UpdateUserids, oldcallsign)
             Resque.enqueue(UpdateUserids, @callsign.callsign)
@@ -85,17 +86,17 @@ class CallsignsController < ApplicationController
             User.reassign_userids_used_by_callsign(oldcallsign)
             User.reassign_userids_used_by_callsign(@callsign.callsign)
           end
-          redirect_to '/users/' + @callsign.user.callsign
+          redirect_to "/users/" + @callsign.user.callsign
         else
-          render 'edit'
+          render "edit"
         end
       else
-        flash[:error] = 'You do not have permissions to edit this callsign'
-        redirect_to '/users'
+        flash[:error] = "You do not have permissions to edit this callsign"
+        redirect_to "/users"
       end
     else
-      flash[:error] = 'You do not have permissions to edit this callsign'
-      redirect_to '/users'
+      flash[:error] = "You do not have permissions to edit this callsign"
+      redirect_to "/users"
     end
   end
 

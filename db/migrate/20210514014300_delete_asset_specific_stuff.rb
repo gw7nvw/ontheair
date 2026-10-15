@@ -1,4 +1,5 @@
 # typed: false
+
 class DeleteAssetSpecificStuff < ActiveRecord::Migration[5.0]
   def change
     remove_column :contacts, :hut1_id
@@ -25,6 +26,5 @@ class DeleteAssetSpecificStuff < ActiveRecord::Migration[5.0]
     remove_column :users, :parks_first_bagged
     remove_column :users, :islands_bagged
     remove_column :users, :islands_bagged_total
-
   end
 end

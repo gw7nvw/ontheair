@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateHuts < ActiveRecord::Migration[5.0]
   def change
     create_table :huts do |t|
@@ -13,14 +14,13 @@ class CreateHuts < ActiveRecord::Migration[5.0]
       t.float :y
       t.integer :altitude
       t.integer :park_id
-      t.point :location, :spatial => true, :srid => 4326
+      t.point :location, spatial: true, srid: 4326
       t.boolean :is_active, default: true
       t.boolean :is_doc, default: true
 
       t.integer :createdBy_id
 
       t.timestamps
-
     end
   end
 end

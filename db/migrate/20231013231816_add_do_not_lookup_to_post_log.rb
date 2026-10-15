@@ -1,4 +1,5 @@
 # typed: false
+
 class AddDoNotLookupToPostLog < ActiveRecord::Migration[5.0]
   def change
     add_column :logs, :do_not_lookup, :boolean

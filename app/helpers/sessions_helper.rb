@@ -5,15 +5,15 @@ TOKEN_EXPIRY = 3
 module SessionsHelper
   def sign_in(user)
     remember_token = User.new_token
-    Rails.logger.info 'Assign RT: ' + remember_token
-    current_cookie_domain = if request.host.end_with?('ontheair.nz')
-      '.ontheair.nz'
-    elsif request.host.end_with?('parksnpeaks.org')
-      '.parksnpeaks.org'
+    Rails.logger.info "Assign RT: " + remember_token
+    current_cookie_domain = if request.host.end_with?("ontheair.nz")
+      ".ontheair.nz"
+    elsif request.host.end_with?("parksnpeaks.org")
+      ".parksnpeaks.org"
     else
       :all
     end
-    if ENV['RAILS_ENV'] == 'production'
+    if ENV["RAILS_ENV"] == "production"
       cookies[:remember_token2] = { value: remember_token, expires: TOKEN_EXPIRY.month.from_now.utc, domain: current_cookie_domain }
     else
       cookies[:remember_token3] = { value: remember_token, expires: TOKEN_EXPIRY.month.from_now.utc, domain: current_cookie_domain }
@@ -24,7 +24,7 @@ module SessionsHelper
     flush_old_tokens(user)
     request_ip = request.remote_ip
 
-    user_agent = request.user_agent || 'Unknown'
+    user_agent = request.user_agent || "Unknown"
     UserAgent.where(user_ip: request_ip).update_all(
         access_count: 0,
         suspicious_access_count: 0,
@@ -33,7 +33,6 @@ module SessionsHelper
         confirmed_human: true,
         updated_at: Time.now
     )
-
   end
 
   def flush_old_tokens(user)
@@ -44,10 +43,10 @@ module SessionsHelper
   def sign_out
     @current_user_token.update_attribute(:remember_token,
                                   User.digest(User.new_token)) if @current_user_token
-    if ENV['RAILS_ENV'] == 'production'
-      cookies.delete(:remember_token2, domain: 'ontheair.nz')
+    if ENV["RAILS_ENV"] == "production"
+      cookies.delete(:remember_token2, domain: "ontheair.nz")
     else
-      cookies.delete(:remember_token3, domain: 'ontheair.nz')
+      cookies.delete(:remember_token3, domain: "ontheair.nz")
 
     end
     self.current_user = nil
@@ -72,12 +71,12 @@ module SessionsHelper
   end
 
   def current_user
-    return nil unless cookies[:remember_token2].present? or cookies[:remember_token3].present? 
-    remember_token = if ENV['RAILS_ENV'] == 'production'
+    return nil unless cookies[:remember_token2].present? or cookies[:remember_token3].present?
+    remember_token = if ENV["RAILS_ENV"] == "production"
                        User.digest(cookies[:remember_token2])
-                     else
+    else
                        User.digest(cookies[:remember_token3])
-                     end
+    end
     user_token ||= UserToken.find_by(remember_token: remember_token)
     @current_user_token ||= user_token
     begin

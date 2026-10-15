@@ -1,9 +1,8 @@
 # typed: false
+
 require "test_helper"
 include ApplicationHelper
 class ApiPnpCloseTest < ActionDispatch::IntegrationTest
-
-
   ##################################################################
   # ONTHEAIR API
   ##################################################################
@@ -11,17 +10,17 @@ class ApiPnpCloseTest < ActionDispatch::IntegrationTest
   # /api/CLOSE (as in near) get nearest 10 sites in each cetegory
   ##################################################################
   test "Should get api/CLOSE details" do
-    user1 = create_test_user 
+    user1 = create_test_user
     sleep 1
     count = 0
     hut=[]
     for long in 1690..1702 do
-      hut[count]=create_test_asset(asset_type: 'hut', region: 'OT', location: create_point(1.0*long/10,-45.2))
+      hut[count]=create_test_asset(asset_type: "hut", region: "OT", location: create_point(1.0*long/10, -45.2))
       count+=1
     end
-    wwff=create_test_asset(asset_type: 'wwff park', region: 'OT', location: create_point(171.8,-45.2), test_radius: 0.1, code_prefix: 'ZLFF-0')
-    pota=create_test_asset(asset_type: 'pota park', region: 'OT', location: create_point(171.9,-45.2), test_radius: 0.1, code_prefix: 'NZ-0')
-    sota=create_test_asset(asset_type: 'summit', region: 'OT', location: create_point(180.0,-45.2), code_prefix: 'ZL3/OT-')
+    wwff=create_test_asset(asset_type: "wwff park", region: "OT", location: create_point(171.8, -45.2), test_radius: 0.1, code_prefix: "ZLFF-0")
+    pota=create_test_asset(asset_type: "pota park", region: "OT", location: create_point(171.9, -45.2), test_radius: 0.1, code_prefix: "NZ-0")
+    sota=create_test_asset(asset_type: "summit", region: "OT", location: create_point(180.0, -45.2), code_prefix: "ZL3/OT-")
 
     get "/api/CLOSE/-45.2/169.0"
 

@@ -1,14 +1,15 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class StaticPagesController < ApplicationController
   include ApplicationHelper
 
-  before_action :signed_in_user, only: %i[ack_news admin_stats  recent results]
+  before_action :signed_in_user, only: %i[ack_news admin_stats recent results]
 
   def ack_news
     if current_user
-#      current_user.hide_news_at = Time.now
+      #      current_user.hide_news_at = Time.now
       current_user.update_column(:hide_news_at, Time.now)
 
       current_user.reload
@@ -25,7 +26,7 @@ class StaticPagesController < ApplicationController
       @as = AdminSettings.last
     else
       flash[:error]="You do not have permission to view this page"
-      redirect_to '/'
+      redirect_to "/"
     end
   end
 
@@ -40,47 +41,47 @@ class StaticPagesController < ApplicationController
   end
 
   def home
-    #do not allow bots to peruse all pages or use filters
-    if request.env['bot'] == 'suspected_bot' or request.env['bot'] == 'confirmed_bot'
+    # do not allow bots to peruse all pages or use filters
+    if request.env["bot"] == "suspected_bot" or request.env["bot"] == "confirmed_bot"
       params.slice!(:page, :controller, :action)
       flash[:warning]="Your IP address has been flagged as a suspected automated bot. You can only access pages permitted by our robots ploicy. Search / filter will be disabled. Sign in, or click on the Spots link and complete the challenge to confirm that you are human."
     end
 
     spots
     ack_time = current_user.hide_news_at if current_user
-    ack_time ||= '1900-01-01'
+    ack_time ||= "1900-01-01"
     @static_page = true
     @dxcc = @current_country
-    @asset_type_filter = "('all')" 
-    @asset_type_filter = "('all', 'silo', 'sanpcpa park', 'krmnpa park', 'illw lighthouse')" if @dxcc=='ZL'
+    @asset_type_filter = "('all')"
+    @asset_type_filter = "('all', 'silo', 'sanpcpa park', 'krmnpa park', 'illw lighthouse')" if @dxcc=="ZL"
     @asset_type_filter = "('park', 'lake', 'lighthouse', 'island', 'hut', 'volcano', 'all')" if @dxcc=="VK"
     @site_title_unquoted = "... On The Air"
-    @site_title_unquoted = "ZL "+@site_title_unquoted if @current_country=='ZL'
-    @site_title_unquoted = "VK "+@site_title_unquoted if @current_country=='VK'
+    @site_title_unquoted = "ZL "+@site_title_unquoted if @current_country=="ZL"
+    @site_title_unquoted = "VK "+@site_title_unquoted if @current_country=="VK"
     @site_title_quoted="'"+@site_title_unquoted+"'"
-  
-    if @dxcc=='VK' then 
-      @items = Item.find_by_sql ["select * from items where (topic_id = #{VK_NEWS_TOPIC} )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;"]
+
+    if @dxcc=="VK" then
+      @items = Item.find_by_sql [ "select * from items where (topic_id = #{VK_NEWS_TOPIC} )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;" ]
       render "vk_home"
     else
       @max_rows = 30
       results
       @users = @full_users
-  
+
       @brief = true
-      @fulllogs = Log.find_by_sql [" select * from logs where asset_codes != '{}' order by date desc limit 20 "]
+      @fulllogs = Log.find_by_sql [ " select * from logs where asset_codes != '{}' order by date desc limit 20 " ]
       @logs = @fulllogs.paginate(per_page: 20, page: params[:page])
-  
-      @awards = AwardUserLink.find_by_sql [ "select * from award_user_links where created_at>'#{ack_time}'; "]
-      @award_users = User.find_by_sql [ "select * from users where id in (select distinct user_id from award_user_links where created_at>'#{ack_time}') order by callsign limit 20;"]
-  
-      @items = Item.find_by_sql ["select * from items where (topic_id = #{NEWS_TOPIC} )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;"]
+
+      @awards = AwardUserLink.find_by_sql [ "select * from award_user_links where created_at>'#{ack_time}'; " ]
+      @award_users = User.find_by_sql [ "select * from users where id in (select distinct user_id from award_user_links where created_at>'#{ack_time}') order by callsign limit 20;" ]
+
+      @items = Item.find_by_sql [ "select * from items where (topic_id = #{NEWS_TOPIC} )and item_type = 'post' and created_at>'#{ack_time}' order by created_at desc limit 4;" ]
       render "home"
     end
   end
 
   def recent
-    @fulllogs = Log.find_by_sql [' select * from logs order by date desc ']
+    @fulllogs = Log.find_by_sql [ " select * from logs order by date desc " ]
     @logs = @fulllogs.paginate(per_page: 20, page: params[:page])
   end
 
@@ -88,23 +89,23 @@ class StaticPagesController < ApplicationController
     @max_rows ||= 2000
 
     @scoreby = params[:scoreby]
-    @scoreby = 'bagged' if !@scoreby || (@scoreby == '')
+    @scoreby = "bagged" if !@scoreby || (@scoreby == "")
 
     @static_page = true
     @sortby = params[:sortby]
-    if !@sortby || (@sortby == '')
-      cats = AssetType.where('keep_score = true')
+    if !@sortby || (@sortby == "")
+      cats = AssetType.where("keep_score = true")
       @sortby = cats[rand(0..cats.count - 1)].name
     end
-    if @scoreby == 'qualified'
-      scorefield = 'qualified_count_total'
-    elsif @scoreby == 'activated'
-      scorefield = 'activated_count_total'
-    elsif @scoreby == 'chased'
-      scorefield = 'chased_count_total'
+    if @scoreby == "qualified"
+      scorefield = "qualified_count_total"
+    elsif @scoreby == "activated"
+      scorefield = "activated_count_total"
+    elsif @scoreby == "chased"
+      scorefield = "chased_count_total"
     else
-      scorefield = 'score'
-      @scoreby = 'bagged'
+      scorefield = "score"
+      @scoreby = "bagged"
     end
 
     @full_users = User.users_with_assets(@sortby, scorefield, @max_rows)
@@ -123,12 +124,12 @@ class StaticPagesController < ApplicationController
     @start_date = params[:start_date] if params[:start_date]
     @end_date = params[:end_date] if params[:end_date]
     @this_dxcc = params[:dxcc][:prefix] if params[:dxcc]
-    @activator = params[:activator].upcase if params[:activator] 
+    @activator = params[:activator].upcase if params[:activator]
     @reference = params[:reference].upcase if params[:reference]
     @programme = params[:programme][:name] if params[:programme]
 
-    blank_search = true if !@start_date 
-    #defaults
+    blank_search = true if !@start_date
+    # defaults
     @start_date = 24.hours.ago.to_date if !@start_date
     @end_date = Time.now.to_date if !@end_date
     @this_dxcc=@current_country if !@this_dxcc
@@ -136,32 +137,31 @@ class StaticPagesController < ApplicationController
     @activator="*" if !@activator or @activator.strip==""
     @reference="*" if !@reference or @reference.strip==""
     @programme="All" if !@programme
-    spots=[] 
-    iso_code=''
-    if @this_dxcc == 'VK' then
-      iso_code = 'AU'
-    elsif @this_dxcc == 'ZL'
-      iso_code = 'NZ'
+    spots=[]
+    iso_code=""
+    if @this_dxcc == "VK" then
+      iso_code = "AU"
+    elsif @this_dxcc == "ZL"
+      iso_code = "NZ"
     end
-    spots = ConsolidatedSpot.where(%Q{date_trunc('day',created_at)>='#{@start_date}' and date_trunc('day',updated_at) <='#{@end_date}' and ('#{@programme}' = ANY(spot_type) or '#{@programme}' = 'All') and (ARRAY_TO_STRING(code,' ') like '%#{@this_dxcc.gsub('All','')}%' or ARRAY_TO_STRING(code, ' ') like '%#{iso_code}%') and "activatorCallsign" like '#{@activator.gsub("*","%")}' and ('#{@reference}'=ANY(code)  or '#{@reference}'='*')}).order(updated_at: :desc) if !blank_search
+    spots = ConsolidatedSpot.where(%Q{date_trunc('day',created_at)>='#{@start_date}' and date_trunc('day',updated_at) <='#{@end_date}' and ('#{@programme}' = ANY(spot_type) or '#{@programme}' = 'All') and (ARRAY_TO_STRING(code,' ') like '%#{@this_dxcc.gsub('All', '')}%' or ARRAY_TO_STRING(code, ' ') like '%#{iso_code}%') and "activatorCallsign" like '#{@activator.gsub("*", "%")}' and ('#{@reference}'=ANY(code)  or '#{@reference}'='*')}).order(updated_at: :desc) if !blank_search
     @spot_count = spots.count
     @all_spots = spots[0..199]
   end
 
   def spots
-
-#  if ['222.153.106.137'].include?(request.remote_ip)
-#    return render js: "window.location.reload();"
-#  end
+    #  if ['222.153.106.137'].include?(request.remote_ip)
+    #    return render js: "window.location.reload();"
+    #  end
 
     alerts
 
     hoursago = 1
     hoursago = params[:hoursago].to_i if params[:hoursago]
 
-    onehourago = Time.at(Time.now.to_i - 60 * 60 * hoursago).in_time_zone('UTC').to_s
+    onehourago = Time.at(Time.now.to_i - 60 * 60 * hoursago).in_time_zone("UTC").to_s
 
-    @zone = 'OC'
+    @zone = "OC"
     @zone = params[:zone] if params[:zone]
     zone_query = ""
     zone_query = " and continent = '#{@zone}' " if @zone != "all"
@@ -190,24 +190,24 @@ class StaticPagesController < ApplicationController
       flash[:error] = "You do not have permissions to delete this alert"
     end
     alerts()
-    redirect_to '/alerts'
+    redirect_to "/alerts"
   end
 
   def alerts
     daysago = 1
     daysago = params[:daysago].to_i if params[:daysago]
-    @zone = 'OC'
+    @zone = "OC"
     @zone = params[:zone] if params[:zone]
-    zone_query = " and continent = '#{@zone}' " if @zone != 'all'
+    zone_query = " and continent = '#{@zone}' " if @zone != "all"
 
     hota_alerts = Post.find_by_sql [ " select p.*, i.id as item_id from posts p inner join items i on i.item_id=p.id and i.topic_id=1 and i.item_type='post' and ((p.referenced_date + interval '1 hours' * duration::numeric) > '#{(Time.now - daysago.days).strftime("%Y-%m-%d %H:%M")}' or p.referenced_date > '#{(Time.now - daysago.days).strftime("%Y-%m-%d %H:%M")}')" ]
 
     @all_alerts = ExternalAlert.import_hota_alerts(hota_alerts)
-    if @zone && (@zone != 'all')
+    if @zone && (@zone != "all")
       @all_alerts = @all_alerts.select { |alert| DxccPrefix.continent_from_call(alert[:activatingCallsign]) == @zone }
     end
 
-    @all_alerts += ExternalAlert.find_by_sql [ " select * from external_alerts where (starttime >'#{Time.now - daysago.days}' or (starttime + interval '1 hours' * duration::numeric) >'#{Time.now - daysago.days}') #{zone_query} order by starttime desc " ] 
+    @all_alerts += ExternalAlert.find_by_sql [ " select * from external_alerts where (starttime >'#{Time.now - daysago.days}' or (starttime + interval '1 hours' * duration::numeric) >'#{Time.now - daysago.days}') #{zone_query} order by starttime desc " ]
     if @all_alerts then @all_alerts = @all_alerts.sort_by { |hsh| hsh[:starttime].to_s }.reverse! end
 
 

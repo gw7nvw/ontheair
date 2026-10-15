@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class PostsController < ApplicationController
-  require 'uri'
-  require 'net/http'
+  require "uri"
+  require "net/http"
 
   before_action :signed_in_user, only: %i[delete create update new edit]
   skip_before_action :verify_authenticity_token, only: %i[create update sms]
@@ -15,79 +16,79 @@ class PostsController < ApplicationController
     logger.info response.body.to_json
 
     ats = AssetType.where("name != 'all'")
-    pnp_classes = ats.map{|at| at.pnp_class}
+    pnp_classes = ats.map { |at| at.pnp_class }
 
-    via = 'SMS'
-    puts 'DEBUG SMS'
+    via = "SMS"
+    puts "DEBUG SMS"
     body = params[:text] || params[:Body]
     lines = body.split(/\r?\n/)
     msgs = lines[0].split
     logger.debug "DEBUG msgs "+msgs.to_json
-    if msgs[0].upcase=='ALERT' then
-      posttype='alert'
+    if msgs[0].upcase=="ALERT" then
+      posttype="alert"
       msgs=msgs[1..-1]
-    elsif msgs[0].upcase=='SPOT' then
-      posttype='spot'
+    elsif msgs[0].upcase=="SPOT" then
+      posttype="spot"
       msgs=msgs[1..-1]
     else
-      posttype='spot'
+      posttype="spot"
     end
 
     # passkey = nil
     acctnumber = params[:from] || params[:From]
-    acctnumber = acctnumber&.strip&.delete(' ')
+    acctnumber = acctnumber&.strip&.delete(" ")
     logger.debug 'DEBUG from number: #{acctnumber}'
     user = User.find_by(acctnumber: acctnumber)
     logger.error "ERROR: SMS account not found for #{acctnumber}" if !user
 
     if msgs && msgs.count>=2 then
-     #handle pnp style spots by dropping 2nd parameter
+     # handle pnp style spots by dropping 2nd parameter
      if pnp_classes.include?(msgs[1].upcase)
-       msgs=[msgs[0]]+msgs[2..-1] 
+       msgs=[ msgs[0] ]+msgs[2..-1]
      end
-      
+
      if msgs.count>=4
       callsign = msgs[0].upcase
-      callsign = user.callsign if callsign == '!' or callsign == '$'
+      callsign = user.callsign if callsign == "!" or callsign == "$"
       asset_code = msgs[1].upcase
-      if asset_code.include?('/') || asset_code.include?('-')
-        logger.debug 'DEBUG: asset code appears to be complete'
+      if asset_code.include?("/") || asset_code.include?("-")
+        logger.debug "DEBUG: asset code appears to be complete"
       else
-        logger.debug 'DEBUG: asset code looks like SOTA-spot format'
+        logger.debug "DEBUG: asset code looks like SOTA-spot format"
         asset_suffix = msgs[2]
-        unless asset_suffix&.include?('-')
+        unless asset_suffix&.include?("-")
           logger.debug "DEBUG: asset suffix with no '-'"
           asset_suffix = asset_suffix&.gsub(/([a-zA-Z])([0-9])/, '\1-\2')
         end
-        asset_code = asset_code + '/' + asset_suffix if asset_suffix
-        msgs=[msgs[0],asset_code]+msgs[3..-1]
-        #msgs.delete_at(msgs.length - 1)
-        logger.info 'DEBUG: concatenated asset code = ' + asset_code
-        logger.info 'DEBUG: message = ' + msgs.to_json
+        asset_code = asset_code + "/" + asset_suffix if asset_suffix
+        msgs=[ msgs[0], asset_code ]+msgs[3..-1]
+        # msgs.delete_at(msgs.length - 1)
+        logger.info "DEBUG: concatenated asset code = " + asset_code
+        logger.info "DEBUG: message = " + msgs.to_json
       end
       freq = msgs[2]
       mode = msgs[3].upcase
-      if posttype == 'spot'
-        comments = msgs[4..-1].join(' ')
-        logger.info 'DEBUG: comments = ' + msgs.to_json
-        al_date = Time.now.in_time_zone('UTC').strftime('%Y-%m-%d')
-        al_time = Time.now.in_time_zone('UTC').strftime('%H:%M')
+      if posttype == "spot"
+        comments = msgs[4..-1].join(" ")
+        logger.info "DEBUG: comments = " + msgs.to_json
+        al_date = Time.now.in_time_zone("UTC").strftime("%Y-%m-%d")
+        al_time = Time.now.in_time_zone("UTC").strftime("%H:%M")
       else
         duration = 1
         al_date = msgs[4]
         al_time = msgs[5]
-        comments = msgs[6..-1].join(' ')
+        comments = msgs[6..-1].join(" ")
       end
 
       @post = Post.new
-      debug = comments.upcase['DEBUG'] ? true : false
+      debug = comments.upcase["DEBUG"] ? true : false
       # check asset
       assets = Asset.assets_from_code(asset_code)
       # if !assets or assets.count==0 or assets.first[:code]==nil then puts "Asset not known:"+asset_code ;return(false) end
       if !assets || assets.count.zero? || assets.first[:code].nil?
-        puts 'Asset not known:' + asset_code + ' ... trying to continue'
-        a_code = ''
-        a_name = 'Unrecognised location: ' + asset_code
+        puts "Asset not known:" + asset_code + " ... trying to continue"
+        a_code = ""
+        a_name = "Unrecognised location: " + asset_code
         a_ext = false
       else
         a_code = assets.first[:code]
@@ -97,16 +98,16 @@ class PostsController < ApplicationController
 
       asset_type = Asset.get_asset_type_from_code(a_code)
       if comments.downcase.include?("/dnl")
-        comments=comments.gsub("/dnl","").gsub("/DNL","")
+        comments=comments.gsub("/dnl", "").gsub("/DNL", "")
         @post.do_not_lookup = true
       end
-      comments = comments.gsub(/\s+/, ' ').strip
+      comments = comments.gsub(/\s+/, " ").strip
       puts "COMMENTS: #{comments}"
-      if (posttype == 'spot') && ((asset_type == 'SOTA') || (asset_type == 'summit')) && !user
-        puts 'DEBUG: forwarding non-user spot to SOTA'
+      if (posttype == "spot") && ((asset_type == "SOTA") || (asset_type == "summit")) && !user
+        puts "DEBUG: forwarding non-user spot to SOTA"
         if defined?(Rails) && Rails.env.production?
-          result = @post.send_to_sota(debug, acctnumber, callsign, a_code, freq, mode, comments + ' (ontheair.nz)')
-          puts 'DEBUG: ' + result.to_s
+          result = @post.send_to_sota(debug, acctnumber, callsign, a_code, freq, mode, comments + " (ontheair.nz)")
+          puts "DEBUG: " + result.to_s
         else
           puts "Skipping send_to_sota in non-production environment"
         end
@@ -118,40 +119,40 @@ class PostsController < ApplicationController
         @post.mode = mode.upcase
         @post.callsign = callsign
         @post.freq = freq
-        @post.asset_codes = a_code != '' ? [a_code] : []
+        @post.asset_codes = a_code != "" ? [ a_code ] : []
         @post.created_by_id = user.id
         @post.updated_by_id = user.id
-        @post.description = comments + ' (via ' + via + ')'
+        @post.description = comments + " (via " + via + ")"
         @post.duration=duration if duration
-        @post.referenced_time = (al_date + ' ' + al_time + ' UTC').to_time
-        @post.referenced_date = (al_date + ' 00:00:00 UTC').to_time
+        @post.referenced_time = (al_date + " " + al_time + " UTC").to_time
+        @post.referenced_date = (al_date + " 00:00:00 UTC").to_time
         @post.updated_at = Time.now
-        puts 'DEBUG: assets - ' + a_name
-        if posttype == 'spot'
+        puts "DEBUG: assets - " + a_name
+        if posttype == "spot"
           topic_id = if debug
                        TEST_SPOT_TOPIC
-                     else
+          else
                        SPOT_TOPIC
-                     end
-          @post.title = 'SPOT: ' + callsign + ' spotted portable at ' + a_name + ' [' + a_code + '] on ' + freq + '/' + mode + ' at ' + Time.now.in_time_zone('Pacific/Auckland').strftime('%Y-%m-%d %H:%M') + 'NZ'
+          end
+          @post.title = "SPOT: " + callsign + " spotted portable at " + a_name + " [" + a_code + "] on " + freq + "/" + mode + " at " + Time.now.in_time_zone("Pacific/Auckland").strftime("%Y-%m-%d %H:%M") + "NZ"
         else
           topic_id = if debug
                        TEST_ALERT_TOPIC
-                     else
+          else
                        ALERT_TOPIC
-                     end
-          @post.title = 'ALERT: ' + callsign + ' going portable to ' + a_name + ' [' + a_code + '] on ' + freq + '/' + mode + ' at ' + al_date + ' ' + al_time + ' UTC'
+          end
+          @post.title = "ALERT: " + callsign + " going portable to " + a_name + " [" + a_code + "] on " + freq + "/" + mode + " at " + al_date + " " + al_time + " UTC"
         end
         res = @post.save
         if res
           if a_ext == false
-            logger.debug "SAVEMAP: #{a_ext}" 
+            logger.debug "SAVEMAP: #{a_ext}"
             @post.add_map_image
             res = @post.save
           end
           item = Item.new
           item.topic_id = topic_id
-          item.item_type = 'post'
+          item.item_type = "post"
           item.item_id = @post.id
           item.save
           item.send_emails
@@ -159,7 +160,7 @@ class PostsController < ApplicationController
         end
         @topic = Topic.find_by_id(topic_id)
         if defined?(Rails) && Rails.env.production?
-          @post.send_to_all(debug, user, @post.callsign, @post.asset_codes, @post.freq, @post.mode, @post.description, @topic, @post.referenced_date.strftime('%Y-%m-%d'), @post.referenced_time.strftime('%H:%M'), 'UTC')
+          @post.send_to_all(debug, user, @post.callsign, @post.asset_codes, @post.freq, @post.mode, @post.description, @topic, @post.referenced_date.strftime("%Y-%m-%d"), @post.referenced_time.strftime("%H:%M"), "UTC")
         else
           puts "Skipping send_to_all in non-production environment"
         end
@@ -167,20 +168,20 @@ class PostsController < ApplicationController
       end
      end
     end
-    render json: {result: result}
+    render json: { result: result }
   end
 
   def index
     ##    @fullposts=Post.all.order(:last_updated)
     ##    @posts=@fullposts.paginate(:per_page => 20, :page => params[:page])
-    redirect_to '/topics'
+    redirect_to "/topics"
   end
 
   def show
     @post = Post.find_by_id(params[:id])
     unless @post
-      flash[:error] = 'Sorry - the topic or post that you tried to view no longer exists'
-      redirect_to '/'
+      flash[:error] = "Sorry - the topic or post that you tried to view no longer exists"
+      redirect_to "/"
     end
   end
 
@@ -188,31 +189,31 @@ class PostsController < ApplicationController
     @post = Post.new
     @topic = Topic.find_by_id(params[:topic_id])
     t = Time.now.in_time_zone(@tz.name).at_beginning_of_minute
-    d = Time.now.in_time_zone(@tz.name).strftime('%Y-%m-%d 00:00 UTC').to_time
+    d = Time.now.in_time_zone(@tz.name).strftime("%Y-%m-%d 00:00 UTC").to_time
     @post.referenced_date = d.to_time if @topic.is_spot
     @post.referenced_time = t.to_time if @topic.is_spot
     @post.duration = 1 if @topic.is_alert
     @post.title = params[:title] if params[:title]
-    redirect_to '/' unless @topic
+    redirect_to "/" unless @topic
     if params[:op_id]
       op = Post.find_by_id(params[:op_id])
       if op
         @post.callsign = op.callsign || op.updated_by_name
         @post.asset_codes = op.asset_codes
-        @post.title = @post.callsign + ' spotted portable'
+        @post.title = @post.callsign + " spotted portable"
       end
     end
-    @post.asset_codes = [params[:code].tr('_', '/')] if params[:code]
+    @post.asset_codes = [ params[:code].tr("_", "/") ] if params[:code]
     if params[:alert]
       @post.do_not_lookup = true
-      @post.referenced_time = Time.now.in_time_zone('UTC').at_beginning_of_minute
-      @post.referenced_date = Time.now.in_time_zone('UTC').at_beginning_of_minute
+      @post.referenced_time = Time.now.in_time_zone("UTC").at_beginning_of_minute
+      @post.referenced_date = Time.now.in_time_zone("UTC").at_beginning_of_minute
 
       if params[:alert].to_i > 0
         alert = ExternalAlert.find_by(id: params[:alert].to_i)
         if alert
           @post.callsign = alert.activatingCallsign
-          @post.asset_codes = [alert.code] if alert.code
+          @post.asset_codes = [ alert.code ] if alert.code
         end
       else
         item = Item.find_by(id: -params[:alert].to_i)
@@ -222,11 +223,11 @@ class PostsController < ApplicationController
           @post.asset_codes = alert.asset_codes
         end
       end
-    end 
+    end
     if params[:spot]
       @post.do_not_lookup = true
-      @post.referenced_time = Time.now.in_time_zone('UTC').at_beginning_of_minute
-      @post.referenced_date = Time.now.in_time_zone('UTC').at_beginning_of_minute
+      @post.referenced_time = Time.now.in_time_zone("UTC").at_beginning_of_minute
+      @post.referenced_date = Time.now.in_time_zone("UTC").at_beginning_of_minute
 
       if params[:spot].to_i > 0
         spot = ConsolidatedSpot.find_by(id: params[:spot].to_i)
@@ -251,10 +252,10 @@ class PostsController < ApplicationController
   def edit
     @referring = params[:referring] if params[:referring]
 
-    redirect_to '/' unless (@post = Post.where(id: params[:id]).first)
+    redirect_to "/" unless (@post = Post.where(id: params[:id]).first)
     if @post.referenced_time
       @post.referenced_time = @post.referenced_time.in_time_zone(@tz.name)
-      @post.referenced_date = @post.referenced_date.in_time_zone(@tz.name).strftime('%Y-%m-%d 00:00 UTC').to_time
+      @post.referenced_date = @post.referenced_date.in_time_zone(@tz.name).strftime("%Y-%m-%d 00:00 UTC").to_time
     end
     @topic = Topic.find_by_id(@post.topic_id)
   end
@@ -270,21 +271,21 @@ class PostsController < ApplicationController
         @post.images.each(&:destroy)
 
         if @post.destroy
-          flash[:success] = 'Post deleted, id:' + params[:id]
-          redirect_to '/topics/' + topic.id.to_s
+          flash[:success] = "Post deleted, id:" + params[:id]
+          redirect_to "/topics/" + topic.id.to_s
         else
-          flash[:error] = 'Failed to delete post'
+          flash[:error] = "Failed to delete post"
           edit
-          render 'edit'
+          render "edit"
         end
       else
-        flash[:error] = 'Failed to delete post'
-        redirect_to '/'
+        flash[:error] = "Failed to delete post"
+        redirect_to "/"
       end
     else
-      flash[:error] = 'Failed to delete post'
-      redirect_to '/'
-     end
+      flash[:error] = "Failed to delete post"
+      redirect_to "/"
+    end
   end
 
   def update
@@ -292,59 +293,58 @@ class PostsController < ApplicationController
       @post = Post.find_by_id(params[:id])
       topic = @post.topic
       if @post && (current_user.is_admin || (current_user.id == @post.created_by_id))
-        if params[:commit] == 'Delete Post'
+        if params[:commit] == "Delete Post"
           @item = @post.item
           @item.destroy
           if @post.destroy
-            flash[:success] = 'Post deleted, id:' + params[:id]
+            flash[:success] = "Post deleted, id:" + params[:id]
             @topic = topic
             #       @items=topic.items
-            redirect_to '/topics/' + topic.id.to_s
+            redirect_to "/topics/" + topic.id.to_s
 
           else
-            flash[:error] = 'Failed to delete post'
+            flash[:error] = "Failed to delete post"
             edit
-            render 'edit'
+            render "edit"
           end
         else
           @post.assign_attributes(post_params)
           if params[:post][:asset_codes]
-            #check fo X,Y
+            # check fo X,Y
             if params[:post][:asset_codes].match(/-?([0-9\.])+,( )?-?([0-9\.])+/)
               loc_text=params[:post][:asset_codes]
               puts loc_text
-              loc_arr=loc_text.split(',')
+              loc_arr=loc_text.split(",")
               puts loc_arr
               x1=loc_arr[0].to_f
               y1=loc_arr[1].to_f
               @post.location="POINT(#{x1} #{y1})"
-              @post.loc_source='user'
+              @post.loc_source="user"
             else
-              @post.asset_codes = params[:post][:asset_codes].upcase.delete('{').delete('}').split(',').map(&:strip)
+              @post.asset_codes = params[:post][:asset_codes].upcase.delete("{").delete("}").split(",").map(&:strip)
             end
           end
 
-          @post.site = ''
+          @post.site = ""
           @post.asset_codes.each do |ac|
             assets = Asset.assets_from_code(ac)
-            @post.site += (assets && (assets.count > 0) ? assets.first[:name] : '') + ' [' + ac + '] ' + (assets && (assets.count > 0) && assets.first[:asset] ? '{' + assets.first[:asset].maidenhead + '}; ' : '')
+            @post.site += (assets && (assets.count > 0) ? assets.first[:name] : "") + " [" + ac + "] " + (assets && (assets.count > 0) && assets.first[:asset] ? "{" + assets.first[:asset].maidenhead + "}; " : "")
           end
 
           if topic.is_alert
-            @post.referenced_time = (params[:post][:referenced_date] + ' ' + params[:post][:referenced_time]).to_time.in_time_zone(@tz.name).in_time_zone('UTC').to_time
-            @post.referenced_date = (params[:post][:referenced_date] + ' ' + params[:post][:referenced_time]).to_time.in_time_zone(@tz.name).in_time_zone('UTC').to_time
+            @post.referenced_time = (params[:post][:referenced_date] + " " + params[:post][:referenced_time]).to_time.in_time_zone(@tz.name).in_time_zone("UTC").to_time
+            @post.referenced_date = (params[:post][:referenced_date] + " " + params[:post][:referenced_time]).to_time.in_time_zone(@tz.name).in_time_zone("UTC").to_time
           end
 
           @post.updated_by_id = current_user.id
           if @post.save
             isimage = @post.is_image
-            isfile = @post.is_file
             if isimage
               @image = Image.new
-              @image.image = File.open(@post.image.path, 'rb')
+              @image.image = File.open(@post.image.path, "rb")
               @image.post_id = @post.id
               unless @image.save
-                flash[:error] = ''
+                flash[:error] = ""
                 @image.errors.full_messages.each do |e|
                   flash[:error] += e
                   puts e
@@ -354,64 +354,64 @@ class PostsController < ApplicationController
               @post.save
             end
 
-            flash[:success] = 'Post updated'
+            flash[:success] = "Post updated"
 
             # Handle a successful update.
-            render 'show'
+            render "show"
           else
-            render 'edit'
+            render "edit"
           end
-         end # delete or edit
+        end # delete or edit
       else
-        redirect_to '/'
-       end # do we have permissions
+        redirect_to "/"
+      end # do we have permissions
     else
-      redirect_to '/'
-       end # signed in
-    end
+      redirect_to "/"
+    end # signed in
+  end
 
   def create
     invalid = false
-    errors = ''
+    errors = ""
     debug = params[:debug] ? true : false
     @topic = Topic.find_by_id(params[:topic_id])
     if signed_in? && @topic && (@topic.is_public || current_user.is_admin || ((@topic.owner_id == current_user.id) && @topic.is_owners))
       @post = Post.new(post_params)
 
-      if @post.callsign.nil? || (@post.callsign == '') then @post.callsign = current_user.callsign end
+      if @post.callsign.nil? || (@post.callsign == "") then @post.callsign = current_user.callsign end
       @post.callsign = @post.callsign.strip if @post.callsign
       @post.mode = @post.mode.strip if @post.mode
       if params[:post][:asset_codes]
-        #check fo X,Y
+        # check fo X,Y
         if params[:post][:asset_codes].match(/-?([0-9\.])+,( )?-?([0-9\.])+/)
           loc_text=params[:post][:asset_codes]
           puts loc_text
-          loc_arr=loc_text.split(',')
+          loc_arr=loc_text.split(",")
           puts loc_arr
           x1=loc_arr[0].to_f
           y1=loc_arr[1].to_f
           @post.location="POINT(#{x1} #{y1})"
-          @post.loc_source='user'
+          @post.loc_source="user"
         else
-          @post.asset_codes = params[:post][:asset_codes].upcase.delete('{').delete('}').split(',').map(&:strip)
+          @post.asset_codes = params[:post][:asset_codes].upcase.delete("{").delete("}").split(",").map(&:strip)
         end
       end
 
-#      @post.site = ''
-#      @post.asset_codes.each do |ac|
-#        assets = Asset.assets_from_code(ac)
-#        @post.site += (assets && (assets.count > 0) ? (assets.first[:name] || '') : '') + ' [' + ac + '] ' + (assets && (assets.count > 0) && assets.first[:asset] ? '{' + assets.first[:asset].maidenhead + '}; ' : '')
-#      end
+      #      @post.site = ''
+      #      @post.asset_codes.each do |ac|
+      #        assets = Asset.assets_from_code(ac)
+      #        @post.site += (assets && (assets.count > 0) ? (assets.first[:name] || '') : '') + ' [' + ac + '] ' + (assets && (assets.count > 0) && assets.first[:asset] ? '{' + assets.first[:asset].maidenhead + '}; ' : '')
+      #      end
       @post.created_by_id = current_user.id # current_user.id
       @post.updated_by_id = current_user.id # current_user.id
       if @topic.is_alert
         if params[:post][:referenced_date] && !params[:post][:referenced_date].empty? && params[:post][:referenced_time] && !params[:post][:referenced_time].empty?
-          t=(params[:post][:referenced_date] + ' ' + params[:post][:referenced_time]).to_time
-          @post.referenced_time = Time.new.in_time_zone(@tz.name).change(year: t.year, month: t.month, day: t.day, hour: t.hour, min: t.min, sec: t.sec).in_time_zone('UTC').to_time
+          t=(params[:post][:referenced_date] + " " + params[:post][:referenced_time]).to_time
+          @post.referenced_time = Time.new.in_time_zone(@tz.name).change(year: t.year, month: t.month, day: t.day, hour: t.hour, min: t.min, sec: t.sec).in_time_zone("UTC").to_time
           @post.referenced_date = @post.referenced_time
         else
           invalid = true
-          errors += 'Date / time are required; '
+          errors += "Date / time are required; "
         end
       end
 
@@ -428,41 +428,42 @@ class PostsController < ApplicationController
         unless debug
           item = Item.new
           item.topic_id = @topic.id
-          item.item_type = 'post'
+          item.item_type = "post"
           item.item_id = @post.id
           item.save
-          if ENV['RAILS_ENV'] == 'production'
+          if ENV["RAILS_ENV"] == "production"
             item.send_emails unless @post.do_not_publish
           else
             Item.send_emails_now(item.id) unless @post.do_not_publish
           end
         end
-        flash[:success] = 'Posted! '
+        flash[:success] = "Posted! "
         @edit = true
 
-        if params[:pnp] == 'on'
-          success = @post.send_to_all(debug, current_user, @post.callsign, @post.asset_codes, @post.freq, @post.mode, @post.description, @topic, @post.referenced_date.strftime('%Y-%m-%d'), @post.referenced_time.strftime('%H:%M'), 'UTC')
-          puts 'DEBUG: controller success: ' + success.to_s
+        if params[:pnp] == "on"
+          @post.do_not_publish = false #override if pnp specified
+          success = @post.send_to_all(debug, current_user, @post.callsign, @post.asset_codes, @post.freq, @post.mode, @post.description, @topic, @post.referenced_date.strftime("%Y-%m-%d"), @post.referenced_time.strftime("%H:%M"), "UTC")
+          puts "DEBUG: controller success: " + success.to_s
           flash[:error] = success[:messages] if success[:result] == false
-          if (success[:result] == true) && (success[:messages] != '') then flash[:success] += success[:messages] end
+          if (success[:result] == true) && (success[:messages] != "") then flash[:success] += success[:messages] end
         end
 
         if debug
-          render 'new'
+          render "new"
         else
-          render 'show'
+          render "show"
         end
       else
-        errors = 'Error creating post: ' + errors
+        errors = "Error creating post: " + errors
         flash[:error] = errors
         @edit = true
-        render 'new'
+        render "new"
       end
     else
-      puts 'Topoic: ' + @topic.to_s
-      redirect_to '/'
+      puts "Topoic: " + @topic.to_s
+      redirect_to "/"
     end
-    end
+  end
 
   private
 

@@ -1,19 +1,20 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class GeologicalEpoch < ActiveRecord::Base
-  require 'csv'
+  require "csv"
 
   def eon
-    GeologicalEon.find_by_sql [" select * from geological_eons where start_mya<=#{start_mya} and end_mya>=#{end_mya}; "]
+    GeologicalEon.find_by_sql [ " select * from geological_eons where start_mya<=#{start_mya} and end_mya>=#{end_mya}; " ]
   end
 
   def era
-    GeologicalEra.find_by_sql [" select * from geological_eras where start_mya<=#{start_mya} and end_mya>=#{end_mya}; "]
+    GeologicalEra.find_by_sql [ " select * from geological_eras where start_mya<=#{start_mya} and end_mya>=#{end_mya}; " ]
   end
 
   def period
-    GeologicalPeriod.find_by_sql [" select * from geological_periods where start_mya<=#{start_mya} and end_mya>=#{end_mya}; "]
+    GeologicalPeriod.find_by_sql [ " select * from geological_periods where start_mya<=#{start_mya} and end_mya>=#{end_mya}; " ]
   end
 
   def self.import(filename)
@@ -21,7 +22,7 @@ class GeologicalEpoch < ActiveRecord::Base
       place = row.to_hash
       newplace = {}
       place.each do |key, value|
-        key = key.gsub(/[^0-9a-z _]/i, '')
+        key = key.gsub(/[^0-9a-z _]/i, "")
         newplace[key] = value
       end
       p = GeologicalEpoch.new(newplace)

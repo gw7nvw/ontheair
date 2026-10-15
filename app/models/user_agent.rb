@@ -1,10 +1,8 @@
 class UserAgent < ActiveRecord::Base
-
   WINDOW_SECONDS = 86400
 
   # A safe, atomic way to increment the hits without race conditions
   def self.track(ip_addr, suspicious = 0, request_type)
-
     if suspicious>0
        logger.info "SUSPISCIOUS!!!!!"
     end
@@ -38,16 +36,16 @@ class UserAgent < ActiveRecord::Base
     else
       # Within window: Atomically increment counts AND update timestamp
       where(id: record.id).update_all([
-        "access_count = COALESCE(access_count, 0) + 1, 
-         suspicious_access_count = COALESCE(suspicious_access_count, 0) + ?, 
+        "access_count = COALESCE(access_count, 0) + 1,
+         suspicious_access_count = COALESCE(suspicious_access_count, 0) + ?,
          html_count = COALESCE(html_count, 0) + ?,
          js_count = COALESCE(js_count, 0) + ?,
-         updated_at = ?", 
+         updated_at = ?",
         suspicious, html_inc, js_inc, current_time
       ])
     end
 
-    return record
+    record
 
     rescue ActiveRecord::RecordNotUnique
     # Gracefully handle race conditions if two matching agents hit at the microsecond

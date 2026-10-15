@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateAssetTypes < ActiveRecord::Migration[5.0]
   def change
     create_table :asset_types do |t|
@@ -7,7 +8,7 @@ class CreateAssetTypes < ActiveRecord::Migration[5.0]
       t.boolean :has_location
       t.boolean :has_boundary
       t.string :index_name
-      
+
       t.timestamps
     end
   end

@@ -1,4 +1,5 @@
 # typed: false
+
 class AddActivatedChasedToUser < ActiveRecord::Migration[5.0]
   def change
     add_column :users, :activated_count, :string

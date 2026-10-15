@@ -7,7 +7,7 @@ module TidyUserAgentsJob
 
     puts "TIDYUSERAGENTS running"
     # Target only the IDs within a small batch limit
-    deleted_rows = UserAgent.where('updated_at < ?', cutoff_time)
+    deleted_rows = UserAgent.where("updated_at < ?", cutoff_time)
                               .delete_all # delete_all executes direct SQL instantly
 
     puts "TIDYUSERAGENTS completed"

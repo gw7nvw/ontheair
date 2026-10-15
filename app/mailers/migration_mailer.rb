@@ -1,10 +1,10 @@
 class MigrationMailer < ActionMailer::Base
   # Set the "From" address and name
-  default from: 'ontheair <admin@ontheair.nz>'
+  default from: "ontheair <admin@ontheair.nz>"
 
   def send_notice(filename, user_email)
     # Read the static HTML file from the public folder
-    html_content = File.read(Rails.root.join('public', filename))
+    html_content = File.read(Rails.root.join("public", filename))
 
     mail(
       to: user_email,

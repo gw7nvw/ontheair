@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class SitemapsController < ApplicationController
   # caches_page :index
   def index
     @static_paths = []
-    @stats_paths = [root_path, spots_path, alerts_path, results_path, recent_path]
-    @assets = Asset.where('is_active=true and minor is not true')
+    @stats_paths = [ root_path, spots_path, alerts_path, results_path, recent_path ]
+    @assets = Asset.where("is_active=true and minor is not true")
     @users = User.where(activated: true)
 
     respond_to do |format|

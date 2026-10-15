@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateImages < ActiveRecord::Migration[5.0]
   def change
   create_table "images", force: true do |t|
@@ -15,6 +16,5 @@ class CreateImages < ActiveRecord::Migration[5.0]
     t.datetime "updated_at"
     t.integer  "post_id"
   end
-
   end
 end

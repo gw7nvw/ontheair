@@ -1,9 +1,8 @@
 # typed: false
+
 require "test_helper"
 include ApplicationHelper
 class ApiPnpCheckTest < ActionDispatch::IntegrationTest
-
-
   ##################################################################
   # ONTHEAIR API
   ##################################################################
@@ -11,14 +10,14 @@ class ApiPnpCheckTest < ActionDispatch::IntegrationTest
   # /api/CHECK
   ##################################################################
   test "Should get api/CHECK last update details" do
-    user1 = create_test_user 
+    user1 = create_test_user
     sleep 1
-    hut=create_test_asset(asset_type: 'hut', region: 'OT', location: create_point(169.1,-45.2))
+    hut=create_test_asset(asset_type: "hut", region: "OT", location: create_point(169.1, -45.2))
     sleep 1
-    wwff=create_test_asset(asset_type: 'wwff park', region: 'OT', location: create_point(169.3,-45.2), test_radius: 0.1, code_prefix: 'ZLFF-0')
-    pota=create_test_asset(asset_type: 'pota park', region: 'OT', location: create_point(169.9,-45.2), test_radius: 0.1, code_prefix: 'NZ-0')
+    wwff=create_test_asset(asset_type: "wwff park", region: "OT", location: create_point(169.3, -45.2), test_radius: 0.1, code_prefix: "ZLFF-0")
+    pota=create_test_asset(asset_type: "pota park", region: "OT", location: create_point(169.9, -45.2), test_radius: 0.1, code_prefix: "NZ-0")
     sleep 1
-    sota=create_test_asset(asset_type: 'summit', region: 'OT', location: create_point(169.5,-45.2), code_prefix: 'ZL3/OT-')
+    sota=create_test_asset(asset_type: "summit", region: "OT", location: create_point(169.5, -45.2), code_prefix: "ZL3/OT-")
     sleep 1
     zlota_spot=create_test_external_spot(user1, code: hut.code, activatorCallsign: user1.callsign, frequency: "7.09", mode: "SSB", spot_type: "ZLOTA")
     zlota_cs=ConsolidatedSpot.last

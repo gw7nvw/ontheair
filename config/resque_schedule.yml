@@ -69,3 +69,9 @@ do_import_nzgdb:
   class: UpdateNzgdb
   args:
   description: Runs the perform method in UpdateNzgdb  yearly
+
+do_import_hema:
+  cron: 30 0 1 1 *
+  class: UpdateHema
+  args:
+  description: Runs the perform method in UpdateHema  yearly

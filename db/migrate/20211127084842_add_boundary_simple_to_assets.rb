@@ -1,4 +1,5 @@
 # typed: false
+
 class AddBoundarySimpleToAssets < ActiveRecord::Migration[5.0]
   def change
       add_column :assets, :boundary_quite_simplified, :multi_polygon,    srid: 4326

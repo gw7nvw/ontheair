@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class Contact < ActiveRecord::Base
   after_initialize :set_defaults, unless: :persisted?
   # The set_defaults will only work if the object is new
   attr_accessor :timetext
   attr_accessor :asset2_names
 
-  belongs_to :createdBy, class_name: 'User'
+  belongs_to :createdBy, class_name: "User"
 
   before_save { before_save_actions }
   after_save { update_scores }
@@ -39,28 +40,28 @@ class Contact < ActiveRecord::Base
 
   # [asset1.code] asset1.name ... || loc_desc1+ {x,y}
   def location1_text
-    text = ''
+    text = ""
     activator_assets.each do |al|
-      text += al.codename + ' '
+      text += al.codename + " "
     end
 
-    if text == ''
+    if text == ""
       text = loc_desc1 if loc_desc1
-      text += ' (E' + x1.to_s + ' N' + y1.to_s + ')' if x1 && y1
+      text += " (E" + x1.to_s + " N" + y1.to_s + ")" if x1 && y1
     end
     text
   end
 
   # [asset2.code] asset2.name ... || loc_desc2+ {x,y}
   def location2_text
-    text = ''
+    text = ""
     chaser_assets.each do |al|
-      text += al.codename + ' '
+      text += al.codename + " "
     end
 
-    if text == ''
+    if text == ""
       text = loc_desc2 if loc_desc2
-      text += ' (E' + x2.to_s + ' N' + y2.to_s + ')' if x2 && y2
+      text += " (E" + x2.to_s + " N" + y2.to_s + ")" if x2 && y2
     end
     text
   end
@@ -99,8 +100,8 @@ class Contact < ActiveRecord::Base
 
   # name of timezone contact saved in
   def timezonename
-    timezonename = ''
-    if timezone != ''
+    timezonename = ""
+    if timezone != ""
       tz = Timezone.find_by_id(timezone)
       timezonename = tz.name if tz
     end
@@ -110,46 +111,46 @@ class Contact < ActiveRecord::Base
   # convert contact.date to user's selected timezone
   def localdate(current_user)
     t = nil
-    tz = current_user ? Timezone.find_by_id(current_user.timezone) : Timezone.find_by(name: 'UTC')
-    t = time.in_time_zone(tz.name).strftime('%Y-%m-%d') if time
+    tz = current_user ? Timezone.find_by_id(current_user.timezone) : Timezone.find_by(name: "UTC")
+    t = time.in_time_zone(tz.name).strftime("%Y-%m-%d") if time
     t
   end
 
   # convert contact.time to user's selected timezone
   def localtime(current_user)
     t = nil
-    tz = current_user ? Timezone.find_by_id(current_user.timezone) : Timezone.find_by(name: 'UTC')
-    t = time.in_time_zone(tz.name).strftime('%H:%M') if time
+    tz = current_user ? Timezone.find_by_id(current_user.timezone) : Timezone.find_by(name: "UTC")
+    t = time.in_time_zone(tz.name).strftime("%H:%M") if time
     t
   end
 
   # text name for user's timezone, defaulting to UTC if no user
   def localtimezone(current_user)
     t = nil
-    tz = current_user ? Timezone.find_by_id(current_user.timezone) : Timezone.find_by(name: 'UTC')
-    t = time.in_time_zone(tz.name).strftime('%Z') if time
+    tz = current_user ? Timezone.find_by_id(current_user.timezone) : Timezone.find_by(name: "UTC")
+    t = time.in_time_zone(tz.name).strftime("%Z") if time
     t
   end
 
   # return ADIF-compatable mode closest to that specified in contact
   def adif_mode
-    mode = 'OTHER'
+    mode = "OTHER"
     rawmode = self.mode.upcase
-    rawmode = 'SSB' if rawmode[0..2] == 'LSB'
-    rawmode = 'SSB' if rawmode[0..2] == 'USB'
-    rawmode = 'SSB' if rawmode[0..2] == 'SSB'
+    rawmode = "SSB" if rawmode[0..2] == "LSB"
+    rawmode = "SSB" if rawmode[0..2] == "USB"
+    rawmode = "SSB" if rawmode[0..2] == "SSB"
     found = false
-    found = true if rawmode == 'AM'
-    found = true if rawmode == 'CW'
-    found = true if rawmode == 'FM'
-    found = true if rawmode == 'SSB'
-    found = true if rawmode == 'DSTAR'
-    found = true if rawmode == 'FT8'
-    found = true if rawmode == 'FT4'
-    found = true if rawmode == 'JS8'
+    found = true if rawmode == "AM"
+    found = true if rawmode == "CW"
+    found = true if rawmode == "FM"
+    found = true if rawmode == "SSB"
+    found = true if rawmode == "DSTAR"
+    found = true if rawmode == "FT8"
+    found = true if rawmode == "FT4"
+    found = true if rawmode == "JS8"
 
     mode = rawmode if found == true
-    mode = 'FT8' if rawmode == 'DATA'
+    mode = "FT8" if rawmode == "DATA"
     mode
   end
 
@@ -167,12 +168,12 @@ class Contact < ActiveRecord::Base
   # ON SAVE ACTIONS
   #####################################################################
   def set_defaults
-    self.timezone ||= Timezone.find_by(name: 'UTC').id
+    self.timezone ||= Timezone.find_by(name: "UTC").id
   end
 
   def remove_call_suffix # and prefix
-    self.callsign1 = User.remove_call_suffix(callsign1) if callsign1['/']
-    self.callsign2 = User.remove_call_suffix(callsign2) if callsign2['/']
+    self.callsign1 = User.remove_call_suffix(callsign1) if callsign1["/"]
+    self.callsign2 = User.remove_call_suffix(callsign2) if callsign2["/"]
   end
 
   # look up usersids for the callsign on the contact date, create dummy user if not found
@@ -188,10 +189,10 @@ class Contact < ActiveRecord::Base
 
   # extract asset2_codes from loc_desc2 text field but only if asset2_codes is blank
   def check_codes_in_location
-    if asset2_codes.nil? || (asset2_codes == []) || (asset2_codes == [''])
+    if asset2_codes.nil? || (asset2_codes == []) || (asset2_codes == [ "" ])
       self.asset2_codes = Asset.check_codes_in_text(loc_desc2)
     end
-    if asset2_codes.nil? || (asset2_codes == []) || (asset2_codes == [''])
+    if asset2_codes.nil? || (asset2_codes == []) || (asset2_codes == [ "" ])
       self.asset2_codes = Asset.check_codes_in_text(comments2)
     end
   end
@@ -201,9 +202,9 @@ class Contact < ActiveRecord::Base
   # - better than failing a log upload or save where we have not ability to display error
   def check_for_same_place_error
     if asset1_codes and asset1_codes!=[] and asset1_codes.sort == asset2_codes.sort
-      logger.debug 'Removing invalid asset2 codes'
+      logger.debug "Removing invalid asset2 codes"
       self.asset2_codes = []
-      self.loc_desc2 = 'INVALID'
+      self.loc_desc2 = "INVALID"
     end
   end
 
@@ -240,7 +241,7 @@ class Contact < ActiveRecord::Base
     # then lookup codes for assets2
     # replace supplied replaced codes with new master codes
     self.asset2_codes = Asset.find_master_codes(asset2_codes)
-  
+
     # look up contained_by_assets
     self.asset2_codes = get_all_asset2_codes(asset)
   end
@@ -258,7 +259,7 @@ class Contact < ActiveRecord::Base
     self.loc_source2 = nil if location2.nil?
 
     # for anything other than a user specified location
-    if loc_source2 != 'user'
+    if loc_source2 != "user"
       # only overwrite a location when asked to
       if location2 && (force == true)
         self.loc_source2 = nil
@@ -285,10 +286,10 @@ class Contact < ActiveRecord::Base
         elsif Rails.env.development?
           user.update_score
           user.check_awards
-          user.check_completion_awards('region')
-          user.check_completion_awards('district')
+          user.check_completion_awards("region")
+          user.check_completion_awards("district")
         else
-          logger.debug 'Not updating score for test env call manually if needed'
+          logger.debug "Not updating score for test env call manually if needed"
         end
       end
     end
@@ -302,10 +303,10 @@ class Contact < ActiveRecord::Base
         elsif Rails.env.development?
           user.update_score
           user.check_awards
-          user.check_completion_awards('region')
-          user.check_completion_awards('district')
+          user.check_completion_awards("region")
+          user.check_completion_awards("district")
         else
-          logger.debug 'Not updating score for test env call manually if needed'
+          logger.debug "Not updating score for test env call manually if needed"
         end
         user.check_awards
       end
@@ -344,7 +345,7 @@ class Contact < ActiveRecord::Base
     end
 
     if contact.log_id
-      logger.error 'Should not call find_create_log_matching_contact for a contact already in a log'
+      logger.error "Should not call find_create_log_matching_contact for a contact already in a log"
     else
       # use only the most accrate location when searching for log
       # as chaser may not have included the parks, islands etc to go with
@@ -363,14 +364,14 @@ class Contact < ActiveRecord::Base
         # must be an overseas or mistyped asset code so just
         # match on the full set of codes given rather than finding the most
         # accurate
-        dup = Log.find_by_sql [" select l.* from logs l inner join contacts c on c.id=#{contact.id} where l.callsign1=c.callsign1 and l.date::date=c.date::date and (l.asset_codes <@ c.asset1_codes and l.asset_codes @> c.asset1_codes); "]
+        dup = Log.find_by_sql [ " select l.* from logs l inner join contacts c on c.id=#{contact.id} where l.callsign1=c.callsign1 and l.date::date=c.date::date and (l.asset_codes <@ c.asset1_codes and l.asset_codes @> c.asset1_codes); " ]
         dup = dup.first
       end
       if dup
         log = dup
-        logger.debug 'Reuse log'
+        logger.debug "Reuse log"
       else
-        logger.debug 'New log'
+        logger.debug "New log"
         log = Log.create(callsign1: contact.callsign1, date: contact.date, asset_codes: contact.asset1_codes, is_qrp1: contact.is_qrp1, is_portable1: contact.is_portable1, location1: contact.location1, power1: contact.power1, do_not_lookup: true, createdBy: contact.createdBy)
       end
       contact.log_id = log.id
@@ -387,7 +388,7 @@ class Contact < ActiveRecord::Base
   # Remove asset2_codes from a contact at other party's request
   def refute_chaser_contact
     if asset2_codes && asset2_codes.count.positive?
-      self.loc_desc2 = 'Removed: ' + asset2_codes.to_s + ' at ' + callsign2 + "'s request"
+      self.loc_desc2 = "Removed: " + asset2_codes.to_s + " at " + callsign2 + "'s request"
       self.asset2_codes = []
       self.location2 = nil
       save
@@ -435,11 +436,11 @@ class Contact < ActiveRecord::Base
   # convert supplied date / time from user's timezone to UTC
   def convert_user_timezone_to_utc(user)
     if time && date
-      tz = user ? Timezone.find_by_id(user.timezone) : Timezone.find_by(name: 'UTC')
-      t = (date.strftime('%Y-%m-%d') + ' ' + time.strftime('%H:%M')).in_time_zone(tz.name)
-      self.date = t.in_time_zone('UTC').strftime('%Y-%m-%d')
-      self.time = t.in_time_zone('UTC')
-      self.timezone = Timezone.find_by(name: 'UTC').id
+      tz = user ? Timezone.find_by_id(user.timezone) : Timezone.find_by(name: "UTC")
+      t = (date.strftime("%Y-%m-%d") + " " + time.strftime("%H:%M")).in_time_zone(tz.name)
+      self.date = t.in_time_zone("UTC").strftime("%Y-%m-%d")
+      self.time = t.in_time_zone("UTC")
+      self.timezone = Timezone.find_by(name: "UTC").id
     end
   end
 
@@ -467,40 +468,40 @@ class Contact < ActiveRecord::Base
 
   # convert supplied frequency to meter-band
   def self.band_from_frequency(frequency)
-    band = ''
+    band = ""
     if frequency
       bandrec =  Band.find_by("min_frequency <= #{frequency} AND max_frequency >= #{frequency}")
       band = bandrec.meter_band if bandrec
     end
-#      band = '2190m' if (frequency >= 0.136) && (frequency <= 0.137)
-#      band = '560m' if (frequency >= 0.501) && (frequency <= 0.504)
-#      band = '160m' if (frequency >= 1.8) && (frequency <= 2)
-#      band = '80m' if (frequency >= 3.5) && (frequency <= 4)
-#      band = '60m' if (frequency >= 5.351) && (frequency <= 5.367)
-#      band = '40m' if (frequency >= 7) && (frequency <= 7.3)
-#      band = '30m' if (frequency >= 10.1) && (frequency <= 10.15)
-#      band = '20m' if (frequency >= 14.0) && (frequency <= 14.35)
-#      band = '17m' if (frequency >= 18.068) && (frequency <= 18.168)
-#      band = '15m' if (frequency >= 21.0) && (frequency <= 21.45)
-#      band = '12m' if (frequency >= 24.89) && (frequency <= 24.99)
-#      band = '10m' if (frequency >= 28.0) && (frequency <= 29.7)
-#      band = '6m' if (frequency >= 50) && (frequency <= 54)
-#      band = '4m' if (frequency >= 70) && (frequency <= 71)
-#      band = '2m' if (frequency >= 144) && (frequency <= 148)
-#      band = '1.25m' if (frequency >= 222) && (frequency <= 225)
-#      band = '70cm' if (frequency >= 420) && (frequency <= 450)
-#      band = '33cm' if (frequency >= 902) && (frequency <= 928)
-#      band = '23cm' if (frequency >= 1240) && (frequency <= 1300)
-#      band = '13cm' if (frequency >= 2300) && (frequency <= 2450)
-#      band = '9cm' if (frequency >= 3300) && (frequency <= 3500)
-#      band = '6cm' if (frequency >= 5650) && (frequency <= 5925)
-#      band = '3cm' if (frequency >= 10_000) && (frequency <= 10_500)
-#      band = '1.25cm' if (frequency >= 24_000) && (frequency <= 24_250)
-#      band = '6mm' if (frequency >= 47_000) && (frequency <= 47_200)
-#      band = '4mm' if (frequency >= 75_500) && (frequency <= 81_000)
-#      band = '2.5mm' if (frequency >= 119_980) && (frequency <= 120_020)
-#      band = '2mm' if (frequency >= 142_000) && (frequency <= 149_000)
-#      band = '1mm' if (frequency >= 241_000) && (frequency <= 250_000)
+    #      band = '2190m' if (frequency >= 0.136) && (frequency <= 0.137)
+    #      band = '560m' if (frequency >= 0.501) && (frequency <= 0.504)
+    #      band = '160m' if (frequency >= 1.8) && (frequency <= 2)
+    #      band = '80m' if (frequency >= 3.5) && (frequency <= 4)
+    #      band = '60m' if (frequency >= 5.351) && (frequency <= 5.367)
+    #      band = '40m' if (frequency >= 7) && (frequency <= 7.3)
+    #      band = '30m' if (frequency >= 10.1) && (frequency <= 10.15)
+    #      band = '20m' if (frequency >= 14.0) && (frequency <= 14.35)
+    #      band = '17m' if (frequency >= 18.068) && (frequency <= 18.168)
+    #      band = '15m' if (frequency >= 21.0) && (frequency <= 21.45)
+    #      band = '12m' if (frequency >= 24.89) && (frequency <= 24.99)
+    #      band = '10m' if (frequency >= 28.0) && (frequency <= 29.7)
+    #      band = '6m' if (frequency >= 50) && (frequency <= 54)
+    #      band = '4m' if (frequency >= 70) && (frequency <= 71)
+    #      band = '2m' if (frequency >= 144) && (frequency <= 148)
+    #      band = '1.25m' if (frequency >= 222) && (frequency <= 225)
+    #      band = '70cm' if (frequency >= 420) && (frequency <= 450)
+    #      band = '33cm' if (frequency >= 902) && (frequency <= 928)
+    #      band = '23cm' if (frequency >= 1240) && (frequency <= 1300)
+    #      band = '13cm' if (frequency >= 2300) && (frequency <= 2450)
+    #      band = '9cm' if (frequency >= 3300) && (frequency <= 3500)
+    #      band = '6cm' if (frequency >= 5650) && (frequency <= 5925)
+    #      band = '3cm' if (frequency >= 10_000) && (frequency <= 10_500)
+    #      band = '1.25cm' if (frequency >= 24_000) && (frequency <= 24_250)
+    #      band = '6mm' if (frequency >= 47_000) && (frequency <= 47_200)
+    #      band = '4mm' if (frequency >= 75_500) && (frequency <= 81_000)
+    #      band = '2.5mm' if (frequency >= 119_980) && (frequency <= 120_020)
+    #      band = '2mm' if (frequency >= 142_000) && (frequency <= 149_000)
+    #      band = '1mm' if (frequency >= 241_000) && (frequency <= 250_000)
     band
   end
 
@@ -512,72 +513,72 @@ class Contact < ActiveRecord::Base
       bandrec =  Band.find_by(meter_band: band)
       frequency = bandrec.min_frequency if bandrec
     end
-#    frequency = 0.136 if band == '2190m'
-#    frequency = 0.501 if band == '560m'
-#    frequency = 1.8 if band == '160m'
-#    frequency = 3.5 if band == '80m'
-#    frequency = 5.3515 if band == '60m'
-#    frequency = 7 if band == '40m'
-#    frequency = 10.1 if band == '30m'
-#    frequency = 14.0 if band == '20m'
-#    frequency = 18.068 if band == '17m'
-#    frequency = 21.0 if band == '15m'
-#    frequency = 24.89 if band == '12m'
-#    frequency = 28.0 if band == '10m'
-#    frequency = 50 if band == '6m'
-#    frequency = 70 if band == '4m'
-#    frequency = 144 if band == '2m'
-#    frequency = 222 if band == '1.25m'
-#    frequency = 420 if band == '70cm'
-#    frequency = 902 if band == '33cm'
-#    frequency = 1240 if band == '23cm'
-#    frequency = 2300 if band == '13cm'
-#    frequency = 3300 if band == '9cm'
-#    frequency = 5650 if band == '6cm'
-#    frequency = 10_000 if band == '3cm'
-#    frequency = 24_000 if band == '1.25cm'
-#    frequency = 47_000 if band == '6mm'
-#    frequency = 75_500 if band == '4mm'
-#    frequency = 119_980 if band == '2.5mm'
-#    frequency = 142_000 if band == '2mm'
-#    frequency = 241_000 if band == '1mm'
+    #    frequency = 0.136 if band == '2190m'
+    #    frequency = 0.501 if band == '560m'
+    #    frequency = 1.8 if band == '160m'
+    #    frequency = 3.5 if band == '80m'
+    #    frequency = 5.3515 if band == '60m'
+    #    frequency = 7 if band == '40m'
+    #    frequency = 10.1 if band == '30m'
+    #    frequency = 14.0 if band == '20m'
+    #    frequency = 18.068 if band == '17m'
+    #    frequency = 21.0 if band == '15m'
+    #    frequency = 24.89 if band == '12m'
+    #    frequency = 28.0 if band == '10m'
+    #    frequency = 50 if band == '6m'
+    #    frequency = 70 if band == '4m'
+    #    frequency = 144 if band == '2m'
+    #    frequency = 222 if band == '1.25m'
+    #    frequency = 420 if band == '70cm'
+    #    frequency = 902 if band == '33cm'
+    #    frequency = 1240 if band == '23cm'
+    #    frequency = 2300 if band == '13cm'
+    #    frequency = 3300 if band == '9cm'
+    #    frequency = 5650 if band == '6cm'
+    #    frequency = 10_000 if band == '3cm'
+    #    frequency = 24_000 if band == '1.25cm'
+    #    frequency = 47_000 if band == '6mm'
+    #    frequency = 75_500 if band == '4mm'
+    #    frequency = 119_980 if band == '2.5mm'
+    #    frequency = 142_000 if band == '2mm'
+    #    frequency = 241_000 if band == '1mm'
     frequency
   end
 
   # convert the supplied frequency to a hema-style frequency-band
   def self.hema_band_from_frequency(frequency)
-    band = ''
+    band = ""
     if frequency
       bandrec =  Band.find_by("min_frequency <= #{frequency} AND max_frequency >= #{frequency}")
       band = bandrec.freq_band if bandrec
     end
-#      band = '1.8MHz' if (frequency >= 1.8) && (frequency <= 2)
-#      band = '3.6MHz' if (frequency >= 3.5) && (frequency <= 4)
-#      band = '5MHz' if (frequency >= 5.351) && (frequency <= 5.367)
-#      band = '7MHz' if (frequency >= 7) && (frequency <= 7.3)
-#      band = '10MHz' if (frequency >= 10.1) && (frequency <= 10.15)
-#      band = '14MHz' if (frequency >= 14.0) && (frequency <= 14.35)
-#      band = '18MHz' if (frequency >= 18.068) && (frequency <= 18.168)
-#      band = '21MHz' if (frequency >= 21.0) && (frequency <= 21.45)
-#      band = '24MHz' if (frequency >= 24.89) && (frequency <= 24.99)
-#      band = '28MHz' if (frequency >= 28.0) && (frequency <= 29.7)
-#      band = '50MHz' if (frequency >= 50) && (frequency <= 54)
-#      band = '70MHz' if (frequency >= 70) && (frequency <= 71)
-#      band = '144MHz' if (frequency >= 144) && (frequency <= 148)
-#      band = '220MHz' if (frequency >= 222) && (frequency <= 225)
-#      band = '430MHz' if (frequency >= 420) && (frequency <= 450)
-#      band = '900MHz' if (frequency >= 902) && (frequency <= 928)
-#      band = '1.24GHz' if (frequency >= 1240) && (frequency <= 1300)
-#      band = '2.3GHz' if (frequency >= 2300) && (frequency <= 2450)
-#      band = '3.4GHz' if (frequency >= 3300) && (frequency <= 3500)
-#      band = '5.7GHz' if (frequency >= 5650) && (frequency <= 5925)
-#      band = '10GHz' if (frequency >= 10_000) && (frequency <= 10_500)
-#      band = '24GHz' if (frequency >= 24_000) && (frequency <= 24_250)
-#      band = '47GHz' if (frequency >= 47_000) && (frequency <= 47_200)
-#      band = '76GHz' if (frequency >= 75_500) && (frequency <= 81_000)
-#      band = '122GHz' if (frequency >= 119_980) && (frequency <= 120_020)
-#      band = '136GHz' if (frequency >= 142_000) && (frequency <= 149_000)
-#      band = '248GHz' if (frequency >= 241_000) && (frequency <= 250_000)
+    #      band = '1.8MHz' if (frequency >= 1.8) && (frequency <= 2)
+    #      band = '3.6MHz' if (frequency >= 3.5) && (frequency <= 4)
+    #      band = '5MHz' if (frequency >= 5.351) && (frequency <= 5.367)
+    #      band = '7MHz' if (frequency >= 7) && (frequency <= 7.3)
+    #      band = '10MHz' if (frequency >= 10.1) && (frequency <= 10.15)
+    #      band = '14MHz' if (frequency >= 14.0) && (frequency <= 14.35)
+    #      band = '18MHz' if (frequency >= 18.068) && (frequency <= 18.168)
+    #      band = '21MHz' if (frequency >= 21.0) && (frequency <= 21.45)
+    #      band = '24MHz' if (frequency >= 24.89) && (frequency <= 24.99)
+    #      band = '28MHz' if (frequency >= 28.0) && (frequency <= 29.7)
+    #      band = '50MHz' if (frequency >= 50) && (frequency <= 54)
+    #      band = '70MHz' if (frequency >= 70) && (frequency <= 71)
+    #      band = '144MHz' if (frequency >= 144) && (frequency <= 148)
+    #      band = '220MHz' if (frequency >= 222) && (frequency <= 225)
+    #      band = '430MHz' if (frequency >= 420) && (frequency <= 450)
+    #      band = '900MHz' if (frequency >= 902) && (frequency <= 928)
+    #      band = '1.24GHz' if (frequency >= 1240) && (frequency <= 1300)
+    #      band = '2.3GHz' if (frequency >= 2300) && (frequency <= 2450)
+    #      band = '3.4GHz' if (frequency >= 3300) && (frequency <= 3500)
+    #      band = '5.7GHz' if (frequency >= 5650) && (frequency <= 5925)
+    #      band = '10GHz' if (frequency >= 10_000) && (frequency <= 10_500)
+    #      band = '24GHz' if (frequency >= 24_000) && (frequency <= 24_250)
+    #      band = '47GHz' if (frequency >= 47_000) && (frequency <= 47_200)
+    #      band = '76GHz' if (frequency >= 75_500) && (frequency <= 81_000)
+    #      band = '122GHz' if (frequency >= 119_980) && (frequency <= 120_020)
+    #      band = '136GHz' if (frequency >= 142_000) && (frequency <= 149_000)
+    #      band = '248GHz' if (frequency >= 241_000) && (frequency <= 250_000)
     band
   end
 end

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 # typed: false
+
 module AssetGisTools
   extend ActiveSupport::Concern
 
@@ -10,11 +11,11 @@ module AssetGisTools
   def calc_location
     location = nil
     if id
-      locations = Asset.find_by_sql ['select id, CASE
+      locations = Asset.find_by_sql [ 'select id, CASE
         WHEN (ST_ContainsProperly(boundary, ST_Centroid(boundary)))
         THEN ST_Centroid(boundary)
         ELSE ST_PointOnSurface(boundary)
-        END AS location from assets where id=' + id.to_s]
+        END AS location from assets where id=' + id.to_s ]
       location = locations && locations.count.positive? ? locations.first.location : nil
     end
     location
@@ -24,7 +25,7 @@ module AssetGisTools
   # Polygons will need to call get_access(_with_buffer) manually when needed
   # as we don't want to recalculate it on every save
   def add_activation_zone(force = false)
-    asset_test = Asset.find_by_sql [" select (az_boundary is not null) as has_boundary from assets where id=#{id}"]
+    asset_test = Asset.find_by_sql [ " select (az_boundary is not null) as has_boundary from assets where id=#{id}" ]
     if (asset_test.first[:has_boundary] == false) || (force == true)
       if type.ele_buffer
         add_sota_activation_zone(type.ele_buffer)
@@ -36,7 +37,6 @@ module AssetGisTools
     add_az_area
 
     get_access
-
   end
 
   def Asset.add_vk_sota_activation_zone_by_region(state)
@@ -45,19 +45,19 @@ module AssetGisTools
     regions.each do |region|
       puts "REGION: #{region.name} #{region.sota_code}"
       puts "SOTA"
-      as=Asset.where("code like '#{region.sota_code.gsub('-','/')}%%'").order(:code)
+      as=Asset.where("code like '#{region.sota_code.gsub('-', '/')}%%'").order(:code)
       as.each do |a|
         puts a.code
         a.add_vk_sota_activation_zone(25)
       end
       puts "HEMA"
-      as=Asset.where(region: region.sota_code, asset_type: 'hump')
+      as=Asset.where(region: region.sota_code, asset_type: "hump")
       as.each do |a|
         puts a.code
         a.add_vk_sota_activation_zone(25)
       end
       AustraliaDem.clear_table
-    end 
+    end
     true
   end
 
@@ -80,10 +80,10 @@ module AssetGisTools
       alt_max = 5000
       dist_max = 0.04 # degrees
       logger.debug " select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(rast),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem16 where st_intersects(rast,st_buffer(ST_GeomFromText('POINT(#{location.x} #{location.y})',4326),#{dist_max}))) as bar where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{location.x} #{location.y})',4326)); "
-      az_poly = Dem15.find_by_sql [" select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(rast),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem16 where st_intersects(rast,st_buffer(ST_GeomFromText('POINT(#{location.x} #{location.y})',4326),#{dist_max}))) as bar where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{location.x} #{location.y})',4326)); "]
-      if az_poly && az_poly.count.positive? && az_poly.first['geom']
-        logger.debug az_poly.first['geom']
-        boundary = make_multipolygon(az_poly.first['geom'])
+      az_poly = Dem15.find_by_sql [ " select val, st_astext(geom) as geom from (select (st_dumpaspolygons(st_reclass(st_union(rast),1,'0-#{alt_min}:0,#{alt_min}-#{alt_max}:1','8BUI'))).* from dem16 where st_intersects(rast,st_buffer(ST_GeomFromText('POINT(#{location.x} #{location.y})',4326),#{dist_max}))) as bar where val=1 and st_contains(geom, ST_GeomFromText('POINT(#{location.x} #{location.y})',4326)); " ]
+      if az_poly && az_poly.count.positive? && az_poly.first["geom"]
+        logger.debug az_poly.first["geom"]
+        boundary = make_multipolygon(az_poly.first["geom"])
         ActiveRecord::Base.connection.execute("update assets set az_boundary=ST_geomfromtext('#{boundary}',4326) where id=#{id};")
       end
     end
@@ -94,48 +94,48 @@ module AssetGisTools
   # direct to db so callback-safe
   def get_access
     # roads
-    record = Asset.find_by_sql [ "select coalesce(az_boundary, boundary, location)::text as temp_loc from assets where id=?", self.id]
+    record = Asset.find_by_sql [ "select coalesce(az_boundary, boundary, location)::text as temp_loc from assets where id=?", self.id ]
     our_geometry = record.first[:temp_loc] if record.first
 
 
-    if country=='ZL'
-      #access
+    if country=="ZL"
+      # access
       roads=Road.where("ST_Intersects(ST_GeomFromEWKT(?), wkb_geometry)", our_geometry)
       ids=roads.pluck(:t50_fid)
       self.update_column(:access_road_ids, ids)
 
-      #distance
+      # distance
       closest_road = Road
         .select(Arel.sql("t50_fid, ST_Distance(wkb_geometry::geography, ST_GeomFromEWKT(?)::geography) AS distance", our_geometry))
              .order(Arel.sql("wkb_geometry <-> ST_GeomFromEWKT(?)", our_geometry))
              .first
-      self.update_column(:nearest_road_id, closest_road.t50_fid) 
-      self.update_column(:road_distance, closest_road.distance) 
-    elsif country=='VK'
+      self.update_column(:nearest_road_id, closest_road.t50_fid)
+      self.update_column(:road_distance, closest_road.distance)
+    elsif country=="VK"
       roads=VkRoad.where("ST_Intersects(ST_GeomFromEWKT(?), shape) and subtype='ROAD'", our_geometry)
       ids=roads.pluck(:road_id)
       self.update_column(:access_road_ids, ids)
 
-      #distance
+      # distance
       closest_road = VkRoad
              .select(Arel.sql("road_id, ST_Distance(shape::geography, ST_GeomFromEWKT(?)::geography) AS distance", our_geometry))
              .order(Arel.sql("shape <-> ST_GeomFromEWKT(?)", our_geometry))
              .first
-      self.update_column(:nearest_road_id, closest_road.road_id) 
-      self.update_column(:road_distance, closest_road.distance) 
+      self.update_column(:nearest_road_id, closest_road.road_id)
+      self.update_column(:road_distance, closest_road.distance)
     end
 
     # legal_roads
-    if country=='ZL'
+    if country=="ZL"
       ActiveRecord::Base.connection.execute("update assets set access_legal_road_ids=(select array_agg(r.id) as legal_road_ids from assets a, legal_roads r where (ST_intersects (a.az_boundary, r.boundary) or ST_intersects (a.location, r.boundary)) and a.code='#{code}') where code='#{code}'")
     end
 
-    if country=='VK'
+    if country=="VK"
       # capad parks - cross database so very slow
       # Retrieve the single asset, prioritizing boundary, then falling back to location
       asset_data = Asset.where(id: self.id)
                   .select("
-                    id, 
+                    id,
                     ST_AsBinary(COALESCE(az_boundary, location))::text AS raw_geometry_wkb
                   ")
                   .first
@@ -145,14 +145,14 @@ module AssetGisTools
         WHERE ST_Intersects(wkb_geometry, ST_GeomFromWKB(decode(substring(? from 3), 'hex'), 4326))
       SQL
 
-      sanitized_sql = Capad.send(:sanitize_sql_array, [sql, asset_data.raw_geometry_wkb])
+      sanitized_sql = Capad.send(:sanitize_sql_array, [ sql, asset_data.raw_geometry_wkb ])
       capad_ids = Capad.connection.select_all(sanitized_sql).to_a
 
       sql = <<-SQL
         SELECT array_agg(id::varchar) as ids FROM vk_state_park
         WHERE ST_Intersects(boundary, ST_GeomFromWKB(decode(substring(? from 3), 'hex'), 4326))
       SQL
-      sanitized_sql = VkStatePark.send(:sanitize_sql_array, [sql, asset_data.raw_geometry_wkb])
+      sanitized_sql = VkStatePark.send(:sanitize_sql_array, [ sql, asset_data.raw_geometry_wkb ])
       state_ids = VkStatePark.connection.select_all(sanitized_sql).to_a
 
       puts capad_ids.to_json
@@ -161,15 +161,15 @@ module AssetGisTools
       if capad_ids and capad_ids.count>0
         capad_id_arr = capad_ids.first["ids"]
         capad_id_arr = capad_id_arr[1..-2] if capad_id_arr
-        capad_id_arr = capad_id_arr.split(',') if capad_id_arr
-        capad_id_str = capad_id_arr.uniq.join(', ')  if capad_id_arr
+        capad_id_arr = capad_id_arr.split(",") if capad_id_arr
+        capad_id_str = capad_id_arr.uniq.join(", ")  if capad_id_arr
       end
       state_id_str = ""
       if state_ids and state_ids.count>0
         state_id_arr = state_ids.first["ids"]
         state_id_arr = state_id_arr[1..-2] if state_id_arr
-        state_id_arr = state_id_arr.split(',') if state_id_arr
-        state_id_str = state_id_arr.uniq.join(', ')  if state_id_arr
+        state_id_arr = state_id_arr.split(",") if state_id_arr
+        state_id_str = state_id_arr.uniq.join(", ")  if state_id_arr
       end
 
       puts capad_id_str.to_json
@@ -179,18 +179,18 @@ module AssetGisTools
     end
 
     # parks
-    if country=='ZL'
+    if country=="ZL"
       ActiveRecord::Base.connection.execute("update assets set access_park_ids=(select array_agg(r.id) as park_ids from assets a, assets r where (ST_intersects (a.az_boundary, r.boundary) or ST_intersects (a.location, r.boundary)) and a.code='#{code}' and r.asset_type='park') where code='#{code}'")
     end
 
     # tracks
-    if country=='ZL'
-      #access
+    if country=="ZL"
+      # access
       tracks=DocTrack.where("ST_Intersects(ST_GeomFromEWKT(?), wkb_geometry)", our_geometry)
       ids=tracks.pluck(:ogc_fid)
       self.update_column(:access_track_ids, ids)
 
-    elsif country=='VK'
+    elsif country=="VK"
       roads=VkRoad.where("ST_Intersects(ST_GeomFromEWKT(?), shape) and (subtype='PATHWAY' or subtype='FIRE TRAIL')", our_geometry)
       ids=roads.pluck(:road_id)
       self.update_column(:access_track_ids, ids)
@@ -207,9 +207,9 @@ module AssetGisTools
 
   # fix invalid polygons for all assets
   def Asset.fix_invalid_polygons
-    ActiveRecord::Base.connection.execute('update assets set boundary=st_multi(ST_CollectionExtract(ST_MakeValid(boundary),3)) where id in (select id from assets where ST_IsValid(boundary)=false);')
-    ActiveRecord::Base.connection.execute('update assets set boundary_simplified=st_multi(ST_CollectionExtract(ST_MakeValid(boundary_simplified),3)) where id in (select id from assets where ST_IsValid(boundary_simplified)=false);')
-    ActiveRecord::Base.connection.execute('update assets set boundary_very_simplified=st_multi(ST_CollectionExtract(ST_MakeValid(boundary_very_simplified),3)) where id in (select id from assets where ST_IsValid(boundary_very_simplified)=false);')
+    ActiveRecord::Base.connection.execute("update assets set boundary=st_multi(ST_CollectionExtract(ST_MakeValid(boundary),3)) where id in (select id from assets where ST_IsValid(boundary)=false);")
+    ActiveRecord::Base.connection.execute("update assets set boundary_simplified=st_multi(ST_CollectionExtract(ST_MakeValid(boundary_simplified),3)) where id in (select id from assets where ST_IsValid(boundary_simplified)=false);")
+    ActiveRecord::Base.connection.execute("update assets set boundary_very_simplified=st_multi(ST_CollectionExtract(ST_MakeValid(boundary_very_simplified),3)) where id in (select id from assets where ST_IsValid(boundary_very_simplified)=false);")
   end
 
   # add simple boundaries for all assets
@@ -222,9 +222,9 @@ module AssetGisTools
   # add simplified boundary for this asset
   def add_simple_boundary
     if type.has_boundary
-      ActiveRecord::Base.connection.execute('update assets set boundary_simplified=ST_Simplify("boundary",0.002) where id=' + id.to_s + ';')
-      ActiveRecord::Base.connection.execute('update assets set boundary_very_simplified=ST_Simplify("boundary",0.02) where id=' + id.to_s + ';')
-      ActiveRecord::Base.connection.execute('update assets set boundary_quite_simplified=ST_Simplify("boundary",0.002) where id=' + id.to_s + ';')
+      ActiveRecord::Base.connection.execute('update assets set boundary_simplified=ST_Simplify("boundary",0.002) where id=' + id.to_s + ";")
+      ActiveRecord::Base.connection.execute('update assets set boundary_very_simplified=ST_Simplify("boundary",0.02) where id=' + id.to_s + ";")
+      ActiveRecord::Base.connection.execute('update assets set boundary_quite_simplified=ST_Simplify("boundary",0.002) where id=' + id.to_s + ";")
     end
   end
 
@@ -232,19 +232,19 @@ module AssetGisTools
   # Calculate area of the asset
   def add_area
     if type.has_boundary
-      asset_test = Asset.find_by_sql [" select (boundary is not null) as has_boundary from assets where id=#{id}"]
+      asset_test = Asset.find_by_sql [ " select (boundary is not null) as has_boundary from assets where id=#{id}" ]
       if asset_test.first.has_boundary == true
-        ActiveRecord::Base.connection.execute(' update assets set area=ST_Area(geography(boundary)) where id=' + id.to_s)
+        ActiveRecord::Base.connection.execute(" update assets set area=ST_Area(geography(boundary)) where id=" + id.to_s)
       end
     end
   end
 
   # add az_areas for all assets
   # Calculate az_area of the asset
-  def add_az_area(overwrite=false)
-    asset_test = Asset.find_by_sql [" select (az_boundary is not null) as has_boundary from assets where id=#{id}"]
+  def add_az_area(overwrite = false)
+    asset_test = Asset.find_by_sql [ " select (az_boundary is not null) as has_boundary from assets where id=#{id}" ]
     if asset_test.first.has_boundary == true or overwrite==true
-      ActiveRecord::Base.connection.execute(' update assets set az_area=ST_Area(geography(az_boundary)) where id=' + id.to_s)
+      ActiveRecord::Base.connection.execute(" update assets set az_area=ST_Area(geography(az_boundary)) where id=" + id.to_s)
     end
   end
 
@@ -253,12 +253,12 @@ module AssetGisTools
     if location && (!altitude || altitude.to_i.zero? || (force == true))
       # get alt from map if it is blank or 0
 
-      alt_arr = Dem15.find_by_sql ["
+      alt_arr = Dem15.find_by_sql [ "
         select ST_Value(rast, ST_GeomFromText(?,4326)) rid
           from dem16
           where ST_Intersects(rast,ST_GeomFromText(?,4326));",
                                    location.to_s,
-                                   location.to_s]
+                                   location.to_s ]
 
       self.altitude = alt_arr.first.try(:rid).to_i
       unless read_only then update_column(:altitude, altitude) end # callback-safe write
@@ -272,9 +272,9 @@ module AssetGisTools
   end
 
   def add_buffered_activation_zone
-    calc_az_radius=az_radius                             #asset radius if specified
-    calc_az_radius = 0.001*(self.type.dist_buffer||0) if !az_radius #type radius if not
-    calc_az_radius=0 if calc_az_radius==nil              #0 otherwise
+    calc_az_radius=az_radius                             # asset radius if specified
+    calc_az_radius = 0.001*(self.type.dist_buffer||0) if !az_radius # type radius if not
+    calc_az_radius=0 if calc_az_radius==nil              # 0 otherwise
 
     if self.type.has_boundary and area and area>0 then
       if calc_az_radius==0
@@ -290,9 +290,7 @@ module AssetGisTools
   end
 
   def make_multipolygon(boundary)
-    if boundary[0..6] == 'POLYGON' then boundary = 'MULTIPOLYGON (' + boundary[7..-1] + ')' end
+    if boundary[0..6] == "POLYGON" then boundary = "MULTIPOLYGON (" + boundary[7..-1] + ")" end
     boundary
   end
-
 end
-

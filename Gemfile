@@ -18,6 +18,7 @@ gem "jbuilder"
 gem "activerecord-postgis-adapter"
 gem "rgeo"
 gem "rgeo-proj4" # Adds the missing RGeo::CoordSys::Proj4 constant
+gem "rgeo-geojson" 
 gem "kt-paperclip", "~> 7.2"
 gem "bcrypt"
 gem "resque"
@@ -25,10 +26,10 @@ gem "resque-scheduler"
 gem "will_paginate"
 gem "dartsass-rails"
 gem "csv"
-gem 'htmlentities'
-gem 'keycloak'
+gem "htmlentities"
+gem "keycloak"
 gem "rexml", "~> 3.3"
-gem 'rack-cors'
+gem "rack-cors"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
@@ -45,10 +46,10 @@ gem "solid_cable"
 gem "bootsnap", require: false
 
 # Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
-#gem "kamal", require: false
+# gem "kamal", require: false
 
 # Add HTTP asset caching/compression and X-Sendfile acceleration to Puma [https://github.com/basecamp/thruster/]
-#gem "thruster", require: false
+# gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
@@ -73,10 +74,12 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
-  gem 'webmock'
-  gem 'vcr'
+  gem "webmock"
+  gem "vcr"
 end
 
 gem "jsbundling-rails", "~> 1.3"
 
 gem "rubocop", "~> 1.89", group: :development
+
+gem "debride", "~> 1.15", group: :development

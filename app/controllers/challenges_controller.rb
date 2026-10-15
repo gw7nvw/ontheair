@@ -1,12 +1,12 @@
 class ChallengesController < ApplicationController
   # Skip the authentication filters that triggered the redirect in the first place
-  skip_before_action :authenticate_user!, raise: false 
+  skip_before_action :authenticate_user!, raise: false
 
   def show
     # Generate a secure token and save it in the session for verification
     @verification_token = SecureRandom.hex(16)
     session[:human_challenge_token] = @verification_token
-    
+
     # Store the original URL they were trying to access so we can redirect them back
     session[:challenge_return_to] = params[:referreing_url] || root_path
   end
@@ -16,9 +16,9 @@ class ChallengesController < ApplicationController
     if session[:human_challenge_token].present? && params[:id] == session[:human_challenge_token]
       # Clear the session token token
       session[:human_challenge_token] = nil
-      
+
       # Reset the suspicious tracker counters in the database for this IP
-      request_ip = request.env['HTTP_CF_CONNECTING_IP'] || request.remote_ip
+      request_ip = request.env["HTTP_CF_CONNECTING_IP"] || request.remote_ip
 
       UserAgent.where(user_ip: request_ip).update_all(
         access_count: 0,
@@ -33,7 +33,7 @@ class ChallengesController < ApplicationController
       redirect_to session.delete(:challenge_return_to)
     else
       show
-      render 'show'
+      render "show"
     end
   end
 
@@ -45,18 +45,18 @@ class ChallengesController < ApplicationController
   private
 
   def render_trap
-#    request_ip = request.remote_ip
-    request_ip = request.env['HTTP_CF_CONNECTING_IP'] || request.remote_ip
+    #    request_ip = request.remote_ip
+    request_ip = request.env["HTTP_CF_CONNECTING_IP"] || request.remote_ip
 
-    record = UserAgent.find_or_create_by!(user_ip: request_ip)
+    UserAgent.find_or_create_by!(user_ip: request_ip)
 
     # Instantly tag them as a malicious bot in the DB
     # You can add a boolean column like `is_blocked: true` to your user_agents table
-    ActiveRecord::Base.connection.execute("update user_agents set confirmed_bot = true where user_ip = '#{request_ip}' " )
-#    UserAgent.where(user_ip: request_ip, user_agent: user_agent).update_all(
-#      confirmed_bot: true,
-#      updated_at: Time.now
-#    )
+    ActiveRecord::Base.connection.execute("update user_agents set confirmed_bot = true where user_ip = '#{request_ip}' ")
+    #    UserAgent.where(user_ip: request_ip, user_agent: user_agent).update_all(
+    #      confirmed_bot: true,
+    #      updated_at: Time.now
+    #    )
     Rails.logger.info "!!! BOT HIT TRAP - BLOCKING "
 
     # Force clear their session so they lose any state
@@ -66,4 +66,3 @@ class ChallengesController < ApplicationController
     render plain: "Forbidden", status: :forbidden
   end
 end
-

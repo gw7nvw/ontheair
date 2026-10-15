@@ -1,17 +1,18 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class Image < ActiveRecord::Base
   has_attached_file :image,
-                    path: ':rails_root/public/system/:attachment/:id/:basename_:style.:extension',
-                    url: '/system/:attachment/:id/:basename_:style.:extension',
+                    path: ":rails_root/public/system/:attachment/:id/:basename_:style.:extension",
+                    url: "/system/:attachment/:id/:basename_:style.:extension",
                     styles: {
-                      thumb: ['102x76#',  :jpg, quality: 70],
-                      original: ['1024>', :jpg, quality: 50]
+                      thumb: [ "102x76#",  :jpg, quality: 70 ],
+                      original: [ "1024>", :jpg, quality: 50 ]
                     },
                     convert_options: {
-                      thumb: '-set colorspace sRGB -strip',
-                      original: '-set colorspace sRGB'
+                      thumb: "-set colorspace sRGB -strip",
+                      original: "-set colorspace sRGB"
                     }
 
   validates_attachment :image,
@@ -32,12 +33,12 @@ class Image < ActiveRecord::Base
 
   def updated_by_name
     user = User.find_by_id(updated_by_id)
-    user ? user.callsign : ''
+    user ? user.callsign : ""
   end
 
   def topic_name
     topic = Topic.find_by_id(topic_id)
-    topic ? topic.name : ''
+    topic ? topic.name : ""
   end
 
   def topic
@@ -53,7 +54,7 @@ class Image < ActiveRecord::Base
 
   def item
     item = nil
-    items = Item.find_by_sql ["select * from items where item_type='image' and item_id=" + id.to_s]
+    items = Item.find_by_sql [ "select * from items where item_type='image' and item_id=" + id.to_s ]
     item = items.first if items
     item
   end
@@ -64,7 +65,7 @@ class Image < ActiveRecord::Base
     links.each do |link|
       acs.push(link.asset_code)
     end
-    acs.join(',')
+    acs.join(",")
   end
 
   def links

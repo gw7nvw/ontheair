@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class Road < ActiveRecord::Base
-  require 'csv'
+  require "csv"
   establish_connection :zl_gis
 
-  self.table_name='linz_roads'
+  self.table_name="linz_roads"
 end

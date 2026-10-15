@@ -1,16 +1,15 @@
 module ExportSitemaps
-
   @queue = :ota_scheduled
   def self.perform
      export_sitemap
   end
 
   def self.export_sitemap
-    File.open('public/sitemap.xml', 'w') do |file|
+    File.open("public/sitemap.xml", "w") do |file|
     xml = Builder::XmlMarkup.new(target: file, indent: 2)
     xml.instruct!
-    static_paths = ['/']
-     
+    static_paths = [ "/" ]
+
     xml.urlset(xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9") do
       static_paths.each do |path|
         xml.url do

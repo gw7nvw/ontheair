@@ -1,4 +1,5 @@
 # typed: false
+
 class AddIndexToAssets < ActiveRecord::Migration[5.0]
   def self.up
     add_index :assets, :safecode

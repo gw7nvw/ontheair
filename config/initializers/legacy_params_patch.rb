@@ -17,11 +17,10 @@ ActiveSupport.on_load(:action_controller) do
     end
 
     # Explicitly restore critical methods that might skip method_missing
-    [:slice, :except, :keep_if, :reject!, :select!, :to_hash].each do |method_name|
+    [ :slice, :except, :keep_if, :reject!, :select!, :to_hash ].each do |method_name|
       define_method(method_name) do |*args, &block|
         @parameters.send(method_name, *args, &block)
       end
     end
   end
 end
-

@@ -1,20 +1,21 @@
 # frozen_string_literal: true
 
 # typed: false
+
 module ApplicationHelper
-  require 'net/http'
+  require "net/http"
 
   def sign_in(user)
     remember_token = User.new_token
-    Rails.logger.info 'Assign RT: ' + remember_token
-    current_cookie_domain = if request.host.end_with?('ontheair.nz')
-      '.ontheair.nz'
-    elsif request.host.end_with?('parksnpeaks.org')
-      '.parksnpeaks.org'
+    Rails.logger.info "Assign RT: " + remember_token
+    current_cookie_domain = if request.host.end_with?("ontheair.nz")
+      ".ontheair.nz"
+    elsif request.host.end_with?("parksnpeaks.org")
+      ".parksnpeaks.org"
     else
       :all
     end
-    if ENV['RAILS_ENV'] == 'production'
+    if ENV["RAILS_ENV"] == "production"
       cookies[:remember_token2] = { value: remember_token, expires: TOKEN_EXPIRY.month.from_now.utc, domain: current_cookie_domain }
     else
       cookies[:remember_token3] = { value: remember_token, expires: TOKEN_EXPIRY.month.from_now.utc, domain: current_cookie_domain }
@@ -24,7 +25,7 @@ module ApplicationHelper
     session[:user_id] = user.id
     flush_old_tokens(user)
     request_ip = request.remote_ip
-    user_agent = request.user_agent || 'Unknown'
+    user_agent = request.user_agent || "Unknown"
     UserAgent.where(user_ip: request_ip).update_all(
         access_count: 0,
         suspicious_access_count: 0,
@@ -47,12 +48,12 @@ module ApplicationHelper
     end
   end
 
-  def convert_to_text(html, line_length = 65, _from_charset = 'UTF-8')
-    require 'htmlentities'
+  def convert_to_text(html, line_length = 65, _from_charset = "UTF-8")
+    require "htmlentities"
 
     txt = html
 
-    txt.gsub!(/<!-- start text\/html -->.*?<!-- end text\/html -->/m, '')
+    txt.gsub!(/<!-- start text\/html -->.*?<!-- end text\/html -->/m, "")
 
     txt.gsub!(/<img.+?alt=\"([^\"]*)\"[^>]*\>/i, '\1')
 
@@ -61,9 +62,9 @@ module ApplicationHelper
     # links
     txt.gsub!(/<a\s.*?href=["'](mailto:)?([^"']*)["'][^>]*>((.|\s)*?)<\/a>/i) do |_s|
       if Regexp.last_match(3).empty?
-        ''
+        ""
       else
-        Regexp.last_match(3).strip + ' ( ' + Regexp.last_match(2).strip + ' )'
+        Regexp.last_match(3).strip + " ( " + Regexp.last_match(2).strip + " )"
       end
     end
 
@@ -74,7 +75,7 @@ module ApplicationHelper
 
       htext = Regexp.last_match(2)
       htext.gsub!(/<br[\s]*\/?>/i, "\n") # handle <br>s
-      htext.gsub!(/<\/?[^>]*>/i, '') # strip tags
+      htext.gsub!(/<\/?[^>]*>/i, "") # strip tags
 
       # determine maximum line length
       hlength = 0
@@ -85,13 +86,13 @@ module ApplicationHelper
       hlength = line_length if hlength > line_length
 
       htext = case hlevel
-              when 1   # H1, asterisks above and below
-                ('*' * hlength) + "\n" + htext + "\n" + ('*' * hlength)
-              when 2   # H1, dashes above and below
-                ('-' * hlength) + "\n" + htext + "\n" + ('-' * hlength)
-              else # H3-H6, dashes below
-                htext + "\n" + ('-' * hlength)
-              end
+      when 1   # H1, asterisks above and below
+                ("*" * hlength) + "\n" + htext + "\n" + ("*" * hlength)
+      when 2   # H1, dashes above and below
+                ("-" * hlength) + "\n" + htext + "\n" + ("-" * hlength)
+      else # H3-H6, dashes below
+                htext + "\n" + ("-" * hlength)
+      end
 
       "\n\n" + htext + "\n\n"
     end
@@ -100,7 +101,7 @@ module ApplicationHelper
     txt.gsub!(/(<\/span>)[\s]+(<span)/mi, '\1 \2')
 
     # lists -- TODO: should handle ordered lists
-    txt.gsub!(/[\s]*(<li[^>]*>)[\s]*/i, '* ')
+    txt.gsub!(/[\s]*(<li[^>]*>)[\s]*/i, "* ")
     # list not followed by a newline
     txt.gsub!(/<\/li>[\s]*(?![\n])/i, "\n")
 
@@ -108,14 +109,14 @@ module ApplicationHelper
     txt.gsub!(/<\/p>/i, "\n\n")
     txt.gsub!(/<br[\/ ]*>/i, "\n")
     # strip remaining tags
-    txt.gsub!(/<\/?[^>]*>/, '')
+    txt.gsub!(/<\/?[^>]*>/, "")
 
     # decode HTML entities
     he = HTMLEntities.new
     txt = he.decode(txt)
 
     # no more than two consecutive spaces
-    txt.gsub!(/ {2,}/, ' ')
+    txt.gsub!(/ {2,}/, " ")
 
     #    txt = word_wrap(txt, line_length)
 
@@ -123,7 +124,7 @@ module ApplicationHelper
     txt.gsub!(/\r\n?/, "\n")
 
     # strip extra spaces
-    txt.gsub!(/[ \t]*\302\240+[ \t]*/, ' ') # non-breaking spaces -> spaces
+    txt.gsub!(/[ \t]*\302\240+[ \t]*/, " ") # non-breaking spaces -> spaces
     txt.gsub!(/\n[ \t]+/, "\n") # space at start of lines
     txt.gsub!(/[ \t]+\n/, "\n") # space at end of lines
 
@@ -132,7 +133,7 @@ module ApplicationHelper
 
     # the word messes up the parens
     txt.gsub!(/\(([ \n])(http[^)]+)([\n ])\)/) do |_s|
-      (Regexp.last_match(1) == "\n" ? Regexp.last_match(1) : '') + '( ' + Regexp.last_match(2) + ' )' + (Regexp.last_match(3) == "\n" ? Regexp.last_match(1) : '')
+      (Regexp.last_match(1) == "\n" ? Regexp.last_match(1) : "") + "( " + Regexp.last_match(2) + " )" + (Regexp.last_match(3) == "\n" ? Regexp.last_match(1) : "")
     end
 
     txt.strip

@@ -1,5 +1,6 @@
 
 # typed: false
+
 class User < ActiveRecord::Base
   serialize :score, coder: YAML, type: Hash
   serialize :score_total, coder: YAML, type: Hash
@@ -17,9 +18,9 @@ class User < ActiveRecord::Base
   attr_accessor :remeber_token, :activation_token, :reset_token
 
   before_validation { self.email = email.downcase if email }
-  before_validation { self.callsign = (callsign || '').strip.upcase }
+  before_validation { self.callsign = (callsign || "").strip.upcase }
 
-  before_save { if timezone.nil? then self.timezone = Timezone.find_by(name: 'UTC').id end }
+  before_save { if timezone.nil? then self.timezone = Timezone.find_by(name: "UTC").id end }
   before_save do
     self.pin = callsign.chars.sample(4).join if pin.nil? || (pin.length < 4)
   end
@@ -39,11 +40,11 @@ class User < ActiveRecord::Base
   validates :acctnumber, allow_blank: true, format: { with: VALID_PHONE_REGEX }
 
   def email_is_valid
-    if email 
-      provider=email.split('@')[1]
-      providers=EmailBlacklist.all.map{|ep| ep.email_provider}
+    if email
+      provider=email.split("@")[1]
+      providers=EmailBlacklist.all.map { |ep| ep.email_provider }
       if providers.include?(provider) then
-        errors.add(:email, 'This email provider does not accept emails from ontheair.nz. Please use a different email address or leave blank for no email services')
+        errors.add(:email, "This email provider does not accept emails from ontheair.nz. Please use a different email address or leave blank for no email services")
       end
     end
   end
@@ -141,7 +142,7 @@ class User < ActiveRecord::Base
   def self.find_by_full_callsign(callsign)
     user = if callsign && !callsign.empty?
              User.find_by(callsign: User.remove_call_suffix(callsign))
-           end
+    end
     user
   end
 
@@ -155,8 +156,8 @@ class User < ActiveRecord::Base
   #    (string) timezone.name
   #############################################################################################
   def timezonename
-    timezonename = ''
-    if timezone != ''
+    timezonename = ""
+    if timezone != ""
       tz = Timezone.find_by_id(timezone)
       timezonename = tz.name if tz
     end
@@ -169,7 +170,7 @@ class User < ActiveRecord::Base
   #    [Contact]
   #############################################################################################
   def contacts
-    Contact.find_by_sql ['select * from contacts where user1_id=' + id.to_s + ' or user2_id=' + id.to_s + ' order by date, time']
+    Contact.find_by_sql [ "select * from contacts where user1_id=" + id.to_s + " or user2_id=" + id.to_s + " order by date, time" ]
   end
 
   #############################################################################################
@@ -179,12 +180,12 @@ class User < ActiveRecord::Base
   #    [Contact]
   #############################################################################################
   def orphan_activations
-    codes = activations(orphan_activations: true, by_year: true, asset_type: 'everything')
+    codes = activations(orphan_activations: true, by_year: true, asset_type: "everything")
     contacts = []
     codes.each do |code_year|
-      code = code_year.split(' ')[0]
-      year = code_year.split(' ')[1]
-      contacts += Contact.find_by_sql [" select * from contacts where user2_id=#{id} and '#{code}'=ANY(asset2_codes) and date_part('year', time)='#{year}';"]
+      code = code_year.split(" ")[0]
+      year = code_year.split(" ")[1]
+      contacts += Contact.find_by_sql [ " select * from contacts where user2_id=#{id} and '#{code}'=ANY(asset2_codes) and date_part('year', time)='#{year}';" ]
     end
     contacts.uniq
   end
@@ -195,7 +196,7 @@ class User < ActiveRecord::Base
   #    [Log]
   #############################################################################################
   def logs
-    Log.find_by_sql ['select * from logs where user1_id=' + id.to_s + ' order by date']
+    Log.find_by_sql [ "select * from logs where user1_id=" + id.to_s + " order by date" ]
   end
 
   #############################################################################################
@@ -222,7 +223,7 @@ class User < ActiveRecord::Base
   #       codes: Array of asset codes
   ##########################################################################################
   def bagged(params = {})
-    asset_type = 'all'
+    asset_type = "all"
     qrp = false
     include_minor = false
     include_external = false
@@ -234,62 +235,62 @@ class User < ActiveRecord::Base
     qrp = params[:qrp] if params[:qrp]
     include_external = params[:include_external] if params[:include_external]
 
-    minor_query = include_minor == false ? 'a.minor is not true' : 'true'
+    minor_query = include_minor == false ? "a.minor is not true" : "true"
     if qrp == true
-      qrp_query1 = 'is_qrp1 is true'
-      qrp_query2 = 'is_qrp2 is true'
+      qrp_query1 = "is_qrp1 is true"
+      qrp_query2 = "is_qrp2 is true"
     else
-      qrp_query1 = 'true'
-      qrp_query2 = 'true'
+      qrp_query1 = "true"
+      qrp_query2 = "true"
     end
-    if asset_type == 'all'
+    if asset_type == "all"
       ats = AssetType.where(keep_score: true)
-      at_list = ats.map { |at| "'" + at.name + "'" }.join(',')
-    elsif asset_type == 'everything'
+      at_list = ats.map { |at| "'" + at.name + "'" }.join(",")
+    elsif asset_type == "everything"
       ats = AssetType.where("name != 'all'")
-      at_list = ats.map { |at| "'" + at.name + "'" }.join(',')
+      at_list = ats.map { |at| "'" + at.name + "'" }.join(",")
     else
-      at_list = asset_type.split(',').map { |at| "'" + at.strip + "'" }.join(',')
+      at_list = asset_type.split(",").map { |at| "'" + at.strip + "'" }.join(",")
     end
 
     # Get internal data
     sql = []
     sql << "
-       SELECT DISTINCT(asset1_codes) AS asset_code 
-       FROM  
+       SELECT DISTINCT(asset1_codes) AS asset_code
+       FROM
          (
            (
-             SELECT 
-               time, 
-               UNNEST(asset1_classes) AS asset1_classes, 
-               UNNEST(asset1_codes) AS asset1_codes 
-             FROM contacts 
-             WHERE 
+             SELECT
+               time,
+               UNNEST(asset1_classes) AS asset1_classes,
+               UNNEST(asset1_codes) AS asset1_codes
+             FROM contacts
+             WHERE
                (
-                 (user1_id=#{id} AND #{qrp_query1}) 
-               OR 
+                 (user1_id=#{id} AND #{qrp_query1})
+               OR
                  (user2_id=#{id} AND #{qrp_query2})
                )
-           ) 
+           )
          UNION
            (
-           SELECT 
-               time, 
-               UNNEST(asset2_classes) AS asset1_classes, 
-               UNNEST(asset2_codes) AS asset1_codes 
-             FROM contacts 
-             WHERE 
+           SELECT
+               time,
+               UNNEST(asset2_classes) AS asset1_classes,
+               UNNEST(asset2_codes) AS asset1_codes
+             FROM contacts
+             WHERE
                (
-                 (user1_id=#{id} AND #{qrp_query1}) 
-               OR 
+                 (user1_id=#{id} AND #{qrp_query1})
+               OR
                  (user2_id=#{id} AND #{qrp_query2})
                )
            )
          ) as c
-       INNER JOIN assets a ON a.code = c.asset1_codes 
-       WHERE a.valid_from<c.time 
-       AND (a.valid_to is null OR a.valid_to>c.time) 
-       AND #{minor_query} 
+       INNER JOIN assets a ON a.code = c.asset1_codes
+       WHERE a.valid_from<c.time
+       AND (a.valid_to is null OR a.valid_to>c.time)
+       AND #{minor_query}
        AND a.asset_type IN (#{at_list})
     "
 
@@ -302,10 +303,10 @@ class User < ActiveRecord::Base
 
     # 3. Combine the blocks with UNION and wrap them in an outer DISTINCT.
     combined_sql = "
-      SELECT DISTINCT asset_code 
+      SELECT DISTINCT asset_code
       FROM (
         #{sql.join(' UNION ')}
-      ) subquery 
+      ) subquery
       WHERE asset_code IS NOT NULL AND asset_code != ''
     "
 
@@ -328,16 +329,16 @@ class User < ActiveRecord::Base
   #       codes: Array of ["(asset code)"] or ["(asset_code) (year)"] or ["(asset_code) (date)"]
   ##########################################################################################
   def chased(params = {})
-    asset_type = 'all'
+    asset_type = "all"
     include_minor = false
     include_external = false
     qrp = false
-    qrp_query1 = 'true'
-    qrp_query2 = 'true'
-    date_query = ''
-    date_query_ext = ''
+    qrp_query1 = "true"
+    qrp_query2 = "true"
+    date_query = ""
+    date_query_ext = ""
     codes3 = []
-    
+
     asset_type = params[:asset_type] if params[:asset_type]
     include_minor = params[:include_minor] if params[:include_minor]
     include_external = params[:include_external] if params[:include_external]
@@ -351,42 +352,42 @@ class User < ActiveRecord::Base
       date_query_ext = ",' ', extract('year' from date)"
     end
 
-    minor_query = include_minor == false ? 'a.minor is not true' : 'true'
+    minor_query = include_minor == false ? "a.minor is not true" : "true"
 
     if qrp == true
-      qrp_query1 = 'is_qrp2=true'
-      qrp_query2 = 'is_qrp1=true'
+      qrp_query1 = "is_qrp2=true"
+      qrp_query2 = "is_qrp1=true"
     end
 
-    if asset_type == 'all'
+    if asset_type == "all"
       ats = AssetType.where(keep_score: true)
-      at_list = ats.map { |at| "'" + at.name + "'" }.join(',')
-    elsif asset_type == 'everything'
+      at_list = ats.map { |at| "'" + at.name + "'" }.join(",")
+    elsif asset_type == "everything"
       ats = AssetType.where("name != 'all'")
-      at_list = ats.map { |at| "'" + at.name + "'" }.join(',')
+      at_list = ats.map { |at| "'" + at.name + "'" }.join(",")
     else
-      at_list = asset_type.split(',').map { |at| "'" + at.strip + "'" }.join(',')
+      at_list = asset_type.split(",").map { |at| "'" + at.strip + "'" }.join(",")
     end
 
     # 1. Get internal data
     sql = []
     sql << "
-      SELECT DISTINCT(asset1_codes#{date_query}) AS asset_code 
+      SELECT DISTINCT(asset1_codes#{date_query}) AS asset_code
       FROM  (
         (
-          SELECT time, UNNEST(asset1_codes) AS asset1_codes 
-          FROM contacts 
+          SELECT time, UNNEST(asset1_codes) AS asset1_codes
+          FROM contacts
           WHERE user2_id=#{id} AND #{qrp_query1}
         ) UNION (
-          SELECT time, UNNEST(asset2_codes) AS asset1_codes 
-          FROM contacts 
+          SELECT time, UNNEST(asset2_codes) AS asset1_codes
+          FROM contacts
           WHERE user1_id=#{id} AND #{qrp_query2}
-        ) 
-      ) as c 
-      INNER JOIN assets a ON a.code = c.asset1_codes 
-      WHERE a.asset_type IN (#{at_list}) 
-        AND a.valid_from<c.time 
-        AND (a.valid_to is null or a.valid_to>c.time) 
+        )
+      ) as c
+      INNER JOIN assets a ON a.code = c.asset1_codes
+      WHERE a.asset_type IN (#{at_list})
+        AND a.valid_from<c.time
+        AND (a.valid_to is null or a.valid_to>c.time)
         AND #{minor_query}"
 
     # 2. optionally add external data
@@ -396,10 +397,10 @@ class User < ActiveRecord::Base
 
     # 3. Combine the blocks with UNION and wrap them in an outer DISTINCT.
     combined_sql = "
-      SELECT DISTINCT asset_code 
+      SELECT DISTINCT asset_code
       FROM (
         #{sql.join(' UNION ')}
-      ) subquery 
+      ) subquery
       WHERE asset_code IS NOT NULL AND asset_code != ''
     "
 
@@ -424,20 +425,20 @@ class User < ActiveRecord::Base
   #       codes: Array of ["(asset code)"] or ["(asset_code) (year)"] or ["(asset_code) (date)"]
   ##########################################################################################
   def activations(params = {})
-    result_type = 'all'
-    asset_type = 'all'
+    result_type = "all"
+    asset_type = "all"
     include_minor = false
     include_external = false
     qrp = false
-    qrp_query1 = 'true'
-    qrp_query2 = 'true'
-    date_query = ''
-    date_query_ext = ''
+    qrp_query1 = "true"
+    qrp_query2 = "true"
+    date_query = ""
+    date_query_ext = ""
     codes3 = []
 
     asset_type = params[:asset_type] if params[:asset_type]
-    result_type = 'only_activator' if params[:only_activator]
-    result_type = 'orphan_activations' if params[:orphan_activations]
+    result_type = "only_activator" if params[:only_activator]
+    result_type = "orphan_activations" if params[:orphan_activations]
     include_minor = params[:include_minor] if params[:include_minor]
     include_external = params[:include_external] if params[:include_external]
     qrp = params[:qrp] if params[:qrp]
@@ -450,75 +451,75 @@ class User < ActiveRecord::Base
       date_query_ext = ",' ', extract('year' from date)"
     end
 
-    minor_query = include_minor == false ? 'a.minor is not true' : 'true'
+    minor_query = include_minor == false ? "a.minor is not true" : "true"
 
     if qrp == true
-      qrp_query1 = 'is_qrp1=true'
-      qrp_query2 = 'is_qrp2=true'
+      qrp_query1 = "is_qrp1=true"
+      qrp_query2 = "is_qrp2=true"
     end
 
-    if asset_type == 'all'
+    if asset_type == "all"
       ats = AssetType.where(keep_score: true)
-      at_list = ats.map { |at| "'" + at.name + "'" }.join(',')
-    elsif asset_type == 'everything'
+      at_list = ats.map { |at| "'" + at.name + "'" }.join(",")
+    elsif asset_type == "everything"
       ats = AssetType.where("name != 'all'")
-      at_list = ats.map { |at| "'" + at.name + "'" }.join(',')
+      at_list = ats.map { |at| "'" + at.name + "'" }.join(",")
     else
-      at_list = asset_type.split(',').map { |at| "'" + at.strip + "'" }.join(',')
+      at_list = asset_type.split(",").map { |at| "'" + at.strip + "'" }.join(",")
     end
 
     # 1. Get internal data
     sql = []
     # a: chaser-reported activations
-    if result_type != 'only_activator'
+    if result_type != "only_activator"
       sql << "
-        SELECT DISTINCT(asset1_codes#{date_query}) AS asset_code 
+        SELECT DISTINCT(asset1_codes#{date_query}) AS asset_code
         FROM  (
-            SELECT time, UNNEST(asset2_codes) AS asset1_codes 
-            FROM contacts 
+            SELECT time, UNNEST(asset2_codes) AS asset1_codes
+            FROM contacts
             WHERE user2_id=#{id} AND #{qrp_query2}
-        ) as c 
-        INNER JOIN assets a ON a.code = c.asset1_codes 
-        WHERE a.asset_type IN (#{at_list}) 
-          AND a.valid_from<c.time 
-          AND (a.valid_to is null or a.valid_to>c.time) 
+        ) as c
+        INNER JOIN assets a ON a.code = c.asset1_codes
+        WHERE a.asset_type IN (#{at_list})
+          AND a.valid_from<c.time
+          AND (a.valid_to is null or a.valid_to>c.time)
           AND #{minor_query}"
     end
 
     # b: activator-reported activations
     sql << "
-      SELECT DISTINCT(asset1_codes#{date_query}) AS asset_code 
+      SELECT DISTINCT(asset1_codes#{date_query}) AS asset_code
       FROM  (
-          SELECT time, UNNEST(asset1_codes) AS asset1_codes 
-          FROM contacts 
+          SELECT time, UNNEST(asset1_codes) AS asset1_codes
+          FROM contacts
           WHERE user1_id=#{id} AND #{qrp_query1}
-      ) as c 
-      INNER JOIN assets a ON a.code = c.asset1_codes 
-      WHERE a.asset_type IN (#{at_list}) 
-        AND a.valid_from<c.time 
-        AND (a.valid_to is null or a.valid_to>c.time) 
+      ) as c
+      INNER JOIN assets a ON a.code = c.asset1_codes
+      WHERE a.asset_type IN (#{at_list})
+        AND a.valid_from<c.time
+        AND (a.valid_to is null or a.valid_to>c.time)
         AND #{minor_query}"
 
 
     # c: optionally add external data
-    if include_external == true and result_type != 'orphan_activations'
+    if include_external == true and result_type != "orphan_activations"
       sql << "SELECT CONCAT(summit_code#{date_query_ext}) AS asset_code FROM external_activations WHERE user_id='#{id}' AND asset_type IN (#{at_list})"
     end
 
-    if result_type == 'orphan_activations'
+    if result_type == "orphan_activations"
       combined_sql = "
-        SELECT DISTINCT asset_code 
+        SELECT DISTINCT asset_code
         FROM (
           #{sql.join(' EXCEPT ')}
-        ) subquery 
+        ) subquery
         WHERE asset_code IS NOT NULL AND asset_code != ''
       "
     else
       combined_sql = "
-        SELECT DISTINCT asset_code 
+        SELECT DISTINCT asset_code
         FROM (
           #{sql.join(' UNION ')}
-        ) subquery 
+        ) subquery
         WHERE asset_code IS NOT NULL AND asset_code != ''
       "
     end
@@ -542,20 +543,20 @@ class User < ActiveRecord::Base
   #       activations split over multiple logs
   ##########################################################################################
   def qualified(params = {})
-    raise 'asset_type is required in User.qualified' unless params[:asset_type]
+    raise "asset_type is required in User.qualified" unless params[:asset_type]
 
     date_query = "'forever'"
 
-    date_query = 'date::date' if params[:by_day]
+    date_query = "date::date" if params[:by_day]
     date_query = "date_part('year', date)" if params[:by_year]
 
-    minor_query = params[:include_minor] == true ? 'true' : 'a.minor is not true'
+    minor_query = params[:include_minor] == true ? "true" : "a.minor is not true"
 
     sql = []
     sql << "
       SELECT DISTINCT CONCAT(als.asset_codes, ' ', #{date_query}) AS asset_code FROM
         (
-          SELECT 
+          SELECT
             date,
             UNNEST(asset_codes) AS asset_codes,
             UNNEST(asset_classes) AS asset_classes,
@@ -570,7 +571,7 @@ class User < ActiveRecord::Base
         AND #{minor_query}
     "
 
-    #2 optionally include external data
+    # 2 optionally include external data
     if params[:include_external]
       at = AssetType.find_by(name: params[:asset_type])
 
@@ -582,20 +583,20 @@ class User < ActiveRecord::Base
             AND asset_type='#{params[:asset_type]}'
          "
     end
-    
-   
+
+
     # 3. Combine the blocks with UNION and wrap them in an outer DISTINCT.
     combined_sql = "
-      SELECT DISTINCT asset_code 
+      SELECT DISTINCT asset_code
       FROM (
         #{sql.join(' UNION ')}
-      ) subquery 
+      ) subquery
       WHERE asset_code IS NOT NULL AND asset_code != ''
     "
 
     codes =  ActiveRecord::Base.connection.select_rows(combined_sql).flatten
- 
-    codes.map { |rc| rc.split(' ')[0] }
+
+    codes.map { |rc| rc.split(" ")[0] }
   end
 
   ###########################################################################################
@@ -605,9 +606,9 @@ class User < ActiveRecord::Base
   #   success: boolean
   ###########################################################################################
   def update_score
-    ats = AssetType.where('keep_score is not false').to_a
+    ats = AssetType.where("keep_score is not false").to_a
     ats.each do |asset_type|
-      include_external = asset_type.name == 'summit'
+      include_external = asset_type.name == "summit"
       score[asset_type.name] = bagged(asset_type: asset_type.name).count
       score_total[asset_type.name] = 0
       activated_count[asset_type.name] = activations(asset_type: asset_type.name, include_external: include_external).count
@@ -620,21 +621,21 @@ class User < ActiveRecord::Base
       qualified_count_total[asset_type.name] = qualified(by_year: true, asset_type: asset_type.name, include_external: include_external).count
     end
 
-    score['qrp'] = bagged(qrp: true).count
-    score_total['qrp'] = 0
-    activated_count['qrp'] = activations(qrp: true).count
-    activated_count_total['qrp'] = activations(qrp: true, by_year: true).count
-    chased_count['qrp'] = chased(qrp: true).count
-    chased_count_total['qrp'] = chased(qrp: true, by_day: true).count
+    score["qrp"] = bagged(qrp: true).count
+    score_total["qrp"] = 0
+    activated_count["qrp"] = activations(qrp: true).count
+    activated_count_total["qrp"] = activations(qrp: true, by_year: true).count
+    chased_count["qrp"] = chased(qrp: true).count
+    chased_count_total["qrp"] = chased(qrp: true, by_day: true).count
 
-    score['elevation'] = elevation_bagged(include_external: true)
-    qualified_count_total['elevation'] = 0
-    activated_count_total['elevation'] = elevation_activated(include_external: true, by_day: true)
-    activated_count['elevation'] = elevation_activated(include_external: true)
-    chased_count_total['elevation'] = elevation_chased(include_external: true, by_day: true)
-    chased_count['elevation'] = elevation_chased(include_external: true)
+    score["elevation"] = elevation_bagged(include_external: true)
+    qualified_count_total["elevation"] = 0
+    activated_count_total["elevation"] = elevation_activated(include_external: true, by_day: true)
+    activated_count["elevation"] = elevation_activated(include_external: true)
+    chased_count_total["elevation"] = elevation_chased(include_external: true, by_day: true)
+    chased_count["elevation"] = elevation_chased(include_external: true)
 
-    score['p2p'] = get_p2p_all.count
+    score["p2p"] = get_p2p_all.count
     save
   end
 
@@ -654,16 +655,16 @@ class User < ActiveRecord::Base
   def elevation_bagged(params = {})
     elevation = 0
     ats = AssetType.where(has_elevation: true)
-    params[:asset_type] = ats.map(&:name).join(',')
+    params[:asset_type] = ats.map(&:name).join(",")
 
     codes = bagged(params)
-    #codes.each do |code|
+    # codes.each do |code|
     #  asset = Asset.find_by(code: code)
     #  elevation += asset.altitude if asset && !asset.altitude.nil?
-    #end
-    #puts "OLD ELE: #{elevation}"
-    elevations = Asset.find_by_sql ["select sum(altitude) as altitude from assets where code in (#{codes.map { |e| "'#{e}'" }.join(', ')})"] if codes and codes.count>0
-    elevation=elevations.first.altitude if elevations 
+    # end
+    # puts "OLD ELE: #{elevation}"
+    elevations = Asset.find_by_sql [ "select sum(altitude) as altitude from assets where code in (#{codes.map { |e| "'#{e}'" }.join(', ')})" ] if codes and codes.count>0
+    elevation=elevations.first.altitude if elevations
     elevation
   end
 
@@ -679,15 +680,15 @@ class User < ActiveRecord::Base
   def elevation_chased(params = {})
     elevation = 0
     ats = AssetType.where(has_elevation: true)
-    params[:asset_type] = ats.map(&:name).join(',')
+    params[:asset_type] = ats.map(&:name).join(",")
 
     codes = chased(params)
-#    codes.each do |code|
-#      asset = Asset.find_by(code: code.split(' ')[0])
-#      elevation += asset.altitude if asset && !asset.altitude.nil?
-#    end
-    elevations = Asset.find_by_sql ["select sum(altitude) as altitude from assets a join UNNEST(ARRAY[#{codes.map { |e| "'#{e.split(' ')[0]}'" }.join(', ')}]) AS  codes(code) on codes.code=a.code;"] if codes and codes.count>0
-    elevation=elevations.first.altitude if elevations  
+    #    codes.each do |code|
+    #      asset = Asset.find_by(code: code.split(' ')[0])
+    #      elevation += asset.altitude if asset && !asset.altitude.nil?
+    #    end
+    elevations = Asset.find_by_sql [ "select sum(altitude) as altitude from assets a join UNNEST(ARRAY[#{codes.map { |e| "'#{e.split(' ')[0]}'" }.join(', ')}]) AS  codes(code) on codes.code=a.code;" ] if codes and codes.count>0
+    elevation=elevations.first.altitude if elevations
     elevation
   end
 
@@ -707,11 +708,11 @@ class User < ActiveRecord::Base
       params[:asset_type] = at.name
       codes += qualified(params)
     end
-#    codes.each do |code|
-#      asset = Asset.find_by(code: code.split(' ')[0])
-#      elevation += asset.altitude if asset && !asset.altitude.nil?
-#    end
-    elevations = Asset.find_by_sql ["select sum(altitude) as altitude from assets where code in (#{codes.map { |e| "'#{e}'" }.join(', ')})"] if codes and codes.count>0
+    #    codes.each do |code|
+    #      asset = Asset.find_by(code: code.split(' ')[0])
+    #      elevation += asset.altitude if asset && !asset.altitude.nil?
+    #    end
+    elevations = Asset.find_by_sql [ "select sum(altitude) as altitude from assets where code in (#{codes.map { |e| "'#{e}'" }.join(', ')})" ] if codes and codes.count>0
     elevation=elevations.first.altitude if elevations
 
     elevation
@@ -729,14 +730,14 @@ class User < ActiveRecord::Base
   def elevation_activated(params = {})
     elevation = 0
     ats = AssetType.where(has_elevation: true)
-    params[:asset_type] = ats.map(&:name).join(',')
+    params[:asset_type] = ats.map(&:name).join(",")
 
     codes = activations(params)
-#    codes.each do |code|
-#      asset = Asset.find_by(code: code.split(' ')[0])
-#      elevation += asset.altitude if asset && !asset.altitude.nil?
-#    end
-    elevations = Asset.find_by_sql ["select sum(altitude) as altitude from assets a join UNNEST(ARRAY[#{codes.map { |e| "'#{e.split(' ')[0]}'" }.join(', ')}]) AS  codes(code) on codes.code=a.code;"] if codes and codes.count>0
+    #    codes.each do |code|
+    #      asset = Asset.find_by(code: code.split(' ')[0])
+    #      elevation += asset.altitude if asset && !asset.altitude.nil?
+    #    end
+    elevations = Asset.find_by_sql [ "select sum(altitude) as altitude from assets a join UNNEST(ARRAY[#{codes.map { |e| "'#{e.split(' ')[0]}'" }.join(', ')}]) AS  codes(code) on codes.code=a.code;" ] if codes and codes.count>0
     elevation=elevations.first.altitude if elevations
 
     elevation
@@ -750,13 +751,13 @@ class User < ActiveRecord::Base
   # Returns:
   #       users: [User]
   ###########################################################################################
-  def self.users_with_assets(sortby = 'park', scoreby = 'score', max_rows = 2000)
-    User.find_by_sql ["
+  def self.users_with_assets(sortby = "park", scoreby = "score", max_rows = 2000)
+    User.find_by_sql [ "
       select * from users
         where cast(substring(SUBSTRING(" + scoreby + " from '" + sortby + ": [0-9]{1,9}') from ' [0-9]{1,9}') as integer)>0
         and " + scoreby + " not like '%%{}%%'
       order by cast(substring(SUBSTRING(" + scoreby + " from '" + sortby + ": [0-9]{1,9}') from ' [0-9]{1,9}') as integer) desc
-      limit " + max_rows.to_s]
+      limit " + max_rows.to_s ]
   end
 
   ###########################################################################################
@@ -769,20 +770,20 @@ class User < ActiveRecord::Base
   def get_p2p_all
     # list of all ZLOTA asset types
     ats = AssetType.where(keep_score: true)
-    at_list = ats.map { |at| "'" + at.name + "'" }.join(',')
+    at_list = ats.map { |at| "'" + at.name + "'" }.join(",")
     sql = []
     dis_sql = []
-    # contacts where I'm in ZLOTA
-#            c1.id AS id, 
-#            c1.user1_id AS user1_id, 
-#            c1.user2_id AS user2_id, 
+   # contacts where I'm in ZLOTA
+   #            c1.id AS id,
+   #            c1.user1_id AS user1_id,
+   #            c1.user2_id AS user2_id,
 
    sql << "
-     SELECT 
+     SELECT
        (c.time::date || ' ' || split_part(unnested.asset1_code, ' ', 1) || ' ' || split_part(unnested.asset2_code, ' ', 1)) AS asset_code
      FROM contacts c
      CROSS JOIN LATERAL (
-       SELECT 
+       SELECT
          c.asset1_codes[i] AS asset1_code,
          c.asset1_classes[i] AS asset1_class,
          a1.asset2_code
@@ -793,11 +794,11 @@ class User < ActiveRecord::Base
        AND unnested.asset1_class IN (#{at_list})"
 
    sql << "
-     SELECT 
+     SELECT
        (c.time::date || ' ' || split_part(unnested.asset1_code, ' ', 1) || ' ' || split_part(unnested.asset2_code, ' ', 1)) AS asset_code
      FROM contacts c
      CROSS JOIN LATERAL (
-       SELECT 
+       SELECT
          c.asset2_codes[i] AS asset1_code,
          c.asset2_classes[i] AS asset1_class,
          a1.asset2_code
@@ -807,14 +808,14 @@ class User < ActiveRecord::Base
      WHERE c.user2_id = #{id}
        AND unnested.asset1_class IN (#{at_list})"
 
-    # contacts where other party  ZLOTA (reverse code order so my loc first
-    # to avoid double-counting ZLOTA-ZLOTA
+   # contacts where other party  ZLOTA (reverse code order so my loc first
+   # to avoid double-counting ZLOTA-ZLOTA
    sql << "
-     SELECT 
+     SELECT
        (c.time::date || ' ' || split_part(unnested.asset2_code, ' ', 1) || ' ' || split_part(unnested.asset1_code, ' ', 1)) AS asset_code
      FROM contacts c
      CROSS JOIN LATERAL (
-       SELECT 
+       SELECT
          c.asset1_codes[i] AS asset1_code,
          c.asset1_classes[i] AS asset1_class,
          a1.asset2_code
@@ -825,11 +826,11 @@ class User < ActiveRecord::Base
        AND unnested.asset1_class IN (#{at_list})"
 
    sql << "
-     SELECT 
+     SELECT
        (c.time::date || ' ' || split_part(unnested.asset2_code, ' ', 1) || ' ' || split_part(unnested.asset1_code, ' ', 1)) AS asset_code
      FROM contacts c
      CROSS JOIN LATERAL (
-       SELECT 
+       SELECT
          c.asset2_codes[i] AS asset1_code,
          c.asset2_classes[i] AS asset1_class,
          a1.asset2_code
@@ -839,17 +840,16 @@ class User < ActiveRecord::Base
      WHERE c.user1_id = #{id}
        AND unnested.asset1_class IN (#{at_list})"
 
-   # 3. Combine the blocks with UNION and wrap them in an outer DISTINCT.
+    # 3. Combine the blocks with UNION and wrap them in an outer DISTINCT.
     combined_sql = "
-      SELECT DISTINCT asset_code 
+      SELECT DISTINCT asset_code
       FROM (
         #{sql.join(' UNION ')}
-      ) subquery 
+      ) subquery
       WHERE asset_code IS NOT NULL AND asset_code != ''
     "
 
     codes =  ActiveRecord::Base.connection.select_rows(combined_sql).flatten
-
   end
 
   ##################################################################################
@@ -857,24 +857,24 @@ class User < ActiveRecord::Base
   ##################################################################################
 
   def self.all_activations
-    codes = Contact.find_by_sql [" select distinct code from (
+    codes = Contact.find_by_sql [ " select distinct code from (
            (select unnest(asset1_codes) as code from contacts c1)
           union
            (select unnest(asset2_codes) as code from contacts c2)
           union
            (select summit_code as code from external_activations c3)
-          ) as c; "]
+          ) as c; " ]
     codes.map { |c| c[:code] }
   end
 
   def self.all_chases
-    codes = Contact.find_by_sql [" select distinct code from (
+    codes = Contact.find_by_sql [ " select distinct code from (
             (select unnest(asset1_codes) as code from contacts c1)
            union
             (select unnest(asset2_codes) as code from contacts c2)
            union
             (select summit_code as code from external_chases c3)
-           ) as c; "]
+           ) as c; " ]
     codes.map { |c| c[:code] }
   end
 
@@ -888,26 +888,26 @@ class User < ActiveRecord::Base
   #   codes: array of [Asset.code]
   ##################################################################################
   def assets_by_type(asset_type, count_type, include_minor = false)
-    include_external = (asset_type == 'summit') || (asset_type == 'pota park') ? true : false
-    codes = if asset_type == 'qrp'
+    include_external = (asset_type == "summit") || (asset_type == "pota park") ? true : false
+    codes = if asset_type == "qrp"
               case count_type
-              when 'activated'
+              when "activated"
                 activations(qrp: true, include_minor: include_minor)
-              when 'chased'
+              when "chased"
                 chased(qrp: true, include_minor: include_minor)
               else
                 bagged(qrp: true, include_minor: include_minor)
               end
-            else
+    else
               case count_type
-              when 'activated'
+              when "activated"
                 activations(asset_type: asset_type, include_minor: include_minor, include_external: include_external)
-              when 'chased'
+              when "chased"
                 chased(asset_type: asset_type, include_minor: include_minor, include_external: include_external)
               else
                 bagged(asset_type: asset_type, include_minor: include_minor, include_external: include_external)
               end
-            end
+    end
     codes
   end
 
@@ -930,21 +930,21 @@ class User < ActiveRecord::Base
   #    ]
   ###############################################################################
   def wwff_logs(resubmit = false)
-    resubmit_str = resubmit == true ? '' : " and not 'WWFF' = ANY(submitted_to)"
+    resubmit_str = resubmit == true ? "" : " and not 'WWFF' = ANY(submitted_to)"
     wwff_logs = []
-    logger.debug 'resubmit: ' + resubmit_str
+    logger.debug "resubmit: " + resubmit_str
 
-#    contacts2 = Contact.find_by_sql ['select distinct asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where user1_id = ' + id.to_s + '' + resubmit_str + " and 'wwff park'=ANY(asset1_classes)) as sq where asset1_codes like 'ZLFF-%%'"]
-#    contacts2 = Contact.find_by_sql ['select distinct asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where user1_id = ' + id.to_s + '' + resubmit_str + " and asset1_classes @> ARRAY['wwff park'::varchar]) as sq where asset1_codes like '__FF-%%'"]
+    #    contacts2 = Contact.find_by_sql ['select distinct asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where user1_id = ' + id.to_s + '' + resubmit_str + " and 'wwff park'=ANY(asset1_classes)) as sq where asset1_codes like 'ZLFF-%%'"]
+    #    contacts2 = Contact.find_by_sql ['select distinct asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where user1_id = ' + id.to_s + '' + resubmit_str + " and asset1_classes @> ARRAY['wwff park'::varchar]) as sq where asset1_codes like '__FF-%%'"]
     contacts2 = ActiveRecord::Base.connection.execute(" select distinct asset1_codes  from (select distinct unnest(asset1_codes) as asset1_codes  from contacts where user1_id = #{id} #{resubmit_str} and asset1_classes @> ARRAY['wwff park'::varchar]) as sq where asset1_codes like '__FF-%%'")
-    references = contacts2.map{|c| c["asset1_codes"]}
+    references = contacts2.map { |c| c["asset1_codes"] }
     # get list of contacts for each park
     references.each do |park|
       pp = Asset.find_by(code: park)
       next unless pp
       # all contacts for this user from this park
-#      contacts1 = Contact.find_by_sql ['select distinct callsign2, date::date as date, band, mode from contacts where  user1_id = ? and (? = ANY(asset1_codes)) and (date >= ?)' + resubmit_str, id, park, pp.valid_from]
-      contacts1 = Contact.find_by_sql ['select distinct callsign2, date::date as date, band, mode from contacts where  user1_id = ? and (asset1_codes @> ARRAY[?::varchar]) and (date >= ?)' + resubmit_str, id, park, pp.valid_from]
+      #      contacts1 = Contact.find_by_sql ['select distinct callsign2, date::date as date, band, mode from contacts where  user1_id = ? and (? = ANY(asset1_codes)) and (date >= ?)' + resubmit_str, id, park, pp.valid_from]
+      contacts1 = Contact.find_by_sql [ "select distinct callsign2, date::date as date, band, mode from contacts where  user1_id = ? and (asset1_codes @> ARRAY[?::varchar]) and (date >= ?)" + resubmit_str, id, park, pp.valid_from ]
       contacts = []
       dups = []
 
@@ -952,7 +952,7 @@ class User < ActiveRecord::Base
       # add 1st matching contacts to valid list
       # and add remainder to duplicates list
       contacts1.each do |c|
-        contacts2 = Contact.find_by_sql [' select * from contacts where user1_id= ? and callsign2 = ? and band = ? and mode = ? and date::date = ? and (asset1_codes @> ARRAY[?::varchar])' + resubmit_str + ' order by time asc;', id, c.callsign2, c.band, c.mode, c.date.strftime('%Y-%m-%d'), park]
+        contacts2 = Contact.find_by_sql [ " select * from contacts where user1_id= ? and callsign2 = ? and band = ? and mode = ? and date::date = ? and (asset1_codes @> ARRAY[?::varchar])" + resubmit_str + " order by time asc;", id, c.callsign2, c.band, c.mode, c.date.strftime("%Y-%m-%d"), park ]
         if contacts2 && contacts2.count.positive?
           contacts.push(contacts2.first)
           dups += contacts2[1..-1] if contacts2.count > 1
@@ -986,7 +986,7 @@ class User < ActiveRecord::Base
       summit_query2 = "c1.asset1_codes='#{summit_code}'"
     end
 
-    sota_logs = Contact.find_by_sql ["
+    sota_logs = Contact.find_by_sql [ "
         select a.name, a.safecode, c3.* from
           (select asset1_codes as code, date, min(time) as time,
             count(case submitted_to_sota when true then 1 else null end) as submitted,
@@ -996,19 +996,19 @@ class User < ActiveRecord::Base
                  (select callsign1, callsign2, date,  time,
                     unnest(asset1_classes) as asset1_classes,
                     unnest(asset1_codes) as asset1_codes,
-                   'SOTA' = ANY(submitted_to) as submitted_to_sota 
+                   'SOTA' = ANY(submitted_to) as submitted_to_sota
                     from contacts
                     where user1_id=#{id} and #{summit_query1}) as c1
                  where #{summit_query2}) as c2
             group by asset1_codes, date
             order by min(time)) as c3
           inner join assets a on a.code=c3.code;
-      "]
+      " ]
     # now find activtions continuing into new day and combine unless they are in a new year
     if merge == true
       count = 1
       while count < sota_logs.count
-        if sota_logs[count] && (sota_logs[count].safecode == sota_logs[count - 1].safecode) && (sota_logs[count].time <= sota_logs[count - 1].time + 1.days) && (sota_logs[count].time.strftime('%Y') == sota_logs[count - 1].time.strftime('%Y'))
+        if sota_logs[count] && (sota_logs[count].safecode == sota_logs[count - 1].safecode) && (sota_logs[count].time <= sota_logs[count - 1].time + 1.days) && (sota_logs[count].time.strftime("%Y") == sota_logs[count - 1].time.strftime("%Y"))
           # drop this log, add contacts to last
           sota_logs[count - 1].count += sota_logs[count].count
           sota_logs.delete_at(count)
@@ -1034,16 +1034,16 @@ class User < ActiveRecord::Base
     sota_logs = []
     submitted_clause = if resubmit == false
                          " and not 'SOTA' = ANY(submitted_to)"
-#                         " and submitted_to_sota is not true"
-                       else
-                         ''
-                       end
+    #                         " and submitted_to_sota is not true"
+    else
+                         ""
+    end
 
     summit_clause = if summit_code
                       "and '#{summit_code}' = ANY(c1.asset2_codes)"
-                    else
+    else
                       "and 'summit'=ANY(c1.asset2_classes)"
-                    end
+    end
 
     raw_result = ActiveRecord::Base.connection.select_all("
          select * from (
@@ -1060,7 +1060,7 @@ class User < ActiveRecord::Base
          where c2.asset2_classes='summit'
          order by c2.time asc; ")
 
-    chaser_contacts = raw_result.map { |attributes| Contact.instantiate(attributes)}
+    chaser_contacts = raw_result.map { |attributes| Contact.instantiate(attributes) }
     sota_logs[0] = { code: nil, date: nil, count: chaser_contacts.count, contacts: chaser_contacts }
 
     sota_logs
@@ -1083,7 +1083,7 @@ class User < ActiveRecord::Base
     sota_logs = self.sota_logs(summit_code)
 
     sota_logs.each do |sota_log|
-      contacts = Contact.where('user1_id = ? and ? = ANY(asset1_codes) and date::date= ?', id, sota_log[:code], sota_log[:date].strftime('%Y-%m-%d')).order(:time)
+      contacts = Contact.where("user1_id = ? and ? = ANY(asset1_codes) and date::date= ?", id, sota_log[:code], sota_log[:date].strftime("%Y-%m-%d")).order(:time)
       contact_count = contacts.count
       sota_contacts.push(code: sota_log[:code], date: sota_log[:date], time: sota_log[:time], count: contact_count, contacts: contacts)
     end
@@ -1091,7 +1091,7 @@ class User < ActiveRecord::Base
     if merge == true
       count = 1
       while count < sota_contacts.count
-        if (sota_contacts[count][:code] == sota_contacts[count - 1][:code]) && (sota_contacts[count][:time] <= sota_contacts[count - 1][:time] + 1.days) && (sota_contacts[count][:time].strftime('%Y') == sota_contacts[count - 1][:time].strftime('%Y'))
+        if (sota_contacts[count][:code] == sota_contacts[count - 1][:code]) && (sota_contacts[count][:time] <= sota_contacts[count - 1][:time] + 1.days) && (sota_contacts[count][:time].strftime("%Y") == sota_contacts[count - 1][:time].strftime("%Y"))
           # drop this log, add contacts to last
           sota_contacts[count - 1][:count] += sota_contacts[count][:count]
           sota_contacts[count - 1][:contacts] += sota_contacts[count][:contacts]
@@ -1127,7 +1127,7 @@ class User < ActiveRecord::Base
       lake_query2 = "c1.asset1_codes='#{lake_code}'"
     end
 
-    llota_logs = Contact.find_by_sql ["
+    llota_logs = Contact.find_by_sql [ "
         select a.name, a.safecode, c3.* from
           (select asset1_codes as code, date,
             count(case submitted_to_llota when true then 1 else null end) as submitted,
@@ -1143,7 +1143,7 @@ class User < ActiveRecord::Base
                  where #{lake_query2}) as c2
               group by asset1_codes, date) as c3
           inner join assets a on a.code=c3.code;
-      "]
+      " ]
     llota_logs
   end
 
@@ -1169,7 +1169,7 @@ class User < ActiveRecord::Base
       park_query2 = "c1.asset1_codes='#{park_code}'"
     end
 
-    pota_logs = Contact.find_by_sql ["
+    pota_logs = Contact.find_by_sql [ "
         select a.name, a.safecode, c3.* from
           (select asset1_codes as code, date,
             count(case submitted_to_pota when true then 1 else null end) as submitted,
@@ -1185,7 +1185,7 @@ class User < ActiveRecord::Base
                  where #{park_query2}) as c2
               group by asset1_codes, date) as c3
           inner join assets a on a.code=c3.code;
-      "]
+      " ]
     pota_logs
   end
 
@@ -1206,7 +1206,7 @@ class User < ActiveRecord::Base
     llota_logs = self.llota_logs(lake_code)
 
     llota_logs.each do |llota_log|
-      contacts = Contact.where('user1_id = ? and ? = ANY(asset1_codes) and date::date= ?', id, llota_log[:code], llota_log[:date].strftime('%Y-%m-%d'))
+      contacts = Contact.where("user1_id = ? and ? = ANY(asset1_codes) and date::date= ?", id, llota_log[:code], llota_log[:date].strftime("%Y-%m-%d"))
       contact_count = contacts.count
       llota_contacts.push(code: llota_log[:code], date: llota_log[:date], count: contact_count, contacts: contacts.sort_by(&:date))
     end
@@ -1230,7 +1230,7 @@ class User < ActiveRecord::Base
     pota_logs = self.pota_logs(park_code)
 
     pota_logs.each do |pota_log|
-      contacts = Contact.where('user1_id = ? and ? = ANY(asset1_codes) and date::date= ?', id, pota_log[:code], pota_log[:date].strftime('%Y-%m-%d'))
+      contacts = Contact.where("user1_id = ? and ? = ANY(asset1_codes) and date::date= ?", id, pota_log[:code], pota_log[:date].strftime("%Y-%m-%d"))
       contact_count = contacts.count
       pota_contacts.push(code: pota_log[:code], date: pota_log[:date], count: contact_count, contacts: contacts.sort_by(&:date))
     end
@@ -1258,12 +1258,12 @@ class User < ActiveRecord::Base
   #                   }
   #                 ] array of ...
   ############################################################################
-  def area_activations(scope, include_minor = false, dxcc='ZL', region=nil)
-    minor_query = include_minor == false ? 'a.minor is not true' : 'true'
+  def area_activations(scope, include_minor = false, dxcc = "ZL", region = nil)
+    minor_query = include_minor == false ? "a.minor is not true" : "true"
     region_query = ""
     region_query = " and a.region = '#{region}'" if region
 
-    Contact.find_by_sql ["
+    Contact.find_by_sql [ "
       select array_agg(DISTINCT asset1_code) as site_list,
         a.asset_type as type, a.#{scope} as name
       from
@@ -1287,7 +1287,7 @@ class User < ActiveRecord::Base
         and (a.valid_from is null or a.valid_from<=foo.date)
         and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date)
       group by a.#{scope}, a.asset_type, a.minor;
-    "]
+    " ]
   end
 
   ##############################################################################
@@ -1305,13 +1305,13 @@ class User < ActiveRecord::Base
   #               }
   #             ] array of ...
   ############################################################################
-  def area_chases(scope, include_minor = false, dxcc = 'ZL', region=nil)
-    minor_query = include_minor == false ? 'a.minor is not true' : 'true'
+  def area_chases(scope, include_minor = false, dxcc = "ZL", region = nil)
+    minor_query = include_minor == false ? "a.minor is not true" : "true"
 
     region_query = ""
     region_query = " and a.region = '#{region}'" if region
 
-    Contact.find_by_sql ["
+    Contact.find_by_sql [ "
       select array_agg(DISTINCT asset1_code) as site_list,
         a.asset_type as type, a.#{scope} as name
       from
@@ -1330,12 +1330,12 @@ class User < ActiveRecord::Base
             where user_id=" + id.to_s + "
           )
         ) as foo
-      inner join assets a on (a.code=asset1_code or a.old_code=asset1_code) and a.country='#{dxcc}' #{region_query} 
+      inner join assets a on (a.code=asset1_code or a.old_code=asset1_code) and a.country='#{dxcc}' #{region_query}
       where #{minor_query}
         and (a.valid_from is null or a.valid_from<=foo.date)
         and ((a.valid_to is null and a.is_active=true) or a.valid_to>=foo.date)
       group by a.#{scope}, a.asset_type, a.minor;
-    "]
+    " ]
   end
 
   #############################################################################################
@@ -1349,7 +1349,7 @@ class User < ActiveRecord::Base
   #   True / False
   #############################################################################################
   def has_completion_award(scope, loc_id, activity_type, award_class)
-    uas = AwardUserLink.find_by_sql [' select * from award_user_links where user_id = ' + id.to_s + " and award_type='" + scope + "' and linked_id=" + loc_id.to_s + " and activity_type='" + activity_type + "' and award_class='" + award_class + "' and expired is not true "]
+    uas = AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = " + id.to_s + " and award_type='" + scope + "' and linked_id=" + loc_id.to_s + " and activity_type='" + activity_type + "' and award_class='" + award_class + "' and expired is not true " ]
     uas && uas.count.positive? ? true : false
   end
 
@@ -1364,9 +1364,9 @@ class User < ActiveRecord::Base
   # Returns:
   #############################################################################################
   def retire_completion_award(scale, loc_id, activity_type, award_class)
-    uas = AwardUserLink.find_by_sql [' select * from award_user_links where user_id = ' + id.to_s + " and award_type='" + scale + "' and linked_id=" + loc_id.to_s + " and activity_type='" + activity_type + "' and award_class='" + award_class + "' and expired is not true "]
+    uas = AwardUserLink.find_by_sql [ " select * from award_user_links where user_id = " + id.to_s + " and award_type='" + scale + "' and linked_id=" + loc_id.to_s + " and activity_type='" + activity_type + "' and award_class='" + award_class + "' and expired is not true " ]
     uas.each do |ua|
-      logger.warn 'Retiring ' + callsign + ' ' + loc_id.to_s + ' ' + scale + ' ' + activity_type + ' ' + award_class
+      logger.warn "Retiring " + callsign + " " + loc_id.to_s + " " + scale + " " + activity_type + " " + award_class
       ua.expired = true
       ua.expired_at = Time.now
       ua.save
@@ -1385,16 +1385,16 @@ class User < ActiveRecord::Base
   #############################################################################################
   def issue_completion_award(scope, loc_id, activity_type, award_class)
     award = nil
-    if activity_type == 'chaser'
+    if activity_type == "chaser"
       chased = true
       activated = false
-    elsif activity_type == 'activator'
+    elsif activity_type == "activator"
       chased = false
       activated = true
     end
-    award_spec = Award.find_by(chased: chased, activated: activated, programme: award_class, 'all_' + scope => true, is_active: true)
+    award_spec = Award.find_by(chased: chased, activated: activated, programme: award_class, "all_" + scope => true, is_active: true)
     if award_spec && !has_completion_award(scope, loc_id, activity_type, award_class)
-      logger.debug 'Awarded!! ' + callsign + ' ' + award_class + ' ' + scope + ' ' + activity_type + ' ' + loc_id.to_s
+      logger.debug "Awarded!! " + callsign + " " + award_class + " " + scope + " " + activity_type + " " + loc_id.to_s
       award = AwardUserLink.new
       award.award_type = scope
       award.linked_id = loc_id
@@ -1421,14 +1421,14 @@ class User < ActiveRecord::Base
   #  - Revokes old award if region / district previously chased no longer qualifies
   #############################################################################
   def check_completion_awards(scope)
-    if scope == 'district'
+    if scope == "district"
       modelname = District
-      indexfield = 'district_code'
-    elsif scope == 'region'
+      indexfield = "district_code"
+    elsif scope == "region"
       modelname = Region
-      indexfield = 'sota_code'
+      indexfield = "sota_code"
     else
-      raise 'Invalid scope for area award: ' + scope.to_s
+      raise "Invalid scope for area award: " + scope.to_s
     end
 
     avail = modelname.get_assets_with_type
@@ -1442,10 +1442,10 @@ class User < ActiveRecord::Base
         d = modelname.find_by(indexfield => combo.name)
         if site_not_act.zero?
           # issue award if not already issued
-          issue_completion_award(scope, d.id, 'activator', combo.type)
+          issue_completion_award(scope, d.id, "activator", combo.type)
         else
           # check for expired award
-          retire_completion_award(scope, d.id, 'activator', combo.type)
+          retire_completion_award(scope, d.id, "activator", combo.type)
         end
       end
 
@@ -1454,10 +1454,10 @@ class User < ActiveRecord::Base
       d = modelname.find_by(indexfield => combo.name)
       if site_not_chased.zero?
         # issue award if not already issued
-        issue_completion_award(scope, d.id, 'chaser', combo.type)
+        issue_completion_award(scope, d.id, "chaser", combo.type)
       else
         # check for expired award
-        retire_completion_award(scope, d.id, 'chaser', combo.type)
+        retire_completion_award(scope, d.id, "chaser", combo.type)
       end
     end
   end
@@ -1481,16 +1481,16 @@ class User < ActiveRecord::Base
   def has_award(award_id, threshold = nil)
     awarded = { status: false, latest: nil, next: nil }
     score = 0
-    awls = AwardUserLink.find_by_sql [' select * from award_user_links where user_id=' + id.to_s + ' and award_id=' + award_id.to_s + ' order by threshold desc limit 1']
+    awls = AwardUserLink.find_by_sql [ " select * from award_user_links where user_id=" + id.to_s + " and award_id=" + award_id.to_s + " order by threshold desc limit 1" ]
     if awls && (awls.count == 1)
-      awarded[:latest] = awls.first.threshold_name.capitalize + ' (' + awls.first.threshold.to_s + ')'
+      awarded[:latest] = awls.first.threshold_name.capitalize + " (" + awls.first.threshold.to_s + ")"
       score = awls.first.threshold
-      awarded[:status] = true if threshold.nil? || (score >= threshold) 
+      awarded[:status] = true if threshold.nil? || (score >= threshold)
     end
     if score
-      next_threshold = AwardThreshold.find_by_sql [' select * from award_thresholds where threshold>' + score.to_s + ' order by threshold asc limit 1']
+      next_threshold = AwardThreshold.find_by_sql [ " select * from award_thresholds where threshold>" + score.to_s + " order by threshold asc limit 1" ]
       if next_threshold && (next_threshold.count == 1)
-        awarded[:next] = next_threshold.first.name.capitalize + ' (' + next_threshold.first.threshold.to_s + ')'
+        awarded[:next] = next_threshold.first.name.capitalize + " (" + next_threshold.first.threshold.to_s + ")"
       end
     end
     awarded
@@ -1508,7 +1508,7 @@ class User < ActiveRecord::Base
       a = AwardUserLink.new
       a.award_id = award_id
       a.threshold = threshold
-      a.award_type = 'threshold'
+      a.award_type = "threshold"
       a.user_id = id
       a.save
       a.publicise
@@ -1528,15 +1528,15 @@ class User < ActiveRecord::Base
     awards = Award.where(is_active: true)
     awards.each do |award|
       multiplier = 1
-      #TODO this should be a per-award database field
-      multiplier = 1000 if award.programme == 'elevation'
+      # TODO this should be a per-award database field
+      multiplier = 1000 if award.programme == "elevation"
 
       next unless award.count_based == true
       if (award.activated == true) && (award.chased == true)
       # this is where completed awards would go, when the code supports them!
       elsif award.activated == true
-        #hack
-        if award.programme.in?(['elevation']) then
+        # hack
+        if award.programme.in?([ "elevation" ]) then
           score = user.activated_count_total[award.programme]
         else
           score = user.qualified_count_total[award.programme]
@@ -1565,7 +1565,7 @@ class User < ActiveRecord::Base
   def self.remove_call_suffix(callsign)
     theseg = nil
     maxlen = 0
-    segs = callsign.split('/')
+    segs = callsign.split("/")
     # try each segment and choose 1st that matches valid callsign pattern
     segs.each do |seg|
       theseg = seg if VALID_CALLSIGN_REGEX.match(seg)
@@ -1594,7 +1594,7 @@ class User < ActiveRecord::Base
       uc.from_date = Time.new(1900, 1, 1)
       uc.callsign = callsign
       uc.save
-      logger.debug 'Added: ' + callsign
+      logger.debug "Added: " + callsign
     end
   end
 
@@ -1614,7 +1614,7 @@ class User < ActiveRecord::Base
   ###############################################################################
   # Find a user by one of their callsigns, valid on a given date
   def self.find_by_callsign_date(callsign, c_date, create = false)
-    ucs = UserCallsign.find_by_sql [' select * from user_callsigns where callsign=? and from_date<=? and (to_date is null or to_date>=?) ', callsign, c_date, c_date]
+    ucs = UserCallsign.find_by_sql [ " select * from user_callsigns where callsign=? and from_date<=? and (to_date is null or to_date>=?) ", callsign, c_date, c_date ]
     uc = nil
     if ucs && ucs.count.positive?
       uc = ucs.first.user
@@ -1633,8 +1633,8 @@ class User < ActiveRecord::Base
   def self.create_dummy_user(callsign)
     dup = UserCallsign.find_by(callsign: callsign)
     unless dup
-      logger.debug 'Create callsign: ' + callsign
-      User.create(callsign: callsign, activated: false, password: 'dummy', password_confirmation: 'dummy', timezone: 1)
+      logger.debug "Create callsign: " + callsign
+      User.create(callsign: callsign, activated: false, password: "dummy", password_confirmation: "dummy", timezone: 1)
     end
   end
 
@@ -1644,17 +1644,17 @@ class User < ActiveRecord::Base
   # - called after new callsign added, or dates on callsign changed
   ###############################################################################
   def self.reassign_userids_used_by_callsign(callsign)
-    ls = Log.find_by_sql ['select * from logs where callsign1=?', callsign]
+    ls = Log.find_by_sql [ "select * from logs where callsign1=?", callsign ]
     ls.each(&:save)
 
     # only callsign2 as callsign1 picked up by logs (above)
-    cs = Contact.find_by_sql [' select * from contacts where callsign2=?', callsign]
+    cs = Contact.find_by_sql [ " select * from contacts where callsign2=?", callsign ]
     cs.each(&:save)
 
-    sas = ExternalActivation.find_by_sql ['select * from external_activations where callsign=?', callsign]
+    sas = ExternalActivation.find_by_sql [ "select * from external_activations where callsign=?", callsign ]
     sas.each(&:save)
 
-    scs = ExternalChase.find_by_sql ['select * from external_chases where callsign=?', callsign]
+    scs = ExternalChase.find_by_sql [ "select * from external_chases where callsign=?", callsign ]
     scs.each(&:save)
   end
 
@@ -1663,7 +1663,7 @@ class User < ActiveRecord::Base
   ##########################################################################
 
   def send_notification(notification, message_url, comments, image)
-    if ENV['RAILS_ENV'] != 'production'
+    if ENV["RAILS_ENV"] != "production"
         Resque.logger.info "NOTIFICATION: not sending in #{ENV['RAILS_ENV']} environment - #{notification}"
     else
       puts "got into send notification"
@@ -1671,17 +1671,17 @@ class User < ActiveRecord::Base
       url = URI.parse("https://api.pushover.net/1/messages.json")
       req = Net::HTTP::Post.new(url.path)
       req.set_form_data({
-        :token => self.push_app_token,
-        :user => self.push_user_token,
-        :message => notification,
-        :attachment_base64 => image,
-        :attachment_type => "image/jpeg",
-        :url => message_url
+        token: self.push_app_token,
+        user: self.push_user_token,
+        message: notification,
+        attachment_base64: image,
+        attachment_type: "image/jpeg",
+        url: message_url
       })
       res = Net::HTTP.new(url.host, url.port)
       res.use_ssl = true
       res.verify_mode = OpenSSL::SSL::VERIFY_PEER
-      res.start {|http| http.request(req) }
+      res.start { |http| http.request(req) }
     end
   end
 
@@ -1709,18 +1709,18 @@ class User < ActiveRecord::Base
   end
 
   def self.import_pnp_phone_nos(filename)
-    require 'csv'
+    require "csv"
 
     CSV.foreach(filename, headers: true) do |row|
       pnp_user = row.to_hash
-      puts pnp_user['user_callsign']
-      if !pnp_user['user_telephone'].blank?
-        user = User.find_by(callsign: pnp_user['user_callsign'].upcase.strip)
-        if user 
+      puts pnp_user["user_callsign"]
+      if !pnp_user["user_telephone"].blank?
+        user = User.find_by(callsign: pnp_user["user_callsign"].upcase.strip)
+        if user
           puts "Matched"
-          if user.acctnumber.blank? 
+          if user.acctnumber.blank?
             puts "Adding phone"
-            if !user.update_column(:acctnumber, pnp_user['user_telephone'])
+            if !user.update_column(:acctnumber, pnp_user["user_telephone"])
               puts "Failed to save phone no #{pnp_user['user_telephone']} for user #{user.callsign}"
             end
           else
@@ -1730,9 +1730,9 @@ class User < ActiveRecord::Base
       end
     end
   end
-          
-          
-          
+
+
+
 def self.find_missing_pnp(filename)
     raw_data = File.read(filename)
     raw_struct = JSON.parse(raw_data)
@@ -1744,7 +1744,7 @@ def self.find_missing_pnp(filename)
       callsign = User.remove_call_suffix(callsign)
       callsign = callsign.strip
       email = pnp_u["user_email"].strip.downcase
-      next if callsign == 'ZL2OZ'
+      next if callsign == "ZL2OZ"
       if !callsign or callsign=="" then
         puts "Invalid callsign"
         next
@@ -1774,21 +1774,21 @@ end
       callsign = User.remove_call_suffix(callsign)
       callsign = callsign.strip
       email = pnp_u["user_email"].strip.downcase
-      next if callsign == 'ZL2OZ'
+      next if callsign == "ZL2OZ"
       if !callsign or callsign=="" then
         puts "Invalid callsign"
         next
       end
       puts ":#{callsign}:"
       ota_u = User.find_by(callsign: callsign)
- 
+
       ota_u = User.find_by(email: email) if !ota_u
       if ota_u then
-        puts "Matched #{callsign} with #{ota_u.callsign}" 
+        puts "Matched #{callsign} with #{ota_u.callsign}"
         if callsign != ota_u.callsign then
           puts "DO NIT MATCH. Use (N/y)?"
           id = gets
-          if id[0] !="y" and id[0] != "Y" then 
+          if id[0] !="y" and id[0] != "Y" then
              ota_u = nil
           end
         end
@@ -1803,22 +1803,22 @@ end
           next
         end
         ota_u.email =  email
-        ota_u.password = 'dummy'  
-        ota_u.password_confirmation = 'dummy'  
+        ota_u.password = "dummy"
+        ota_u.password_confirmation = "dummy"
       end
-      ota_u.pnp_APIKey = pnp_u["user_APIKey"].strip 
+      ota_u.pnp_APIKey = pnp_u["user_APIKey"].strip
       ota_u.pnp_username = pnp_u["user_name"].strip
       if ota_u.activated != true then
         ota_u.pnp_imported = true
       end
-      if !ota_u.email then 
+      if !ota_u.email then
         ota_u.email=email
       end
       res = ota_u.save
       if !res
         puts ota_u.errors.to_json
         puts pnp_u.to_json
-        fails+=[pnp_u]
+        fails+=[ pnp_u ]
         id = gets
       end
     end
@@ -1830,37 +1830,36 @@ end
 FROM logs l
 -- 1. Narrow down logs by user first (or search all logs if removing the callsign filter)
 JOIN (
-    SELECT id, unnest(asset_codes) AS asset_code 
+    SELECT id, unnest(asset_codes) AS asset_code#{' '}
     FROM logs
     WHERE callsign1 = '#{self.callsign}' -- Remove or change this to search everything
 ) e1 ON l.id = e1.id
 JOIN assets a1 ON a1.code = e1.asset_code
 -- 2. Self-join the same pre-filtered dataset
 JOIN (
-    SELECT id, unnest(asset_codes) AS asset_code 
+    SELECT id, unnest(asset_codes) AS asset_code#{' '}
     FROM logs
     WHERE callsign1 = '#{self.callsign}' -- Remove or change this to search everything
 ) e2 ON l.id = e2.id AND e1.asset_code < e2.asset_code
 JOIN assets a2 ON a2.code = e2.asset_code
 -- 3. Execute the clean intersecting check exactly once per pair
 WHERE a1.is_active=true and a2.is_active=true and ST_Intersects(
-    (COALESCE(a1.az_boundary, a1.boundary, a1.location)), 
+    (COALESCE(a1.az_boundary, a1.boundary, a1.location)),#{' '}
     (COALESCE(a2.az_boundary, a2.boundary, a2.location))
 ) = false;
     SQL
 
     # 3. Pull raw string text directly from the execution block
     ActiveRecord::Base.connection.select_all(sql)
-
   end
 
   def suspect_contacts(rate_kph)
     sql = <<-SQL
-select c.id, c.prev_id, c.distance, c.delta_time, c.rate, c.asset1_codes, c.time from 
+select c.id, c.prev_id, c.distance, c.delta_time, c.rate, c.asset1_codes, c.time from#{' '}
 ( SELECT prev_id, ST_DISTANCE_SPHERE(location1, prev_geom) AS distance,
        EXTRACT (EPOCH FROM(time - prev_time))::INTEGER AS delta_time,
        -- Uses NULLIF to return NULL (instead of breaking) if delta is 0 seconds
-       (ST_DISTANCE_SPHERE(location1, prev_geom) / 
+       (ST_DISTANCE_SPHERE(location1, prev_geom) /#{' '}
         NULLIF(EXTRACT(EPOCH FROM (time - prev_time))::INTEGER, 0)) * 3.6 AS rate,
        id,
        time,
@@ -1869,14 +1868,14 @@ FROM (
     SELECT id,
            time,
            asset1_codes,
-           location1, 
+           location1,#{' '}
            LAG(id) OVER (ORDER BY time) AS prev_id,
            LAG(asset1_codes) OVER (ORDER BY time) AS prev_codes,
            LAG(location1) OVER (ORDER BY time) AS prev_geom,
            LAG(time) OVER (ORDER BY time) AS prev_time
-    FROM contacts 
+    FROM contacts#{' '}
     WHERE callsign1 = '#{self.callsign}'
-) AS foo 
+) AS foo#{' '}
 -- Correctly handles the first record where prev_codes is NULL
 WHERE (prev_codes IS NULL OR asset1_codes <> prev_codes)
 ORDER BY time) as c
@@ -1889,17 +1888,17 @@ ORDER BY time) as c
       this_id = c["id"]
       prev_id = c["prev_id"]
       this_c = Contact.find(this_id)
-      prev_c = Contact.find(prev_id) 
+      prev_c = Contact.find(prev_id)
       loc1 = Asset.get_most_accurate_location(this_c.asset1_codes)
       loc2 = Asset.get_most_accurate_location(prev_c.asset1_codes)
       result = ActiveRecord::Base.connection.select_all("select ST_DISTANCE_SPHERE(a1.boundary_simplified, a2.boundary_simplified) as distance from assets a1 inner join assets a2 on a2.id=#{loc2[:asset].id} where a1.id=#{loc1[:asset].id}")
-      puts "#{this_c.time} (#{(c['delta_time'].to_f/60).to_i}) dst:  #{result.first['distance'].to_f.to_i}, rate: #{(3.6*(result.first["distance"].to_f)/c['delta_time'].to_f).to_i}, prev: #{prev_c.asset1_codes}, this: #{this_c.asset1_codes}" if result.first["distance"] and c['delta_time']
+      puts "#{this_c.time} (#{(c['delta_time'].to_f/60).to_i}) dst:  #{result.first['distance'].to_f.to_i}, rate: #{(3.6*(result.first["distance"].to_f)/c['delta_time'].to_f).to_i}, prev: #{prev_c.asset1_codes}, this: #{this_c.asset1_codes}" if result.first["distance"] and c["delta_time"]
     end
   end
-   
+
   def overlapping_logs
     sql = <<-SQL
-      SELECT 
+      SELECT#{' '}
         l.id AS log_id,
         -- Add any other columns from the logs table you need here (e.g., l.status, l.name)
         MIN(c.time) AS earliest_contact_time,
@@ -1908,11 +1907,11 @@ ORDER BY time) as c
       INNER JOIN contacts c ON c.log_id = l.id
       GROUP BY l.id
       inner join (
-        
+      #{'  '}
       )
-      WHERE callsign1=#{self.callsign}'; 
+      WHERE callsign1=#{self.callsign}';#{' '}
     SQL
-  end 
+  end
   private
 
   def create_remember_token

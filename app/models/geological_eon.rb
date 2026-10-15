@@ -1,15 +1,16 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class GeologicalEon < ActiveRecord::Base
-  require 'csv'
+  require "csv"
 
   def self.import(filename)
     CSV.foreach(filename, headers: true) do |row|
       place = row.to_hash
       newplace = {}
       place.each do |key, value|
-        key = key.gsub(/[^0-9a-z _]/i, '')
+        key = key.gsub(/[^0-9a-z _]/i, "")
         newplace[key] = value
       end
       p = GeologicalEon.new(newplace)

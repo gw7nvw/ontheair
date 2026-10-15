@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateUserTopicLinks < ActiveRecord::Migration[5.0]
   def change
     create_table :user_topic_links do |t|
@@ -7,7 +8,6 @@ class CreateUserTopicLinks < ActiveRecord::Migration[5.0]
     t.boolean  "mail"
     t.datetime "created_at"
     t.datetime "updated_at"
-
     end
   end
 end

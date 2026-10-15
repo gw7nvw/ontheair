@@ -7,7 +7,7 @@ class CreateAdminTasks < ActiveRecord::Migration[8.0]
       t.string :affected_url
       t.string :action_url
       t.text :description
-      t.boolean :pending, :default => true
+      t.boolean :pending, default: true
       t.timestamps
     end
   end

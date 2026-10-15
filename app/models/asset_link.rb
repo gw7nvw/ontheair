@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class AssetLink < ActiveRecord::Base
   def self.find_by_parent(code)
     als1 = AssetLink.where(contained_code: code)
@@ -28,10 +29,9 @@ class AssetLink < ActiveRecord::Base
       c = al.child
       p = al.parent
       if !c || !p || (c.is_active == false) || (p.is_active == false)
-        puts 'PRUNE: ' + al.id.to_s
+        puts "PRUNE: " + al.id.to_s
         al.destroy
       end
     end
   end
-
 end

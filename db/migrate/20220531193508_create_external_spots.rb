@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateExternalSpots < ActiveRecord::Migration[5.0]
   def change
     create_table :external_spots do |t|

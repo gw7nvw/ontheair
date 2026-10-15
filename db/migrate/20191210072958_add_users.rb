@@ -1,4 +1,5 @@
 # typed: false
+
 class AddUsers < ActiveRecord::Migration[5.0]
   def change
     create_table :users do |t|
@@ -6,7 +7,7 @@ class AddUsers < ActiveRecord::Migration[5.0]
       t.string :email
       t.string :firstname
       t.string :lastname
-      t.string  :password_digest
+      t.string :password_digest
       t.string :remember_token
       t.string :activation_digest
       t.boolean :activated, default: false
@@ -24,6 +25,5 @@ class AddUsers < ActiveRecord::Migration[5.0]
 
       t.timestamps
     end
-
   end
 end

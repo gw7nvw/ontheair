@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateLighthouses < ActiveRecord::Migration[5.0]
   def change
     create_table :lighthouses do |t|
@@ -7,7 +8,7 @@ class CreateLighthouses < ActiveRecord::Migration[5.0]
       t.string :status
       t.string :str_type
       t.string :name
-      t.point :location, :spatial => true, :srid => 4326
+      t.point :location, spatial: true, srid: 4326
       t.string :code
       t.string :region
       t.timestamps

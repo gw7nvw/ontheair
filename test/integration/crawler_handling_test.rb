@@ -1,20 +1,19 @@
-require 'test_helper'
+require "test_helper"
 
 class CrawlerHandlingTest < ActionDispatch::IntegrationTest
-
   test "log source IP for get to monitored page" do
     self.remote_addr = "122.56.0.1" # Standard Telecom NZ IP address
 
 
-    assert_difference 'UserAgent.count', 1, "New user agent entry created" do
+    assert_difference "UserAgent.count", 1, "New user agent entry created" do
       get "/"
     end
 
     assert_response :success
-    assert_select '#crumbs', /Home/, "Expected to get home page"
+    assert_select "#crumbs", /Home/, "Expected to get home page"
 
     ua=UserAgent.last
-    assert_equal "122.56.0.1", ua.user_ip, "Expected correct IP" 
+    assert_equal "122.56.0.1", ua.user_ip, "Expected correct IP"
     assert_equal 1, ua.html_count, "Expected 1 html request"
     assert_equal 0, ua.js_count, "Expected no js request"
     assert_equal 0, ua.suspicious_access_count, "Expected no suspiscious access"
@@ -22,13 +21,13 @@ class CrawlerHandlingTest < ActionDispatch::IntegrationTest
     assert_not_equal true, ua.suspected_bot, "Should not be marked as suspect bot"
     assert_not_equal true, ua.confirmed_human, "Should not be marked as suspect bot"
 
-    assert_difference 'UserAgent.count', 0, "No new user agent entry created" do
-      get '/', xhr: true, params: { format: :js }
+    assert_difference "UserAgent.count", 0, "No new user agent entry created" do
+      get "/", xhr: true, params: { format: :js }
 get "/"
     end
 
     assert_response :success
-    assert_select '#crumbs', /Home/, "Expected to get home page"
+    assert_select "#crumbs", /Home/, "Expected to get home page"
 
     ua=UserAgent.last
     assert_equal "122.56.0.1", ua.user_ip, "Expected correct IP"
@@ -42,20 +41,20 @@ get "/"
 
   test "do not log source IP for unmonitored pages" do
     user1 = create_test_user()
-    user1.update_column(:acctnumber, '+61407833843')
-    asset1=create_test_asset(asset_type: 'summit', region: 'OT', location: create_point(169.1,-45.2), code_prefix: 'ZL3/OT-')
+    user1.update_column(:acctnumber, "+61407833843")
+    asset1=create_test_asset(asset_type: "summit", region: "OT", location: create_point(169.1, -45.2), code_prefix: "ZL3/OT-")
     sota_prefix=asset1.code[0..2]
-    sota_suffix=asset1.code[4..-1].gsub('-','')
+    sota_suffix=asset1.code[4..-1].gsub("-", "")
 
 
     self.remote_addr = "122.56.0.2" # Standard Telecom NZ IP address
-    assert_difference 'UserAgent.count', 0, "No new user agent entry created" do
+    assert_difference "UserAgent.count", 0, "No new user agent entry created" do
       get "/api/VK.json"
     end
     assert_response :success
 
 
-    assert_difference 'UserAgent.count', 0, "No new user agent entry created" do
+    assert_difference "UserAgent.count", 0, "No new user agent entry created" do
       sms_payload = {
         from: "+61407833843",
         text: "SPOT #{user1.callsign} #{sota_prefix} #{sota_suffix} 7.085 SSB SOTA *[iPnP]",
@@ -72,7 +71,7 @@ get "/"
 
   test "track redirects and trigger suspect" do
     self.remote_addr = "122.56.0.3" # Standard Telecom NZ IP address
-    assert_difference 'UserAgent.count', 1, "new user agent entry created" do
+    assert_difference "UserAgent.count", 1, "new user agent entry created" do
       get "/users"
     end
     assert_response :redirect
@@ -86,7 +85,7 @@ get "/"
     assert_not_equal true, ua.suspected_bot, "Should not be marked as suspect bot"
     assert_not_equal true, ua.confirmed_human, "Should not be marked as suspect bot"
 
-    #5 redirects allowed
+    # 5 redirects allowed
     4.times do
       get "/users"
       assert_response :redirect
@@ -94,11 +93,11 @@ get "/"
     ua.reload
     assert_not_equal true, ua.suspected_bot, "Should not be marked as suspect bot"
 
-    #then get challenged
+    # then get challenged
     get "/users"
     assert_response :redirect
     assert_redirected_to "/challenge?referring_url=%2Fusers"
-     
+
     ua.reload
     assert_equal "122.56.0.3", ua.user_ip, "Expected correct IP"
     assert_equal 5, ua.html_count, "Expected 5 html request"
@@ -111,7 +110,7 @@ get "/"
 
   test "track js ratio and trigger suspect after 10 requests if stats poor" do
     self.remote_addr = "122.56.0.4" # Standard Telecom NZ IP address
-    #10 gets allowed
+    # 10 gets allowed
     10.times do
       get "/"
       assert_response :success
@@ -139,21 +138,20 @@ get "/"
     assert_equal true, ua.suspected_bot, "Should be marked as suspect bot"
     assert_not_equal true, ua.confirmed_human, "Should not be marked as suspect bot"
 
-    #suspect can still get signin page
+    # suspect can still get signin page
     get "/signin"
     assert_response :success
 
-    #suspect can still get api
+    # suspect can still get api
     get "/api/VK.json"
     assert_response :success
-
   end
 
   test "Verify human works ok" do
     self.remote_addr = "122.56.0.5" # Standard Telecom NZ IP address
-    get '/challenge?referring_url=%2F'
+    get "/challenge?referring_url=%2F"
     assert_response :success
-    assert_select '#crumbs', /Confirmation/, "Expected to get challenge page"
+    assert_select "#crumbs", /Confirmation/, "Expected to get challenge page"
 
     human_challenge_token = session[:human_challenge_token]
     assert_not_nil human_challenge_token, "The challenge token was not injected into the session"
@@ -166,7 +164,7 @@ get "/"
     assert_response :redirect
     follow_redirect!
     assert_response :success
-    assert_select '#crumbs', /Home/, "Expected to get home page"
+    assert_select "#crumbs", /Home/, "Expected to get home page"
 
     ua=UserAgent.last
     assert_equal "122.56.0.5", ua.user_ip, "Expected correct IP"
@@ -179,14 +177,14 @@ get "/"
     self.remote_addr = "122.56.0.6" # Standard Telecom NZ IP address
     get "/"
     assert_response :success
-    #mark us as a bot
+    # mark us as a bot
     ua=UserAgent.last
     ua.confirmed_bot = true
     ua.save
 
-    get '/challenge?referring_url=%2F'
+    get "/challenge?referring_url=%2F"
     assert_response :success
-    assert_select '#crumbs', /Confirmation/, "Expected to get challenge page"
+    assert_select "#crumbs", /Confirmation/, "Expected to get challenge page"
 
     human_challenge_token = session[:human_challenge_token]
     assert_not_nil human_challenge_token, "The challenge token was not injected into the session"
@@ -199,7 +197,7 @@ get "/"
     assert_response :redirect
     follow_redirect!
     assert_response :success
-    assert_select '#crumbs', /Home/, "Expected to get home page"
+    assert_select "#crumbs", /Home/, "Expected to get home page"
 
     ua=UserAgent.last
     assert_equal "122.56.0.6", ua.user_ip, "Expected correct IP"
@@ -210,9 +208,9 @@ get "/"
 
   test "Verify bad or missing token rejected" do
     self.remote_addr = "122.56.0.7" # Standard Telecom NZ IP address
-    get '/challenge?referring_url=%2F'
+    get "/challenge?referring_url=%2F"
     assert_response :success
-    assert_select '#crumbs', /Confirmation/, "Expected to get challenge page"
+    assert_select "#crumbs", /Confirmation/, "Expected to get challenge page"
 
     human_challenge_token = session[:human_challenge_token]
     assert_not_nil human_challenge_token, "The challenge token was not injected into the session"
@@ -223,7 +221,7 @@ get "/"
 
     # Step 4: Verify it passes the challenge successfully and bot status is cleared
     assert_response :success
-    assert_select '#crumbs', /Confirmation/, "Expected to get challenge page again"
+    assert_select "#crumbs", /Confirmation/, "Expected to get challenge page again"
 
     ua=UserAgent.last
     assert_equal "122.56.0.7", ua.user_ip, "Expected correct IP"
@@ -234,7 +232,7 @@ get "/"
 
     # Step 4: Verify it passes the challenge successfully and bot status is cleared
     assert_response :success
-    assert_select '#crumbs', /Confirmation/, "Expected to get challenge page again"
+    assert_select "#crumbs", /Confirmation/, "Expected to get challenge page again"
 
     ua=UserAgent.last
     assert_equal "122.56.0.7", ua.user_ip, "Expected correct IP"
@@ -243,7 +241,7 @@ get "/"
 
   test "Trap spprings successfully" do
     self.remote_addr = "122.56.0.8" # Standard Telecom NZ IP address
-    get '/challenge/node/1234'
+    get "/challenge/node/1234"
     assert_response :forbidden
 
     ua=UserAgent.last
@@ -255,21 +253,20 @@ get "/"
 
   test "Marked bot cannot access any controlled" do
     self.remote_addr = "122.56.0.9" # Standard Telecom NZ IP address
-    get '/challenge/node/1234'
+    get "/challenge/node/1234"
     assert_response :forbidden
 
-    get '/assets'
+    get "/assets"
     assert_response :forbidden
 
-    get '/spots'
+    get "/spots"
     assert_response :forbidden
 
-    #but can get /signin
-    get '/signin'
+    # but can get /signin
+    get "/signin"
     assert_response :success
-    #but can get /challenge
-    get '/challenge'
+    # but can get /challenge
+    get "/challenge"
     assert_response :success
   end
 end
-

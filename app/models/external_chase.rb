@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class ExternalChase < ActiveRecord::Base
   before_save { before_save_actions }
 
@@ -16,6 +17,6 @@ class ExternalChase < ActiveRecord::Base
   end
 
   def remove_call_suffix
-    self.callsign = User.remove_call_suffix(callsign) if callsign['/']
+    self.callsign = User.remove_call_suffix(callsign) if callsign["/"]
   end
 end

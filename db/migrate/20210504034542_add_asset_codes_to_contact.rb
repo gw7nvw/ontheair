@@ -1,4 +1,5 @@
 # typed: false
+
 class AddAssetCodesToContact < ActiveRecord::Migration[5.0]
   def change
     add_column :contacts, :asset1_codes, :string, array: true, default: []

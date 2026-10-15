@@ -109,6 +109,10 @@ GEM
       railties (>= 6.0.0)
       sass-embedded (~> 1.63)
     date (3.5.1)
+    debride (1.15.2)
+      path_expander (~> 2.0)
+      prism (~> 1.7)
+      sexp_processor (~> 4.17)
     debug (1.11.1)
       irb (~> 1.10)
       reline (>= 0.3.8)
@@ -232,6 +236,7 @@ GEM
     parser (3.3.12.0)
       ast (~> 2.4.1)
       racc
+    path_expander (2.0.1)
     pg (1.6.3)
     pg (1.6.3-aarch64-linux)
     pg (1.6.3-aarch64-linux-musl)
@@ -342,6 +347,9 @@ GEM
     rgeo-activerecord (8.0.0)
       activerecord (>= 7.0)
       rgeo (>= 3.0)
+    rgeo-geojson (2.2.0)
+      multi_json (~> 1.15)
+      rgeo (>= 1.0.0)
     rgeo-proj4 (5.0.0)
       rgeo (~> 3.1.0)
     rubocop (1.89.0)
@@ -399,6 +407,7 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 4.0)
       websocket (~> 1.0)
+    sexp_processor (4.17.6)
     sinatra (4.2.1)
       logger (>= 1.6.0)
       mustermann (~> 3.0)
@@ -479,6 +488,7 @@ DEPENDENCIES
   capybara
   csv
   dartsass-rails
+  debride (~> 1.15)
   debug
   htmlentities
   jbuilder
@@ -494,6 +504,7 @@ DEPENDENCIES
   resque-scheduler
   rexml (~> 3.3)
   rgeo
+  rgeo-geojson
   rgeo-proj4
   rubocop (~> 1.89)
   rubocop-rails-omakase
@@ -542,6 +553,7 @@ CHECKSUMS
   csv (3.3.6) sha256=aba61e7e507a66f03d45cb1f3c4b6359861c3504038b422962875dce099e4456
   dartsass-rails (0.5.1) sha256=f19510fb1b29c76c1739a06954d615f1d20ad653b6fc668dd7c68542bb303a1a
   date (3.5.1) sha256=750d06384d7b9c15d562c76291407d89e368dda4d4fff957eb94962d325a0dc0
+  debride (1.15.2) sha256=5e5c50b150a37c418a7d48a2137ebb9f29d8a72fa550e626a4e1f8d418b79538
   debug (1.11.1) sha256=2e0b0ac6119f2207a6f8ac7d4a73ca8eb4e440f64da0a3136c30343146e952b6
   domain_name (0.6.20240107) sha256=5f693b2215708476517479bf2b3802e49068ad82167bcd2286f899536a17d933
   drb (2.2.3) sha256=0b00d6fdb50995fe4a45dea13663493c841112e4068656854646f418fda13373
@@ -601,6 +613,7 @@ CHECKSUMS
   nokogiri (1.19.4-x86_64-linux-musl) sha256=17dfb7c1fa194ae02fbf7c51a7afc8d278045ab3fdacfd86f91d02d7b274470b
   parallel (2.1.0) sha256=b35258865c2e31134c5ecb708beaaf6772adf9d5efae28e93e99260877b09356
   parser (3.3.12.0) sha256=21a6d7f755d5a24dfbdc6e6b772e4e879a52e7631a88bc5a3a134606052c9828
+  path_expander (2.0.1) sha256=2de201164bff4719cc4d0b3767286e9977cc832a59c4d70abab571ec86cb41e4
   pg (1.6.3) sha256=1388d0563e13d2758c1089e35e973a3249e955c659592d10e5b77c468f628a99
   pg (1.6.3-aarch64-linux) sha256=0698ad563e02383c27510b76bf7d4cd2de19cd1d16a5013f375dd473e4be72ea
   pg (1.6.3-aarch64-linux-musl) sha256=06a75f4ea04b05140146f2a10550b8e0d9f006a79cdaf8b5b130cde40e3ecc2c
@@ -641,6 +654,7 @@ CHECKSUMS
   rexml (3.4.4) sha256=19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142
   rgeo (3.1.0) sha256=89c1804894b35acf65891e1f24e15bbf2fbd972d4183e63c444bb97c1ccaf5d5
   rgeo-activerecord (8.0.0) sha256=c8a22f8dc568b875a734b5288d1dbad12ff846cd63a9a2e6b09decaac4ff3094
+  rgeo-geojson (2.2.0) sha256=ceed2ce1bd4c43efe9fcc494c6fec8708ec1438073425e5805d2c27fb671b210
   rgeo-proj4 (5.0.0) sha256=eb131bb3a34eb324af02fb78d8adff6adf2a63b36b707e237a28cef953edb7f6
   rubocop (1.89.0) sha256=4dee8e3ee9c45e474834efd9e8d6fd031e8331c8dacdff0de4ad65ae0a6faae7
   rubocop-ast (1.50.0) sha256=b9ca88300da0803ee222ad20cdb30494c0a784eed06fdc35d254b06d662788db
@@ -660,6 +674,7 @@ CHECKSUMS
   sass-embedded (1.103.1-x86_64-linux-musl) sha256=2f52d9f70030a2d8ddbff8289049df1d38f20f55ba05a87a0049d99fbaa1108c
   securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1
   selenium-webdriver (4.47.0) sha256=67f915b8223d2133bbaa13e92fd98854175394f086e2036a9eff4f5561fd69e4
+  sexp_processor (4.17.6) sha256=3c5d0e9db06377abde06db51dbacb14ce239ed0bd038ae515bc42c81602c6c1f
   sinatra (4.2.1) sha256=b7aeb9b11d046b552972ade834f1f9be98b185fa8444480688e3627625377080
   solid_cable (4.0.2) sha256=084636a67679ad00d23088b33c84047e614bcf41ee559db24b414d83cdc42d03
   solid_cache (1.0.10) sha256=bc05a2fb3ac78a6f43cbb5946679cf9db67dd30d22939ededc385cb93e120d41

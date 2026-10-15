@@ -1,19 +1,20 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class ApplicationController < ActionController::Base
   before_action :determine_country
-  helper_method :current_country 
+  helper_method :current_country
   helper_method :safe_session_get
-#  after_action :audit_session_cookie_size  #troibleshooting use
+  #  after_action :audit_session_cookie_size  #troibleshooting use
 
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
- # before_action :set_cache_headers
+  # before_action :set_cache_headers
   before_action :log_visit
   before_action :store_last_index_page
-#  before_action :trigger_scheduled_jobs
+  #  before_action :trigger_scheduled_jobs
   before_action :global_variables
   #  before_action :check_resque_workers
 
@@ -25,7 +26,7 @@ class ApplicationController < ActionController::Base
 
 
   def global_variables
-  if ENV['RAILS_ENV'] != 'production' then
+  if ENV["RAILS_ENV"] != "production" then
     flash[:error] = "RUNNING IN #{ENV['RAILS_ENV']} ENVIRONMENT"
   end
     as=AdminSettings.first
@@ -36,20 +37,20 @@ class ApplicationController < ActionController::Base
     end
     @preferred_layer = @default_layer
 
-    if @current_country=='VK'
-      @dxcc = 'VK'
+    if @current_country=="VK"
+      @dxcc = "VK"
       @default_x =  16085209
       @default_y = -4006631
       @zoomlevel = 6
     else
-      @dxcc = 'ZL'
+      @dxcc = "ZL"
       @default_x =  19430000
       @default_y = -5040000
       @zoomlevel = 7
     end
 
- 
-    if @current_country=='VK' then as.title = as.title.gsub('ZL','VK') end
+
+    if @current_country=="VK" then as.title = as.title.gsub("ZL", "VK") end
     @site_title="'"+as.title+"'"
     @site_title_unquoted=as.title
     @site_title_image=as.imagepath  if !@site_title_image
@@ -67,31 +68,31 @@ class ApplicationController < ActionController::Base
       tzid = current_user.timezone
       @tz = Timezone.find(tzid)
     else
-      @tz = Timezone.find_by(name: 'UTC')
+      @tz = Timezone.find_by(name: "UTC")
     end
-    #@map_x=as.default_x.to_d
-    #@map_y=as.default_y.to_d
+    # @map_x=as.default_x.to_d
+    # @map_y=as.default_y.to_d
     x = params[:x] if params[:x]
     y = params[:y] if params[:y]
     if x and y then
-      if params[:epsg] then 
-        srs=params[:epsg].to_i 
+      if params[:epsg] then
+        srs=params[:epsg].to_i
       else
         srs=4326
       end
-  
+
       trs=2193
       xyarr= transform_geom(x, y, srs, trs)
       @map_x=xyarr[0]  if xyarr
       @map_y=xyarr[1] if xyarr
     end
     @zoomlevel = params[:zoom] if params[:zoom]
-    @proj=as.default_projection    
+    @proj=as.default_projection
     @preferred_layer=as.default_layer  if !@preferred_layer
     m = Maplayer.find_by(name: @preferred_layer)
     @preferred_extent=m.extent if m
-    @proj = 'EPSG:'+params[:proj] if params[:proj]
-    #session[:proj] = @proj if has_session_cookie?
+    @proj = "EPSG:"+params[:proj] if params[:proj]
+    # session[:proj] = @proj if has_session_cookie?
     @proj_srs=@proj[5..-1].to_i
     @layer = params[:layer] if params[:layer]
     @default_pointlayers = current_user.pointlayers if current_user
@@ -102,25 +103,24 @@ class ApplicationController < ActionController::Base
     time_now = Time.now
     as = AdminSettings.last
     if !as.last_monthly_sched_at || ((as.last_monthly_sched_at + 30.days) < time_now)
-      if ENV['RAILS_ENV'] == 'production'
+      if ENV["RAILS_ENV"] == "production"
         Resque.enqueue(ExportAssets)
         Resque.enqueue(TidyUserAgentsJob)
         as.update_attribute(:last_monthly_sched_at, Time.now)
-      elsif ENV['RAILS_ENV'] == 'development'
+      elsif ENV["RAILS_ENV"] == "development"
         as.update_attribute(:last_monthly_sched_at, Time.now)
       end
     end
 
     if !as.last_minute_sched_at || ((as.last_minute_sched_at + 1.minute) < time_now)
-      if ENV['RAILS_ENV'] == 'production'
+      if ENV["RAILS_ENV"] == "production"
         Resque.enqueue(UpdateExternalActivations)
-      elsif ENV['RAILS_ENV'] == 'development'
+      elsif ENV["RAILS_ENV"] == "development"
         ExternalActivation.import_next_sota
         ExternalActivation.import_next_pota
         as.update_attribute(:last_minute_sched_at, Time.now)
       end
     end
- 
   end
 
   def store_last_index_page
@@ -129,65 +129,64 @@ class ApplicationController < ActionController::Base
         uri = URI.parse(request.referer)
         if uri.host.nil? || uri.host == request.host
           # Combine just the path and the query params (e.g., "/items?page=2&dxcc=AU")
-          last_url = "#{uri.path}?#{uri.query}".chomp("?")
-          #iitialise the stack if empty
-          session[:last_index_page] = [] if session[:last_index_page] == nil 
-    
+          # initialise the stack if empty
+          session[:last_index_page] = [] if session[:last_index_page] == nil
+
           # pop a page for back
           if params[:back]
             session[:last_index_page].pop
-          #or add last page for forward
+          # or add last page for forward
           else
-            unless ['/styles.js', '/query', '/layerswitcher', '/legend'].include?(request.fullpath.split('?').first)
-              session[:last_index_page].push("#{uri.path}?#{uri.query}".chomp("?").gsub('?back=true','').gsub('&back=true',''))
+            unless [ "/styles.js", "/query", "/layerswitcher", "/legend" ].include?(request.fullpath.split("?").first)
+              session[:last_index_page].push("#{uri.path}?#{uri.query}".chomp("?").gsub("?back=true", "").gsub("&back=true", ""))
               session[:last_index_page]=session[:last_index_page][-20..-1] if session[:last_index_page].count>12
             end
           end
         end
       rescue URI::InvalidURIError
-    # Fallback to default if the referrer string is corrupted
+        # Fallback to default if the referrer string is corrupted
       end
     end
   end
 
   def retrieve_last_index_page_or_default(default_path: root_path)
-    if has_session_cookie? 
+    if has_session_cookie?
       if session[:last_index_page].present?
-        concat_char = (session[:last_index_page][-1] || default_path).include?('?') ? '&' : '?'
-        (session[:last_index_page][-1] || default_path) + concat_char + 'back=true'
+        concat_char = (session[:last_index_page][-1] || default_path).include?("?") ? "&" : "?"
+        (session[:last_index_page][-1] || default_path) + concat_char + "back=true"
       end
     end
   end
 
   def signed_in_user
-    redirect_to signin_url + '?referring_url=' + CGI.escape(request.fullpath), notice: 'Please sign in.' unless signed_in?
+    redirect_to signin_url + "?referring_url=" + CGI.escape(request.fullpath), notice: "Please sign in." unless signed_in?
   end
 
   def log_visit
-    if request.env['HTTP_USER_AGENT'] && request.env['HTTP_USER_AGENT'].match(/\(.*https?:\/\/.*\)/)
-      Rails.logger.info 'BOT: ' + request.remote_ip
+    if request.env["HTTP_USER_AGENT"] && request.env["HTTP_USER_AGENT"].match(/\(.*https?:\/\/.*\)/)
+      Rails.logger.info "BOT: " + request.remote_ip
     else
-      Rails.logger.info request.env['HTTP_USER_AGENT']
+      Rails.logger.info request.env["HTTP_USER_AGENT"]
       if signed_in?
-        Rails.logger.info 'USER: ' + current_user.callsign + ' - ' + request.remote_ip
+        Rails.logger.info "USER: " + current_user.callsign + " - " + request.remote_ip
       else
-        Rails.logger.info 'USER: ' + request.remote_ip
+        Rails.logger.info "USER: " + request.remote_ip
       end
     end
-    if current_user then 
+    if current_user then
       current_user.update_column :updated_at, Time.now()
     end
   end
 
   def set_cache_headers
-#    response.headers['Cache-Control'] = 'max-age=30, public'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = 'Fri, 01 Jan 1990 00:00:00 GMT'
+    #    response.headers['Cache-Control'] = 'max-age=30, public'
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "Fri, 01 Jan 1990 00:00:00 GMT"
   end
 
   def collection_to_csv(items)
-    require 'csv'
-    csvtext = ''
+    require "csv"
+    csvtext = ""
     if items && items.first
       columns = []; items.first.attributes.each_pair { |name, _value| columns << name }
       csvtext << columns.to_csv
@@ -195,7 +194,7 @@ class ApplicationController < ActionController::Base
         fields = []; item.attributes.each_pair { |_name, value| fields << value }
         csvtext << fields.to_csv
       end
-   end
+    end
     csvtext
   end
 
@@ -206,11 +205,11 @@ class ApplicationController < ActionController::Base
     newparams.delete(:id)
     newparams.to_query
   end
-  
+
   def do_not_cache
-    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate' # HTTP 1.1.
-    response.headers['Pragma'] = 'no-cache' # HTTP 1.0.
-    response.headers['Expires'] = '0' # Proxies.
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate" # HTTP 1.1.
+    response.headers["Pragma"] = "no-cache" # HTTP 1.0.
+    response.headers["Expires"] = "0" # Proxies.
   end
 
   def current_country
@@ -244,19 +243,19 @@ class ApplicationController < ActionController::Base
     elsif current_user.present? && current_user.dxcc.present?
       # 3. Second Priority: Use the logged-in user's profile database setting
       @current_country = current_user.dxcc
-      session[:dxcc] = @current_country 
+      session[:dxcc] = @current_country
     else
       # 4. Fall back to the domain name if no session exists (or if it's an empty session)
       @current_country = case @current_host
-                         when /.*\.nz$/
-                           'ZL'
-                         when /.*\.org$/
-                           'VK'
-                         else
-                           'ZL' # Default fallback
-                         end
+      when /.*\.nz$/
+                           "ZL"
+      when /.*\.org$/
+                           "VK"
+      else
+                           "ZL" # Default fallback
+      end
     end
-    @site_title_image = 'icons/vk_banner.jpg' if @current_country=='VK'
+    @site_title_image = "icons/vk_banner.jpg" if @current_country=="VK"
   end
 
   def audit_session_cookie_size
@@ -264,14 +263,14 @@ class ApplicationController < ActionController::Base
     active_session = session.to_hash
 
     if active_session.any?
-      Rails.logger.error "\n--- 🍪 LIVE SESSION MONITOR (Controller Layer) ---"
+      Rails.logger.error "\n--- LIVE SESSION MONITOR (Controller Layer) ---"
 
       active_session.each do |key, value|
         # Calculate the text byte size footprint of each key payload
         byte_size = Marshal.dump(value).bytesize rescue value.to_s.bytesize
 
         if byte_size > 200
-          Rails.logger.error "⚠️ BLOAT DETECTED! Key: '#{key}' is hoarding space! Size: #{byte_size} bytes."
+          Rails.logger.error " BLOAT DETECTED! Key: '#{key}' is hoarding space! Size: #{byte_size} bytes."
           Rails.logger.error "Content Preview: #{value.to_s[0..200]}..."
         else
           Rails.logger.error "  Key: '#{key}' | Size: #{byte_size} bytes."

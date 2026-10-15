@@ -2,14 +2,14 @@ class GeologyController < ApplicationController
   include ApplicationHelper
 
   def index_prep
-    whereclause = 'true'
+    whereclause = "true"
 
-    @searchtext = safe_param(params[:searchtext] || '')
-    if params[:searchtext] && (params[:searchtext] != '')
+    @searchtext = safe_param(params[:searchtext] || "")
+    if params[:searchtext] && (params[:searchtext] != "")
       whereclause = "lower(code) like '%%" + @searchtext.downcase + "%%' or lower(name) like '%%" + @searchtext.downcase + "%%'"
     end
 
-    @fullgeologies = VolcanicField.find_by_sql ['select * from volcanic_fields where ' + whereclause + ' order by code']
+    @fullgeologies = VolcanicField.find_by_sql [ "select * from volcanic_fields where " + whereclause + " order by code" ]
     @geologies = @fullgeologies.paginate(per_page: 40, page: params[:page])
   end
 
@@ -25,9 +25,9 @@ class GeologyController < ApplicationController
   def show
     id = params[:id]
     @geology = VolcanicField.find_by(code: id) if id
-    unless @geology 
+    unless @geology
       flash[:error]="Cannot find geological region "+id.to_s
-      redirect_to '/'
+      redirect_to "/"
     end
   end
 end

@@ -1,8 +1,7 @@
 class ConsolidatedSpot < ActiveRecord::Base
-
   include MapHelper
 
-  before_save {before_save_actions}
+  before_save { before_save_actions }
   after_save :create_notifications
 
   def before_save_actions
@@ -19,15 +18,15 @@ class ConsolidatedSpot < ActiveRecord::Base
         dxccs = DxccPrefix.find_by("'#{reference}' like concat(iso_code,'-%%') or '#{reference}' like concat('LL',iso_code,'-%%')")
         dxccs = DxccPrefix.find_by("'#{reference}' like concat(prefix,'FF-%%') or '#{reference}' like concat(prefix,'/%%') or '#{reference}' like concat(prefix,'_/%%')") if !dxccs
 
-        #VK SIOTA
-        dxccs = DxccPrefix.find_by(prefix: 'VK') if !dxccs and reference.match(/^VK-.*/)
-        #ILLW
-        dxccs = DxccPrefix.find_by("'#{reference}' like concat(iso_code,'0%%')") if !dxccs 
+        # VK SIOTA
+        dxccs = DxccPrefix.find_by(prefix: "VK") if !dxccs and reference.match(/^VK-.*/)
+        # ILLW
+        dxccs = DxccPrefix.find_by("'#{reference}' like concat(iso_code,'0%%')") if !dxccs
         self.dxcc = dxccs.prefix if dxccs
         self.continent = dxccs.continent_code if dxccs
-      end 
+      end
 
-      #fall back on callsign analysis
+      # fall back on callsign analysis
       if !self.dxcc
         dxcc = DxccPrefix.from_call(self.activatorCallsign)
         if dxcc
@@ -39,8 +38,8 @@ class ConsolidatedSpot < ActiveRecord::Base
   end
 
   def self.delete_old_spots
-    #keepng spots for a year
-    oneyearago=Time.at(Time.now.to_i - 60 * 60 * 24 * 365).in_time_zone('UTC').to_s
+    # keepng spots for a year
+    oneyearago=Time.at(Time.now.to_i - 60 * 60 * 24 * 365).in_time_zone("UTC").to_s
     ActiveRecord::Base.connection.execute("delete from consolidated_spots where updated_at < '#{oneyearago}'")
   end
 
@@ -58,7 +57,7 @@ class ConsolidatedSpot < ActiveRecord::Base
     else
       sites = []
     end
-    summary = activatorCallsign + ' spotted on ' + ((self.frequency && !self.frequency.empty?) || (self.mode && !self.mode.empty?) ? self.frequency + ' - ' + self.mode : 'UNKNOWN') + ' at ' + (sites && sites.count.positive? ? sites.first + (if sites && (sites.count > 1) then ' et al.' else '' end) : 'UNKNOWN')
+    summary = activatorCallsign + " spotted on " + ((self.frequency && !self.frequency.empty?) || (self.mode && !self.mode.empty?) ? self.frequency + " - " + self.mode : "UNKNOWN") + " at " + (sites && sites.count.positive? ? sites.first + (if sites && (sites.count > 1) then " et al." else "" end) : "UNKNOWN")
   end
 
   def url
@@ -68,7 +67,7 @@ class ConsolidatedSpot < ActiveRecord::Base
 
   def self.check_pnp2_spots(zone)
     sql = <<-SQL
-      SELECT 
+      SELECT#{' '}
         round(EXTRACT(EPOCH FROM max(updated_at))::numeric,0) as "lastUpdatedAt"
         FROM consolidated_spots
         WHERE (:zone = 'ALL' OR continent = :zone)
@@ -77,14 +76,14 @@ class ConsolidatedSpot < ActiveRecord::Base
     SQL
 
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([sql, { zone: zone }])
-    
+    sanitized_sql = sanitize_sql_array([ sql, { zone: zone } ])
+
     connection.select_all(sanitized_sql)
   end
 
   def self.get_pnp2_spots(start_time, zone)
     sql = <<-SQL
-      SELECT 
+      SELECT#{' '}
         id as "spotID",
         updated_at as "updatedAt",
         "activatorCallsign",
@@ -99,21 +98,21 @@ class ConsolidatedSpot < ActiveRecord::Base
         ) AS location,
         comments as comments
         FROM consolidated_spots
-        WHERE updated_at >= :start_time::timestamptz 
+        WHERE updated_at >= :start_time::timestamptz#{' '}
              AND (:zone = 'ALL' OR continent = :zone)
         ORDER BY time DESC;
     SQL
 
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([sql, { start_time: start_time, zone: zone }])
-    
+    sanitized_sql = sanitize_sql_array([ sql, { start_time: start_time, zone: zone } ])
+
     find_by_sql(sanitized_sql).map(&:attributes)
   end
- 
+
   def self.get_pnp_spots_orig(start_time, zone)
     sql = <<-SQL
       SELECT jsonb_agg(spot_json) AS final_payload FROM (
-        SELECT 
+        SELECT#{' '}
          (
            jsonb_build_object(
              'actTime', f.t_val, 'actId', f.id, 'actSiteID', f.c_val, 'ID', f.c_val,
@@ -134,14 +133,14 @@ class ConsolidatedSpot < ActiveRecord::Base
              )
            )
          ) AS spot_json
-        FROM ( 
+        FROM (#{' '}
            SELECT id, "activatorCallsign", mode, frequency, code AS code_array, spot_type AS spot_type_array,
                time[cardinality(time)] AS t_val, code[cardinality(code)] AS c_val, spot_type[cardinality(spot_type)] AS st_val,
                name[cardinality(name)] AS n_val, callsign[cardinality(callsign)] AS cs_val,
                TRIM(REGEXP_REPLACE(LEFT(comments[cardinality(comments)], -10), '^[^:]*:', '')) AS comm_val,
                array_to_string(ARRAY(SELECT DISTINCT unnest(code)), ', ') AS codes_str
            FROM consolidated_spots
-           WHERE updated_at >= :start_time::timestamptz 
+           WHERE updated_at >= :start_time::timestamptz#{' '}
              AND (:zone = 'ALL' OR continent = :zone)
         ) as f
         ORDER BY f.t_val DESC
@@ -149,31 +148,31 @@ class ConsolidatedSpot < ActiveRecord::Base
     SQL
 
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([sql, { start_time: start_time, zone: zone }])
-    
+    sanitized_sql = sanitize_sql_array([ sql, { start_time: start_time, zone: zone } ])
+
     # 3. Pull raw string text directly from the execution block
-    connection.select_value(sanitized_sql) || '[]'
+    connection.select_value(sanitized_sql) || "[]"
   end
   def self.get_pnp_spots(start_time, zone)
 sql = <<-SQL
   SELECT jsonb_agg(spot_json) AS final_payload FROM (
-    SELECT 
+    SELECT#{' '}
      (
        jsonb_build_object(
          'actTime', replace(f.t_val, ' UTC', ''),
-         'actId', f.id, 
-         'actCallsign', f."activatorCallsign", 
+         'actId', f.id,#{' '}
+         'actCallsign', f."activatorCallsign",#{' '}
          'actMode', f.mode,
          'actComments', CASE WHEN LENGTH(f.codes_str) - LENGTH(REPLACE(f.codes_str, ',', '')) > 0 THEN CONCAT('[', f.codes_str, '] ', f.comm_val) ELSE f.comm_val END,
-         'actFreq', f.frequency, 
+         'actFreq', f.frequency,#{' '}
          'actSpoter', f.cs_val,
-         'actClass', f.chosen_class, 
+         'actClass', f.chosen_class,#{' '}
          'actSiteID', f.code_array[array_position(f.spot_type_array, f.chosen_class)],
          'ID', f.code_array[array_position(f.spot_type_array, f.chosen_class)],
          'altLocation', f.name_array[cardinality(name_array)],
-         'actLocation', CASE 
-           WHEN f.chosen_class IN ('SOTA', 'SIOTA', 'SHIRES', 'ZLOTA') 
-           THEN f.code_array[array_position(f.spot_type_array, f.chosen_class)] 
+         'actLocation', CASE#{' '}
+           WHEN f.chosen_class IN ('SOTA', 'SIOTA', 'SHIRES', 'ZLOTA')#{' '}
+           THEN f.code_array[array_position(f.spot_type_array, f.chosen_class)]#{' '}
            ELSE f.name_array[cardinality(name_array)]
          END
        ) ||
@@ -193,14 +192,14 @@ sql = <<-SQL
          )
        )
      ) AS spot_json
-    FROM ( 
+    FROM (#{' '}
        SELECT id, "activatorCallsign", mode, frequency, code AS code_array, spot_type AS spot_type_array, name AS name_array,
-           time[cardinality(time)] AS t_val, 
+           time[cardinality(time)] AS t_val,#{' '}
            callsign[cardinality(callsign)] AS cs_val,
            spot_type[cardinality(spot_type)] AS st_val,
            TRIM(REGEXP_REPLACE(LEFT(comments[cardinality(comments)], -10), '^[^:]*:', '')) AS comm_val,
            array_to_string(ARRAY(SELECT DISTINCT unnest(code)), ', ') AS codes_str,
-           
+  #{'         '}
            -- Unified priority engine
            COALESCE(
              CASE WHEN 'SOTA' = ANY(spot_type) THEN 'SOTA' END,
@@ -210,7 +209,7 @@ sql = <<-SQL
              spot_type[cardinality(spot_type)]
            )::varchar AS chosen_class
        FROM consolidated_spots
-       WHERE updated_at >= :start_time::timestamptz 
+       WHERE updated_at >= :start_time::timestamptz#{' '}
          AND (:zone = 'ALL' OR continent = :zone)
     ) as f
     ORDER BY f.t_val DESC
@@ -218,12 +217,12 @@ sql = <<-SQL
 SQL
 
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([sql, { start_time: start_time, zone: zone }])
-    
+    sanitized_sql = sanitize_sql_array([ sql, { start_time: start_time, zone: zone } ])
+
     # 3. Pull raw string text directly from the execution block
-    connection.select_value(sanitized_sql) || '[]'
+    connection.select_value(sanitized_sql) || "[]"
   end
- 
+
   def get_subs(programme_array)
     if !programme_array.blank?
       subs = User.find_by_sql [ "
@@ -248,44 +247,44 @@ SQL
   end
 
   def create_notifications
-   if ENV['RAILS_ENV'] == 'production'
+   if ENV["RAILS_ENV"] == "production"
     is_new = true if !self.old_spot_type
 
-    programme_array = self.spot_type.map { |a| "'%%:programme:%%"+a.to_s+"%%'"}.join(", ")
-    old_programme_array = self.old_spot_type.map { |a| "'%%:programme:%%"+a.to_s+"%%'"}.join(", ")
+    programme_array = self.spot_type.map { |a| "'%%:programme:%%"+a.to_s+"%%'" }.join(", ")
+    old_programme_array = self.old_spot_type.map { |a| "'%%:programme:%%"+a.to_s+"%%'" }.join(", ")
     if is_new or programme_array != old_programme_array then
       if is_new then
         subs = self.get_subs(programme_array)
       else
         old_subs = self.get_subs(old_programme_array)
-        new_subs = self.get_subs(programme_array) 
+        new_subs = self.get_subs(programme_array)
         subs = new_subs - old_subs
-      end 
+      end
 
-      if subs and subs.count>0 
+      if subs and subs.count>0
         raw_image = nil
         if self.post_id and self.post_id.count>0 then
           i = Item.find(post_id.first.to_i)
           raw_image = i.raw_image if i
         else
-          #check for coords
-          assets = Asset.assets_from_code(self.code.join(', '))
+          # check for coords
+          assets = Asset.assets_from_code(self.code.join(", "))
           # should probaby use get_most_accurate ... but for simplicity
           asset = assets.first
           asset = asset[:asset] if asset
           location = asset.location if asset
-  
-          filename = get_3857_map_x_y(location.x,location.y, 9, 3, 3, "cons_"+self.id.to_s) if location
+
+          filename = get_3857_map_x_y(location.x, location.y, 9, 3, 3, "cons_"+self.id.to_s) if location
           image = File.read(filename) if filename
           raw_image = Base64.encode64(image) if image
         end
-  
-        
+
+
         if self.time and self.time.max>3.minutes.ago then
           subs.each do |sub|
             filter = sub.push_external_filter
             puts "send notification to #{sub.callsign}"
-            sub.send_notification(summary, self.url, if sub.push_include_comments then self.comments.last else nil end, if sub.push_include_map then raw_image else nil end) 
+            sub.send_notification(summary, self.url, if sub.push_include_comments then self.comments.last else nil end, if sub.push_include_map then raw_image else nil end)
           end
           system("rm #{filename}") if filename
         end

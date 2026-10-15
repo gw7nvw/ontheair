@@ -1,69 +1,69 @@
 # typed: false
+
 require "test_helper"
 include ApplicationHelper
 include SessionsHelper
 class DistrictsControllerTest < ActionController::TestCase
-
   ##################################################################
   # INDEX / FIND
   ##################################################################
   test "Should get index page" do
     get :index
     assert_response :success
-    #Breadcrumbs
-    assert_select '#crumbs', /Home/
-    assert_select '#crumbs', /Districts/
+    # Breadcrumbs
+    assert_select "#crumbs", /Home/
+    assert_select "#crumbs", /Districts/
 
-    #Action control bar
-    assert_select '#controls', /Smaller Map/
-    assert_select '#controls', /Larger Map/
-    assert_select '#controls', /Back/
+    # Action control bar
+    assert_select "#controls", /Smaller Map/
+    assert_select "#controls", /Larger Map/
+    assert_select "#controls", /Back/
 
-    #should get list of districts
-    table=get_table_test(@response.body, 'district_table')
+    # should get list of districts
+    table=get_table_test(@response.body, "district_table")
     assert_equal 5, get_row_count_test(table), "5 rows"
-    row=get_row_test(table,2)
-    assert_match /ZL-CC1/, get_col_test(row,1), "Correct code"
-    assert_match /Christchurch/, get_col_test(row,2), "Correct name"
-    assert_match /Canterbury/, get_col_test(row,4), "Correct region"
-    row=get_row_test(table,3)
-    assert_match /ZL-WD1/, get_col_test(row,1), "Correct code"
-    assert_match /Waimate/, get_col_test(row,2), "Correct name"
-    assert_match /Canterbury/, get_col_test(row,4), "Correct region"
-    row=get_row_test(table,4)
-    assert_match /ZL-CD3/, get_col_test(row,1), "Correct code"
-    assert_match /Central Otago/, get_col_test(row,2), "Correct name"
-    assert_match /Otago/, get_col_test(row,4), "Correct region"
-    row=get_row_test(table,5)
-    assert_match /ZL-DC1/, get_col_test(row,1), "Correct code"
-    assert_match /Dunedin/, get_col_test(row,2), "Correct name"
-    assert_match /Otago/, get_col_test(row,4), "Correct region"
+    row=get_row_test(table, 2)
+    assert_match /ZL-CC1/, get_col_test(row, 1), "Correct code"
+    assert_match /Christchurch/, get_col_test(row, 2), "Correct name"
+    assert_match /Canterbury/, get_col_test(row, 4), "Correct region"
+    row=get_row_test(table, 3)
+    assert_match /ZL-WD1/, get_col_test(row, 1), "Correct code"
+    assert_match /Waimate/, get_col_test(row, 2), "Correct name"
+    assert_match /Canterbury/, get_col_test(row, 4), "Correct region"
+    row=get_row_test(table, 4)
+    assert_match /ZL-CD3/, get_col_test(row, 1), "Correct code"
+    assert_match /Central Otago/, get_col_test(row, 2), "Correct name"
+    assert_match /Otago/, get_col_test(row, 4), "Correct region"
+    row=get_row_test(table, 5)
+    assert_match /ZL-DC1/, get_col_test(row, 1), "Correct code"
+    assert_match /Dunedin/, get_col_test(row, 2), "Correct name"
+    assert_match /Otago/, get_col_test(row, 4), "Correct region"
   end
 
   test "Not logged in should get show page" do
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
-    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'ZL-CC1', location: create_point(173,-43), test_radius: 0.1)
-    asset3=create_test_asset(asset_type: 'park', region: 'CB', district: 'ZL-WD1',  location: create_point(173,-45), test_radius: 0.1)
+    asset1=create_test_asset(asset_type: "hut", region: "CB", district: "ZL-CC1", description: "This is a comment", location: create_point(173, -43))
+    asset2=create_test_asset(asset_type: "park", region: "CB", district: "ZL-CC1", location: create_point(173, -43), test_radius: 0.1)
+    asset3=create_test_asset(asset_type: "park", region: "CB", district: "ZL-WD1",  location: create_point(173, -45), test_radius: 0.1)
 
-    get :show, params: {id: 'ZL-CC1'}
+    get :show, params: { id: "ZL-CC1" }
     assert_response :success
-    assert_select '#code', /ZL-CC1/
-    assert_select '#name', /Christchurch/
-    assert_select '#callsign', /Log in/  #non logged in version
-    assert_select '#submit', {count: 0}  #no per-user stats
+    assert_select "#code", /ZL-CC1/
+    assert_select "#name", /Christchurch/
+    assert_select "#callsign", /Log in/  # non logged in version
+    assert_select "#submit", { count: 0 }  # no per-user stats
 
-    #Places
-    table=get_table_test(@response.body, 'hut')
+    # Places
+    table=get_table_test(@response.body, "hut")
     assert_equal 3, get_row_count_test(table), "3 rows"
-    row=get_row_test(table,2)
-    assert_match /#{asset1.name}/, get_col_test(row,1), "Correct name"
-    assert_match /#{asset1.code}/, get_col_test(row,2), "Correct code"
- 
-    table=get_table_test(@response.body, 'park')
+    row=get_row_test(table, 2)
+    assert_match /#{asset1.name}/, get_col_test(row, 1), "Correct name"
+    assert_match /#{asset1.code}/, get_col_test(row, 2), "Correct code"
+
+    table=get_table_test(@response.body, "park")
     assert_equal 3, get_row_count_test(table), "3 rows"
-    row=get_row_test(table,2)
-    assert_match /#{asset2.name}/, get_col_test(row,1), "Correct name"
-    assert_match /#{asset2.code}/, get_col_test(row,2), "Correct code"
+    row=get_row_test(table, 2)
+    assert_match /#{asset2.name}/, get_col_test(row, 1), "Correct name"
+    assert_match /#{asset2.code}/, get_col_test(row, 2), "Correct code"
   end
 
   test "should show activaity" do
@@ -72,140 +72,140 @@ class DistrictsControllerTest < ActionController::TestCase
     user2=create_test_user
     user3=create_test_user
 
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
-    asset4=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173.1,-43))
-    asset2=create_test_asset(asset_type: 'park', region: 'CB', district: 'ZL-CC1', location: create_point(173,-43), test_radius: 0.1)
-    asset3=create_test_asset(asset_type: 'summit', region: 'CB', district: 'ZL-CC1', location: create_point(173,-45), code_prefix: 'ZL3/CB-')
+    asset1=create_test_asset(asset_type: "hut", region: "CB", district: "ZL-CC1", description: "This is a comment", location: create_point(173, -43))
+    asset4=create_test_asset(asset_type: "hut", region: "CB", district: "ZL-CC1", description: "This is a comment", location: create_point(173.1, -43))
+    asset2=create_test_asset(asset_type: "park", region: "CB", district: "ZL-CC1", location: create_point(173, -43), test_radius: 0.1)
+    asset3=create_test_asset(asset_type: "summit", region: "CB", district: "ZL-CC1", location: create_point(173, -45), code_prefix: "ZL3/CB-")
 
-    #activator log
-    log=create_test_log(user1, asset_codes: [asset1.code], date: '2022-01-01'.to_date)
-    contact=create_test_contact(user1, user2, log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-01 01:00'.to_time)
-    contact2=create_test_contact(user1, user3, log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-01 00:00'.to_time)
+    # activator log
+    log=create_test_log(user1, asset_codes: [ asset1.code ], date: "2022-01-01".to_date)
+    contact=create_test_contact(user1, user2, log_id: log.id, asset1_codes: [ asset1.code ], time: "2022-01-01 01:00".to_time)
+    contact2=create_test_contact(user1, user3, log_id: log.id, asset1_codes: [ asset1.code ], time: "2022-01-01 00:00".to_time)
 
-    
-    #chaser log
-    log2=create_test_log(user2, date: '2023-01-01'.to_date)
-    contact3=create_test_contact(user2, user1, log_id: log2.id, asset2_codes: [asset2.code], time: '2022-01-01 00:00'.to_time)
 
-    #external log
-    activation=create_test_external_activation(user1,asset3, date: '2022-01-01'.to_date)
-    chase=create_test_external_chase(activation,user2,asset3,time: '2022-01-01 02:00'.to_time)
+    # chaser log
+    log2=create_test_log(user2, date: "2023-01-01".to_date)
+    contact3=create_test_contact(user2, user1, log_id: log2.id, asset2_codes: [ asset2.code ], time: "2022-01-01 00:00".to_time)
 
-    get :show, params: {id: 'ZL-CC1', callsign: "*"}
+    # external log
+    activation=create_test_external_activation(user1, asset3, date: "2022-01-01".to_date)
+    chase=create_test_external_chase(activation, user2, asset3, time: "2022-01-01 02:00".to_time)
+
+    get :show, params: { id: "ZL-CC1", callsign: "*" }
     assert_response :success
-    assert_select '#callsign', {value: '*'}
+    assert_select "#callsign", { value: "*" }
 
-    #Places
-    #activated hut
-    table=get_table_test(@response.body, 'hut')
+    # Places
+    # activated hut
+    table=get_table_test(@response.body, "hut")
     assert_equal 4, get_row_count_test(table), "4 rows"
-    row=get_row_test(table,2)
-    assert_match /YES/, get_col_test(row,3), "Activated by all=yes"
-    assert_match /YES/, get_col_test(row,4), "Chased by all=yes"
-    #unactivated hut
-    row=get_row_test(table,3)
-    assert_no_match /YES/, get_col_test(row,3), "Activated by all!=yes"
-    assert_no_match /YES/, get_col_test(row,4), "Chased by all!=yes"
+    row=get_row_test(table, 2)
+    assert_match /YES/, get_col_test(row, 3), "Activated by all=yes"
+    assert_match /YES/, get_col_test(row, 4), "Chased by all=yes"
+    # unactivated hut
+    row=get_row_test(table, 3)
+    assert_no_match /YES/, get_col_test(row, 3), "Activated by all!=yes"
+    assert_no_match /YES/, get_col_test(row, 4), "Chased by all!=yes"
 
-    #chaser logged activation 
-    table=get_table_test(@response.body, 'park')
+    # chaser logged activation
+    table=get_table_test(@response.body, "park")
     assert_equal 3, get_row_count_test(table), "3 rows"
-    row=get_row_test(table,2)
-    assert_match /YES/, get_col_test(row,3), "Activated by all=yes"
-    assert_match /YES/, get_col_test(row,4), "Chased by all=yes"
+    row=get_row_test(table, 2)
+    assert_match /YES/, get_col_test(row, 3), "Activated by all=yes"
+    assert_match /YES/, get_col_test(row, 4), "Chased by all=yes"
 
-    #externally logged activation
-    table=get_table_test(@response.body, 'summit')
+    # externally logged activation
+    table=get_table_test(@response.body, "summit")
     assert_equal 3, get_row_count_test(table), "3 rows"
-    row=get_row_test(table,2)
-    assert_match /YES/, get_col_test(row,3), "Activated by all=yes"
-    assert_match /YES/, get_col_test(row,4), "Chased by all=yes"
+    row=get_row_test(table, 2)
+    assert_match /YES/, get_col_test(row, 3), "Activated by all=yes"
+    assert_match /YES/, get_col_test(row, 4), "Chased by all=yes"
 
-    #now filter by user1
-    get :show, params: {id: 'ZL-CC1', callsign: user1.callsign}
+    # now filter by user1
+    get :show, params: { id: "ZL-CC1", callsign: user1.callsign }
     assert_response :success
-    assert_select '#callsign', {value: user1.callsign}
+    assert_select "#callsign", { value: user1.callsign }
 
-    #Places
-    #activated hut
-    table=get_table_test(@response.body, 'hut')
+    # Places
+    # activated hut
+    table=get_table_test(@response.body, "hut")
     assert_equal 4, get_row_count_test(table), "4 rows"
-    row=get_row_test(table,2)
-    assert_match /YES/, get_col_test(row,3), "Activated by user1=yes"
-    assert_no_match /YES/, get_col_test(row,4), "Not Chased by user1"
-    #unactivated hut
-    row=get_row_test(table,3)
-    assert_no_match /YES/, get_col_test(row,3), "Activated by user1!=yes"
-    assert_no_match /YES/, get_col_test(row,4), "Chased by user1!=yes"
+    row=get_row_test(table, 2)
+    assert_match /YES/, get_col_test(row, 3), "Activated by user1=yes"
+    assert_no_match /YES/, get_col_test(row, 4), "Not Chased by user1"
+    # unactivated hut
+    row=get_row_test(table, 3)
+    assert_no_match /YES/, get_col_test(row, 3), "Activated by user1!=yes"
+    assert_no_match /YES/, get_col_test(row, 4), "Chased by user1!=yes"
 
-    #chaser logged activation 
-    table=get_table_test(@response.body, 'park')
+    # chaser logged activation
+    table=get_table_test(@response.body, "park")
     assert_equal 3, get_row_count_test(table), "3 rows"
-    row=get_row_test(table,2)
-    assert_match /YES/, get_col_test(row,3), "Activated by user1=yes"
-    assert_no_match /YES/, get_col_test(row,4), "Chased by user1!=yes"
+    row=get_row_test(table, 2)
+    assert_match /YES/, get_col_test(row, 3), "Activated by user1=yes"
+    assert_no_match /YES/, get_col_test(row, 4), "Chased by user1!=yes"
 
-    #externally logged activation
-    table=get_table_test(@response.body, 'summit')
+    # externally logged activation
+    table=get_table_test(@response.body, "summit")
     assert_equal 3, get_row_count_test(table), "3 rows"
-    row=get_row_test(table,2)
-    assert_match /YES/, get_col_test(row,3), "Activated by user1 =yes"
-    assert_no_match /YES/, get_col_test(row,4), "Chased by user1!=yes"
+    row=get_row_test(table, 2)
+    assert_match /YES/, get_col_test(row, 3), "Activated by user1 =yes"
+    assert_no_match /YES/, get_col_test(row, 4), "Chased by user1!=yes"
 
-    #now filter by user2
-    get :show, params: {id: 'ZL-CC1', callsign: user2.callsign}
+    # now filter by user2
+    get :show, params: { id: "ZL-CC1", callsign: user2.callsign }
     assert_response :success
-    assert_select '#callsign', {value: user2.callsign}
+    assert_select "#callsign", { value: user2.callsign }
 
-    #Places
-    #activated hut
-    table=get_table_test(@response.body, 'hut')
+    # Places
+    # activated hut
+    table=get_table_test(@response.body, "hut")
     assert_equal 4, get_row_count_test(table), "4 rows"
-    row=get_row_test(table,2)
-    assert_no_match /YES/, get_col_test(row,3), "Not Activated by user2"
-    assert_match /YES/, get_col_test(row,4), "Chased by user2"
-    #unactivated hut
-    row=get_row_test(table,3)
-    assert_no_match /YES/, get_col_test(row,3), "Not Activated by user2"
-    assert_no_match /YES/, get_col_test(row,4), "Not Chased by user2"
+    row=get_row_test(table, 2)
+    assert_no_match /YES/, get_col_test(row, 3), "Not Activated by user2"
+    assert_match /YES/, get_col_test(row, 4), "Chased by user2"
+    # unactivated hut
+    row=get_row_test(table, 3)
+    assert_no_match /YES/, get_col_test(row, 3), "Not Activated by user2"
+    assert_no_match /YES/, get_col_test(row, 4), "Not Chased by user2"
 
-    #chaser logged activation 
-    table=get_table_test(@response.body, 'park')
+    # chaser logged activation
+    table=get_table_test(@response.body, "park")
     assert_equal 3, get_row_count_test(table), "3 rows"
-    row=get_row_test(table,2)
-    assert_no_match /YES/, get_col_test(row,3), "Not Activated by user2"
-    assert_match /YES/, get_col_test(row,4), "Chased by user2"
+    row=get_row_test(table, 2)
+    assert_no_match /YES/, get_col_test(row, 3), "Not Activated by user2"
+    assert_match /YES/, get_col_test(row, 4), "Chased by user2"
 
-    #externally logged activation
-    table=get_table_test(@response.body, 'summit')
+    # externally logged activation
+    table=get_table_test(@response.body, "summit")
     assert_equal 3, get_row_count_test(table), "3 rows"
-    row=get_row_test(table,2)
-    assert_no_match /YES/, get_col_test(row,3), "Not Activated by user2"
-    assert_match /YES/, get_col_test(row,4), "Chased by user2"
+    row=get_row_test(table, 2)
+    assert_no_match /YES/, get_col_test(row, 3), "Not Activated by user2"
+    assert_match /YES/, get_col_test(row, 4), "Chased by user2"
   end
 
   test "logged in user sees their own data by default" do
     sign_in users(:zl4nvw)
 
-    user1=User.find_by(callsign: 'ZL4NVW')
+    user1=User.find_by(callsign: "ZL4NVW")
     user2=create_test_user
 
-    asset1=create_test_asset(asset_type: 'hut', region: 'CB', district: 'ZL-CC1', description: "This is a comment", location: create_point(173,-43))
+    asset1=create_test_asset(asset_type: "hut", region: "CB", district: "ZL-CC1", description: "This is a comment", location: create_point(173, -43))
 
-    #activator log
-    log=create_test_log(user1, asset_codes: [asset1.code], date: '2022-01-01'.to_date)
-    contact=create_test_contact(user1, user2, log_id: log.id, asset1_codes: [asset1.code], time: '2022-01-01 01:00'.to_time)
+    # activator log
+    log=create_test_log(user1, asset_codes: [ asset1.code ], date: "2022-01-01".to_date)
+    contact=create_test_contact(user1, user2, log_id: log.id, asset1_codes: [ asset1.code ], time: "2022-01-01 01:00".to_time)
 
-    get :show, params: {id: 'ZL-CC1'}
+    get :show, params: { id: "ZL-CC1" }
     assert_response :success
-    assert_select '#callsign', {value: 'ZL4NVW'}
+    assert_select "#callsign", { value: "ZL4NVW" }
 
-    #Places
-    #activated hut
-    table=get_table_test(@response.body, 'hut')
+    # Places
+    # activated hut
+    table=get_table_test(@response.body, "hut")
     assert_equal 3, get_row_count_test(table), "3 rows"
-    row=get_row_test(table,2)
-    assert_match /YES/, get_col_test(row,3), "Activated by ZL4NVW=yes"
-    assert_no_match /YES/, get_col_test(row,4), "Chased by ZL4NVW=no"
+    row=get_row_test(table, 2)
+    assert_match /YES/, get_col_test(row, 3), "Activated by ZL4NVW=yes"
+    assert_no_match /YES/, get_col_test(row, 4), "Chased by ZL4NVW=no"
   end
 end

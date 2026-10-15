@@ -1,14 +1,13 @@
 # typed: false
+
 require "test_helper"
 include ApplicationHelper
 class ApiPnpGridsquareTest < ActionDispatch::IntegrationTest
-
-
   ##################################################################
   # ONTHEAIR API
   ##################################################################
   ##################################################################
-  # /api/GRIDSQUARE 
+  # /api/GRIDSQUARE
   ##################################################################
   test "Should get api/GRIDSQUARE maidenhead details" do
     get "/api/GRIDSQUARE/-45.29166/169.33334"

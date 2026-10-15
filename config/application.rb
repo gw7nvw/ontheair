@@ -12,42 +12,42 @@ module Ontheair
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 8.0
     config.assets.prefix = "/rails-assets"
-    #add modles from lib
-    #config.autoload_paths += %W(#{config.root}/lib)
-    #config.middleware.insert_after "ActionDispatch::Session::ActiveRecordStore", "DynamicCookieDomain"
-    #config.middleware.insert_after "ActionDispatch::Session::ActiveRecordStore", "SkipBotSessions"
+    # add modles from lib
+    # config.autoload_paths += %W(#{config.root}/lib)
+    # config.middleware.insert_after "ActionDispatch::Session::ActiveRecordStore", "DynamicCookieDomain"
+    # config.middleware.insert_after "ActionDispatch::Session::ActiveRecordStore", "SkipBotSessions"
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
 
     # Prevents pg_dump from outputting thousands of lines of PostGIS internal comments
-    ActiveRecord::Tasks::DatabaseTasks.structure_dump_flags = ['--no-comments', '--no-owner']
+    ActiveRecord::Tasks::DatabaseTasks.structure_dump_flags = [ "--no-comments", "--no-owner" ]
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
-    # Configuration for the application, engines, and railties goes here.
-    #
-    # These settings can be overridden in specific environments using the files
-    # in config/environments, which are processed later.
-    #
+     # Configuration for the application, engines, and railties goes here.
+     #
+     # These settings can be overridden in specific environments using the files
+     # in config/environments, which are processed later.
+     #
      config.time_zone = "UTC"
     # config.eager_load_paths << Rails.root.join("extras")
     config.active_record.schema_format = :sql
-#    config.middleware.insert_after ActionDispatch::Session::ActiveRecordStore, SkipBotSessions
+    #    config.middleware.insert_after ActionDispatch::Session::ActiveRecordStore, SkipBotSessions
     # Disable middlewarer in API VHOST, enable otherwise
-    if ENV['RAILS_API_ONLY'] == true
+    if ENV["RAILS_API_ONLY"] == true
       config.api_only = true
     else
       Rails.autoloaders.main.ignore(Rails.root.join("lib/skip_bot_sessions.rb"))
       config.middleware.insert_before ActionDispatch::Cookies, SkipBotSessions
     end
-#    initializer "skip_bot_sessions.configure_middleware", after: :build_middleware_stack do |app|
-#      app.config.middleware.insert_after(
-#        :active_record_store,
-#        SkipBotSessions
-#      )
-#    end
+    #    initializer "skip_bot_sessions.configure_middleware", after: :build_middleware_stack do |app|
+    #      app.config.middleware.insert_after(
+    #        :active_record_store,
+    #        SkipBotSessions
+    #      )
+    #    end
   end
 end

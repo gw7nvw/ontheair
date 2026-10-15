@@ -1,4 +1,5 @@
 # typed: true
+
 class Asset < ApplicationRecord
   include AssetGisTools
   include AssetImportTools
@@ -9,20 +10,20 @@ class Asset < ApplicationRecord
   before_validation { assign_calculated_fields }
   after_save { post_save_actions }
 
-#  SIOTA_REGEX = /^VK-[a-zA-Z]{3}\d{1}/
-#  POTA_REGEX = /^[a-zA-Z0-9]{1,2}-\d{4,5}/
-#  WWFF_REGEX = /^\d{0,1}[a-zA-Z]{1,2}[fF]{2}-\d{4}/
-#  SOTA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/[a-zA-Z]{2}-\d{3}/
-#  HEMA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/H[a-zA-Z]{2}-\d{3}/
-#  LLOTA_REGEX = /^[lL]{2}\d{0,1}[a-zA-Z]{1,2}-\d{4}/
+  #  SIOTA_REGEX = /^VK-[a-zA-Z]{3}\d{1}/
+  #  POTA_REGEX = /^[a-zA-Z0-9]{1,2}-\d{4,5}/
+  #  WWFF_REGEX = /^\d{0,1}[a-zA-Z]{1,2}[fF]{2}-\d{4}/
+  #  SOTA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/[a-zA-Z]{2}-\d{3}/
+  #  HEMA_REGEX = /^\d{0,1}[a-zA-Z]{1,2}\d{0,1}\/H[a-zA-Z]{2}-\d{3}/
+  #  LLOTA_REGEX = /^[lL]{2}\d{0,1}[a-zA-Z]{1,2}-\d{4}/
 
-  SOTA_ASSET_URL = 'https://www.sotadata.org.uk/en/summit/'
-  WWFF_ASSET_URL = 'https://wwff.co/directory/?showRef='
-  POTA_ASSET_URL = 'https://pota.app/#/park/'
-  HEMA_ASSET_URL = 'http://www.hema.org.uk/fullSummit.jsp?summitKey='
-  LLOTA_ASSET_URL = 'https://llota.app/list/ref/'
-  SIOTA_ASSET_URL = 'https://www.silosontheair.com/silos/#'
-  ILLW_ASSET_URL = 'https://illw.net'
+  SOTA_ASSET_URL = "https://www.sotadata.org.uk/en/summit/"
+  WWFF_ASSET_URL = "https://wwff.co/directory/?showRef="
+  POTA_ASSET_URL = "https://pota.app/#/park/"
+  HEMA_ASSET_URL = "http://www.hema.org.uk/fullSummit.jsp?summitKey="
+  LLOTA_ASSET_URL = "https://llota.app/list/ref/"
+  SIOTA_ASSET_URL = "https://www.silosontheair.com/silos/#"
+  ILLW_ASSET_URL = "https://illw.net"
 
   NZTM_LAT_RANGE = (-47.33..-34.1)
   NZTM_LNG_RANGE = (166.37..178.63)
@@ -46,23 +47,23 @@ class Asset < ApplicationRecord
 
   # After validation but before save
   def assign_calculated_fields
-    self.old_code = 'invalid' if self.old_code==nil or self.old_code==""
+    self.old_code = "invalid" if self.old_code==nil or self.old_code==""
     self.valid_from = Time.new(1900, 1, 1) unless valid_from
     self.minor = false if minor != true
 
     self.district = add_district if !district or district.blank?
-    self.region = add_region if !region or region.blank? 
+    self.region = add_region if !region or region.blank?
 
-    if code.nil? || (code == '')
-      if self.type.use_volcanic_field then 
+    if code.nil? || (code == "")
+      if self.type.use_volcanic_field then
         self.code = Asset.get_next_code(asset_type, field_code)
       else
-        self.code = Asset.get_next_code(asset_type, (region||'ZZ')[-2..-1])
+        self.code = Asset.get_next_code(asset_type, (region||"ZZ")[-2..-1])
       end
     end
-    self.safecode = code.tr('/', '_') 
+    self.safecode = code.tr("/", "_")
 
-    self.url = 'assets/' + safecode
+    self.url = "assets/" + safecode
 
     self.az_radius=1.0*self.type.dist_buffer/1000 if az_radius==nil and self.type.dist_buffer
   end
@@ -79,12 +80,12 @@ class Asset < ApplicationRecord
 
     return unless is_active
 
-    overlap_assets = Asset.find_by_sql ["
-        SELECT b.code as code 
+    overlap_assets = Asset.find_by_sql [ "
+        SELECT b.code as code
         FROM assets a
         INNER join assets b
-        ON 
-          b.is_active=true 
+        ON
+          b.is_active=true
           AND b.id != a.id
           AND ST_Intersects(
             coalesce(a.az_boundary, a.boundary, a.location),
@@ -92,12 +93,12 @@ class Asset < ApplicationRecord
         WHERE a.id=?", self.id ]
 
     overlap_assets.each do |linked_asset|
-      containing_asset_code = linked_asset['code']
+      containing_asset_code = linked_asset["code"]
       contained_asset_code = code
 
-      logger.debug containing_asset_code + ' overlaps ' + contained_asset_code
+      logger.debug containing_asset_code + " overlaps " + contained_asset_code
       dup = AssetOverlap.where(contained_code: contained_asset_code, containing_code: containing_asset_code)
-      next unless (!dup || dup.count.zero?) && (linked_asset['code'] != code)
+      next unless (!dup || dup.count.zero?) && (linked_asset["code"] != code)
       al = AssetOverlap.new
       al.contained_code = contained_asset_code
       al.containing_code = containing_asset_code
@@ -116,18 +117,18 @@ class Asset < ApplicationRecord
     end
 
     return unless is_active
-    area_query='true';
+    area_query="true"
 
     # check assets contained by us, then assets containign us
-    ['we are contained by', 'we contain'].each do |link_type|
-      if link_type == 'we are contained by'
-        within_query = 'ST_Within(a.location, b.az_boundary)'
-        area_query = 'b.az_area>a.az_area*0.9' if az_area 
+    [ "we are contained by", "we contain" ].each do |link_type|
+      if link_type == "we are contained by"
+        within_query = "ST_Within(a.location, b.az_boundary)"
+        area_query = "b.az_area>a.az_area*0.9" if az_area
       else
-        within_query = 'ST_Within(b.location, a.az_boundary)'
-        area_query = 'a.az_area>b.az_area*0.9' if az_area
+        within_query = "ST_Within(b.location, a.az_boundary)"
+        area_query = "a.az_area>b.az_area*0.9" if az_area
       end
-      linked_assets = Asset.find_by_sql ["
+      linked_assets = Asset.find_by_sql [ "
         select b.code as code, at.has_boundary as has_boundary, at.use_az as use_az, b.az_area as az_area
           from assets a
         inner join assets b
@@ -137,37 +138,37 @@ class Asset < ApplicationRecord
         where
           b.id!=a.id
           and (b.az_area is null or " + area_query + ")
-          and a.id = " + id.to_s]
-      logger.debug code + ' might ' + link_type + ' ' + linked_assets.to_json
+          and a.id = " + id.to_s ]
+      logger.debug code + " might " + link_type + " " + linked_assets.to_json
       linked_assets.each do |linked_asset|
         matched = false
 
         # get the parameters the right way round for containing vs contained
-        if link_type == 'we contain'
-          contained_asset_code = linked_asset['code']
+        if link_type == "we contain"
+          contained_asset_code = linked_asset["code"]
           containing_asset_code = code
         else
-          containing_asset_code = linked_asset['code']
+          containing_asset_code = linked_asset["code"]
           contained_asset_code = code
         end
         # for assets with az_boundary, ensure >=90% overlap
-        if az_area && (az_area > 0) && linked_asset['az_area'] && (linked_asset['az_area'] > 0)
+        if az_area && (az_area > 0) && linked_asset["az_area"] && (linked_asset["az_area"] > 0)
           overlap = ActiveRecord::Base.connection.execute(" select ST_Area(ST_intersection(a.az_boundary, b.az_boundary)) as overlap, ST_Area(b.az_boundary) as area from assets a join assets b on b.code='#{contained_asset_code}' where a.code='#{containing_asset_code}'; ")
-          prop_overlap = overlap.first['overlap'].to_f / overlap.first['area'].to_f
-          logger.debug "DEBUG: overlap #{prop_overlap} " + linked_asset['code']
+          prop_overlap = overlap.first["overlap"].to_f / overlap.first["area"].to_f
+          logger.debug "DEBUG: overlap #{prop_overlap} " + linked_asset["code"]
           matched = true if prop_overlap > 0.9
 
         # for point assets, accept point contained in polygon
         else
           matched = true
-          logger.debug 'DEBUG: Point: ' + linked_asset['code']
+          logger.debug "DEBUG: Point: " + linked_asset["code"]
         end
 
         # Fore all matched assets, if this combo does not already exist, create it
         next unless matched == true
-        logger.debug containing_asset_code + ' contains ' + contained_asset_code
+        logger.debug containing_asset_code + " contains " + contained_asset_code
         dup = AssetLink.where(contained_code: contained_asset_code, containing_code: containing_asset_code)
-        next unless (!dup || dup.count.zero?) && (linked_asset['code'] != code)
+        next unless (!dup || dup.count.zero?) && (linked_asset["code"] != code)
         al = AssetLink.new
         al.contained_code = contained_asset_code
         al.containing_code = containing_asset_code
@@ -178,40 +179,40 @@ class Asset < ApplicationRecord
 
   # add region - done directly in database so safe as an after-save callback
   def add_state
-    location ? (region = State.find_by_sql ["select id, code, name, dxcc from states where ST_Within(ST_GeomFromText('" + location.as_text + %q{', 4326), "boundary");}]) : (logger.error 'ERROR: place without location. Name: ' + name + ', id: ' + id.to_s)
+    location ? (region = State.find_by_sql [ "select id, code, name, dxcc from states where ST_Within(ST_GeomFromText('" + location.as_text + %q{', 4326), "boundary");} ]) : (logger.error "ERROR: place without location. Name: " + name + ", id: " + id.to_s)
     if id && region && (region.count > 0) && (self.region != region.first.code)
-      logger.debug 'updating state to ' + region.first.to_json
+      logger.debug "updating state to " + region.first.to_json
       ActiveRecord::Base.connection.execute("update assets set state='" + region.first.code + "' where id=" + id.to_s)
       ActiveRecord::Base.connection.execute("update assets set country='" + region.first.dxcc + "' where id=" + id.to_s)
     end
 
     if region && (region.count > 0) && (self.state != region.first.code)
-      return region.first.code
+      region.first.code
     end
   end
 
   # add district - done directly in database so safe as an after-save callback
   def add_region
-    location ? (region = Region.find_by_sql ["select id, sota_code, name from regions where ST_Within(ST_GeomFromText('" + location.as_text + %q{', 4326), "boundary");}]) : (logger.error 'ERROR: place without location. Name: ' + name + ', id: ' + id.to_s)
+    location ? (region = Region.find_by_sql [ "select id, sota_code, name from regions where ST_Within(ST_GeomFromText('" + location.as_text + %q{', 4326), "boundary");} ]) : (logger.error "ERROR: place without location. Name: " + name + ", id: " + id.to_s)
     if id && region && (region.count > 0) && (self.region != region.first.sota_code)
-      logger.debug 'updating region to ' + region.first.to_json
+      logger.debug "updating region to " + region.first.to_json
       ActiveRecord::Base.connection.execute("update assets set region='" + region.first.sota_code + "' where id=" + id.to_s)
     end
 
     if region && (region.count > 0) && (self.region != region.first.sota_code)
-      return region.first.sota_code
+      region.first.sota_code
     end
   end
 
   # add district - done directly in database so safe as an after-save callback
   def add_district
-    location ? (district = District.find_by_sql ["select id, district_code, name from districts where ST_Within(ST_GeomFromText('" + location.as_text + %q{', 4326), "boundary");}]) : (logger.error 'ERROR: place without location. Name: ' + name + ', id: ' + id.to_s)
+    location ? (district = District.find_by_sql [ "select id, district_code, name from districts where ST_Within(ST_GeomFromText('" + location.as_text + %q{', 4326), "boundary");} ]) : (logger.error "ERROR: place without location. Name: " + name + ", id: " + id.to_s)
     if id && district && (district.count > 0) && (self.district != district.first.district_code)
       ActiveRecord::Base.connection.execute("update assets set district='" + district.first.district_code + "' where id=" + id.to_s)
     end
 
     if district && (district.count > 0) && (self.district != district.first.district_code)
-      return district.first.district_code
+      district.first.district_code
     end
   end
 
@@ -224,14 +225,14 @@ class Asset < ApplicationRecord
     AssetPhotoLink.where(asset_code: code)
   end
 
-  #count of contacts
+  # count of contacts
   def contact_count
     Contact.where("asset1_codes && ARRAY[?]::varchar[] OR asset2_codes && ARRAY[?]::varchar[]", code, code).count
   end
-  
+
   # all contacts referring to this asset
   def contacts
-    Contact.find_by_sql ["select * from contacts c where '" + code + "' = ANY(asset1_codes) or '" + code + "' = ANY(asset2_codes);"]
+    Contact.find_by_sql [ "select * from contacts c where '" + code + "' = ANY(asset1_codes) or '" + code + "' = ANY(asset2_codes);" ]
   end
 
   def geology
@@ -240,12 +241,12 @@ class Asset < ApplicationRecord
 
   # count of logs
   def log_count
-    Log.find_by_sql ["asset_codes && ARRAY[?]::varchar[]", code].count
+    Log.find_by_sql [ "asset_codes && ARRAY[?]::varchar[]", code ].count
   end
 
   # all logs referring to this asset
   def logs
-    Log.find_by_sql ["select * from logs l where '" + code + "' = ANY(asset_codes);"]
+    Log.find_by_sql [ "select * from logs l where '" + code + "' = ANY(asset_codes);" ]
   end
 
   # all web links for this asset
@@ -255,18 +256,18 @@ class Asset < ApplicationRecord
 
   # hutbagger page for this asset
   def hutbagger_link
-    AssetWebLink.find_by(asset_code: code, link_class: 'hutbagger')
+    AssetWebLink.find_by(asset_code: code, link_class: "hutbagger")
   end
 
   # Returns string containing code and name: [<code>] <name
   def codename
-    '[' + code + '] ' + name
+    "[" + code + "] " + name
   end
 
   # AssetType
   def type
     type = AssetType.find_by(name: asset_type)
-    type ||= AssetType.find_by(name: 'all')
+    type ||= AssetType.find_by(name: "all")
     type
   end
 
@@ -299,25 +300,25 @@ class Asset < ApplicationRecord
       begin
         buffer = 5000 # say in or near if we are within this distance of boundary (meters)
         if type.has_boundary && area && (area > 0)
-          tos1 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.boundary_quite_simplified, tl.boundary_quite_simplified) "]
-  #        tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.boundary,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
+          tos1 = NzTribalLand.find_by_sql [ "select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.boundary_quite_simplified, tl.boundary_quite_simplified) " ]
+          #        tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.boundary,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
           tos2 = NzTribalLand.find_by_sql [ "SELECT tl.id, tl.name, tl.ogc_fid FROM nz_tribal_lands tl JOIN assets a ON a.id = #{id} WHERE ST_DWithin( ST_Transform(a.boundary_quite_simplified, 3857), ST_Transform(tl.boundary_quite_simplified, 3857), #{buffer} / cos(radians(ST_Y(a.location)))); " ]
         else
-          tos1 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.location, tl.boundary_quite_simplified) "]
-  #        tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.location,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
+          tos1 = NzTribalLand.find_by_sql [ "select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_Within(a.location, tl.boundary_quite_simplified) " ]
+          #        tos2 = NzTribalLand.find_by_sql ["select tl.id, tl.name, tl.ogc_fid from nz_tribal_lands tl join assets a on a.id=#{id} where ST_DWithin(ST_Transform(a.location,2193), ST_Transform(tl.wkb_geometry,2193), #{buffer});"]
           tos2 = NzTribalLand.find_by_sql [ "SELECT tl.id, tl.name, tl.ogc_fid FROM nz_tribal_lands tl JOIN assets a ON a.id = #{id} WHERE ST_DWithin( ST_Transform(a.location, 3857), ST_Transform(tl.boundary_quite_simplified, 3857), #{buffer} / cos(radians(ST_Y(a.location)))); " ]
-  
+
         end
         ids1 = tos1.map(&:id)
         ids2 = tos2.map(&:id)
         if ids2 && (ids2.count > 0)
           names = []
           if ids1.sort != ids2.sort
-            tos2.each { |t| names.push(t['name']) }
-            trad_owners = 'In or near ' + names.join(', ') + ' country'
+            tos2.each { |t| names.push(t["name"]) }
+            trad_owners = "In or near " + names.join(", ") + " country"
           else
-            tos1.each { |t| names.push(t['name']) }
-            trad_owners = names.join(', ') + ' country'
+            tos1.each { |t| names.push(t["name"]) }
+            trad_owners = names.join(", ") + " country"
           end
         else
           trad_owners = nil
@@ -338,10 +339,10 @@ class Asset < ApplicationRecord
     # pad 4 digit maidenhead to 6
     mh_len = 6
     if maidenhead.length == 4
-      maidenhead += 'aa' 
+      maidenhead += "aa"
       mh_len=4
     end
-    abc = 'abcdefghijklmnopqrstuvwxyz'
+    abc = "abcdefghijklmnopqrstuvwxyz"
     long20 = abc.upcase.index(maidenhead[0]).to_f
     lat10 = abc.upcase.index(maidenhead[1]).to_f
     long2 = maidenhead[2].to_f
@@ -354,8 +355,8 @@ class Asset < ApplicationRecord
     long -= 180
     lat -= 90
     if mh_len==6
-      long += (0.041667) #centre point
-      lat += (0.020833) #centre point
+      long += (0.041667) # centre point
+      lat += (0.020833) # centre point
     elsif mh_len==4
       long += 1
       lat += 0.5
@@ -365,27 +366,27 @@ class Asset < ApplicationRecord
 
   # Return 6-digit maidenhead locator from location
   def maidenhead
-    return '' if location.blank?
+    return "" if location.blank?
 
-    abc = 'abcdefghijklmnopqrstuvwxyz'
-  
+    abc = "abcdefghijklmnopqrstuvwxyz"
+
     # Extract PostGIS point coordinates (x = longitude, y = latitude)
     long = location.x + 180.0
     lat  = location.y + 90.0
-  
+
     # 1. Calculate Field boundaries (First 2 Letters)
     long20 = (long / 20.0).floor
     lat10  = (lat / 10.0).floor
-  
+
     # 2. Calculate Square boundaries (Middle 2 Digits)
     long2 = ((long - (long20 * 20.0)) / 2.0).floor
     lat1  = (lat - (lat10 * 10.0)).floor
-  
+
     # 3. Calculate Sub-square boundaries (Trailing 2 Letters)
     # Added .floor and bounded clamp limits to completely stop floating-point edge crashes
-    longm = [((long - (long20 * 20.0 + long2 * 2.0)) * 12.0).floor, 23].min
-    latm  = [((lat - (lat10 * 10.0 + lat1 * 1.0)) * 24.0).floor, 23].min
-  
+    longm = [ ((long - (long20 * 20.0 + long2 * 2.0)) * 12.0).floor, 23 ].min
+    latm  = [ ((lat - (lat10 * 10.0 + lat1 * 1.0)) * 24.0).floor, 23 ].min
+
     # 4. Construct and return the 6-character locator string cleanly
     [
       abc[long20].upcase,
@@ -399,11 +400,11 @@ class Asset < ApplicationRecord
 
   # simplified boundary with downscaling big assets (and detail/accuracy for small assets)
   def boundary_simple
-    pp = Asset.find_by_sql ['select id, ST_NPoints(boundary) as numpoints from assets where id=' + id.to_s]
+    pp = Asset.find_by_sql [ "select id, ST_NPoints(boundary) as numpoints from assets where id=" + id.to_s ]
     if pp
-      lenfactor = Math.sqrt((pp.first['numpoints'] || 0) / 10_000)
+      lenfactor = Math.sqrt((pp.first["numpoints"] || 0) / 10_000)
       rnd = 0.000002 * 10**lenfactor
-      boundarys = Asset.find_by_sql ['select id, ST_AsText(ST_Simplify("boundary", ' + rnd.to_s + ')) as "boundary" from assets where id=' + id.to_s]
+      boundarys = Asset.find_by_sql [ 'select id, ST_AsText(ST_Simplify("boundary", ' + rnd.to_s + ')) as "boundary" from assets where id=' + id.to_s ]
       boundary = boundarys.first.boundary
       boundary
     end
@@ -411,11 +412,11 @@ class Asset < ApplicationRecord
 
   # simplified az boundary with downscaling big assets (and detail/accuracy for small assets)
   def az_boundary_simple
-    pp = Asset.find_by_sql ['select id, ST_NPoints(az_boundary) as numpoints from assets where id=' + id.to_s]
+    pp = Asset.find_by_sql [ "select id, ST_NPoints(az_boundary) as numpoints from assets where id=" + id.to_s ]
     if pp
-      lenfactor = Math.sqrt((pp.first['numpoints'] || 0) / 10_000)
+      lenfactor = Math.sqrt((pp.first["numpoints"] || 0) / 10_000)
       rnd = 0.000002 * 10**lenfactor
-      boundarys = Asset.find_by_sql ['select id, ST_AsText(ST_Simplify("az_boundary", ' + rnd.to_s + ')) as "boundary" from assets where id=' + id.to_s]
+      boundarys = Asset.find_by_sql [ 'select id, ST_AsText(ST_Simplify("az_boundary", ' + rnd.to_s + ')) as "boundary" from assets where id=' + id.to_s ]
       boundary = boundarys.first.boundary
       boundary
     end
@@ -424,32 +425,32 @@ class Asset < ApplicationRecord
   # name of distirct (without getting it's boundary)
   def district_name
     r = District.find_by(district_code: district)
-    r ? r.name : ''
+    r ? r.name : ""
   end
 
   def access_track_names
     return "" if self.access_track_ids.blank?
-    if self.country=='ZL'
-      tracks = DocTrack.where('ogc_fid in (?)', self.access_track_ids.map{|rid| rid.to_i})
-      return (tracks.pluck(:techobject).map{ |str| str.blank? ? 'Unnamed track(s)' : str }.uniq.join(', ')||"")
-    elsif self.country=='VK'
-      tracks = VkRoad.where('road_id in (?)', self.access_track_ids)
-      return (tracks.pluck(:full_street_name).map{ |str| str.blank? ? 'Unnamed track(s)' : str }.uniq.join(', ')||"")
+    if self.country=="ZL"
+      tracks = DocTrack.where("ogc_fid in (?)", self.access_track_ids.map { |rid| rid.to_i })
+      return (tracks.pluck(:techobject).map { |str| str.blank? ? "Unnamed track(s)" : str }.uniq.join(", ")||"")
+    elsif self.country=="VK"
+      tracks = VkRoad.where("road_id in (?)", self.access_track_ids)
+      return (tracks.pluck(:full_street_name).map { |str| str.blank? ? "Unnamed track(s)" : str }.uniq.join(", ")||"")
     end
-    return ""
+    ""
   end
 
   # name of region (without getting it's boundary)
   def access_road_names
     return "" if self.access_road_ids.blank?
-    if self.country=='ZL'
-      roads = Road.where('t50_fid in (?)', self.access_road_ids.map{|rid| rid.to_i})
-      return (roads.pluck(:name).map{ |str| str.blank? ? 'Unnamed road(s)' : str }.uniq.join(', ')||"")
-    elsif self.country=='VK'
-      roads = VkRoad.where('road_id in (?)', self.access_road_ids)
-      return (roads.pluck(:full_street_name).map{ |str| str.blank? ? 'Unnamed road(s)' : str }.uniq.join(', ')||"")
+    if self.country=="ZL"
+      roads = Road.where("t50_fid in (?)", self.access_road_ids.map { |rid| rid.to_i })
+      return (roads.pluck(:name).map { |str| str.blank? ? "Unnamed road(s)" : str }.uniq.join(", ")||"")
+    elsif self.country=="VK"
+      roads = VkRoad.where("road_id in (?)", self.access_road_ids)
+      return (roads.pluck(:full_street_name).map { |str| str.blank? ? "Unnamed road(s)" : str }.uniq.join(", ")||"")
     end
-    return ""
+    ""
   end
 
   # name of region (without getting it's boundary)
@@ -461,13 +462,13 @@ class Asset < ApplicationRecord
   # name of region (without getting it's boundary)
   def region_name
     r = Region.find_by(sota_code: region)
-    r.name.gsub('Region', '') if r
+    r.name.gsub("Region", "") if r
   end
 
 
   # NZTM coordinates: x
   def x
-    if(Projection.find_by_id(2193)) then srs=2193 else srs=4326 end
+    if Projection.find_by_id(2193) then srs=2193 else srs=4326 end
     if location
       if within_nztm_bounds?(location)
         fromproj4s = Projection.find_by_id(4326).proj4
@@ -476,44 +477,44 @@ class Asset < ApplicationRecord
         # 2. Safety check: ensure '+type=crs' is appended to satisfy modern PROJ libraries
         fromproj4s += " +type=crs" unless fromproj4s.include?("+type=crs")
         toproj4s   += " +type=crs" unless toproj4s.include?("+type=crs")
-  
+
         fromproj = RGeo::CoordSys::Proj4.new(fromproj4s)
         toproj = RGeo::CoordSys::Proj4.new(toproj4s)
 
         xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, location.x, location.y)
-        return xyarr[0]
+        xyarr[0]
       else
-        return location.x
+        location.x
       end
     end
   end
 
   # NZTM coordinates: y
   def y
-    if(Projection.find_by_id(2193)) then srs=2193 else srs=4326 end
+    if Projection.find_by_id(2193) then srs=2193 else srs=4326 end
     if location
       if within_nztm_bounds?(location)
         fromproj4s = Projection.find_by_id(4326).proj4
         toproj4s = Projection.find_by_id(srs).proj4
-  
+
         # 2. Safety check: ensure '+type=crs' is appended to satisfy modern PROJ libraries
         fromproj4s += " +type=crs" unless fromproj4s.include?("+type=crs")
         toproj4s   += " +type=crs" unless toproj4s.include?("+type=crs")
-  
+
         fromproj = RGeo::CoordSys::Proj4.new(fromproj4s)
         toproj = RGeo::CoordSys::Proj4.new(toproj4s)
-  
+
         xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, location.x, location.y)
-        return xyarr[1]
+        xyarr[1]
       else
-        return location.y
+        location.y
       end
     end
   end
 
   def first_activated
-#    cs = Contact.find_by_sql [' select * from contacts where ? = ANY(asset1_codes) or ? = ANY(asset2_codes) or ? = ANY(asset1_codes) or ? = ANY(asset2_codes)order by date, time limit 1 ', code, code, old_code, old_code]
-     cs = Contact.find_by_sql ['
+     #    cs = Contact.find_by_sql [' select * from contacts where ? = ANY(asset1_codes) or ? = ANY(asset2_codes) or ? = ANY(asset1_codes) or ? = ANY(asset2_codes)order by date, time limit 1 ', code, code, old_code, old_code]
+     cs = Contact.find_by_sql [ '
         (SELECT * FROM contacts WHERE ?::varchar = ANY(asset1_codes) ORDER BY date, time LIMIT 1)
         UNION ALL
         (SELECT * FROM contacts WHERE ?::varchar = ANY(asset2_codes) ORDER BY date, time LIMIT 1)
@@ -521,8 +522,8 @@ class Asset < ApplicationRecord
         (SELECT * FROM contacts WHERE ?::varchar = ANY(asset1_codes) ORDER BY date, time LIMIT 1)
         UNION ALL
         (SELECT * FROM contacts WHERE ?::varchar = ANY(asset2_codes) ORDER BY date, time LIMIT 1)
-        ORDER BY date, time 
-        LIMIT 1; ', code, code, old_code, old_code]
+        ORDER BY date, time
+        LIMIT 1; ', code, code, old_code, old_code ]
 
     if cs && (cs.count > 0)
       c = cs.first
@@ -531,17 +532,17 @@ class Asset < ApplicationRecord
       c = nil
     end
 
-    if (asset_type == 'summit') || (asset_type == 'pota park')
-      as = ExternalActivation.find_by_sql ["select * from external_activations where summit_code='" + code + "' order by date asc limit 1"]
+    if (asset_type == "summit") || (asset_type == "pota park")
+      as = ExternalActivation.find_by_sql [ "select * from external_activations where summit_code='" + code + "' order by date asc limit 1" ]
       if as && as[0] && (c.nil? || (as[0].date < c.date))
         c = Contact.new
         c.callsign1 = as[0].callsign
         c.date = as[0].date
         c.time = as[0].date
-        c.callsign2 = ''
+        c.callsign2 = ""
         c.id = -99
         # find first chase
-        if as[0].external_activation_id then acs = ExternalChase.find_by_sql ["select * from external_chases where external_activation_id=#{as[0].external_activation_id} order by time asc limit 1"] end
+        if as[0].external_activation_id then acs = ExternalChase.find_by_sql [ "select * from external_chases where external_activation_id=#{as[0].external_activation_id} order by time asc limit 1" ] end
         if acs && (acs.count > 0)
           ac = acs.first
           c.callsign2 = ac.callsign
@@ -560,21 +561,21 @@ class Asset < ApplicationRecord
        .where("EXISTS (SELECT 1 FROM contacts WHERE contacts.log_id = logs.id)")
        .count
 
-#    logs = self.logs
-#    count = 0
-#    logs.each do |log|
-#      count += 1 if log.contacts.count > 0
-#    end
-#    count
+    #    logs = self.logs
+    #    count = 0
+    #    logs.each do |log|
+    #      count += 1 if log.contacts.count > 0
+    #    end
+    #    count
   end
 
   def activators_old
     if old_code and old_code.length>0 then
-      cals1 = Contact.where('? = ANY(asset1_codes) or ? = ANY(asset1_codes)', code, old_code)
-      cals2 = Contact.where('? = ANY(asset2_codes) or ? = ANY(asset2_codes)', code, old_code)
+      cals1 = Contact.where("? = ANY(asset1_codes) or ? = ANY(asset1_codes)", code, old_code)
+      cals2 = Contact.where("? = ANY(asset2_codes) or ? = ANY(asset2_codes)", code, old_code)
     else
-      cals1 = Contact.where('? = ANY(asset1_codes)', code)
-      cals2 = Contact.where('? = ANY(asset2_codes)', code)
+      cals1 = Contact.where("? = ANY(asset1_codes)", code)
+      cals2 = Contact.where("? = ANY(asset2_codes)", code)
     end
     ids1 = cals1.map { |cal| User.find_by_callsign_date(cal.callsign1, cal.date).try(:id) }
     ids2 = cals2.map { |cal| User.find_by_callsign_date(cal.callsign2, cal.date).try(:id) }
@@ -586,7 +587,7 @@ class Asset < ApplicationRecord
     # For activators: asset1 -> callsign1, asset2 -> callsign2
     fetch_associated_users(primary_callsign: :callsign1, secondary_callsign: :callsign2)
   end
-  
+
   def external_activators
     cals = ExternalActivation.where(summit_code: code)
     callsigns = cals.map { |cal| cal.callsign if cal }
@@ -600,11 +601,11 @@ class Asset < ApplicationRecord
 
   def chasers_old
     if old_code and old_code.length>0 then
-      cals = Contact.where('? = ANY(asset1_codes) or ? = ANY(asset1_codes)', code, old_code)
-      cals2 = Contact.where('? = ANY(asset2_codes) or ? = ANY(asset2_codes)', code, old_code)
+      cals = Contact.where("? = ANY(asset1_codes) or ? = ANY(asset1_codes)", code, old_code)
+      cals2 = Contact.where("? = ANY(asset2_codes) or ? = ANY(asset2_codes)", code, old_code)
     else
-      cals = Contact.where('? = ANY(asset1_codes)', code)
-      cals2 = Contact.where('? = ANY(asset2_codes)', code)
+      cals = Contact.where("? = ANY(asset1_codes)", code)
+      cals2 = Contact.where("? = ANY(asset2_codes)", code)
     end
     callsigns1 = cals.map { |cal| User.find_by_callsign_date(cal.callsign2, cal.date).try(:callsign) }
     callsigns2 = cals2.map { |cal| User.find_by_callsign_date(cal.callsign1, cal.date).try(:callsign) }
@@ -655,21 +656,21 @@ class Asset < ApplicationRecord
   #################################################################
   # return true if this asset activated by given callsign
   def activated_by?(callsign)
-    if callsign && (callsign != '') && (callsign != '*')
+    if callsign && (callsign != "") && (callsign != "*")
       callsign = callsign.upcase
 
-      cs = Contact.find_by_sql [' select id from contacts where (callsign1 = ? and (? = ANY(asset1_codes) or ? = ANY(asset1_codes))) or (callsign2 = ? and (? = ANY(asset2_codes) or ? = ANY(asset2_codes))) limit 1 ', callsign, code, old_code, callsign, code, old_code]
+      cs = Contact.find_by_sql [ " select id from contacts where (callsign1 = ? and (? = ANY(asset1_codes) or ? = ANY(asset1_codes))) or (callsign2 = ? and (? = ANY(asset2_codes) or ? = ANY(asset2_codes))) limit 1 ", callsign, code, old_code, callsign, code, old_code ]
 
-      if (asset_type == 'summit') || (asset_type == 'pota park')
-        as = ExternalActivation.find_by_sql ["select * from external_activations where summit_code='" + code + "' and callsign = '" + callsign + "' limit 1"]
+      if (asset_type == "summit") || (asset_type == "pota park")
+        as = ExternalActivation.find_by_sql [ "select * from external_activations where summit_code='" + code + "' and callsign = '" + callsign + "' limit 1" ]
       end
 
       (as && (as.count > 0)) || (cs && (cs.count > 0))
     else
-      cs = Contact.find_by_sql [' select id from contacts where (? = ANY(asset1_codes)) or (? = ANY(asset2_codes)) limit 1 ', code, code]
+      cs = Contact.find_by_sql [ " select id from contacts where (? = ANY(asset1_codes)) or (? = ANY(asset2_codes)) limit 1 ", code, code ]
 
-      if (asset_type == 'summit') || (asset_type == 'pota park')
-        as = ExternalActivation.find_by_sql ["select * from external_activations where summit_code='" + code + "' limit 1"]
+      if (asset_type == "summit") || (asset_type == "pota park")
+        as = ExternalActivation.find_by_sql [ "select * from external_activations where summit_code='" + code + "' limit 1" ]
       end
       (as && (as.count > 0)) || (cs && (cs.count > 0)) ? true : false
     end
@@ -677,20 +678,20 @@ class Asset < ApplicationRecord
 
   # return true if this asset chased by given callsign
   def chased_by?(callsign)
-    if callsign && (callsign != '') && (callsign != '*')
+    if callsign && (callsign != "") && (callsign != "*")
       callsign = callsign.upcase
-      cs = Contact.find_by_sql [' select id from contacts where (callsign2 = ? and (? = ANY(asset1_codes) or ? = ANY(asset2_codes))) or (callsign1 = ? and (? = ANY(asset2_codes) or ? = ANY(asset2_codes))) limit 1 ', callsign, code, old_code, callsign, code, old_code]
+      cs = Contact.find_by_sql [ " select id from contacts where (callsign2 = ? and (? = ANY(asset1_codes) or ? = ANY(asset2_codes))) or (callsign1 = ? and (? = ANY(asset2_codes) or ? = ANY(asset2_codes))) limit 1 ", callsign, code, old_code, callsign, code, old_code ]
 
-      if (asset_type == 'summit') || (asset_type == 'pota park')
-        as = ExternalChase.find_by_sql ["select * from external_chases where summit_code='" + code + "' and callsign = '" + callsign + "' limit 1"]
+      if (asset_type == "summit") || (asset_type == "pota park")
+        as = ExternalChase.find_by_sql [ "select * from external_chases where summit_code='" + code + "' and callsign = '" + callsign + "' limit 1" ]
       end
 
       (as && (as.count > 0)) || (cs && (cs.count > 0))
     else
-      cs = Contact.find_by_sql [' select id from contacts where (? = ANY(asset1_codes)) or (? = ANY(asset2_codes)) limit 1 ', code, code]
+      cs = Contact.find_by_sql [ " select id from contacts where (? = ANY(asset1_codes)) or (? = ANY(asset2_codes)) limit 1 ", code, code ]
 
-      if (asset_type == 'summit') || (asset_type == 'pota park')
-        as = ExternalChase.find_by_sql ["select * from external_chases where summit_code='" + code + "' limit 1"]
+      if (asset_type == "summit") || (asset_type == "pota park")
+        as = ExternalChase.find_by_sql [ "select * from external_chases where summit_code='" + code + "' limit 1" ]
       end
 
       (as && (as.count > 0)) || (cs && (cs.count > 0)) ? true : false
@@ -699,12 +700,12 @@ class Asset < ApplicationRecord
 
   # turn code into a URL-safe version
   def get_safecode
-    code.tr('/', '_')
+    code.tr("/", "_")
   end
 
   # Turn URL-safe 'safecode' into a code
   def self.decode_safecode(safecode)
-    safecode.tr('_', '/')
+    safecode.tr("_", "/")
   end
 
   ########################################################
@@ -713,12 +714,12 @@ class Asset < ApplicationRecord
 
   # Asset list for all assets containing us
   def contained_by_assets
-    Asset.find_by_sql [" select a.* from asset_links al inner join assets a on a.code=al.containing_code where al.contained_code = '#{code}' and a.is_active=true "]
+    Asset.find_by_sql [ " select a.* from asset_links al inner join assets a on a.code=al.containing_code where al.contained_code = '#{code}' and a.is_active=true " ]
   end
 
   # Asset names for all assets containing us
   def contained_by_names
-    Asset.find_by_sql [" select a.name, a.code, a.safecode from asset_links al inner join assets a on a.code=al.containing_code where al.contained_code = '#{code}' and a.is_active=true "]
+    Asset.find_by_sql [ " select a.name, a.code, a.safecode from asset_links al inner join assets a on a.code=al.containing_code where al.contained_code = '#{code}' and a.is_active=true " ]
   end
 
   # Asset types for all assets containing us
@@ -749,7 +750,7 @@ class Asset < ApplicationRecord
   # Asset type list (assets we contain)
   def contains_classes
     als = AssetLink.where(containing_code: code)
-    acs = als.map { |al| if al.parent then al.parent.asset_type else 'unknown' end }
+    acs = als.map { |al| if al.parent then al.parent.asset_type else "unknown" end }
     acs.uniq
   end
 
@@ -777,22 +778,22 @@ class Asset < ApplicationRecord
   def self.assets_from_code(codes)
     assets = []
     if codes
-      code_arr = codes.split(',')
+      code_arr = codes.split(",")
       code_arr.each do |code|
         if code and code.match(/[a-zA-Z]/) then
-          code = code.delete('[').delete(']')
+          code = code.delete("[").delete("]")
           code = code.lstrip
           asset = { asset: nil, code: nil, name: nil, url: nil, external: nil, type: nil }
           next unless code
           code = code.upcase
-          a = Asset.find_by(code: code.split(' ')[0])
-          a ||= Asset.find_by(old_code: code.split(' ')[0])
-  
+          a = Asset.find_by(code: code.split(" ")[0])
+          a ||= Asset.find_by(old_code: code.split(" ")[0])
+
           # Assets listed on ontheair.nz - look up in db
           if a
             asset[:asset] = a
             asset[:url] = a.url
-            a[:url] = a[:url][1..-1] if a[:url][0] == '/'
+            a[:url] = a[:url][1..-1] if a[:url][0] == "/"
             asset[:name] = a.name
             asset[:codename] = a.codename
             asset[:external] = false
@@ -800,85 +801,85 @@ class Asset < ApplicationRecord
             asset[:type] = a.asset_type
             asset[:pnp_class] = a.type.pnp_class
             asset[:external_url] = a.external_url unless code =~ /ZL^[a-zA-Z]-./
-            a.type ? (asset[:title] = a.type.display_name) : (logger.error 'ERROR: cannot find type ' + a.asset_type)
-            asset[:url] = '/' + asset[:url] if asset[:url][0] != '/'
-  
+            a.type ? (asset[:title] = a.type.display_name) : (logger.error "ERROR: cannot find type " + a.asset_type)
+            asset[:url] = "/" + asset[:url] if asset[:url][0] != "/"
+
           # Otherwise - we guess based on the reference
           elsif (thecode = code.match(LLOTA_REGEX))
             # LLOTA
-            logger.debug 'LLOTA'
+            logger.debug "LLOTA"
             asset[:name] = code
             asset[:url] = LLOTA_ASSET_URL+thecode.to_s
             asset[:external] = true
             asset[:code] = thecode.to_s
-            asset[:type] = 'LLOTA lake'
-            asset[:title] = 'LLOTA'
-            asset[:pnp_class] = 'LLOTA'
+            asset[:type] = "LLOTA lake"
+            asset[:title] = "LLOTA"
+            asset[:pnp_class] = "LLOTA"
           elsif (thecode = code.match(HEMA_REGEX))
             # HEMA
-            logger.debug 'HEMA'
+            logger.debug "HEMA"
             asset[:name] = code
-            asset[:url] = 'http://hema.org.uk'
+            asset[:url] = "http://hema.org.uk"
             asset[:external] = true
             asset[:code] = thecode.to_s
-            asset[:type] = 'hump'
-            asset[:title] = 'HEMA'
-            asset[:pnp_class] = 'HEMA'
-  
+            asset[:type] = "hump"
+            asset[:title] = "HEMA"
+            asset[:pnp_class] = "HEMA"
+
           elsif (thecode = code.match(SIOTA_REGEX))
             # SiOTA
-            logger.debug 'SiOTA'
+            logger.debug "SiOTA"
             asset[:name] = code
             asset[:url] = SIOTA_ASSET_URL + thecode.to_s
             asset[:external] = true
             asset[:code] = thecode.to_s
-            asset[:type] = 'silo'
-            asset[:title] = 'SiOTA'
-            asset[:pnp_class] = 'SiOTA'
-  
+            asset[:type] = "silo"
+            asset[:title] = "SiOTA"
+            asset[:pnp_class] = "SiOTA"
+
           elsif (thecode = code.match(POTA_REGEX))
             # POTA
-            logger.debug 'POTA'
+            logger.debug "POTA"
             asset[:url] = POTA_ASSET_URL + thecode.to_s
-            asset[:title] = 'POTA'
+            asset[:title] = "POTA"
             asset[:name] = code
             asset[:external] = true
             asset[:code] = thecode.to_s
-            asset[:type] = 'pota park'
-            asset[:pnp_class] = 'POTA'
-  
+            asset[:type] = "pota park"
+            asset[:pnp_class] = "POTA"
+
           elsif (thecode = code.match(WWFF_REGEX))
             # WWFF
-            logger.debug 'WWFF'
+            logger.debug "WWFF"
             logger.debug thecode
             asset[:url] = WWFF_ASSET_URL + thecode.to_s
             asset[:name] = code
             asset[:external] = true
             asset[:code] = thecode.to_s
-            asset[:type] = 'wwff park'
-            asset[:title] = 'WWFF'
-            asset[:pnp_class] = 'WWFF'
-  
+            asset[:type] = "wwff park"
+            asset[:title] = "WWFF"
+            asset[:pnp_class] = "WWFF"
+
           elsif (thecode = code.match(SOTA_REGEX))
             # SOTA
-            logger.debug 'SOTA'
+            logger.debug "SOTA"
             asset[:name] = code
             asset[:url] = SOTA_ASSET_URL + thecode.to_s
             asset[:external] = true
             asset[:code] = thecode.to_s
-            asset[:type] = 'summit'
-            asset[:title] = 'SOTA'
-            asset[:pnp_class] = 'SOTA'
+            asset[:type] = "summit"
+            asset[:title] = "SOTA"
+            asset[:pnp_class] = "SOTA"
           elsif (thecode = code.match(ILLW_REGEX))
             # ILLW
-            logger.debug 'ILLW'
+            logger.debug "ILLW"
             asset[:name] = code
             asset[:url] = ILLW_ASSET_URL
             asset[:external] = true
             asset[:code] = thecode.to_s
-            asset[:type] = 'illw lighthouse'
-            asset[:title] = 'ILLW'
-            asset[:pnp_class] = 'ILLW'
+            asset[:type] = "illw lighthouse"
+            asset[:title] = "ILLW"
+            asset[:pnp_class] = "ILLW"
           end
           assets.push(asset) if asset[:code]
           # if code provided
@@ -892,7 +893,7 @@ class Asset < ApplicationRecord
   # Asset type
   def self.get_asset_type_from_code(code)
     a = Asset.assets_from_code(code)
-    a && a.first && a.first[:type] ? a.first[:type] : 'all'
+    a && a.first && a.first[:type] ? a.first[:type] : "all"
   end
 
   # Provide an external URL for this internal asset, if we know of one
@@ -903,22 +904,22 @@ class Asset < ApplicationRecord
     url = nil
     code = self.code.lstrip
     asset_type = self.asset_type
-    if asset_type == 'pota park'
+    if asset_type == "pota park"
       # POTA
       url = POTA_ASSET_URL + code
-    elsif asset_type == 'wwff park'
+    elsif asset_type == "wwff park"
       # WWFF
       url = WWFF_ASSET_URL + code
-    elsif asset_type == 'llota lake'
+    elsif asset_type == "llota lake"
       # LLOTA
       url = LLOTA_ASSET_URL + code
-    elsif asset_type == 'silo'
+    elsif asset_type == "silo"
       # SiOTA
       url = SIOTA_ASSET_URL + code
-    elsif asset_type == 'summit'
+    elsif asset_type == "summit"
       # SOTA
       url = SOTA_ASSET_URL + code
-    elsif (asset_type == 'hump') && old_code && (old_code.to_i > 0)
+    elsif (asset_type == "hump") && old_code && (old_code.to_i > 0)
       # HEMA
       url = HEMA_ASSET_URL + old_code
     end
@@ -930,19 +931,19 @@ class Asset < ApplicationRecord
   # Looks up the reference against naming rules if not in our database
   def self.get_pnp_class_from_code(code)
     aa = Asset.assets_from_code(code)
-    pnp_class = 'QRP'
+    pnp_class = "QRP"
     if aa
       a = aa.first
       if a
         if a && a[:type] && (a[:external] == false)
           ac = AssetType.find_by(name: a[:type])
           pnp_class = ac.pnp_class
-        elsif a[:title][0..3] == 'WWFF' then pnp_class = 'WWFF'
-        elsif a[:title][0..3] == 'POTA' then pnp_class = 'POTA'
-        elsif a[:title][0..3] == 'HEMA' then pnp_class = 'HEMA'
-        elsif a[:title][0..4] == 'SiOTA' then pnp_class = 'SiOTA'
-        elsif a[:title][0..4] == 'LLOTA' then pnp_class = 'LLOTA'
-        elsif a[:title][0..3] == 'ILLW' then pnp_class = 'ILLW'
+        elsif a[:title][0..3] == "WWFF" then pnp_class = "WWFF"
+        elsif a[:title][0..3] == "POTA" then pnp_class = "POTA"
+        elsif a[:title][0..3] == "HEMA" then pnp_class = "HEMA"
+        elsif a[:title][0..4] == "SiOTA" then pnp_class = "SiOTA"
+        elsif a[:title][0..4] == "LLOTA" then pnp_class = "LLOTA"
+        elsif a[:title][0..3] == "ILLW" then pnp_class = "ILLW"
         end
       end
     end
@@ -950,20 +951,20 @@ class Asset < ApplicationRecord
   end
 
   def self.get_pnp_classes_from_codes(codes)
-    aa = Asset.assets_from_code(codes.join(','))
-    pnp_class = 'QRP'
+    aa = Asset.assets_from_code(codes.join(","))
+    pnp_class = "QRP"
     classes =[]
     aa.each do |a|
       if a
         if a && a[:type] && (a[:external] == false)
           ac = AssetType.find_by(name: a[:type])
           pnp_class = ac.pnp_class
-        elsif a[:title][0..3] == 'WWFF' then pnp_class = 'WWFF'
-        elsif a[:title][0..3] == 'POTA' then pnp_class = 'POTA'
-        elsif a[:title][0..3] == 'HEMA' then pnp_class = 'HEMA'
-        elsif a[:title][0..4] == 'SiOTA' then pnp_class = 'SiOTA'
-        elsif a[:title][0..4] == 'LLOTA' then pnp_class = 'LLOTA'
-        elsif a[:title][0..3] == 'ILLW' then pnp_class = 'ILLW'
+        elsif a[:title][0..3] == "WWFF" then pnp_class = "WWFF"
+        elsif a[:title][0..3] == "POTA" then pnp_class = "POTA"
+        elsif a[:title][0..3] == "HEMA" then pnp_class = "HEMA"
+        elsif a[:title][0..4] == "SiOTA" then pnp_class = "SiOTA"
+        elsif a[:title][0..4] == "LLOTA" then pnp_class = "LLOTA"
+        elsif a[:title][0..3] == "ILLW" then pnp_class = "ILLW"
         end
       end
       classes.push(pnp_class)
@@ -990,7 +991,7 @@ class Asset < ApplicationRecord
       if a && (a.is_active == false)
         code = a.master_code if a.master_code
       end
-      newcodes += [code]
+      newcodes += [ code ]
     end
     newcodes.uniq
   end
@@ -1004,7 +1005,7 @@ class Asset < ApplicationRecord
     assets.each do |asset|
       if asset && asset[:code]
         if asset_codes == []
-          asset_codes = [(asset[:code]).to_s]
+          asset_codes = [ (asset[:code]).to_s ]
         else
           asset_codes.push((asset[:code]).to_s)
         end
@@ -1018,46 +1019,46 @@ class Asset < ApplicationRecord
   # that type (unreliable||area||point||user) and only find things more accurate
   # Input: [codes], 'area' or 'point' or nil
   # Returns: {location: Point, loc_source: 'point'||'area'||'user', asset: Asset
-  def self.get_most_accurate_location(codes, loc_source = '', location = nil)
+  def self.get_most_accurate_location(codes, loc_source = "", location = nil)
     loc_asset = nil
     accuracy = 999_999_999_999
 
     if codes.count > 1
       codes.each do |code|
-        assets = Asset.find_by_sql [" select id, code, safecode, asset_type, location, az_area, area from assets where code='#{code}' limit 1"]
+        assets = Asset.find_by_sql [ " select id, code, safecode, asset_type, location, az_area, area from assets where code='#{code}' limit 1" ]
         asset = assets ? assets.first : nil
         if asset
           # only consider polygon loc's if we don't already have a point loc
           # use this location if polygon area smaller than previous polygon used
           if asset.type.has_boundary
-            if (loc_source != 'point') && (loc_source != 'user') && asset.area && (asset.area < accuracy)
+            if (loc_source != "point") && (loc_source != "user") && asset.area && (asset.area < accuracy)
               location = asset.location
               loc_asset = asset
               accuracy = asset.area
-              loc_source = 'area'
+              loc_source = "area"
             end
-          elsif loc_source != 'user'
+          elsif loc_source != "user"
             # if there are two point locations (e.g. summit and hut)
             # just use the last found (no way to know which is more accurate)
-            if loc_source == 'point'
-            #  logger.debug 'Multiple POINT locations found'
+            if loc_source == "point"
+              #  logger.debug 'Multiple POINT locations found'
             end
 
             # assign point location
             location = asset.location
             loc_asset = asset
-            loc_source = 'point'
-            #logger.debug 'DEBUG: Assigning point locn'
+            loc_source = "point"
+            # logger.debug 'DEBUG: Assigning point locn'
           end
         end
       end
     end
     # single asset, unreliable locn or nothing found from search, just use the first location
-    if (!location && (codes.count > 0)) or loc_source == 'unreliable'
-      assets = Asset.find_by_sql [" select id, code, safecode, asset_type, location, az_area, area from assets where code='#{codes.first}' limit 1"]
+    if (!location && (codes.count > 0)) or loc_source == "unreliable"
+      assets = Asset.find_by_sql [ " select id, code, safecode, asset_type, location, az_area, area from assets where code='#{codes.first}' limit 1" ]
       if assets && (assets.count > 0)
         loc_asset = assets.first
-        loc_asset.type.has_boundary ? (loc_source = 'area') : (loc_source = 'point')
+        loc_asset.type.has_boundary ? (loc_source = "area") : (loc_source = "point")
         location = loc_asset.location
       end
     end
@@ -1071,10 +1072,10 @@ class Asset < ApplicationRecord
     code=oldcode.dup
     # ZLOTA
     if code =~ /^[zZ][lL][a-zA-Z][-_\/][a-zA-Z]{2}[-_\/]\d{3,4}/
-      code[3] = '/'
-      code[6] = '-'
+      code[3] = "/"
+      code[6] = "-"
     elsif code =~ /^[Zz][Ll][a-zA-Z][-_\/]\d{3,4}/
-      code[3] = '/'
+      code[3] = "/"
     end
     code
   end
@@ -1091,35 +1092,35 @@ class Asset < ApplicationRecord
   # Look up all assets that contain a given location point / polygon
   # Optionally provide an asset from which the location was derived
   # Optionally also check for point locations with activation_zones
-  # Input: location: Point, asset: Asset or nil, include_point: boolean 
+  # Input: location: Point, asset: Asset or nil, include_point: boolean
   # Returns: codes: [code]
   #
   # TODO: Logic here is same as that in def add_links, can the two be combined?
-  def self.containing_codes_from_location(location, asset = nil, include_point = false, min_overlap=0.9)
-    loc_type = 'point'
+  def self.containing_codes_from_location(location, asset = nil, include_point = false, min_overlap = 0.9)
+    loc_type = "point"
     codes = []
     if asset && asset.az_area && (asset.az_area > 0)
-      loc_type = 'area'
+      loc_type = "area"
     end
 
     if !location.nil? && !location.to_s.empty?
       # find all assets containing this location point
       if include_point then
-        codes = Asset.find_by_sql ["select code from assets a where a.is_active=true and ST_Intersects(ST_GeomFromText('#{location}',4326), a.az_boundary); "]
+        codes = Asset.find_by_sql [ "select code from assets a where a.is_active=true and ST_Intersects(ST_GeomFromText('#{location}',4326), a.az_boundary); " ]
       else
-        codes = Asset.find_by_sql ["select code from assets a where a.is_active=true and a.az_area>0 and ST_Intersects(ST_GeomFromText('#{location}',4326), a.az_boundary); "]
+        codes = Asset.find_by_sql [ "select code from assets a where a.is_active=true and a.az_area>0 and ST_Intersects(ST_GeomFromText('#{location}',4326), a.az_boundary); " ]
       end
       # For locations based on a polygon:
       # filter the list by those that overlap at least 90% of the asset
       # defining our polygon
-      if loc_type == 'area'
-        logger.debug 'Filtering codes by area overlap'
+      if loc_type == "area"
+        logger.debug "Filtering codes by area overlap"
         validcodes = []
         codes.each do |code|
           overlap = ActiveRecord::Base.connection.execute(" select ST_Area(ST_intersection(a.az_boundary, b.az_boundary)) as overlap, ST_Area(a.az_boundary) as area from assets a join assets b on b.code='#{code.code}' where a.id=#{asset.id}; ")
-          prop_overlap = overlap.first['overlap'].to_f / overlap.first['area'].to_f
+          prop_overlap = overlap.first["overlap"].to_f / overlap.first["area"].to_f
           logger.debug "DEBUG: overlap #{prop_overlap} " + code.code
-          validcodes += [code] if prop_overlap > min_overlap
+          validcodes += [ code ] if prop_overlap > min_overlap
         end
         codes = validcodes
       end
@@ -1132,7 +1133,7 @@ class Asset < ApplicationRecord
   # Returns: codes: [code]
   def self.containing_codes_from_parent(code)
     code = code.upcase
-    codes = AssetLink.find_by_sql ["select containing_code from asset_links al inner join assets a on al.containing_code = a.code where contained_code='#{code}' and is_active=true;"]
+    codes = AssetLink.find_by_sql [ "select containing_code from asset_links al inner join assets a on al.containing_code = a.code where contained_code='#{code}' and is_active=true;" ]
     codes.map(&:containing_code)
   end
 
@@ -1140,38 +1141,38 @@ class Asset < ApplicationRecord
   # (in a region, if asset tyoes uses regions)
   # Input: asset_type: AssetType.name, region: region.name
   # Returns: code: string
-  def self.get_next_code(asset_type, region = 'ZZ')
-    region ||= 'ZZ'
-    logger.debug 'Region :' + region
+  def self.get_next_code(asset_type, region = "ZZ")
+    region ||= "ZZ"
+    logger.debug "Region :" + region
     newcode = nil
     use_region = true
     length = 4
     case asset_type
-    when 'hut'
-      prefix = 'ZLH/'
+    when "hut"
+      prefix = "ZLH/"
       length = 3
-    when 'volcano'
-      prefix = 'ZLV/'
+    when "volcano"
+      prefix = "ZLV/"
       length = 3
-    when 'park'
-      prefix = 'ZLP/'
+    when "park"
+      prefix = "ZLP/"
       length = 4
-    when 'island'
-      prefix = 'ZLI/'
+    when "island"
+      prefix = "ZLI/"
       length = 3
-    when 'lake'
-      prefix = 'ZLL/'
+    when "lake"
+      prefix = "ZLL/"
       length = 4
       use_region = false
-    when 'lighthouse'
-      prefix = 'ZLB/'
+    when "lighthouse"
+      prefix = "ZLB/"
       length = 3
       use_region = false
     end
 
     if prefix
       # ZLx/XX-### or ZLx/XX-#### format codes
-      if use_region && region && (region != '')
+      if use_region && region && (region != "")
         # get last asset of this type for this region
         last_asset = Asset.where("code like '" + prefix + region + "-%%'").order(:code).last
         # try and determine number length from last asset code
@@ -1180,13 +1181,13 @@ class Asset < ApplicationRecord
           codestring = last_asset.code[7..-1]
         # or default to 0000
         else
-          codestring = '0' * length
+          codestring = "0" * length
         end
 
         # add one to last asset code
         codenumber = codestring.to_i
         codenumber += 1
-        newcode = prefix + region + '-' + codenumber.to_s.rjust(codestring.length, '0')
+        newcode = prefix + region + "-" + codenumber.to_s.rjust(codestring.length, "0")
 
       # ZLx/#### format codes
       else
@@ -1195,17 +1196,17 @@ class Asset < ApplicationRecord
         # try and determine number length from last asset code
         codestring = if last_asset
                        last_asset.code[4..-1]
-                     # or default to 000
-                     else
-                       '0' * length
-                     end
+        # or default to 000
+        else
+                       "0" * length
+        end
         # add one to last asset code
         codenumber = codestring.to_i
         codenumber += 1
-        newcode = prefix + codenumber.to_s.rjust(codestring.length, '0')
+        newcode = prefix + codenumber.to_s.rjust(codestring.length, "0")
       end
     end
-    logger.debug 'Code: ' + (newcode||"")
+    logger.debug "Code: " + (newcode||"")
     newcode
   end
 
@@ -1227,11 +1228,11 @@ class Asset < ApplicationRecord
     formatted_names = named.map { |name| name.gsub(/\b\w+/) { |word| word.capitalize } }.uniq
 
     # 4. Build the base string
-    result = formatted_names.sort.join('; ')
-  
-    separator = "" 
-    separator = ' and ' if formatted_names.any? and unnamed.any?
- 
+    result = formatted_names.sort.join("; ")
+
+    separator = ""
+    separator = " and " if formatted_names.any? and unnamed.any?
+
     # 5. Add the "unnamed" suffix if any blank entries were found
     if unnamed.any?
       suffix = "#{unnamed.count} unnamed #{place_type}"
@@ -1240,8 +1241,8 @@ class Asset < ApplicationRecord
     end
 
     result
-#  rescue NameError
-#    ""
+    #  rescue NameError
+    #    ""
   end
 
   def formatted_capad_names_from_array(array_column_name, target_model_name, place_type)
@@ -1260,11 +1261,11 @@ class Asset < ApplicationRecord
     formatted_names = named.map { |name| name.gsub(/\b\w+/) { |word| word.capitalize } }.uniq
 
     # 4. Build the base string
-    result = formatted_names.sort.join('; ')
-  
-    separator = "" 
-    separator = ' and ' if formatted_names.any? and unnamed.any?
- 
+    result = formatted_names.sort.join("; ")
+
+    separator = ""
+    separator = " and " if formatted_names.any? and unnamed.any?
+
     # 5. Add the "unnamed" suffix if any blank entries were found
     if unnamed.any?
       suffix = "#{unnamed.count} unnamed #{place_type}"
@@ -1273,30 +1274,30 @@ class Asset < ApplicationRecord
     end
 
     result
-#  rescue NameError
-#    ""
+    #  rescue NameError
+    #    ""
   end
 
   def self.get_pnp_summitid(lat, long)
     sql = <<-SQL
-      SELECT  
+      SELECT#{'  '}
           a.code as id,
-          a.code, 
+          a.code,#{' '}
           a.name,
           a.asset_type as class,
           at.pnp_class as award
         FROM assets a
         INNER JOIN asset_types at ON at.name = a.asset_type
         WHERE is_active = true and minor is not true AND (
-           ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), boundary) 
+           ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), boundary)#{' '}
            OR ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), az_boundary)
         )
-        AND (asset_type='summit' OR asset_type='hump') 
-        ORDER BY area LIMIT 1; 
+        AND (asset_type='summit' OR asset_type='hump')#{' '}
+        ORDER BY area LIMIT 1;#{' '}
     SQL
 
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([sql, { lat: lat, long: long }])
+    sanitized_sql = sanitize_sql_array([ sql, { lat: lat, long: long } ])
 
     # 3. Pull raw string text directly from the execution block
     connection.select_all(sanitized_sql)
@@ -1304,24 +1305,24 @@ class Asset < ApplicationRecord
 
   def self.get_pnp_parkid(lat, long)
     sql = <<-SQL
-      SELECT  
+      SELECT#{'  '}
           a.code as id,
-          a.code, 
+          a.code,#{' '}
           a.name,
           a.asset_type as class,
           at.pnp_class as award
         FROM assets a
         INNER JOIN asset_types at ON at.name = a.asset_type
         WHERE is_active = true and minor is not true AND (
-           ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), boundary) 
+           ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), boundary)#{' '}
            OR ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), az_boundary)
         )
-        AND asset_type='wwff park' 
-        ORDER BY area LIMIT 1; 
+        AND asset_type='wwff park'#{' '}
+        ORDER BY area LIMIT 1;#{' '}
     SQL
 
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([sql, { lat: lat, long: long }])
+    sanitized_sql = sanitize_sql_array([ sql, { lat: lat, long: long } ])
 
     # 3. Pull raw string text directly from the execution block
     connection.select_all(sanitized_sql)
@@ -1329,21 +1330,21 @@ class Asset < ApplicationRecord
 
   def self.get_pnp_within(lat, long)
     sql = <<-SQL
-      SELECT  
-          a.code, 
+      SELECT#{'  '}
+          a.code,#{' '}
           a.name,
           a.asset_type as class,
           at.pnp_class as award
         FROM assets a
         INNER JOIN asset_types at ON at.name = a.asset_type
         WHERE is_active = true and minor is not true AND (
-           ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), boundary) 
+           ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), boundary)#{' '}
            OR ST_WITHIN(ST_SetSRID(ST_MakePoint(:long, :lat),4326), az_boundary)
          )
     SQL
 
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([sql, { lat: lat, long: long }])
+    sanitized_sql = sanitize_sql_array([ sql, { lat: lat, long: long } ])
 
     # 3. Pull raw string text directly from the execution block
     connection.select_all(sanitized_sql)
@@ -1354,8 +1355,8 @@ class Asset < ApplicationRecord
       WITH config AS (
         SELECT ST_SetSRID(ST_MakePoint(:long, :lat), 4326) AS origin
       )
-      SELECT 
-        r.code AS "siteID",   
+      SELECT#{' '}
+        r.code AS "siteID",#{'   '}
         t.pnp_class AS "award",
         r.name AS "name",
         ST_CardinalDirection(degrees((ST_Azimuth(c.origin, calc.azimuth_target))) AS "siteDirection",
@@ -1366,7 +1367,7 @@ class Asset < ApplicationRecord
       ) t
  -- STEP 1: Find ONLY the top N rows instantly using the spatial index
       CROSS JOIN LATERAL (
-        SELECT 
+        SELECT#{' '}
           a.code,
           a.name,
           a.asset_type,
@@ -1375,21 +1376,21 @@ class Asset < ApplicationRecord
         FROM assets a
         WHERE a.asset_type = t.name and is_active=true and minor is not true
         ORDER BY COALESCE(a.boundary, a.location) <-> c.origin
-        LIMIT :limit 
+        LIMIT :limit#{' '}
       ) r
  -- STEP 2: Only calculate heavy math on those 10 isolated rows
       CROSS JOIN LATERAL (
-        SELECT 
+        SELECT#{' '}
           Round((ST_Distance_Sphere(c.origin, r.active_geom) / 1000)::numeric, 2) AS dist_km,
           CASE WHEN r.active_geom = r.location THEN r.active_geom -- if it was location
-               ELSE ST_ClosestPoint(r.active_geom, c.origin) 
+               ELSE ST_ClosestPoint(r.active_geom, c.origin)#{' '}
           END AS azimuth_target
       ) calc
       ORDER BY "siteDistance";
     SQL
 
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([sql, { lat: lat, long: long, limit: limit }])
+    sanitized_sql = sanitize_sql_array([ sql, { lat: lat, long: long, limit: limit } ])
 
     # 3. Pull raw string text directly from the execution block
     connection.select_all(sanitized_sql)
@@ -1403,9 +1404,9 @@ class Asset < ApplicationRecord
       WITH config AS (
         SELECT ST_SetSRID(ST_MakePoint(:long, :lat), 4326) AS origin
       )
-      SELECT 
+      SELECT#{' '}
         r.code AS id,
-        r.code AS "siteID",   
+        r.code AS "siteID",#{'   '}
         t.pnp_class AS "awardID",
         r.name AS "siteName",
         CONCAT(calc.dist_km::varchar, 'km ', ST_CardinalDirection(degrees(ST_Azimuth(c.origin, calc.azimuth_target)))) AS "siteDistance",
@@ -1416,7 +1417,7 @@ class Asset < ApplicationRecord
       ) t
  -- STEP 1: Find ONLY the top 10 rows instantly using the spatial index
       CROSS JOIN LATERAL (
-        SELECT 
+        SELECT#{' '}
           a.code,
           a.name,
           a.asset_type,
@@ -1425,21 +1426,21 @@ class Asset < ApplicationRecord
         FROM assets a
         WHERE a.asset_type = t.name and is_active=true and minor is not true
         ORDER BY COALESCE(a.boundary, a.location) <-> c.origin
-        LIMIT 10 
+        LIMIT 10#{' '}
       ) r
  -- STEP 2: Only calculate heavy math on those 10 isolated rows
       CROSS JOIN LATERAL (
-        SELECT 
+        SELECT#{' '}
           Round((ST_DistanceSphere(c.origin, r.active_geom) / 1000)::numeric, 2) AS dist_km,
           CASE WHEN r.active_geom = r.location THEN r.active_geom -- if it was location
-               ELSE ST_ClosestPoint(r.active_geom, c.origin) 
+               ELSE ST_ClosestPoint(r.active_geom, c.origin)#{' '}
           END AS azimuth_target
       ) calc
       ORDER BY "siteDistanceNumeric";
     SQL
 
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([sql, { lat: lat, long: long }])
+    sanitized_sql = sanitize_sql_array([ sql, { lat: lat, long: long } ])
 
     # 3. Pull raw string text directly from the execution block
     connection.select_all(sanitized_sql)
@@ -1452,19 +1453,19 @@ class Asset < ApplicationRecord
     assets = ActiveRecord::Base.connection.select_all ( %Q{
 WITH CombinedLinks AS (
   -- 1. Gather raw direction maps AND true mutual equivalents directly from the tables
-  select 
+  select
     a.code as asset_code,
-    
+
     -- Normal direction maps for Tier 3 fallbacks
-    jsonb_object_agg(cgat.pnp_class, cg.containing_code) 
+    jsonb_object_agg(cgat.pnp_class, cg.containing_code)
       FILTER (WHERE cgat.pnp_class IS NOT NULL) as "containedby_map",
-    jsonb_object_agg(cdat.pnp_class, cd.contained_code) 
+    jsonb_object_agg(cdat.pnp_class, cd.contained_code)
       FILTER (WHERE cdat.pnp_class IS NOT NULL) as "contains_map",
-      
+
     -- Legacy array payloads for your API contract
     array_agg(distinct array[cg.containing_code, cgat.pnp_class]) filter (where cg.containing_code is not null) as "containedby_arr",
     array_agg(distinct array[cd.contained_code, cdat.pnp_class]) filter (where cd.contained_code is not null) as "contains_arr",
-    
+
     -- Calculate EquivalentTo directly from the database tables
     coalesce(
       (
@@ -1477,7 +1478,7 @@ WITH CombinedLinks AS (
       ),
       '{}'
     ) as "equivalent_arr",
-    
+
     -- A safe, collision-free JSON map built directly from the true database intersection rows
     coalesce(
       (
@@ -1499,59 +1500,59 @@ WITH CombinedLinks AS (
   left join asset_links cd on cd.containing_code = a.code
   left join assets cda on cda.code = cd.contained_code
   left join asset_types cdat on cdat.name = cda.asset_type
-  where a.country in (#{dxccs.map{|d| "'#{d}'"}.join(',')}) 
+  where a.country in (#{dxccs.map { |d| "'#{d}'" }.join(',')})
     and a.is_active = true and (a.minor is not true)
     and (at.pnp_class = '#{pnp_class_filter}' or '#{pnp_class_filter}' = '')
   group by a.code
 ),
 ProcessedAssets AS (
   -- 2. Construct the primary asset results
-  select 
-    at.pnp_class as "award", 
-    a.code as "id", 
-    a.name as "name", 
-    Round(st_x(a.location)::numeric,4)::varchar as "longitude", 
-    Round(st_y(a.location)::numeric,4)::varchar as "latitude", 
-    case when a.district like 'VK%%' then substr(a.district,4) else null end as "shireid", 
+  select
+    at.pnp_class as "award",
+    a.code as "id",
+    a.name as "name",
+    Round(st_x(a.location)::numeric,4)::varchar as "longitude",
+    Round(st_y(a.location)::numeric,4)::varchar as "latitude",
+    case when a.district like 'VK%%' then substr(a.district,4) else null end as "shireid",
     coalesce(cl.containedby_arr, '{}') as "containedby",
     coalesce(cl.contains_arr, '{}') as "contains",
     cl.equivalent_arr as "equivalent",
     cl.containedby_map,
     cl.contains_map,
     cl.equivalent_map,
-    a.region as "region", 
-    d.continent_code as "continent", 
-    a.country as "country", 
-    a.district as "district", 
-    s.pnp_code as "state_pnp", 
-    upper(at.name) as "class" 
-  from assets a 
-  join dxcc_prefixes d on a.country = d.prefix 
-  inner join asset_types at on at.name = a.asset_type 
-  left join states s on s.code = a.state 
+    a.region as "region",
+    d.continent_code as "continent",
+    a.country as "country",
+    a.district as "district",
+    s.pnp_code as "state_pnp",
+    upper(at.name) as "class"
+  from assets a
+  join dxcc_prefixes d on a.country = d.prefix
+  inner join asset_types at on at.name = a.asset_type
+  left join states s on s.code = a.state
   left join CombinedLinks cl on cl.asset_code = a.code
-  where a.country in (#{dxccs.map{|d| "'#{d}'"}.join(',')}) 
+  where a.country in (#{dxccs.map { |d| "'#{d}'" }.join(',')})
     and a.is_active = true and (a.minor is not true)
     and (at.pnp_class = '#{pnp_class_filter}' or '#{pnp_class_filter}' = '')
 )
 -- 3. Final Output: Merge base fields with cleanly stripped ID keys
-SELECT 
+SELECT
   (
     jsonb_build_object(
-      'siteID', id, 'name', name, 'award', award, 'state', state_pnp, 
-      'longitude', longitude, 'latitude', latitude,  
-      'containedBy', containedby, 'contains', contains, 
+      'siteID', id, 'name', name, 'award', award, 'state', state_pnp,
+      'longitude', longitude, 'latitude', latitude,
+      'containedBy', containedby, 'contains', contains,
       'equivalentTo', equivalent,
-      'region', region, 'continent', continent, 'country', country, 
+      'region', region, 'continent', continent, 'country', country,
       'district', district, 'state', state_pnp, 'class', class
-    ) 
+    )
   ) as "asset_json"
 
 FROM ProcessedAssets
 ORDER BY id;
 
-} )
-  json_res = assets.map { |row| JSON.parse(row['asset_json']) }
+})
+  json_res = assets.map { |row| JSON.parse(row["asset_json"]) }
   logger.debug json_res.to_json
    json_res
   end
@@ -1563,19 +1564,19 @@ ORDER BY id;
     sql = %Q{
 WITH CombinedLinks AS (
   -- 1. Gather raw direction maps AND true mutual equivalents directly from the tables
-  select 
+  select
     a.code as asset_code,
-    
+
     -- Normal direction maps for Tier 3 fallbacks
-    jsonb_object_agg(cgat.pnp_class, cg.containing_code) 
+    jsonb_object_agg(cgat.pnp_class, cg.containing_code)
       FILTER (WHERE cgat.pnp_class IS NOT NULL) as "containedby_map",
-    jsonb_object_agg(cdat.pnp_class, cd.contained_code) 
+    jsonb_object_agg(cdat.pnp_class, cd.contained_code)
       FILTER (WHERE cdat.pnp_class IS NOT NULL) as "contains_map",
-      
+
     -- Legacy array payloads for your API contract
     array_agg(distinct array[cg.containing_code, cgat.pnp_class]) filter (where cg.containing_code is not null) as "containedby_arr",
     array_agg(distinct array[cd.contained_code, cdat.pnp_class]) filter (where cd.contained_code is not null) as "contains_arr",
-    
+
     -- Calculate EquivalentTo directly from the database tables
     coalesce(
       (
@@ -1588,7 +1589,7 @@ WITH CombinedLinks AS (
       ),
       '{}'
     ) as "equivalent_arr",
-    
+
     -- A safe, collision-free JSON map built directly from the true database intersection rows
     coalesce(
       (
@@ -1610,53 +1611,53 @@ WITH CombinedLinks AS (
   left join asset_links cd on cd.containing_code = a.code
   left join assets cda on cda.code = cd.contained_code
   left join asset_types cdat on cdat.name = cda.asset_type
-  where a.country in (#{dxccs.map{|d| "'#{d}'"}.join(',')}) 
+  where a.country in (#{dxccs.map { |d| "'#{d}'" }.join(',')})
     and a.is_active = true and (a.minor is not true)
     and (at.pnp_class = '#{pnp_class_filter}' or '#{pnp_class_filter}' = '')
   group by a.code
 ),
 ProcessedAssets AS (
   -- 2. Construct the primary asset results
-  select 
-    at.pnp_class as "award", 
-    a.code as "id", 
-    a.name as "name", 
-    Round(st_x(a.location)::numeric,4)::varchar as "longitude", 
-    Round(st_y(a.location)::numeric,4)::varchar as "latitude", 
-    case when a.district like 'VK%%' then substr(a.district,4) else null end as "shireid", 
+  select
+    at.pnp_class as "award",
+    a.code as "id",
+    a.name as "name",
+    Round(st_x(a.location)::numeric,4)::varchar as "longitude",
+    Round(st_y(a.location)::numeric,4)::varchar as "latitude",
+    case when a.district like 'VK%%' then substr(a.district,4) else null end as "shireid",
     coalesce(cl.containedby_arr, '{}') as "containedby",
     coalesce(cl.contains_arr, '{}') as "contains",
     cl.equivalent_arr as "equivalent",
     cl.containedby_map,
     cl.contains_map,
     cl.equivalent_map,
-    a.region as "region", 
-    d.continent_code as "continent", 
-    a.country as "country", 
-    a.district as "district", 
-    s.pnp_code as "state_pnp", 
-    upper(at.name) as "class" 
-  from assets a 
-  join dxcc_prefixes d on a.country = d.prefix 
-  inner join asset_types at on at.name = a.asset_type 
-  left join states s on s.code = a.state 
+    a.region as "region",
+    d.continent_code as "continent",
+    a.country as "country",
+    a.district as "district",
+    s.pnp_code as "state_pnp",
+    upper(at.name) as "class"
+  from assets a
+  join dxcc_prefixes d on a.country = d.prefix
+  inner join asset_types at on at.name = a.asset_type
+  left join states s on s.code = a.state
   left join CombinedLinks cl on cl.asset_code = a.code
-  where a.country in (#{dxccs.map{|d| "'#{d}'"}.join(',')}) 
+  where a.country in (#{dxccs.map { |d| "'#{d}'" }.join(',')})
     and a.is_active = true and (a.minor is not true)
     and (at.pnp_class = '#{pnp_class_filter}' or '#{pnp_class_filter}' = '')
 )
 -- 3. Final Output: Merge base fields with cleanly stripped ID keys
-SELECT 
+SELECT
   (
     jsonb_build_object(
-      'ID', id, 'Location', id, 'Name', name, 'Award', award, 'State', state_pnp, 
-      'Longitude', longitude, 'Latitude', latitude, 'ShireID', shireid, 
-      'ContainedBy', containedby, 'Contains', contains, 
+      'ID', id, 'Location', id, 'Name', name, 'Award', award, 'State', state_pnp,
+      'Longitude', longitude, 'Latitude', latitude, 'ShireID', shireid,
+      'ContainedBy', containedby, 'Contains', contains,
       'EquivalentTo', equivalent,
-      'Region', region, 'Continent', continent, 'Country', country, 
+      'Region', region, 'Continent', continent, 'Country', country,
       'District', district, 'State', state_pnp, 'Class', class
-    ) 
-    || 
+    )
+    ||
     -- Safe Tier Fallbacks built on robust database-queried maps
     jsonb_strip_nulls(
       jsonb_build_object(
@@ -1673,7 +1674,7 @@ SELECT
 FROM ProcessedAssets
 ORDER BY id;
 
-} 
+}
   raw_conn = ActiveRecord::Base.connection.raw_connection
 
   # --- USE CASE 1: BULK FILE STREAMING MODE ---
@@ -1696,7 +1697,7 @@ ORDER BY id;
       end
     end
     file.write("\n]\n")
-    return nil # No data returned to Ruby memory
+    nil # No data returned to Ruby memory
 
   # --- USE CASE 2: DYNAMIC API MODE (LEGACY FALLBACK) ---
   else
@@ -1710,29 +1711,29 @@ ORDER BY id;
         end
       end
     end
-    return json_res
+    json_res
   end
 end
 
-#CHECK IF TWO SETS OF CODES OVERLAP
+# CHECK IF TWO SETS OF CODES OVERLAP
 def self.overlap_all?(codes1, codes2)
   sql = <<-SQL
     SELECT NOT EXISTS (
       -- 1. Generate all combinations of the two arrays
-      SELECT 1 
+      SELECT 1#{' '}
       FROM unnest(ARRAY[:codes1]) AS c1(code1)
       CROSS JOIN unnest(ARRAY[:codes2]) AS c2(code2)
-  
+
       -- 2. Look for combinations that are MISSING from the asset_links table
-      LEFT JOIN asset_overlaps al 
+      LEFT JOIN asset_overlaps al#{' '}
         ON (al.contained_code = c1.code1 AND al.containing_code = c2.code2) or (al.contained_code = c2.code2 AND al.containing_code = c1.code1)
       WHERE al.contained_code IS NULL and code1 != code2  -- Filters for missing records
     ) as result;
   SQL
-    
+
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([sql, { codes1: codes1, codes2: codes2 }])
-  
+    sanitized_sql = sanitize_sql_array([ sql, { codes1: codes1, codes2: codes2 } ])
+
     # 3. Pull raw string text directly from the execution block
     result = connection.select_all(sanitized_sql)
 
@@ -1791,10 +1792,10 @@ end
   end
 private
 
-#used by activators and chasers to get user ids from contacts via user_callsign and date
+# used by activators and chasers to get user ids from contacts via user_callsign and date
 def fetch_associated_users(primary_callsign:, secondary_callsign:)
   # 1. Build an array of the codes we are searching for
-  search_codes = [code, old_code].reject(&:blank?)
+  search_codes = [ code, old_code ].reject(&:blank?)
   return User.none if search_codes.empty?
 
   # 2. Build the dynamic UNION query swapping columns based on the parameters passed
@@ -1805,8 +1806,8 @@ def fetch_associated_users(primary_callsign:, secondary_callsign:)
   SQL
 
   # Execute the query to isolate the correct callsign/date pairs
-  lookup_pairs = Contact.find_by_sql([union_query, search_codes, search_codes])
-                        .map { |c| [c.callsign, c.date] }
+  lookup_pairs = Contact.find_by_sql([ union_query, search_codes, search_codes ])
+                        .map { |c| [ c.callsign, c.date ] }
                         .reject { |callsign, _date| callsign.blank? }
 
   return User.none if lookup_pairs.empty?
@@ -1817,7 +1818,7 @@ def fetch_associated_users(primary_callsign:, secondary_callsign:)
 
   lookup_pairs.each do |callsign, date|
     sql_clauses << "(callsign = ? AND from_date <= ? AND (to_date IS NULL OR to_date >= ?))"
-    sql_values.concat([callsign, date, date])
+    sql_values.concat([ callsign, date, date ])
   end
 
   # 4. Get all valid user_ids using your (callsign, from_date, to_date) composite index

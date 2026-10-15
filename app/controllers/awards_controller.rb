@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class AwardsController < ApplicationController
   before_action :signed_in_user, only: %i[index show edit update new create]
 
@@ -14,20 +15,20 @@ class AwardsController < ApplicationController
 
   def show
     unless (@award = Award.find_by_id(params[:id].to_i))
-      flash[:error] = 'Award not found'
-      redirect_to '/awards'
+      flash[:error] = "Award not found"
+      redirect_to "/awards"
     end
   end
 
   def edit
     if signed_in? && current_user.is_admin
       unless (@award = Award.where(id: params[:id]).first)
-        flash[:error] = 'Award not found'
-        redirect_to '/awards'
+        flash[:error] = "Award not found"
+        redirect_to "/awards"
       end
     else
-      flash[:error] = 'You do not have permissions to edit an award'
-      redirect_to '/awards'
+      flash[:error] = "You do not have permissions to edit an award"
+      redirect_to "/awards"
     end
   end
 
@@ -35,8 +36,8 @@ class AwardsController < ApplicationController
     if signed_in? && current_user.is_admin
       @award = Award.new
     else
-      flash[:error] = 'You do not have permissions to create a new award'
-      redirect_to '/awards'
+      flash[:error] = "You do not have permissions to create a new award"
+      redirect_to "/awards"
     end
   end
 
@@ -47,19 +48,19 @@ class AwardsController < ApplicationController
 
       if @award.save
         @award.reload
-        flash[:success] = 'Success!'
-        if params[:referring] == 'index'
+        flash[:success] = "Success!"
+        if params[:referring] == "index"
           index_prep
-          redirect_to '/awards'
+          redirect_to "/awards"
         else
-          redirect_to '/awards/' + @award.id.to_s
+          redirect_to "/awards/" + @award.id.to_s
         end
       else
-        render 'new'
+        render "new"
       end
     else
-      flash[:error] = 'You do not have permissions to create a new award'
-      redirect_to '/awards'
+      flash[:error] = "You do not have permissions to create a new award"
+      redirect_to "/awards"
     end
   end
 
@@ -70,39 +71,39 @@ class AwardsController < ApplicationController
         if award && award.destroy
           auls = AwardUserLink.where(award_id: award.id)
           auls.each(&:destroy)
-          flash[:success] = 'Award deleted, id:' + params[:id]
-          redirect_to '/awards'
+          flash[:success] = "Award deleted, id:" + params[:id]
+          redirect_to "/awards"
         else
           edit
-          render 'edit'
+          render "edit"
         end
       else
         unless (@award = Award.find_by_id(params[:id]))
-          flash[:error] = 'Award does not exist: ' + @award.id.to_s
+          flash[:error] = "Award does not exist: " + @award.id.to_s
 
           # tried to update a nonexistant award
-          redirect_to '/awards'
+          redirect_to "/awards"
         end
 
         @award.assign_attributes(award_params)
         @award.createdBy_id = current_user.id
 
         if @award.save
-          flash[:success] = 'Award details updated'
+          flash[:success] = "Award details updated"
 
           # Handle a successful update.
-          if params[:referring] == 'index'
-            redirect_to '/awards'
+          if params[:referring] == "index"
+            redirect_to "/awards"
           else
-            redirect_to '/awards/' + @award.id.to_s
+            redirect_to "/awards/" + @award.id.to_s
           end
         else
-          render 'edit'
+          render "edit"
         end
       end
     else
-      flash[:error] = 'You do not have permissions to edit an award'
-      redirect_to '/awards'
+      flash[:error] = "You do not have permissions to edit an award"
+      redirect_to "/awards"
     end
   end
 

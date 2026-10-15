@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateParks < ActiveRecord::Migration[5.0]
   def change
     create_table :parks do |t|
@@ -7,7 +8,7 @@ class CreateParks < ActiveRecord::Migration[5.0]
       t.string :tramper_link
       t.string :general_link
       t.text :description
-      t.multi_polygon :boundary, :spatial => true, :srid => 4326
+      t.multi_polygon :boundary, spatial: true, srid: 4326
 
       t.boolean :is_active, default: true
       t.integer :createdBy_id

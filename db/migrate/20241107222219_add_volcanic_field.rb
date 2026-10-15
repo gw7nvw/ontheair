@@ -13,8 +13,8 @@ class AddVolcanicField < ActiveRecord::Migration[5.0]
       t.float :min_age
       t.float :max_age
       t.string :description
-      t.point :location,   :srid=>4326, :spatial => true
-      t.multi_polygon :boundary,     :srid=>4326, :spatial => true
+      t.point :location,   srid: 4326, spatial: true
+      t.multi_polygon :boundary,     srid: 4326, spatial: true
     end
   end
 end

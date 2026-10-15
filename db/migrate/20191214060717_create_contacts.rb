@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateContacts < ActiveRecord::Migration[5.0]
   def change
     create_table :contacts do |t|
@@ -15,8 +16,8 @@ class CreateContacts < ActiveRecord::Migration[5.0]
       t.integer :park1_id
       t.integer :x1
       t.integer :y1
-      t.integer :altitude1 
-      t.point :location1, :spatial => true, :srid => 4326
+      t.integer :altitude1
+      t.point :location1, spatial: true, srid: 4326
 
       t.string :callsign2
       t.integer :user2_id
@@ -31,8 +32,8 @@ class CreateContacts < ActiveRecord::Migration[5.0]
       t.integer :park2_id
       t.integer :x2
       t.integer :y2
-      t.integer :altitude2 
-      t.point :location2, :spatial => true, :srid => 4326
+      t.integer :altitude2
+      t.point :location2, spatial: true, srid: 4326
 
       t.datetime :date
       t.datetime :time
@@ -48,5 +49,4 @@ class CreateContacts < ActiveRecord::Migration[5.0]
       t.timestamps
     end
   end
-
 end

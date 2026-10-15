@@ -1,4 +1,5 @@
 # typed: false
+
 class UpdateAwards < ActiveRecord::Migration[5.0]
   def change
     remove_column :awards, :huts_minimum, :integer

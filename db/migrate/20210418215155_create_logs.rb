@@ -1,4 +1,5 @@
 # typed: false
+
 class CreateLogs < ActiveRecord::Migration[5.0]
   def change
     create_table :logs do |t|
@@ -23,7 +24,7 @@ class CreateLogs < ActiveRecord::Migration[5.0]
     t.string   "mode"
     t.boolean  "is_active",                                               default: true
     t.integer  "createdBy_id"
-    t.point  :location1, :spatial => true, :srid =>4326
+    t.point :location1, spatial: true, srid: 4326
     t.integer  "island1_id"
     t.boolean  "is_qrp1"
     t.boolean  "is_portable1"
@@ -33,6 +34,5 @@ class CreateLogs < ActiveRecord::Migration[5.0]
     end
 
     add_column :contacts, :log_id, :integer
-
   end
 end

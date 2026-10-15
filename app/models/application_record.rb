@@ -1,4 +1,4 @@
-require 'net/http'
+require "net/http"
 class ApplicationRecord < ActiveRecord::Base
   primary_abstract_class
 
@@ -10,29 +10,29 @@ class ApplicationRecord < ActiveRecord::Base
   request = Net::HTTP::Get.new(uri)
 
   # 3. Supply your required User-Agent string to satisfy remote servers
-  request['User-Agent'] = USER_AGENT_STRING
+  request["User-Agent"] = USER_AGENT_STRING
 
   # 4. Open the connection and execute the data transfer securely
-  response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == 'https') do |http|
+  response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == "https") do |http|
     http.request(request)
   end
 
   # 5. Handle the response output matrix
   if response.is_a?(Net::HTTPSuccess)
-    content_type = response['Content-Type']
+    content_type = response["Content-Type"]
     charset = content_type&.match(/charset=([^;\s]+)/i)&.captures&.first
     data = response.body
     if charset
       begin
         # 2. Transcode the body from the server's encoding into UTF-8 for safe manipulation
-        data = data.encode('UTF-8', charset, invalid: :replace, undef: :replace, replace: '')
+        data = data.encode("UTF-8", charset, invalid: :replace, undef: :replace, replace: "")
       rescue ArgumentError
         # Fallback if Ruby doesn't recognize the server's charset string
-        data.force_encoding('UTF-8')
+        data.force_encoding("UTF-8")
       end
     else
       # If no header was sent, fallback to assuming UTF-8
-      data.force_encoding('UTF-8')
+      data.force_encoding("UTF-8")
     end
     data # Returns the raw unparsed string (JSON, XML, or plain text)
   else
@@ -45,5 +45,4 @@ rescue StandardError => e
   Rails.logger.error "External HTTP Network Error: #{e.message} for #{url_string}"
   ""
 end
-
 end

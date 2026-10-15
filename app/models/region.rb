@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 # typed: false
+
 class Region < ActiveRecord::Base
-  require 'csv'
+  require "csv"
 
   def self.add_simple_boundaries
     ActiveRecord::Base.connection.execute('update regions set boundary_simplified=ST_Simplify("boundary",0.002) where boundary_simplified is null;')
@@ -13,51 +14,51 @@ class Region < ActiveRecord::Base
   def self.import(filename)
     CSV.foreach(filename, headers: true) do |row|
       place = row.to_hash
-      ActiveRecord::Base.connection.execute("insert into regions (dxcc, regc_code, name, boundary) values ('ZL, '" + place['REGC_code'] + "','" + place['REGC_name'].gsub("'", "''") + "',ST_GeomFromText('" + place['WKT'] + "',4326));")
+      ActiveRecord::Base.connection.execute("insert into regions (dxcc, regc_code, name, boundary) values ('ZL, '" + place["REGC_code"] + "','" + place["REGC_name"].gsub("'", "''") + "',ST_GeomFromText('" + place["WKT"] + "',4326));")
     end; true
   end
 
   def self.import_vk(filename)
     CSV.foreach(filename, headers: true) do |row|
       place = row.to_hash
-      state = State.find_by(pnp_code: place['STATE_CODE'])
-      state = State.find_by(code: place['STATE_CODE']) if !state
-      state = State.find_by(code: 'OTH') if !state
+      state = State.find_by(pnp_code: place["STATE_CODE"])
+      state = State.find_by(code: place["STATE_CODE"]) if !state
+      state = State.find_by(code: "OTH") if !state
       if state then state_code = state.code else state_code = "" end
-      reg_code = state.pnp_code + "-" + place['GROUP_NAME']
-      ActiveRecord::Base.connection.execute("insert into regions (dxcc, state_code, sota_code, regc_code, name, boundary) values ('VK', '" + state_code + "','" + reg_code + "','"+ reg_code + "','" + place['DIST_NAME'].gsub("'", "''") + "',ST_GeomFromText('" + place['WKT'] + "',4326));")
-      puts "insert into regions (dxcc, state_code, sota_code, regc_code, name, boundary) values ('VK', '" + state_code + "','" + reg_code + "','"+ reg_code + "','" + place['DIST_NAME'].gsub("'", "''") + "',ST_GeomFromText('" +  "',4326));"
+      reg_code = state.pnp_code + "-" + place["GROUP_NAME"]
+      ActiveRecord::Base.connection.execute("insert into regions (dxcc, state_code, sota_code, regc_code, name, boundary) values ('VK', '" + state_code + "','" + reg_code + "','"+ reg_code + "','" + place["DIST_NAME"].gsub("'", "''") + "',ST_GeomFromText('" + place["WKT"] + "',4326));")
+      puts "insert into regions (dxcc, state_code, sota_code, regc_code, name, boundary) values ('VK', '" + state_code + "','" + reg_code + "','"+ reg_code + "','" + place["DIST_NAME"].gsub("'", "''") + "',ST_GeomFromText('" +  "',4326));"
     end; true
   end
 
   def self.update(filename)
     CSV.foreach(filename, headers: true) do |row|
       place = row.to_hash
-      if place && place['prefix'] && place['WKT']
-        puts place['prefix']
-        ActiveRecord::Base.connection.execute("update regions set boundary=ST_GeomFromText('" + place['WKT'] + "',4326) where sota_code='" + place['prefix'] + "';")
+      if place && place["prefix"] && place["WKT"]
+        puts place["prefix"]
+        ActiveRecord::Base.connection.execute("update regions set boundary=ST_GeomFromText('" + place["WKT"] + "',4326) where sota_code='" + place["prefix"] + "';")
       end
     end; true
   end
 
   def self.add_sota_codes
-    names = [['Northland Region', 'NL'],
-             ['Auckland Region', 'AK'],
-             ['Waikato Region', 'WK'],
-             ['Bay of Plenty Region', 'BP'],
-             ['Gisborne Region', 'GI'],
-             ["Hawke's Bay Region", 'HB'],
-             ['Taranaki Region', 'TN'],
-             ['Manawatū-Whanganui Region', 'MW'],
-             ['Wellington Region', 'WL'],
-             ['West Coast Region', 'WC'],
-             ['Canterbury Region', 'CB'],
-             ['Otago Region', 'OT'],
-             ['Southland Region', 'SL'],
-             ['Tasman Region', 'TM'],
-             ['Nelson Region', 'TM'],
-             ['Marlborough Region', 'MB'],
-             ['Area Outside Region', 'CI']]
+    names = [ [ "Northland Region", "NL" ],
+             [ "Auckland Region", "AK" ],
+             [ "Waikato Region", "WK" ],
+             [ "Bay of Plenty Region", "BP" ],
+             [ "Gisborne Region", "GI" ],
+             [ "Hawke's Bay Region", "HB" ],
+             [ "Taranaki Region", "TN" ],
+             [ "Manawatū-Whanganui Region", "MW" ],
+             [ "Wellington Region", "WL" ],
+             [ "West Coast Region", "WC" ],
+             [ "Canterbury Region", "CB" ],
+             [ "Otago Region", "OT" ],
+             [ "Southland Region", "SL" ],
+             [ "Tasman Region", "TM" ],
+             [ "Nelson Region", "TM" ],
+             [ "Marlborough Region", "MB" ],
+             [ "Area Outside Region", "CI" ] ]
 
     Region.all.each do |region|
       namelst = names.select { |n| n[0] == region.name }
@@ -65,18 +66,18 @@ class Region < ActiveRecord::Base
       name = namelst.first
       puts region.name
       puts name[1]
-      ActiveRecord::Base.connection.execute("update regions set sota_code='" + name[1] + "' where id=" + region.id.to_s + ';')
+      ActiveRecord::Base.connection.execute("update regions set sota_code='" + name[1] + "' where id=" + region.id.to_s + ";")
     end; true
   end
 
-  def assets(dxcc='ZL', at_date = Time.now)
+  def assets(dxcc = "ZL", at_date = Time.now)
     #  as=Asset.where(region: self.sota_code)
-    Asset.find_by_sql [" select * from assets where country='#{dxcc}' and region='#{sota_code}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') "]
+    Asset.find_by_sql [ " select * from assets where country='#{dxcc}' and region='#{sota_code}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') " ]
   end
 
-  def assets_by_type(type, dxcc='ZL', at_date = Time.now)
+  def assets_by_type(type, dxcc = "ZL", at_date = Time.now)
     #  as=Asset.where(region: self.sota_code, asset_type: type)
-    Asset.find_by_sql [" select * from assets where country='#{dxcc}' and region='#{sota_code}' and asset_type='#{type}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') "]
+    Asset.find_by_sql [ " select * from assets where country='#{dxcc}' and region='#{sota_code}' and asset_type='#{type}' and minor is not true and (valid_from is null or valid_from<='#{at_date}') and ((valid_to is null and is_active=true) or valid_to>='#{at_date}') " ]
   end
 
   def districts
@@ -87,7 +88,7 @@ class Region < ActiveRecord::Base
    states = State.find_by_sql [ "select s.* from states s inner join regions r on r.id = #{self.id} where ST_Within(r.boundary, s.boundary); " ]
    state = states.first if states
   end
- 
+
   def add_state
    state = self.get_state
    if state then
@@ -95,14 +96,13 @@ class Region < ActiveRecord::Base
    end
   end
 
-  def self.get_assets_with_type(dxcc='ZL', at_date = Time.now)
-    Contact.find_by_sql [" select name, type, code_count, site_list from (select a.is_active as is_active, d.sota_code as name, a.asset_type as type, count(distinct(a.code)) as code_count, array_agg(a.code) as site_list from regions d inner join assets a on a.region=d.sota_code where a.minor is not true and (a.valid_from is null or a.valid_from<='#{at_date}') and ((a.valid_to is null and a.is_active=true) or a.valid_to>='#{at_date}') and  d.dxcc='#{dxcc}' group by d.sota_code, a.asset_type, a.is_active, a.minor) as foo; "]
+  def self.get_assets_with_type(dxcc = "ZL", at_date = Time.now)
+    Contact.find_by_sql [ " select name, type, code_count, site_list from (select a.is_active as is_active, d.sota_code as name, a.asset_type as type, count(distinct(a.code)) as code_count, array_agg(a.code) as site_list from regions d inner join assets a on a.region=d.sota_code where a.minor is not true and (a.valid_from is null or a.valid_from<='#{at_date}') and ((a.valid_to is null and a.is_active=true) or a.valid_to>='#{at_date}') and  d.dxcc='#{dxcc}' group by d.sota_code, a.asset_type, a.is_active, a.minor) as foo; " ]
   end
 
   def self.generate_pnp2_sites(dxccs)
-
     sql = <<-SQL
-      SELECT 
+      SELECT#{' '}
        a.sota_code as "regionID",
        a.name,
        ST_X(ST_Centroid(a.boundary))::varchar as "longitude",
@@ -114,17 +114,14 @@ class Region < ActiveRecord::Base
     FROM regions a
     LEFT JOIN dxcc_prefixes d ON a.dxcc = d.prefix
     LEFT JOIN states s ON s.code = a.state_code
-    WHERE a.dxcc IN (:dxccs) 
+    WHERE a.dxcc IN (:dxccs)#{' '}
     ORDER BY a.sota_code
     SQL
 
     # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([sql, { dxccs: dxccs }])
+    sanitized_sql = sanitize_sql_array([ sql, { dxccs: dxccs } ])
 
     # 3. Pull raw string text directly from the execution block
     connection.select_all(sanitized_sql)
-
   end
 end
-
-
