@@ -199,6 +199,13 @@
     </div>
   <% end %>
 
+  <% if @asset.type.fields then @asset.type.fields.split(',').each do |f| %>
+    <div class="erow" id="name">
+      <div class="rowtitle"><%= f.gsub('_',' ').titlecase %></div>
+      <div class="rowtext"><%= @asset.r_field(f)%></div>
+    </div>
+  <% end end %>
+
   <div class="erow" id="lies_within">
     <div class="rowtitle"><%= "Lies within" %></div>
     <div class="rowtext"> 

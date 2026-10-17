@@ -64,6 +64,12 @@ do_import_wwff:
   args:
   description: Runs the perform method in UpdateWwff  monthly
 
+do_import_protected_areas:
+  cron: 0 1 1 * *
+  class: UpdateProtectedArea
+  args:
+  description: Runs the perform method in UpdateProtectedArea  monthly
+
 do_import_nzgdb:
   cron: 30 0 1 1 *
   class: UpdateNzgdb

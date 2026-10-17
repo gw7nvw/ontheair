@@ -9,6 +9,7 @@ class Asset < ApplicationRecord
   validates :name, presence: true
   before_validation { assign_calculated_fields }
   after_save { post_save_actions }
+  after_save :purge_gis_linkage_on_deactivation, if: :saved_change_to_is_active?
 
   #  SIOTA_REGEX = /^VK-[a-zA-Z]{3}\d{1}/
   #  POTA_REGEX = /^[a-zA-Z0-9]{1,2}-\d{4,5}/
@@ -54,14 +55,14 @@ class Asset < ApplicationRecord
     self.district = add_district if !district or district.blank?
     self.region = add_region if !region or region.blank?
 
-    if code.nil? || (code == "")
+    if self.code.nil? || (self.code == "")
       if self.type.use_volcanic_field then
         self.code = Asset.get_next_code(asset_type, field_code)
       else
         self.code = Asset.get_next_code(asset_type, (region||"ZZ")[-2..-1])
       end
     end
-    self.safecode = code.tr("/", "_")
+    self.safecode = self.code.tr("/", "_")
 
     self.url = "assets/" + safecode
 
@@ -643,7 +644,7 @@ class Asset < ApplicationRecord
 
   # Return underlying record containing info about this asset
   def record
-    type.table_name.safe_constantize.find_by(type.index_name => code)
+    type.table_name.safe_constantize.find_by(type.index_name => self[type.remote_index_field])
   end
 
   # Return value of field <name> from the underlying table for this asset
@@ -1790,6 +1791,7 @@ end
         ":username=>'#{dbuser}', :password=>'#{password}')")
     eval("Custom_#{identifier}.connection")
   end
+
 private
 
 # used by activators and chasers to get user ids from contacts via user_callsign and date
@@ -1843,5 +1845,15 @@ def within_nztm_bounds?(coordinates)
     lat = coordinates.y
 
     NZTM_LNG_RANGE.cover?(lng) && NZTM_LAT_RANGE.cover?(lat)
+end
+
+def purge_gis_linkage_on_deactivation
+  # Only fire the cleanup logic if the asset was changed from active to inactive
+  if is_active == false
+    Rails.logger.info "Asset [#{code}] deactivated by operator. Purging GIS tracking registry footprints..."
+
+    # Use an un-scoped direct database delete block to keep execution lightning fast
+    AssetProtectedAreaLink.where(asset_code: code).delete_all
   end
+end
 end

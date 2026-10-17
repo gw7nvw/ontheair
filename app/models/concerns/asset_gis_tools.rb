@@ -5,20 +5,35 @@
 module AssetGisTools
   extend ActiveSupport::Concern
 
+  def check_for_minor(area,section)
+    #size
+    return true if area<100000 #10ha
+    return true if [
+      's.23 - Local Purpose Reserve',
+      's.22 - Government Purpose Reserve',
+      's.24(3) - Fixed Marginal Strip',
+    ].include?(section)
+    return false
+  end
+
   # Get a 'location' for a park from a boundary.  By default return the
   # centroid, but if the centroid does not lie witin the boundary
   # then an arbitrary point within the polygon
   def calc_location
-    location = nil
-    if id
-      locations = Asset.find_by_sql [ 'select id, CASE
-        WHEN (ST_ContainsProperly(boundary, ST_Centroid(boundary)))
-        THEN ST_Centroid(boundary)
-        ELSE ST_PointOnSurface(boundary)
-        END AS location from assets where id=' + id.to_s ]
-      location = locations && locations.count.positive? ? locations.first.location : nil
+    # Ensure we have a boundary polygon to calculate from
+    return nil if self.boundary.blank?
+
+    # 1. Calculate the geographic centroid using RGeo
+    center = self.boundary.centroid
+
+    # 2. Check if the centroid sits safely completely inside the boundary polygon
+    if self.boundary.contains?(center)
+      center
+    else
+      # 3. Fallback to a guaranteed interior point if the centroid fell outside
+      # (e.g. for a crescent or doughnut shaped park)
+      self.boundary.point_on_surface
     end
-    location
   end
 
   # Only used on point assets where we can check if AZ is blank.
