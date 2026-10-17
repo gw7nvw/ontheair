@@ -1,4 +1,3 @@
-<% params='/spots?'+(@parameters||"")%>
 
 <script>
   function refreshData() {
@@ -11,7 +10,8 @@
         },
         type: "GET",
         timeout: 20000,
-        url: "<%=params%>",
+        url: "/spots/",
+        data: <%=raw(@params_json)%>, 
         complete: function(jqXHR, thrownError) {
           // Unlock the gate when the request finishes (win or lose)
           site_isCurrentlyFetching = false; 

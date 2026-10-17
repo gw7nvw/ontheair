@@ -58,7 +58,9 @@ class ApplicationController < ActionController::Base
     @site_name=as.name
 
     # parameters
-    @parameters = params_to_query
+    parameters = params_to_query
+    @parameters = parameters.to_query
+    @params_json = parameters.to_json
 
     # referring page
     @referring = params[:referring] if params[:referring]
@@ -204,8 +206,7 @@ class ApplicationController < ActionController::Base
     newparams.delete(:action)
     newparams.delete(:controller)
     newparams.delete(:id)
-    logger.info "NEWPARAMS: #{newparams.to_query.gsub('amp%3B','')}"
-    newparams.to_query.gsub('amp%3B','')
+    newparams
   end
 
   def do_not_cache

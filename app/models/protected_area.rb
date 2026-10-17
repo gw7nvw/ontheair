@@ -368,6 +368,7 @@ SQL
         saved_ids.each do |code|
           asset = Asset.find_by(code: code)
           asset.get_access if asset
+          puts code
         end
 
         puts "\nSync Completed Successfully. Pipeline shutdown clean."
