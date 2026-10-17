@@ -200,10 +200,12 @@ class ApplicationController < ActionController::Base
 
   def params_to_query
     newparams = request.query_parameters.dup
+    logger.info "NEWPARAMS: #{newparams}"
     newparams.delete(:action)
     newparams.delete(:controller)
     newparams.delete(:id)
-    newparams.to_query
+    logger.info "NEWPARAMS: #{newparams.to_query.gsub('amp%3B','')}"
+    newparams.to_query.gsub('amp%3B','')
   end
 
   def do_not_cache

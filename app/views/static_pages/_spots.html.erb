@@ -162,7 +162,7 @@
   <span id="spots"></span>
      <p><span <%=if stale then raw("style='color: #900'") end%> >Last updated: <%=last_spot_read%> (<%=@tz.name%>)</span> - <span id="retrieved">Retrieved at <%=Time.now.in_time_zone(@tz.name).strftime("%H:%M:%S")%> (<%=@tz.name%>)</span><i>&nbsp;<%=  link_to "Refresh Now", '/spots?'+raw(@parameters), remote: true,  :onclick => "linkHandler('refresh_link')"%> </i></p>
   <p>
-  <% new_parameters=@parameters.gsub(/zone=[A-Za-z]+/,'') %>
+  <% new_parameters=@parameters.gsub(/zone=[A-Za-z]+/,'').gsub(/^&/,'') %>
   <% puts ":#{@zone}:" %>
   <% if @zone=='all' then %>
     <b>Showing all DXCCs</b>.  <i>Show only: 
@@ -174,7 +174,7 @@
     <b>Showing <%=Continent.name_from_code(@zone)%></b> spots.  <i><%=link_to "Show All DXCC", "/spots?#{raw(new_parameters)}&zone=all", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
   <% end %>
   ||
-  <% new_class_parameters=@parameters.gsub(/class=[A-Za-z]+/,'')%>
+  <% new_class_parameters=@parameters.gsub(/class=[A-Za-z]+/,'').gsub(/^&/,'')%>
   <% if @class and @class.length>0 then %>
     <b>Showing class <%=@class%></b> only.  <i><%=link_to "Show All Classes", "/spots?#{raw(new_class_parameters)}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
   <% else %>
@@ -186,7 +186,7 @@
     </i>
   <% end %>  
   ||
-  <% new_mode_parameters=@parameters.gsub(/mode=[A-Za-z]+/,'') %>
+  <% new_mode_parameters=@parameters.gsub(/mode=[A-Za-z]+/,'').gsub(/^&/,'') %>
   <% if @mode and @mode.length>0 then %>
     <b>Showing mode <%=@mode%></b> only.  <i><%=link_to "Show All Modes", "/spots?#{raw(new_mode_parameters)}", remote: true, id: "add",   :onclick => "linkHandler('add')"%></i>
   <% else %>
