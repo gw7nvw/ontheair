@@ -274,6 +274,7 @@ SQL
           asset.name = row['name']
           asset.description = row['section'] if asset.description.blank?
           asset.asset_type = 'park'
+          asset.is_active = true
           asset.is_nzart = asset.is_active
           b = Asset.new
           b.boundary = row['geom']
@@ -378,12 +379,12 @@ SQL
   end
 
   def self.deactivate_retired_assets
-    # 1. Reach out to the GIS database and pluck all currently surviving NAPALIS IDs
+    # 1. pluck all currently surviving NAPALIS IDs
     surviving_napalis_ids = (ProtectedArea.find_by_sql ["SELECT napalis_id FROM protected_areas"] ).pluck(:napalis_id)
 
     return if surviving_napalis_ids.empty?
   
-    # 2. Switch context back to your production database
+    # 2. Switch context back to production database
     puts "Identifying obsolete assets to deactivate..."
   
     # Find all asset references where the registered NAPALIS mapping no longer exists in LINZ
@@ -403,11 +404,11 @@ SQL
       # Purge the dead links out of your registry so they don't clog future runs
       AssetProtectedAreaLink.where(asset_code: obsolete_references).delete_all
   
-      puts "✅ Successfully deactivated #{obsolete_references.size} retired park assets."
+      puts "Successfully deactivated #{obsolete_references.size} retired park assets."
       AdminTask.create(task_type: "report", affected_table: "asset", description: "Updated ZLP parks. Retired: #{obsolete_references.size} parks")
       end
     else
-      puts "✅ No retired assets found. Everything up to date."
+      puts "No retired assets found. Everything up to date."
     end
   end
 
