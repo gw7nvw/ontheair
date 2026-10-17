@@ -248,8 +248,7 @@ SQL
           napalis_ids = row['source_napalis_ids'].gsub(/[{}]/, '').split(',').map(&:to_i)
 
           # 1. Look up all existing assets in the production DB that map to this cluster's component IDs
-          #matching_assets = Asset.where(asset_type: 'park', name_source: 'napalis', name_id: napalis_ids, is_active: true)
-          matching_assets = Asset.where(asset_type: 'park', name_source: 'napalis', name_id: napalis_ids)
+          matching_assets = Asset.where(asset_type: 'park', name_source: 'napalis', name_id: napalis_ids, is_active: true)
                          .order(code: :asc) # Oldest asset first
                          .to_a
 
