@@ -57,6 +57,8 @@ if ENV["RAILS_API_ONLY"] == "true"
   match "/api2/continents/index", to: "api2#pnp_continents_index",    via: "get"
   match "/api2/logs/create", to: "api2#pnp_logs_create",    via: "get"
   match "/api2/logs/create", to: "api2#pnp_logs_create",    via: "post"
+  post "posts/sms", to: "posts#sms"
+  get "posts/sms", to: "posts#sms"
   end
 else
   # typed: false

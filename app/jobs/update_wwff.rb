@@ -3,7 +3,7 @@
 # typed: true
 
 class UpdateWwff
-  @queue = :ota_scheduled
+  @queue = :ontheair
 
   def self.perform
     Asset.import_wwff("VK", true, false, true)

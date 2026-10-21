@@ -3,7 +3,7 @@
 # typed: true
 
 class UpdatePota
-  @queue = :ota_scheduled
+  @queue = :ontheair
 
   def self.perform
     Asset.import_vk_pota(true, false, true, nil)

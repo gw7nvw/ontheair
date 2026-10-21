@@ -3,7 +3,7 @@
 # typed: true
 
 class UpdateHema
-  @queue = :ota_scheduled
+  @queue = :ontheair
 
   def self.perform
     dxccs = [ "ZL1", "ZL3", "VK1", "VK2", "VK3", "VK5", "VK9" ]

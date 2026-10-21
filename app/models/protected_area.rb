@@ -27,6 +27,7 @@ class ProtectedArea < ActiveRecord::Base
     self.curate
     self.merge_into_assets
     self.deactivate_retired_assets
+    self.update_child_programmes
   end
 
   # Manually import an EPSG:4326 .gpkg from LINZ and recreate
@@ -409,6 +410,32 @@ SQL
       end
     else
       puts "No retired assets found. Everything up to date."
+    end
+  end
+
+  def self.update_child_programmes(force = false)
+    assets = Asset.where(geom_source: 'asset', is_active: true)
+    assets.each do |asset|
+      puts asset.code
+      a2 = Asset.find_by(code: asset.geom_id)
+      if a2 then
+        asset.boundary = a2.boundary
+        if asset.changed? or force
+          asset.boundary_quite_simplified = nil
+          asset.boundary_simplified = nil
+          asset.boundary_very_simplified = nil
+          asset.area = nil
+          asset.az_boundary=nil
+          asset.az_area=nil
+          if asset.save
+            puts "Successfull updated #{asset.code} #{asset.name}"
+          else
+            puts "ERROR: FAILED TO UPDATE #{asset.code} #{asset.name}"
+          end
+        end
+      else
+        puts "ERROR: FAILED TO FIND PARENT FOR #{asset.code} #{asset.name}"
+      end
     end
   end
 

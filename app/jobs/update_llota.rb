@@ -3,7 +3,7 @@
 # typed: true
 
 class UpdateLlota
-  @queue = :ota_scheduled
+  @queue = :ontheair
 
   def self.perform
     Asset.import_llota("AU", true, false, true)

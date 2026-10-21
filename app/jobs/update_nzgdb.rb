@@ -3,7 +3,7 @@
 # typed: true
 
 class UpdateNzgdb
-  @queue = :ota_scheduled
+  @queue = :ontheair
 
   def self.perform
     Nzgdb.update

@@ -3,7 +3,7 @@
 # typed: true
 
 class UpdateIllw
-  @queue = :ota_scheduled
+  @queue = :ontheair
 
   def self.perform
     Asset.import_illw()

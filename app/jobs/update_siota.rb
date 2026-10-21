@@ -3,7 +3,7 @@
 # typed: true
 
 class UpdateSiota
-  @queue = :ota_scheduled
+  @queue = :ontheair
 
   def self.perform
     Asset.import_siota()

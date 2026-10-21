@@ -3,7 +3,7 @@
 # typed: true
 
 class UpdateProtectedArea
-  @queue = :ota_scheduled
+  @queue = :ontheair
 
   def self.perform
     ProtectedArea.run_full_update
