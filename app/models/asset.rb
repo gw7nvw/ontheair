@@ -335,6 +335,10 @@ class Asset < ApplicationRecord
   ####################################################################
   # Virtual calculated fields
 
+  def nb_code
+    code.gsub('-', "\u2011")
+  end
+
   def self.maidenhead_to_lat_lon(maidenhead)
     maidenhead = maidenhead[0..5]
     # pad 4 digit maidenhead to 6

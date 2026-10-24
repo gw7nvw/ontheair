@@ -48,6 +48,14 @@ module ApplicationHelper
     end
   end
 
+  def non_breaking_text(text)
+    return "" if text.blank?
+
+    text.to_s
+        .gsub("-", "\u2011") # Unicode non-breaking hyphen
+        .gsub(" ", "\u00A0") # Unicode non-breaking space
+  end
+
   def convert_to_text(html, line_length = 65, _from_charset = "UTF-8")
     require "htmlentities"
 
