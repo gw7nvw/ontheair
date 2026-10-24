@@ -166,7 +166,8 @@ class StaticPagesController < ApplicationController
     zone_query = ""
     zone_query = " and continent = '#{@zone}' " if @zone != "all"
     # read spots from db
-    @all_spots = ConsolidatedSpot.where("updated_at>'#{onehourago}'#{zone_query}")
+    @all_spots = ConsolidatedSpot.where("updated_at>'#{onehourago}'#{zone_query}").order(:id)
+    @last_spot_seq_id = @all_spots.last.try(:id) || 0
 
     if @all_spots then @all_spots = @all_spots.sort_by { |hsh| hsh[:date].to_s + hsh[:time].last.to_s }.reverse! end
 
