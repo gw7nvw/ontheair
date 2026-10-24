@@ -256,6 +256,7 @@ else
   resources :sota_logs, only: [ :index, :show ]
 
   resources :llota_logs, only: [ :index, :show ]
+  resources :siota_logs, only: [ :index, :show ]
   match "/llota_logs/:id/download", to: "llota_logs#download", as: "download_llota", via: "get"
 
   resources :pota_logs, only: [ :index, :show ]

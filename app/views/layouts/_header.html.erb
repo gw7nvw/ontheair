@@ -105,11 +105,13 @@
                     <div class="dropdown-divider"></div>
 
                     <%= link_to "ZLOTA Logs", '/contacts?zlota_logs=true',  remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')", class: "dropdown-item"  %>
+                    <%= link_to "KRMNPA / SANPCPA Logs", '/contacts?zlota_logs=true',  remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')", class: "dropdown-item"  %>
                     <div class="dropdown-divider"></div>
 
                     <%= link_to "HEMA Logs", '/hema_logs', remote: true, :id => 'pota_link', :onclick => "linkHandler('hema_link')", class: "dropdown-item" %>
                     <%= link_to "LLOTA Logs", '/llota_logs', remote: true, :id => 'llota_link', :onclick => "linkHandler('llota_link')", class: "dropdown-item" %>
                     <%= link_to "POTA Logs", '/pota_logs', remote: true, :id => 'pota_link', :onclick => "linkHandler('pota_link')", class: "dropdown-item" %>
+                    <%= link_to "SiOTA Logs", '/siota_logs', remote: true, :id => 'siota_link', :onclick => "linkHandler('siota_link')", class: "dropdown-item" %>
                     <%= link_to "SOTA Logs", '/sota_logs', remote: true, :id => 'sota_link', :onclick => "linkHandler('sota_link')", class: "dropdown-item" %>
                     <%= link_to "WWFF Logs", '/wwff_logs', remote: true, :id => 'wwff_link', :onclick => "linkHandler('wwff_link')", class: "dropdown-item" %>
                   <% end %>

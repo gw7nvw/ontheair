@@ -1106,6 +1106,48 @@ class User < ActiveRecord::Base
   end
 
   #################################################################################
+  # Return array of SiOTA logs for current user
+  # Returns:
+  #  siota_logs: Array of logs per lake per day:
+  #    [
+  #       code: Asset.code for the lake
+  #       name: Asset.name for the lake
+  #       date: date for the activation
+  #       safecode: Asset.safecode for the silo
+  #       count: integer - count of valid contacts in this log
+  #       submitted: integer - count of contacts in this log alrady submitted
+  #    ]
+  ###############################################################################
+  def siota_logs(silo_code = nil)
+    if silo_code.nil?
+      silo_query1 = "'silo'=ANY(asset1_classes)"
+      silo_query2 = "c1.asset1_classes='silo'"
+    else
+      silo_query1 = "'#{silo_code}'=ANY(asset1_codes)"
+      silo_query2 = "c1.asset1_codes='#{silo_code}'"
+    end
+
+    siota_logs = Contact.find_by_sql [ "
+        select a.name, a.safecode, c3.* from
+          (select asset1_codes as code, date,
+            count(case submitted_to_siota when true then 1 else null end) as submitted,
+            count(date) as count
+            from
+              (select callsign1, callsign2, date::date as date, asset1_codes, submitted_to_siota from
+                 (select callsign1, callsign2, date,
+                    unnest(asset1_classes) as asset1_classes,
+                    unnest(asset1_codes) as asset1_codes,
+                    'SiOTA' = ANY(submitted_to) as submitted_to_siota
+                    from contacts
+                    where user1_id=#{id} and #{silo_query1}) as c1
+                 where #{silo_query2}) as c2
+              group by asset1_codes, date) as c3
+          inner join assets a on a.code=c3.code;
+      " ]
+    siota_logs
+  end
+
+  #################################################################################
   # Return array of LLOTA logs for current user
   # Returns:
   #  llota_logs: Array of logs per lake per day:
