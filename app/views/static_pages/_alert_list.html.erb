@@ -16,17 +16,19 @@
           <% if codes.kind_of?(Array)==false then codes=[codes] end %>
           <% validlink=false %>
           <% codes.each do |code| %>
-            <% link=Asset.assets_from_code(code)%>
-            <% if link and link.count>0 then %>
-              <% validlink=true %>
-              <% if link.first[:external] then %>
-                <%=link_to non_breaking_text(code).upcase,link.first[:url], target: "_blank"%><img src="/icons/external-link-symbol.png">
+            <span style="white-space: nowrap;">
+              <% link=Asset.assets_from_code(code)%>
+              <% if link and link.count>0 then %>
+                <% validlink=true %>
+                <% if link.first[:external] then %>
+                  <%=link_to code.upcase,link.first[:url], target: "_blank"%><img src="/icons/external-link-symbol.png">
+                <% else %>
+                 <%=link_to code.upcase,link.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                <% end %>
               <% else %>
-               <%=link_to non_breaking_text(code).upcase,link.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                <%=if code then code.upcase else "" end %>
               <% end %>
-            <% else %>
-              <%=if code then non_breaking_text(code).upcase else "" end %>
-            <% end %>
+            </span>
           <% end %>
         </td>
         <td><%=if alert[:frequency] and alert[:frequency]!="" then alert[:frequency].to_f.round(5) else "" end%>-<%=alert[:mode]%></td>
