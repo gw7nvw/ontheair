@@ -328,10 +328,10 @@
 
   <% if @asset.minor then %>
     <div class="erow" id="email" style='color:#bb0000 !important'>
-      <span title="Places can be marked as invalid for a number of reasons. This includes duplicate place names, names of groups of islands and lakes that are included individually, reserves that are smaller than the minimum 10ha size, Queen's chain reserves, special purpose reserves, and others.">
-        <div class="rowtitle" style='color:#bb0000'><%= "Valid for OnTheAir?" %></div>
+      <span title="Places can be marked as minor for a number of reasons. This includes reserves that are smaller than the minimum 10ha size, Queen's chain reserves, special purpose reserves, and others. Such reserves may be activated for ZLOTA so long as legal public access exists. It is the operators responsability to verify this access.">
+        <div class="rowtitle" style='color:#bb0000'><%= "Minor reserve?" %></div>
       </span>
-      <div class="textext">No</div>
+      <div class="textext">Yes</div>
     </div>
   <% end %>
 
