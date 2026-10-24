@@ -8,10 +8,9 @@ class MigrationMailer < ActionMailer::Base
 
     mail(
       to: user_email,
-      subject: "Upcoming changes at ParksNPeaks.org"
-    ) do |format|
-      # Force Rails to send it strictly as HTML using your file content
-      format.html { render text: html_content.html_safe }
-    end
+      subject: "Upcoming changes at ParksNPeaks.org",
+      body: html_content,
+      content_type: 'text/html'
+    )
   end
 end
