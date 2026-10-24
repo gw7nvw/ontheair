@@ -1,5 +1,7 @@
 
 <script>
+  var audioCtx = null;
+
   function refreshData() {
     //only if we're still on spots page
     if(document.getElementById('spots')) {
@@ -74,26 +76,10 @@
   }
 
   function playAlertSound() {
-    // 1. Check if the user has enabled sound
     var soundEnabled = document.getElementById('enable-sound').checked;
+    if (!soundEnabled || !audioCtx) return;
 
-    if (!soundEnabled) {
-      console.log("Audio skipped: Muted by user checkbox.");
-      return; // Stop right here
-    }
-    var audio = document.getElementById('alert-audio');
-    
-    // Modern browsers return a promise from .play()
-    var playPromise = audio.play();
-    
-    if (playPromise !== undefined) {
-        playPromise.then(function() {
-            // Playback started successfully
-        }).catch(function(error) {
-            // Automatic playback was prevented
-            console.warn("Audio blocked. Waiting for user interaction.", error);
-        });
-    }
+    playWebAudioChime(880, 0.15);
   }
 
   function onload_tasks() {
@@ -106,6 +92,23 @@
     var initialSeq = $('#refresh-container').data('seq');
     window.lastKnownSeq = (initialSeq !== undefined) ? initialSeq : null;
     document.getElementById('enable-sound').checked = false;
+
+    document.getElementById('enable-sound').addEventListener('change', function() {
+      if (this.checked) {
+        console.log("Sound enabled. Initializing Web Audio Context...");
+    
+        // Create the audio context directly inside the user click event
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+        // Play a brief test chime immediately to unlock the browser pipeline
+        playWebAudioChime(1600, 1.00); // A clean 880Hz chime
+      } else {
+          if (audioCtx) {
+          audioCtx.close();
+          audioCtx = null;
+        }
+      }
+    });
   }
 
   // 1. Create a global safety buffer (e.g., don't fetch more than once every 10 seconds)
@@ -117,13 +120,31 @@
     var refreshInterval = null;
   }
 
-  // Add this once on page load to your permanent script
-  document.getElementById('alert-audio').addEventListener('ended', function() {
-    // Reset the pointer so it is instantly ready for the NEXT alert
-    this.currentTime = 0;
-    console.log("AUDIO RESET.");
-  });
-
+  // Helper: Synthesizes a crisp electronic notification chime
+  function playWebAudioChime(frequency, duration) {
+    if (!audioCtx) return;
+    
+    // Auto-resume context if Brave tries to suspend it during idling
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  
+    var oscillator = audioCtx.createOscillator();
+    var gainNode = audioCtx.createGain();
+  
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+  
+    oscillator.type = 'sine'; // Smooth tone
+    oscillator.frequency.value = frequency; // Pitch in Hz
+  
+    // Fade out smoothly so it doesn't click harshly at the end
+    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+  
+    oscillator.start(audioCtx.currentTime);
+    oscillator.stop(audioCtx.currentTime + duration);
+  }
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
@@ -189,7 +210,7 @@
       <tr>
         <td> Enable Audible Alerts 🔊</td>
         <td>
-            <input type="checkbox" id="enable-sound" style="margin-bottom: 0px;" onclick="playAlertSound();">
+            <input type="checkbox" id="enable-sound" style="margin-bottom: 0px;">
         </td>
       </tr>
     </table>

@@ -611,22 +611,22 @@ class User < ActiveRecord::Base
       include_external = asset_type.name == "summit"
       score[asset_type.name] = bagged(asset_type: asset_type.name).count
       score_total[asset_type.name] = 0
-      activated_count[asset_type.name] = activations(asset_type: asset_type.name, include_external: include_external).count
-      activated_count_total[asset_type.name] = activations(by_year: true, asset_type: asset_type.name, include_external: include_external).count
-      confirmed_activated_count[asset_type.name] = activations(asset_type: asset_type.name, include_external: include_external, only_activator: true).count
-      confirmed_activated_count_total[asset_type.name] = activations(by_year: true, asset_type: asset_type.name, include_external: include_external, only_activator: true).count
-      chased_count[asset_type.name] = chased(asset_type: asset_type.name, include_external: include_external).count
-      chased_count_total[asset_type.name] = chased(asset_type: asset_type.name, by_day: true, include_external: include_external).count
-      qualified_count[asset_type.name] = qualified(asset_type: asset_type.name, include_external: include_external).count
-      qualified_count_total[asset_type.name] = qualified(by_year: true, asset_type: asset_type.name, include_external: include_external).count
+      activated_count[asset_type.name] = activations(asset_type: asset_type.name, include_external: include_external, include_minor: true).count
+      activated_count_total[asset_type.name] = activations(by_year: true, asset_type: asset_type.name, include_external: include_external, include_minor: true).count
+      confirmed_activated_count[asset_type.name] = activations(asset_type: asset_type.name, include_external: include_external, only_activator: true, include_minor: true).count
+      confirmed_activated_count_total[asset_type.name] = activations(by_year: true, asset_type: asset_type.name, include_external: include_external, only_activator: true, include_minor: true).count
+      chased_count[asset_type.name] = chased(asset_type: asset_type.name, include_external: include_external, include_minor: true).count
+      chased_count_total[asset_type.name] = chased(asset_type: asset_type.name, by_day: true, include_external: include_external, include_minor: true).count
+      qualified_count[asset_type.name] = qualified(asset_type: asset_type.name, include_external: include_external, include_minor: true).count
+      qualified_count_total[asset_type.name] = qualified(by_year: true, asset_type: asset_type.name, include_external: include_external, include_minor: true).count
     end
 
     score["qrp"] = bagged(qrp: true).count
     score_total["qrp"] = 0
-    activated_count["qrp"] = activations(qrp: true).count
-    activated_count_total["qrp"] = activations(qrp: true, by_year: true).count
-    chased_count["qrp"] = chased(qrp: true).count
-    chased_count_total["qrp"] = chased(qrp: true, by_day: true).count
+    activated_count["qrp"] = activations(qrp: true, include_minor: true).count
+    activated_count_total["qrp"] = activations(qrp: true, by_year: true, include_minor: true).count
+    chased_count["qrp"] = chased(qrp: true, include_minor: true).count
+    chased_count_total["qrp"] = chased(qrp: true, by_day: true, include_minor: true).count
 
     score["elevation"] = elevation_bagged(include_external: true)
     qualified_count_total["elevation"] = 0
