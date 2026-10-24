@@ -54,6 +54,7 @@ module ApplicationHelper
     text.to_s
         .gsub("-", "\u2011") # Unicode non-breaking hyphen
         .gsub(" ", "\u00A0") # Unicode non-breaking space
+        .gsub("/", "\u2215") # Unicode non-breaking slash
   end
 
   def convert_to_text(html, line_length = 65, _from_charset = "UTF-8")
