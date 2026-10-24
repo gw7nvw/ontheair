@@ -132,6 +132,7 @@ else
   match "/recent",   to: "static_pages#recent",   via: "get"
   match "/spots/history",   to: "static_pages#spot_history",   via: "get"
   match "/spots",   to: "static_pages#spots",   via: "get"
+  match "/spot_panel",   to: "static_pages#spot_panel",   via: "get"
   match "/alerts",   to: "static_pages#alerts",   via: "get"
   match "/alerts/:id/delete",   to: "static_pages#delete_alert",   via: "get"
   match "/admin_stats",   to: "static_pages#admin_stats",   via: "get"

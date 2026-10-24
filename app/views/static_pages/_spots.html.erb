@@ -10,16 +10,41 @@
         },
         type: "GET",
         timeout: 20000,
-        url: "/spots/",
+        url: "/spot_panel/",
         data: <%=raw(@params_json)%>, 
-        complete: function(jqXHR, thrownError) {
+        dataType: "script", // Automatically sets Accept headers and handles execution
+        success: function(data, textStatus, jqXHR) {
           // Unlock the gate when the request finishes (win or lose)
           site_isCurrentlyFetching = false; 
-  
-          /* complete also fires when error ocurred, so only clear if no error has been shown */
-          if(thrownError=="timeout" || thrownError=="error") {
-            document.getElementById('retrieved').innerHTML="<p><b>TIMED OUT</b></p>";
+
+          var currentSeq = $('#refresh-container').data('seq');
+          if (currentSeq !== undefined && currentSeq !== null) {
+
+          // On the very first AJAX run, prime the variable without playing the sound
+          if (window.lastKnownSeq === null) {
+            window.lastKnownSeq = currentSeq;
           }
+          // On subsequent runs, play the sound only if the sequence has changed
+          else if (currentSeq !== window.lastKnownSeq) {
+            console.log("PLAY SOUND");
+            playAlertSound();
+            window.lastKnownSeq = currentSeq;
+          }
+        }
+          /* complete also fires when error ocurred, so only clear if no error has been shown */
+          console.log("COMPLETE");
+          startTimer();
+        },
+        error: function(jqXHR, textStatus, thrownError) {
+          if(thrownError=="timeout") {
+             document.getElementById('retrieved').innerHTML="<p><b>TIMED OUT</b></p>";
+          } else {
+             document.getElementById('retrieved').innerHTML="<p><b>ERROR: "+textStatus+"</b></p>";
+          }
+
+          site_isCurrentlyFetching = false;
+          console.log("ERROR");
+          startTimer();
         }
       });
     } else {
@@ -29,9 +54,9 @@
   }
     
   function startTimer() {
-//    console.log("START");
     try {
       pauseTimer();
+      console.log("START");
       refreshInterval = setTimeout(refreshData, 60000); /* time in milliseconds (ie 60 seconds)*/
     }
     catch(err) {
@@ -41,10 +66,33 @@
   }
     
   function pauseTimer() {
-//    console.log("PAUSE");
+    console.log("PAUSE");
     if (refreshInterval) {
       clearTimeout(refreshInterval);
       refreshInterval = null; // Clear the variable
+    }
+  }
+
+  function playAlertSound() {
+    // 1. Check if the user has enabled sound
+    var soundEnabled = document.getElementById('enable-sound').checked;
+
+    if (!soundEnabled) {
+      console.log("Audio skipped: Muted by user checkbox.");
+      return; // Stop right here
+    }
+    var audio = document.getElementById('alert-audio');
+    
+    // Modern browsers return a promise from .play()
+    var playPromise = audio.play();
+    
+    if (playPromise !== undefined) {
+        playPromise.then(function() {
+            // Playback started successfully
+        }).catch(function(error) {
+            // Automatic playback was prevented
+            console.warn("Audio blocked. Waiting for user interaction.", error);
+        });
     }
   }
 
@@ -55,6 +103,9 @@
     if ($(window).width() < 960) {
       site_smaller_map();
     }
+    var initialSeq = $('#spots-data-container').data('seq');
+    window.lastKnownSeq = (initialSeq !== undefined) ? initialSeq : null;
+    document.getElementById('enable-sound').checked = false;
   }
 
   // 1. Create a global safety buffer (e.g., don't fetch more than once every 10 seconds)
@@ -120,47 +171,23 @@
 </div>
 
 <div id="right_scroll">
-  <% as=AdminSettings.first %>
-  <% if as and as.last_spot_read then 
-       last_spot_read=as.last_spot_read.in_time_zone(@tz.name).strftime("%H:%M:%S") 
-       if as.last_spot_read<5.minutes.ago then stale=true end
-     else 
-       last_spot_read="Unknown" 
-       stale=true
-     end %>
-  <% if stale==true
-      #Need to put a set a lock flag here to prevent parallel execution of this (resulting in 2 workers)
-      #Should really do this in controller ...
-      unlocked = ActiveRecord::Base.connection.execute("SELECT pg_try_advisory_lock( #{SCHED_LOCK} );")
-      if unlocked and unlocked.values and unlocked.values.first and unlocked.values.first.first=='t' then
-        puts "UNLOCKED"
-        begin
-          sch_running=system('ps -ef | grep ota_schedule | grep resqu | grep -v grep')
-          if sch_running==false then
-             success=system('RAILS_ENV=production nohup bundle exec rake environment resque:work QUEUE=ota_scheduled > log/redisch.log & echo $! > /tmp/schedule.pid')
-             if !success then 
-               flashlocal="Error: process to retrieve remote spots failed and we could not restart it"
-               flashlocaltype='error' 
-             else
-               flashlocal="Success: process to retrieve remote spots failed but we successfully restarted it. Remote spots will show on the next refresh"
-               flashlocaltype='success'
-             end
-          end
-        rescue
-          puts "ERROR: failed in scheduler process check"
-        end
-        #And release lock
-        ActiveRecord::Base.connection.execute("SELECT pg_advisory_unlock( #{SCHED_LOCK} );")
-      end
-     end
-  %>
+  <audio id="alert-audio" src="/icons/bell.mp3" preload="auto"></audio>
+
   <%= render 'flash' %>
-  <% if flashlocal then %>
-    <div class="alert alert-<%= flashlocaltype %>"><%= flashlocal %></div>
-  <% end%>
   <h2>Spotted portable - Spots</h2>
+   <!-- User control panel to guarantee interaction -->
+  <div class="audio-controls">
+    <table class="cleanskin2" style="margin-bottom: 3px; width: max-content; white-space: nowrap;">
+      <tr>
+        <td> Enable Audible Alerts 🔊</td>
+        <td>
+            <input type="checkbox" id="enable-sound" style="margin-bottom: 0px;">
+        </td>
+      </tr>
+    </table>
+  </div>
+
   <span id="spots"></span>
-     <p><span <%=if stale then raw("style='color: #900'") end%> >Last updated: <%=last_spot_read%> (<%=@tz.name%>)</span> - <span id="retrieved">Retrieved at <%=Time.now.in_time_zone(@tz.name).strftime("%H:%M:%S")%> (<%=@tz.name%>)</span><i>&nbsp;<%=  link_to "Refresh Now", '/spots?'+raw(@parameters), remote: true,  :onclick => "linkHandler('refresh_link')"%> </i></p>
   <p>
   <% new_parameters=@parameters.gsub(/zone=[A-Za-z]+/,'').gsub(/^&/,'') %>
   <% puts ":#{@zone}:" %>
@@ -198,11 +225,10 @@
        <%=link_to "FT8", "/spots?#{raw(new_mode_parameters)}&mode=FT8", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
        <%=link_to "SSB", "/spots?#{raw(new_mode_parameters)}&mode=SSB", remote: true, id: "add",   :onclick => "linkHandler('add')"%>
   <% end %> 
-  </i></p>
-  <%= render 'alert_summary' %>
-  <h2>Spots</h2>
-  <%= render 'spot_list' %>
-
+    </i></p>
+  <div id="spot_panel">
+    <%= render 'spot_panel' %>
+  </div>
 </div>
 <script>
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;

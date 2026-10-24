@@ -149,11 +149,11 @@ class StaticPagesController < ApplicationController
     @all_spots = spots[0..199]
   end
 
+  def spot_panel
+    spots
+  end
+  
   def spots
-    #  if ['222.153.106.137'].include?(request.remote_ip)
-    #    return render js: "window.location.reload();"
-    #  end
-
     alerts
 
     hoursago = 1
@@ -179,6 +179,7 @@ class StaticPagesController < ApplicationController
       @mode = params[:mode]
       @all_spots = @all_spots.select { |spot| @mode.upcase.include? spot[:mode].upcase }
     end
+    @last_spot_seq_id = @all_spots.first.try(:id) || 0
   end
 
   def delete_alert
