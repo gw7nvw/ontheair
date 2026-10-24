@@ -116,7 +116,15 @@
     var site_isCurrentlyFetching = false;
     var refreshInterval = null;
   }
-    
+
+  // Add this once on page load to your permanent script
+  document.getElementById('alert-audio').addEventListener('ended', function() {
+    // Reset the pointer so it is instantly ready for the NEXT alert
+    this.currentTime = 0;
+    console.log("AUDIO RESET.");
+  });
+
+
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
 //      console.log("VISIBILITYCHANGE");
