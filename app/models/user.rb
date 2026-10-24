@@ -1148,6 +1148,30 @@ class User < ActiveRecord::Base
   end
 
   #################################################################################
+  # Return array of siota_logs, including contacts for all or specified silo
+  # for this user
+  # Returns:
+  #  siota_contacts: Array containing one log and multiple contacts
+  #    [
+  #       code: Asset.code for this silo
+  #       date: date for the activation
+  #       count: integer - count of valid contacts in this log
+  #       contacts: Array of [Contact]
+  #    ]
+  ###############################################################################
+  def siota_contacts(silo_code = nil)
+    siota_contacts = []
+    siota_logs = self.siota_logs(silo_code)
+
+    siota_logs.each do |siota_log|
+      contacts = Contact.where("user1_id = ? and ? = ANY(asset1_codes) and date::date= ?", id, siota_log[:code], siota_log[:date].strftime("%Y-%m-%d"))
+      contact_count = contacts.count
+      siota_contacts.push(code: siota_log[:code], date: siota_log[:date], count: contact_count, contacts: contacts.sort_by(&:date))
+    end
+    siota_contacts
+  end
+
+  #################################################################################
   # Return array of LLOTA logs for current user
   # Returns:
   #  llota_logs: Array of logs per lake per day:
