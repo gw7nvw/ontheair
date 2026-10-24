@@ -103,7 +103,7 @@
     if ($(window).width() < 960) {
       site_smaller_map();
     }
-    var initialSeq = $('#spots-data-container').data('seq');
+    var initialSeq = $('#refresh-container').data('seq');
     window.lastKnownSeq = (initialSeq !== undefined) ? initialSeq : null;
     document.getElementById('enable-sound').checked = false;
   }
