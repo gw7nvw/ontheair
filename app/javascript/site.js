@@ -63,7 +63,7 @@ var site_default_point_layers=['lake','lighthouse','summit','hump','volcano'];
 var site_all_point_layers=['park','hut','island','summit','hump','lake','lighthouse','volcano'];
 var site_default_polygon_layers=[];
 var site_default_world_layer='OpenHikingMap';
-var site_default_world_zoom=11;
+var site_default_world_zoom=12;
 var site_default_world_centre = [16085209, -4006631];
 //styles
 var site_docland_style;
@@ -487,7 +487,7 @@ function site_add_vector_layers() {
   //vkpolygon_layer=map_add_vector_layer("Polygon", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/vkhota2.map", "polygon",site_polygon_style_function,true,10,15,'polygon', 'EPSG:3857');
   //vkpolygon_simple_layer=map_add_vector_layer("Polygon Simple", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/vkhota2.map", "polygon_simple",site_polygon_style_function,true,5,10,'polygon', 'EPSG:3857');
   //vkpolygon_detail_layer=map_add_vector_layer("Polygon Detail", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/vkhota2.map", "polygon_detail",site_polygon_style_function,true,15,32,'polygon', 'EPSG:3857');
-  points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,6,32,'point', 'EPSG:3857');
+  points_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "points",site_points_style_function,true,5,32,'point', 'EPSG:3857');
   //vkpoints_layer=map_add_vector_layer("Points", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/vkhota2.map", "vkpoints",site_points_style_function,true,5,32,'point', 'EPSG:3857');
   contacts_layer=map_add_vector_layer("Contacts", "https://ontheair.nz/cgi-bin/mapserv?map=/var/www/html/hota_maps/hota2.map", "contacts",site_contacts_style,false,1,32, 'EPSG:3857');
 
