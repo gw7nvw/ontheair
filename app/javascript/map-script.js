@@ -675,8 +675,14 @@ function map_init(divid, projection) {
         });
         if(projection=='EPSG:2193') {
           var view = view_2193
+          map_current_proj=2193
+          map_current_projname="NZTM2000"
+          map_current_projdp=0;
         } else {
           var view = view_3857
+          map_current_proj=4326
+          map_current_projname="WGS"
+          map_current_projdp=4;
         }
         map_mpc= new MousePosition({
              coordinateFormat: createStringXY(map_current_projdp),
