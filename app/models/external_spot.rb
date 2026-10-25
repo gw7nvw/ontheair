@@ -210,18 +210,18 @@ class ExternalSpot < ApplicationRecord
       end
 
       # Parks N Peaks
-      pnp_spots=[]
-      begin
-        Timeout.timeout(30) do
-          url = "http://www.parksnpeaks.org/api/ALL"
-          raw_response = fetch_external_url(url)
-          pnp_spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
-          puts pnp_spots.to_json
-        end
-      rescue
-        puts "ERROR: PnP Timeout"
-      else
-      end
+#      pnp_spots=[]
+#      begin
+#        Timeout.timeout(30) do
+#          url = "http://www.parksnpeaks.org/api/ALL"
+#          raw_response = fetch_external_url(url)
+#          pnp_spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
+#          puts pnp_spots.to_json
+#        end
+#      rescue
+#        puts "ERROR: PnP Timeout"
+#      else
+#      end
 
       # add to db
       zlvk_sota_spots.each do |spot|
@@ -283,20 +283,20 @@ class ExternalSpot < ApplicationRecord
           spot_type: "WWFF"
         )
       end
-      pnp_spots.each do |spot|
-        ExternalSpot.create(
-          time: spot["actTime"].to_datetime ? spot["actTime"].to_datetime.in_time_zone("UTC") : nil,
-          callsign: spot["actSpoter"].strip,
-          activatorCallsign: spot["actCallsign"].strip,
-          code: (spot["actSiteID"] && !spot["actSiteID"].empty? ? spot["actSiteID"] : spot["actLocation"]).gsub("?", "X"),
-          name: spot["altLocation"] && !spot["altLocation"].empty? ? spot["altLocation"] : spot["actLocation"],
-          frequency: spot["actFreq"],
-          mode: spot["actMode"],
-          comments: spot["actComments"][0..255],
-          spot_type: spot["actClass"],
-          is_pnp: true
-        )
-      end
+#      pnp_spots.each do |spot|
+#        ExternalSpot.create(
+#          time: spot["actTime"].to_datetime ? spot["actTime"].to_datetime.in_time_zone("UTC") : nil,
+#          callsign: spot["actSpoter"].strip,
+#          activatorCallsign: spot["actCallsign"].strip,
+#          code: (spot["actSiteID"] && !spot["actSiteID"].empty? ? spot["actSiteID"] : spot["actLocation"]).gsub("?", "X"),
+#          name: spot["altLocation"] && !spot["altLocation"].empty? ? spot["altLocation"] : spot["actLocation"],
+#          frequency: spot["actFreq"],
+#          mode: spot["actMode"],
+#          comments: spot["actComments"][0..255],
+#          spot_type: spot["actClass"],
+#          is_pnp: true
+#        )
+#      end
 
 
       hemaspots.each do |spot|
