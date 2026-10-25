@@ -240,6 +240,9 @@ else
   get "users/:id/set_external", to: "users#update_external"
   match "/signup",  to: "users#new",         via: "get"
 
+  resources :user_notification_links, only: [:new, :create, :edit, :update]
+  get "user_notification_links/:id/delete", to: "user_notification_links#delete"
+
   post "posts/sms", to: "posts#sms"
   get "posts/sms", to: "posts#sms"
   resources :posts, only: [ :new, :create, :show, :edit, :update ]

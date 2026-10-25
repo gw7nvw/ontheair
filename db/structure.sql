@@ -17,6 +17,20 @@ CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public;
 
 
 --
+-- Name: pg_stat_statements; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
+
+
+--
+-- Name: pg_trgm; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
+
+
+--
 -- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
 --
 
@@ -149,6 +163,75 @@ ALTER SEQUENCE public.admin_settings_id_seq OWNED BY public.admin_settings.id;
 
 
 --
+-- Name: admin_tasks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.admin_tasks (
+    id bigint NOT NULL,
+    task_type character varying,
+    affected_id character varying,
+    affected_table character varying,
+    affected_url character varying,
+    action_url character varying,
+    description text,
+    pending boolean DEFAULT true,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: admin_tasks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.admin_tasks_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: admin_tasks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.admin_tasks_id_seq OWNED BY public.admin_tasks.id;
+
+
+--
+-- Name: ak_maps; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.ak_maps (
+    id integer NOT NULL,
+    name character varying(255),
+    code character varying(255),
+    "WKT" public.geometry(MultiPolygon,4326),
+    location public.geometry(Point,4326)
+);
+
+
+--
+-- Name: ak_maps_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.ak_maps_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: ak_maps_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.ak_maps_id_seq OWNED BY public.ak_maps.id;
+
+
+--
 -- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -192,6 +275,37 @@ ALTER SEQUENCE public.asset_links_id_seq OWNED BY public.asset_links.id;
 
 
 --
+-- Name: asset_overlaps; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.asset_overlaps (
+    id bigint NOT NULL,
+    contained_code character varying,
+    containing_code character varying,
+    overlap double precision
+);
+
+
+--
+-- Name: asset_overlaps_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.asset_overlaps_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: asset_overlaps_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.asset_overlaps_id_seq OWNED BY public.asset_overlaps.id;
+
+
+--
 -- Name: asset_photo_links; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -225,6 +339,38 @@ ALTER SEQUENCE public.asset_photo_links_id_seq OWNED BY public.asset_photo_links
 
 
 --
+-- Name: asset_protected_area_links; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.asset_protected_area_links (
+    id bigint NOT NULL,
+    asset_code character varying NOT NULL,
+    napalis_id bigint NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: asset_protected_area_links_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.asset_protected_area_links_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: asset_protected_area_links_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.asset_protected_area_links_id_seq OWNED BY public.asset_protected_area_links.id;
+
+
+--
 -- Name: asset_types; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -250,7 +396,8 @@ CREATE TABLE public.asset_types (
     use_az boolean,
     use_within_sight boolean,
     like_pattern character varying(255),
-    allow_multi boolean
+    allow_multi boolean,
+    remote_index_field character varying
 );
 
 
@@ -568,6 +715,52 @@ ALTER SEQUENCE public.comments_id_seq OWNED BY public.comments.id;
 
 
 --
+-- Name: consolidated_spots; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.consolidated_spots (
+    id integer NOT NULL,
+    "time" character varying(255)[] DEFAULT '{}'::character varying[],
+    callsign character varying(255)[] DEFAULT '{}'::character varying[],
+    "activatorCallsign" character varying(255),
+    code character varying(255)[] DEFAULT '{}'::character varying[],
+    name character varying(255)[] DEFAULT '{}'::character varying[],
+    frequency character varying(255),
+    mode character varying(255),
+    comments character varying(255)[] DEFAULT '{}'::character varying[],
+    spot_type character varying(255)[] DEFAULT '{}'::character varying[],
+    post_id character varying(255)[] DEFAULT '{}'::character varying[],
+    points character varying(255),
+    "altM" character varying(255),
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    old_spot_type character varying(255)[] DEFAULT '{}'::character varying[],
+    band character varying(255),
+    dxcc character varying(255),
+    continent character varying(255)
+);
+
+
+--
+-- Name: consolidated_spots_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.consolidated_spots_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: consolidated_spots_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.consolidated_spots_id_seq OWNED BY public.consolidated_spots.id;
+
+
+--
 -- Name: contacts; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -676,6 +869,68 @@ ALTER SEQUENCE public.continents_id_seq OWNED BY public.continents.id;
 
 
 --
+-- Name: crownparks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.crownparks (
+    "WKT" public.geometry(MultiPolygon,4326),
+    id integer NOT NULL,
+    napalis_id integer,
+    start_date character varying(255),
+    name character varying(255),
+    recorded_area character varying(255),
+    overlays character varying(255),
+    reserve_type character varying(255),
+    legislation character varying(255),
+    section character varying(255),
+    reserve_purpose character varying(255),
+    ctrl_mg_vst character varying(255),
+    is_active boolean,
+    master_id integer
+);
+
+
+--
+-- Name: data_sources; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.data_sources (
+    id bigint NOT NULL,
+    name character varying,
+    database_name character varying,
+    table_name character varying,
+    last_update timestamp(6) without time zone,
+    index_column character varying,
+    name_column character varying,
+    geom_column character varying,
+    is_zl boolean,
+    is_vk boolean,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    mdl_name character varying
+);
+
+
+--
+-- Name: data_sources_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.data_sources_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: data_sources_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.data_sources_id_seq OWNED BY public.data_sources.id;
+
+
+--
 -- Name: districts; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -712,6 +967,25 @@ CREATE SEQUENCE public.districts_id_seq
 --
 
 ALTER SEQUENCE public.districts_id_seq OWNED BY public.districts.id;
+
+
+--
+-- Name: docparks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.docparks_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: docparks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.docparks_id_seq OWNED BY public.crownparks.id;
 
 
 --
@@ -778,6 +1052,171 @@ CREATE SEQUENCE public.email_blacklists_id_seq
 --
 
 ALTER SEQUENCE public.email_blacklists_id_seq OWNED BY public.email_blacklists.id;
+
+
+--
+-- Name: external_activations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.external_activations (
+    id integer NOT NULL,
+    callsign character varying(255),
+    summit_code character varying(255),
+    summit_sota_id integer,
+    date date,
+    qso_count integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    user_id integer,
+    external_activation_id integer,
+    asset_type character varying(255)
+);
+
+
+--
+-- Name: external_activations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.external_activations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: external_activations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.external_activations_id_seq OWNED BY public.external_activations.id;
+
+
+--
+-- Name: external_alerts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.external_alerts (
+    id integer NOT NULL,
+    starttime timestamp without time zone,
+    "activatingCallsign" character varying(255),
+    code character varying(255),
+    name character varying(255),
+    frequency character varying(255),
+    comments character varying(255),
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    mode character varying(255),
+    programme character varying(255),
+    duration character varying(255),
+    dxcc character varying(255),
+    continent character varying(255),
+    source character varying,
+    source_id integer
+);
+
+
+--
+-- Name: external_alerts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.external_alerts_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: external_alerts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.external_alerts_id_seq OWNED BY public.external_alerts.id;
+
+
+--
+-- Name: external_chases; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.external_chases (
+    id integer NOT NULL,
+    callsign character varying(255),
+    summit_code character varying(255),
+    summit_sota_id integer,
+    user_id integer,
+    external_activation_id integer,
+    band character varying(255),
+    mode character varying(255),
+    date date,
+    "time" time without time zone,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    asset_type character varying(255)
+);
+
+
+--
+-- Name: external_chases_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.external_chases_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: external_chases_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.external_chases_id_seq OWNED BY public.external_chases.id;
+
+
+--
+-- Name: external_spots; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.external_spots (
+    id integer NOT NULL,
+    "time" timestamp without time zone,
+    callsign character varying(255),
+    "activatorCallsign" character varying(255),
+    code character varying(255),
+    name character varying(255),
+    frequency character varying(255),
+    mode character varying(255),
+    comments character varying(255),
+    spot_type character varying(255),
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    epoch character varying(255),
+    is_test boolean,
+    points character varying(255),
+    "altM" character varying(255),
+    is_pnp boolean
+);
+
+
+--
+-- Name: external_spots_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.external_spots_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: external_spots_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.external_spots_id_seq OWNED BY public.external_spots.id;
 
 
 --
@@ -913,6 +1352,90 @@ ALTER SEQUENCE public.geological_periods_id_seq OWNED BY public.geological_perio
 
 
 --
+-- Name: humps; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.humps (
+    id integer NOT NULL,
+    dxcc character varying(255),
+    region character varying(255),
+    code character varying(255),
+    name character varying(255),
+    elevation character varying(255),
+    prominence character varying(255),
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    location public.geometry(Point,4326)
+);
+
+
+--
+-- Name: humps_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.humps_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: humps_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.humps_id_seq OWNED BY public.humps.id;
+
+
+--
+-- Name: huts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.huts (
+    id integer NOT NULL,
+    name character varying(255),
+    hutbagger_link character varying(255),
+    doc_link character varying(255),
+    tramper_link character varying(255),
+    routeguides_link character varying(255),
+    general_link character varying(255),
+    description text,
+    x double precision,
+    y double precision,
+    altitude integer,
+    is_active boolean DEFAULT true,
+    is_doc boolean DEFAULT true,
+    "createdBy_id" integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    location public.geometry(Point,4326),
+    code character varying(255),
+    region character varying(255),
+    dist_code character varying(255)
+);
+
+
+--
+-- Name: huts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.huts_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: huts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.huts_id_seq OWNED BY public.huts.id;
+
+
+--
 -- Name: images; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -985,6 +1508,76 @@ CREATE SEQUENCE public.items_id_seq
 --
 
 ALTER SEQUENCE public.items_id_seq OWNED BY public.items.id;
+
+
+--
+-- Name: legal_roads; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.legal_roads (
+    id integer NOT NULL,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    boundary public.geometry(MultiPolygon,4326)
+);
+
+
+--
+-- Name: legal_roads_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.legal_roads_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: legal_roads_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.legal_roads_id_seq OWNED BY public.legal_roads.id;
+
+
+--
+-- Name: lighthouses; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.lighthouses (
+    id integer NOT NULL,
+    t50_fid character varying(255),
+    loc_type character varying(255),
+    status character varying(255),
+    str_type character varying(255),
+    name character varying(255),
+    code character varying(255),
+    region character varying(255),
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    location public.geometry(Point,4326),
+    mnz_id integer
+);
+
+
+--
+-- Name: lighthouses_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.lighthouses_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: lighthouses_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.lighthouses_id_seq OWNED BY public.lighthouses.id;
 
 
 --
@@ -1082,6 +1675,87 @@ CREATE SEQUENCE public.maplayers_id_seq
 --
 
 ALTER SEQUENCE public.maplayers_id_seq OWNED BY public.maplayers.id;
+
+
+--
+-- Name: nz_tribal_lands; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.nz_tribal_lands (
+    ogc_fid integer NOT NULL,
+    wkb_geometry public.geometry(MultiPolygon,4326),
+    id numeric(10,0),
+    name character varying(80),
+    country character varying(255),
+    boundary_quite_simplified public.geometry(MultiPolygon,4326),
+    boundary_simplified public.geometry(MultiPolygon,4326),
+    boundary_very_simplified public.geometry(MultiPolygon,4326)
+);
+
+
+--
+-- Name: nz_tribal_lands_ogc_fid_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.nz_tribal_lands_ogc_fid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: nz_tribal_lands_ogc_fid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.nz_tribal_lands_ogc_fid_seq OWNED BY public.nz_tribal_lands.ogc_fid;
+
+
+--
+-- Name: parks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.parks (
+    id integer NOT NULL,
+    name character varying(255),
+    doc_link character varying(255),
+    tramper_link character varying(255),
+    general_link character varying(255),
+    description text,
+    is_active boolean DEFAULT true,
+    "createdBy_id" integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    boundary public.geometry(MultiPolygon,4326),
+    is_mr boolean,
+    owner character varying(255),
+    location public.geometry(Point,4326),
+    code character varying(255),
+    master_id integer,
+    dist_code character varying(255),
+    land_district character varying(255),
+    region character varying(255)
+);
+
+
+--
+-- Name: parks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.parks_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: parks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.parks_id_seq OWNED BY public.parks.id;
 
 
 --
@@ -1266,6 +1940,70 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: sessions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sessions (
+    id integer NOT NULL,
+    session_id text,
+    data text,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+--
+-- Name: sessions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.sessions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: sessions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.sessions_id_seq OWNED BY public.sessions.id;
+
+
+--
+-- Name: sota_regions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sota_regions (
+    id integer NOT NULL,
+    dxcc character varying(255),
+    region character varying(255),
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+--
+-- Name: sota_regions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.sota_regions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: sota_regions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.sota_regions_id_seq OWNED BY public.sota_regions.id;
+
+
+--
 -- Name: states; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1420,6 +2158,44 @@ ALTER SEQUENCE public.uploads_id_seq OWNED BY public.uploads.id;
 
 
 --
+-- Name: user_agents; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_agents (
+    id integer NOT NULL,
+    access_count integer DEFAULT 0 NOT NULL,
+    user_ip text NOT NULL,
+    suspected_bot boolean,
+    confirmed_bot boolean,
+    suspicious_access_count integer DEFAULT 0 NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    html_count integer DEFAULT 0 NOT NULL,
+    js_count integer DEFAULT 0 NOT NULL,
+    confirmed_human boolean
+);
+
+
+--
+-- Name: user_agents_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.user_agents_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: user_agents_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.user_agents_id_seq OWNED BY public.user_agents.id;
+
+
+--
 -- Name: user_callsigns; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1451,6 +2227,44 @@ CREATE SEQUENCE public.user_callsigns_id_seq
 --
 
 ALTER SEQUENCE public.user_callsigns_id_seq OWNED BY public.user_callsigns.id;
+
+
+--
+-- Name: user_notification_links; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_notification_links (
+    id bigint NOT NULL,
+    user_id integer NOT NULL,
+    continents character varying[] DEFAULT '{}'::character varying[],
+    bands character varying[] DEFAULT '{}'::character varying[],
+    modes character varying[] DEFAULT '{}'::character varying[],
+    spot_types character varying[] DEFAULT '{}'::character varying[],
+    activator_callsign character varying,
+    code character varying,
+    priority integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: user_notification_links_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.user_notification_links_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: user_notification_links_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.user_notification_links_id_seq OWNED BY public.user_notification_links.id;
 
 
 --
@@ -1580,7 +2394,8 @@ CREATE TABLE public.users (
     "pnp_APIKey" character varying(255),
     pnp_imported boolean DEFAULT false,
     pnp_username character varying(255),
-    pnp_status character varying(255)
+    pnp_status character varying(255),
+    push_active boolean
 );
 
 
@@ -1644,6 +2459,112 @@ CREATE SEQUENCE public.volcanic_fields_id_seq
 --
 
 ALTER SEQUENCE public.volcanic_fields_id_seq OWNED BY public.volcanic_fields.id;
+
+
+--
+-- Name: volcanos; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.volcanos (
+    id integer NOT NULL,
+    code character varying(255),
+    name character varying(255),
+    status character varying(255),
+    field_name character varying(255),
+    age double precision,
+    period character varying(255),
+    epoch character varying(255),
+    height integer,
+    lat double precision,
+    long double precision,
+    az_radius double precision,
+    url character varying(255),
+    description character varying(255),
+    location public.geometry(Point,4326),
+    eon character varying(255),
+    era character varying(255),
+    min_age double precision,
+    max_age double precision,
+    date_range character varying(255),
+    field_code character varying(255)
+);
+
+
+--
+-- Name: volcanos_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.volcanos_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: volcanos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.volcanos_id_seq OWNED BY public.volcanos.id;
+
+
+--
+-- Name: volcanos_raw; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.volcanos_raw (
+    gid integer NOT NULL,
+    descr character varying(254),
+    typename character varying(50),
+    geolhist character varying(254),
+    repage_uri character varying(150),
+    yngage_uri character varying(150),
+    oldage_uri character varying(150),
+    stratage character varying(50),
+    absmin_ma double precision,
+    absmax_ma double precision,
+    stratrank character varying(50),
+    mbrequiv character varying(150),
+    fmnequiv character varying(254),
+    sbgrpequiv character varying(150),
+    grpequiv character varying(150),
+    spgrpequiv character varying(150),
+    terrequiv character varying(150),
+    megaequiv character varying(150),
+    stratlex character varying(100),
+    litho2014 character varying(100),
+    lithology character varying(150),
+    mainrock character varying(50),
+    subrocks character varying(150),
+    protolith character varying(150),
+    tzone character varying(10),
+    rockgroup character varying(50),
+    rockclass character varying(50),
+    simplename character varying(254),
+    keygrpname character varying(100),
+    volc_name character varying(80),
+    group_code character varying(10)
+);
+
+
+--
+-- Name: volcanos_raw_gid_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.volcanos_raw_gid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: volcanos_raw_gid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.volcanos_raw_gid_seq OWNED BY public.volcanos_raw.gid;
 
 
 --
@@ -1720,6 +2641,20 @@ ALTER TABLE ONLY public.admin_settings ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
+-- Name: admin_tasks id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.admin_tasks ALTER COLUMN id SET DEFAULT nextval('public.admin_tasks_id_seq'::regclass);
+
+
+--
+-- Name: ak_maps id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ak_maps ALTER COLUMN id SET DEFAULT nextval('public.ak_maps_id_seq'::regclass);
+
+
+--
 -- Name: asset_links id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1727,10 +2662,24 @@ ALTER TABLE ONLY public.asset_links ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- Name: asset_overlaps id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.asset_overlaps ALTER COLUMN id SET DEFAULT nextval('public.asset_overlaps_id_seq'::regclass);
+
+
+--
 -- Name: asset_photo_links id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.asset_photo_links ALTER COLUMN id SET DEFAULT nextval('public.asset_photo_links_id_seq'::regclass);
+
+
+--
+-- Name: asset_protected_area_links id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.asset_protected_area_links ALTER COLUMN id SET DEFAULT nextval('public.asset_protected_area_links_id_seq'::regclass);
 
 
 --
@@ -1790,6 +2739,13 @@ ALTER TABLE ONLY public.comments ALTER COLUMN id SET DEFAULT nextval('public.com
 
 
 --
+-- Name: consolidated_spots id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.consolidated_spots ALTER COLUMN id SET DEFAULT nextval('public.consolidated_spots_id_seq'::regclass);
+
+
+--
 -- Name: contacts id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1801,6 +2757,20 @@ ALTER TABLE ONLY public.contacts ALTER COLUMN id SET DEFAULT nextval('public.con
 --
 
 ALTER TABLE ONLY public.continents ALTER COLUMN id SET DEFAULT nextval('public.continents_id_seq'::regclass);
+
+
+--
+-- Name: crownparks id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.crownparks ALTER COLUMN id SET DEFAULT nextval('public.docparks_id_seq'::regclass);
+
+
+--
+-- Name: data_sources id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.data_sources ALTER COLUMN id SET DEFAULT nextval('public.data_sources_id_seq'::regclass);
 
 
 --
@@ -1822,6 +2792,34 @@ ALTER TABLE ONLY public.dxcc_prefixes ALTER COLUMN id SET DEFAULT nextval('publi
 --
 
 ALTER TABLE ONLY public.email_blacklists ALTER COLUMN id SET DEFAULT nextval('public.email_blacklists_id_seq'::regclass);
+
+
+--
+-- Name: external_activations id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.external_activations ALTER COLUMN id SET DEFAULT nextval('public.external_activations_id_seq'::regclass);
+
+
+--
+-- Name: external_alerts id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.external_alerts ALTER COLUMN id SET DEFAULT nextval('public.external_alerts_id_seq'::regclass);
+
+
+--
+-- Name: external_chases id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.external_chases ALTER COLUMN id SET DEFAULT nextval('public.external_chases_id_seq'::regclass);
+
+
+--
+-- Name: external_spots id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.external_spots ALTER COLUMN id SET DEFAULT nextval('public.external_spots_id_seq'::regclass);
 
 
 --
@@ -1853,6 +2851,20 @@ ALTER TABLE ONLY public.geological_periods ALTER COLUMN id SET DEFAULT nextval('
 
 
 --
+-- Name: humps id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.humps ALTER COLUMN id SET DEFAULT nextval('public.humps_id_seq'::regclass);
+
+
+--
+-- Name: huts id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.huts ALTER COLUMN id SET DEFAULT nextval('public.huts_id_seq'::regclass);
+
+
+--
 -- Name: images id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1867,6 +2879,20 @@ ALTER TABLE ONLY public.items ALTER COLUMN id SET DEFAULT nextval('public.items_
 
 
 --
+-- Name: legal_roads id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.legal_roads ALTER COLUMN id SET DEFAULT nextval('public.legal_roads_id_seq'::regclass);
+
+
+--
+-- Name: lighthouses id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.lighthouses ALTER COLUMN id SET DEFAULT nextval('public.lighthouses_id_seq'::regclass);
+
+
+--
 -- Name: logs id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1878,6 +2904,20 @@ ALTER TABLE ONLY public.logs ALTER COLUMN id SET DEFAULT nextval('public.logs_id
 --
 
 ALTER TABLE ONLY public.maplayers ALTER COLUMN id SET DEFAULT nextval('public.maplayers_id_seq'::regclass);
+
+
+--
+-- Name: nz_tribal_lands ogc_fid; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.nz_tribal_lands ALTER COLUMN ogc_fid SET DEFAULT nextval('public.nz_tribal_lands_ogc_fid_seq'::regclass);
+
+
+--
+-- Name: parks id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.parks ALTER COLUMN id SET DEFAULT nextval('public.parks_id_seq'::regclass);
 
 
 --
@@ -1909,6 +2949,20 @@ ALTER TABLE ONLY public.regions ALTER COLUMN id SET DEFAULT nextval('public.regi
 
 
 --
+-- Name: sessions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sessions ALTER COLUMN id SET DEFAULT nextval('public.sessions_id_seq'::regclass);
+
+
+--
+-- Name: sota_regions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sota_regions ALTER COLUMN id SET DEFAULT nextval('public.sota_regions_id_seq'::regclass);
+
+
+--
 -- Name: states id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1937,10 +2991,24 @@ ALTER TABLE ONLY public.uploads ALTER COLUMN id SET DEFAULT nextval('public.uplo
 
 
 --
+-- Name: user_agents id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_agents ALTER COLUMN id SET DEFAULT nextval('public.user_agents_id_seq'::regclass);
+
+
+--
 -- Name: user_callsigns id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_callsigns ALTER COLUMN id SET DEFAULT nextval('public.user_callsigns_id_seq'::regclass);
+
+
+--
+-- Name: user_notification_links id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_notification_links ALTER COLUMN id SET DEFAULT nextval('public.user_notification_links_id_seq'::regclass);
 
 
 --
@@ -1972,6 +3040,20 @@ ALTER TABLE ONLY public.volcanic_fields ALTER COLUMN id SET DEFAULT nextval('pub
 
 
 --
+-- Name: volcanos id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.volcanos ALTER COLUMN id SET DEFAULT nextval('public.volcanos_id_seq'::regclass);
+
+
+--
+-- Name: volcanos_raw gid; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.volcanos_raw ALTER COLUMN gid SET DEFAULT nextval('public.volcanos_raw_gid_seq'::regclass);
+
+
+--
 -- Name: web_link_classes id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1994,6 +3076,22 @@ ALTER TABLE ONLY public.admin_settings
 
 
 --
+-- Name: admin_tasks admin_tasks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.admin_tasks
+    ADD CONSTRAINT admin_tasks_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ak_maps ak_maps_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ak_maps
+    ADD CONSTRAINT ak_maps_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: ar_internal_metadata ar_internal_metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2010,11 +3108,27 @@ ALTER TABLE ONLY public.asset_links
 
 
 --
+-- Name: asset_overlaps asset_overlaps_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.asset_overlaps
+    ADD CONSTRAINT asset_overlaps_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: asset_photo_links asset_photo_links_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.asset_photo_links
     ADD CONSTRAINT asset_photo_links_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: asset_protected_area_links asset_protected_area_links_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.asset_protected_area_links
+    ADD CONSTRAINT asset_protected_area_links_pkey PRIMARY KEY (id);
 
 
 --
@@ -2082,6 +3196,14 @@ ALTER TABLE ONLY public.comments
 
 
 --
+-- Name: consolidated_spots consolidated_spots_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.consolidated_spots
+    ADD CONSTRAINT consolidated_spots_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: contacts contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2098,11 +3220,27 @@ ALTER TABLE ONLY public.continents
 
 
 --
+-- Name: data_sources data_sources_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.data_sources
+    ADD CONSTRAINT data_sources_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: districts districts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.districts
     ADD CONSTRAINT districts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: crownparks docparks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.crownparks
+    ADD CONSTRAINT docparks_pkey PRIMARY KEY (id);
 
 
 --
@@ -2119,6 +3257,22 @@ ALTER TABLE ONLY public.dxcc_prefixes
 
 ALTER TABLE ONLY public.email_blacklists
     ADD CONSTRAINT email_blacklists_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: external_alerts external_alerts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.external_alerts
+    ADD CONSTRAINT external_alerts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: external_spots external_spots_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.external_spots
+    ADD CONSTRAINT external_spots_pkey PRIMARY KEY (id);
 
 
 --
@@ -2154,6 +3308,22 @@ ALTER TABLE ONLY public.geological_periods
 
 
 --
+-- Name: humps humps_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.humps
+    ADD CONSTRAINT humps_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: huts huts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.huts
+    ADD CONSTRAINT huts_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: images images_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2170,6 +3340,22 @@ ALTER TABLE ONLY public.items
 
 
 --
+-- Name: legal_roads legal_roads_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.legal_roads
+    ADD CONSTRAINT legal_roads_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: lighthouses lighthouses_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.lighthouses
+    ADD CONSTRAINT lighthouses_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: logs logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2183,6 +3369,22 @@ ALTER TABLE ONLY public.logs
 
 ALTER TABLE ONLY public.maplayers
     ADD CONSTRAINT maplayers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: nz_tribal_lands nz_tribal_lands_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.nz_tribal_lands
+    ADD CONSTRAINT nz_tribal_lands_pkey PRIMARY KEY (ogc_fid);
+
+
+--
+-- Name: parks parks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.parks
+    ADD CONSTRAINT parks_pkey PRIMARY KEY (id);
 
 
 --
@@ -2218,6 +3420,38 @@ ALTER TABLE ONLY public.regions
 
 
 --
+-- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sessions
+    ADD CONSTRAINT sessions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: external_activations sota_activations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.external_activations
+    ADD CONSTRAINT sota_activations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: external_chases sota_chases_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.external_chases
+    ADD CONSTRAINT sota_chases_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sota_regions sota_regions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sota_regions
+    ADD CONSTRAINT sota_regions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: states states_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2250,11 +3484,27 @@ ALTER TABLE ONLY public.uploads
 
 
 --
+-- Name: user_agents user_agents_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_agents
+    ADD CONSTRAINT user_agents_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: user_callsigns user_callsigns_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_callsigns
     ADD CONSTRAINT user_callsigns_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_notification_links user_notification_links_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_notification_links
+    ADD CONSTRAINT user_notification_links_pkey PRIMARY KEY (id);
 
 
 --
@@ -2287,6 +3537,22 @@ ALTER TABLE ONLY public.users
 
 ALTER TABLE ONLY public.volcanic_fields
     ADD CONSTRAINT volcanic_fields_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: volcanos volcanos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.volcanos
+    ADD CONSTRAINT volcanos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: volcanos_raw volcanos_raw_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.volcanos_raw
+    ADD CONSTRAINT volcanos_raw_pkey PRIMARY KEY (gid);
 
 
 --
@@ -2376,6 +3642,34 @@ CREATE INDEX districts_region_code_idx ON public.districts USING btree (region_c
 
 
 --
+-- Name: docparks_wkt_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX docparks_wkt_index ON public.crownparks USING gist ("WKT");
+
+
+--
+-- Name: eas_asset_type_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX eas_asset_type_idx ON public.external_activations USING btree (asset_type);
+
+
+--
+-- Name: eas_qso_count_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX eas_qso_count_idx ON public.external_activations USING btree (qso_count);
+
+
+--
+-- Name: eas_userid_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX eas_userid_idx ON public.external_activations USING btree (user_id);
+
+
+--
 -- Name: idx_assets_boundary; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2394,6 +3688,13 @@ CREATE INDEX idx_assets_coalesced_geo ON public.assets USING gist (COALESCE(az_b
 --
 
 CREATE INDEX idx_assets_quite_simplified_3857 ON public.assets USING gist (public.st_transform(boundary_quite_simplified, 3857));
+
+
+--
+-- Name: idx_assets_type_and_spatial; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_assets_type_and_spatial ON public.assets USING gist (asset_type, COALESCE(boundary, location));
 
 
 --
@@ -2439,6 +3740,20 @@ CREATE INDEX idx_contacts_date_time ON public.contacts USING btree (date, "time"
 
 
 --
+-- Name: idx_cs_updated_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_cs_updated_at ON public.consolidated_spots USING btree (updated_at);
+
+
+--
+-- Name: idx_external_spots_time_activator; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_external_spots_time_activator ON public.external_spots USING btree ("time", "activatorCallsign");
+
+
+--
 -- Name: idx_logs_asset_classes; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2460,6 +3775,48 @@ CREATE INDEX idx_logs_callsign1_id ON public.logs USING btree (callsign1, id);
 
 
 --
+-- Name: idx_nz_tribal_lands_quite_simplified_3857; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_nz_tribal_lands_quite_simplified_3857 ON public.nz_tribal_lands USING gist (public.st_transform(boundary_quite_simplified, 3857));
+
+
+--
+-- Name: idx_tribal_lands_boundary_quite_simplified; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_tribal_lands_boundary_quite_simplified ON public.nz_tribal_lands USING gist (boundary_quite_simplified);
+
+
+--
+-- Name: idx_tribal_lands_geom_3857; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_tribal_lands_geom_3857 ON public.nz_tribal_lands USING gist (public.st_transform(wkb_geometry, 3857));
+
+
+--
+-- Name: idx_unl_activator_trgm; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_unl_activator_trgm ON public.user_notification_links USING gin (activator_callsign public.gin_trgm_ops);
+
+
+--
+-- Name: idx_unl_arrays; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_unl_arrays ON public.user_notification_links USING gin (continents, bands, modes, spot_types);
+
+
+--
+-- Name: idx_unl_code_trgm; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_unl_code_trgm ON public.user_notification_links USING gin (code public.gin_trgm_ops);
+
+
+--
 -- Name: idx_user_callsigns_lookup; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2478,6 +3835,20 @@ CREATE INDEX index_asset_links_on_contained_code ON public.asset_links USING btr
 --
 
 CREATE INDEX index_asset_links_on_containing_code ON public.asset_links USING btree (containing_code);
+
+
+--
+-- Name: index_asset_protected_area_links_on_asset_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_asset_protected_area_links_on_asset_code ON public.asset_protected_area_links USING btree (asset_code);
+
+
+--
+-- Name: index_asset_protected_area_links_on_napalis_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_asset_protected_area_links_on_napalis_id ON public.asset_protected_area_links USING btree (napalis_id);
 
 
 --
@@ -2565,6 +3936,34 @@ CREATE INDEX index_ratings_on_user_id ON public.ratings USING btree (user_id);
 
 
 --
+-- Name: index_sessions_on_session_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_sessions_on_session_id ON public.sessions USING btree (session_id);
+
+
+--
+-- Name: index_sessions_on_updated_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_sessions_on_updated_at ON public.sessions USING btree (updated_at);
+
+
+--
+-- Name: index_user_agents_on_user_ip; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_user_agents_on_user_ip ON public.user_agents USING btree (user_ip);
+
+
+--
+-- Name: index_user_notification_links_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_user_notification_links_on_user_id ON public.user_notification_links USING btree (user_id);
+
+
+--
 -- Name: index_users_on_callsign; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2600,6 +3999,13 @@ CREATE INDEX logs_user1id_idx ON public.logs USING btree (user1_id);
 
 
 --
+-- Name: nz_tribal_lands_wkb_geometry_geom_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX nz_tribal_lands_wkb_geometry_geom_idx ON public.nz_tribal_lands USING gist (wkb_geometry);
+
+
+--
 -- Name: regions_sota_code_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2627,6 +4033,8 @@ CREATE UNIQUE INDEX unique_schema_migrations ON public.schema_migrations USING b
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261025041512'),
+('20261025035617'),
 ('20261016195337'),
 ('20261016002539'),
 ('20261009060443'),

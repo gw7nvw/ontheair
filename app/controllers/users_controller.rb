@@ -4,6 +4,7 @@
 
 class UsersController < ApplicationController
   include ApplicationHelper
+  include UserViewPreparer
 
   before_action :signed_in_user, only: %i[index edit update district_progress region_progress awards stats assets p2p]
 
@@ -170,26 +171,11 @@ class UsersController < ApplicationController
   end
 
   def show
-    users = User.find_by_sql [ "select * from users where callsign='#{params[:id]}' or id=#{params[:id].to_i}" ]
-    if !users || (users.count < 1)
-      users = UserCallsign.where(callsign: params[:id])
-      if users && (users.count > 0)
-        user = users.first.user
-        if user
-          redirect_to "/users/" + user.callsign
-        else
-          flash[:error] = "Callsign " + params[:id] + " not found"
-          redirect_to "/"
-        end
-      else
-        flash[:error] = "Callsign " + params[:id] + " not found"
-        redirect_to "/"
-      end
-    elsif users && (users.count > 0)
-      @user = users.first
-      @callsign = UserCallsign.new
-      @callsign.user_id = @user.id
-    end
+    prepare_user_show_data(params[:id])
+
+    @filter = UserNotificationLink.new
+    @filter.priority=0
+    @filter.user_id = @user.id
   end
 
   def new
@@ -318,29 +304,7 @@ class UsersController < ApplicationController
     end
   end
 
-  # update users external spot filters
-  def update_external
-    @user = current_user
-    if current_user && current_user.is_admin || current_user.group_admin then @user = User.where(callsign: params[:id]).first end
-    @user.push_external_filter={ programme: params[:programme], continent: params[:continent], mode: params[:mode], callsign: (params[:callsign]||"").gsub("*", "%").gsub(" ", ""), reference: (params[:reference]||"").gsub("*", "%").gsub(" ", ""), band: params[:band] }
-    @user.push_external_filter={ continent: [ "OC" ] } if @user.push_external_filter == "" or @user.push_external_filter==nil or @user.push_external_filter=={} or @user.push_external_filter.values.join("") == ""
-    @user.push_external_filter.delete(:reference) if @user.push_external_filter[:reference]==""
-    @user.push_external_filter.delete(:callsign) if @user.push_external_filter[:callsign]==""
-    @user.push_external_filter.delete(:mode) if @user.push_external_filter[:mode]=="" or @user.push_external_filter[:mode]==[ "" ]
-    @user.push_external_filter.delete(:continent) if @user.push_external_filter[:continent]=="" or @user.push_external_filter[:continent]==[ "" ]
-    @user.push_external_filter.delete(:programme) if @user.push_external_filter[:programme]=="" or @user.push_external_filter[:programme]==[ "" ]
-    @user.push_external_filter.delete(:band) if @user.push_external_filter[:band]==""  or @user.push_external_filter[:band]==[ "" ]
-    if @user.push_external_filter[:reference]
-      if @user.push_external_filter[:reference][0]!="%" then @user.push_external_filter[:reference]="%"+@user.push_external_filter[:reference] end
-      if @user.push_external_filter[:reference][-1]!="%" then @user.push_external_filter[:reference]=@user.push_external_filter[:reference]+"%" end
-    end
-    @user.push_external_filter.compact!
-    if !@user.save
-      flash[:error]=@user.errors
-    end
-    show
-    render "show"
-  end
+
   # Add a user-topic-link (mailer)
   def add
     @user = current_user
@@ -435,4 +399,5 @@ class UsersController < ApplicationController
   def user_params
     params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin, :acctnumber, :logs_pota, :logs_wwff, :push_app_token, :push_user_token, :push_include_comments, :push_include_map)
   end
+
 end

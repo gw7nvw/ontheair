@@ -276,53 +276,71 @@
       </tr>
     </table>
 
-<small><i><b>*</b>Sending large numbers of SPOT emails is the single biggest cost to running ontheair.nz.  Please consider installing the pushover app and using notifications instead. See the last section of the user's guide for details.  <br/>
+    <small><i><b>*</b>Sending large numbers of SPOT emails is the single biggest cost to running ontheair.nz.  Please consider installing the pushover app and using notifications instead. See the last section of the user's guide for details.  <br/>
 Please note that spot <b>emails</b> are limited to only spots posted at ontheair.nz.  Spot <b>notifications</b> will include all spots for all programmes that match your filter criteria irrespective of where they are posted</i></small>
-    <% if @user.push_include_external %>
-    <% 
-      @continents=Continent.where("name != 'all'")
-      @bands=Band.all.order(:min_frequency)
-      @modes=[ 'AM', 'CW','DATA','FM','FT4','FT8','SSB']
-      @programmes=[ 'HEMA', 'POTA', 'SOTA', 'SiOTA', 'WWFF', 'ZLOTA']
-      %>
+
     <div class="erow">
       <div class="hrline">
         <hr noshade size="4">
       </div>
     </div>
 
-    <h2>Spot Notification Filtering</h2>
-    <small><i>The following are the filters applied to spots before they are forwarded to your mobile device via pushover notifications.  Select one or more search terms in each field, or leave blank to include all.<br><b>Note</b>: we do not allow all spots from all continents to be forwarded as the overhead is too high.  At least one filter must be specified</i></small>
-    <%= form_tag "/users/#{@user.callsign}/set_external", method: "get", :remote => true, :style => 'margin-bottom: 0px' do %>
-    <% filter = @user.push_external_filter %>
-      <table id="external_table">
-        <tr>
-          <th>Programme</th>
-          <th><span title="Two-letter codes: OC, EU, NA, SA, AF, AS, AN">Continent</span></th>
-          <th>Mode</th>
-          <th>Band</th>
-          <th>Actions</th>
-        </tr>
-        <tr>
-          <td><%=select_tag :programme, options_for_select(@programmes, filter[:programme]), {multiple: true, include_blank: "All"}%></td>
-          <td><%=select_tag :continent, options_from_collection_for_select(@continents, "code", "name", {selected: filter[:continent]}), {multiple: true, include_blank: "All"}%></td>
-          <td><%=select_tag :mode, options_for_select(@modes, filter[:mode]), {multiple: true, include_blank: "All"}%></td>
-          <td><%=select_tag :band, options_from_collection_for_select(@bands, "meter_band", "meter_band", {selected: filter[:band]}), {multiple: true, include_blank: "All"}%></td>
-          <td rowspan=4><%= submit_tag "Update filters", :id => "update", :onclick => "submitHandler('Updating...');", :class => "btn btn-small" %></td>
-        </tr>
-        <tr>
-          <td colspan=4> <b>AND</b> <small>Enter comma separated list of partial callsigns / references to match below, using * as a wildcard, or leave blank if additional filtering not needed</td>
-        </tr>
-        <tr>
-          <td>Activator callsign</td>
-          <td colspan=3><%= text_field_tag :callsign, (filter[:callsign]||"").gsub("%","*")%></td>
-        </tr>  
-        <tr>
-          <td>Site reference</td>
-          <td colspan=3><%= text_field_tag :reference, (filter[:reference]||"").gsub("%","*")%></td>
-        </tr>  
-      </table>
-    <% end %>
+    <% if @user.push_include_external %>
+      <% 
+        @continents=Continent.where("name != 'all'").pluck(:name)
+        @bands=Band.all.order(:min_frequency).pluck(:meter_band)
+        @modes=[ 'AM', 'CW','DATA','FM','FT4','FT8','SSB']
+        @programmes=[ 'HEMA', 'POTA', 'SOTA', 'SiOTA', 'WWFF', 'ZLOTA']
+        @priorities = [['Lowest', -2], ['Low', -1], ['Normal', 0], ['High', 1]]
+      %>
+      <div class="erow" id="notifications">
+        <h2>Spot Notification Filters</h2>
+        <small><i>The following are the filters applied to spots before they are forwarded to your mobile device via pushover notifications.  Select one or more search terms in each field, or leave blank to include all.<br><b>Note</b>: we do not allow all spots from all continents to be forwarded as the overhead is too high.  At least one filter must be specified</i></small>
+        <%= form_for(@filter, remote: true) do |f| %>
+          <table id="notification_table">
+            <tr>
+              <th>Programme</th>
+              <th><span title="Two-letter codes: OC, EU, NA, SA, AF, AS, AN">Continent</span></th>
+              <th>Mode</th>
+              <th>Band</th>
+              <th>Activator Callsign</th>
+              <th>Site Reference</th>
+              <th>Notification Priority</th>
+              <th>Actions</th>
+            </tr>
+  
+            <% @user.notification_links.each do |unl| %>
+              <% if unl.id != @filter.id %>
+                <tr>    
+                  <td> <%=(if unl.spot_types.blank? then ["All"] else unl.spot_types end).join(', ')%> </td>
+                  <td> <%=(if unl.continents.blank? then ["All"] else unl.continents end).join(', ')%> </td>
+                  <td> <%=(if unl.modes.blank? then ["All"] else unl.modes end).join(', ')%> </td>
+                  <td> <%=(if unl.bands.blank? then ["All"] else unl.bands end).join(', ')%> </td>
+                  <td> <%=unl.activator_callsign%> </td>
+                  <td> <%=unl.code%> </td>
+                  <td> <%=unl.priority_name%> </td>
+                  <td>
+                    <%=  link_to "Edit", "/user_notification_links/#{unl.id}/edit#notifications", class: "btn btn-small btn-primary", remote: true,  :id => 'edit_notification', :onclick => "linkHandler('edit_notification')"  %>
+                    <%=  link_to "Delete", "/user_notification_links/#{unl.id}/delete?user_id=#{@user.id}", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_notification', :onclick => "linkHandler('delete_notification')" %>
+                  </td>
+                </tr>
+              <% end %>
+            <% end %>
+
+            <tr>
+              <%= f.hidden_field :user_id %>
+              <td><%= f.select :spot_types, @programmes, { include_blank: "All"},  { multiple: true }%></td>
+              <td><%= f.select :continents, @continents, { include_blank: "All"},  { multiple: true }%></td>
+              <td><%= f.select :bands, @bands, { include_blank: "All"},  { multiple: true }%></td>
+              <td><%= f.select :modes, @modes, { include_blank: "All"},  { multiple: true }%></td>
+              <td><%= f.text_field :activator_callsign%></td>
+              <td><%= f.text_field :code%></td>
+              <td><%= f.select :priority, @priorities %></td>
+              <td><%= f.submit "Save filters", :id => "update", :onclick => "submitHandler('Updating...');", :class => "btn btn-small" %></td>
+            </tr>
+          </table>
+        <% end %>
+      </div>
     <% end %>
 
     <div class="erow">
