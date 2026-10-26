@@ -11,7 +11,9 @@ if ENV["RAILS_API_ONLY"] == "true"
   match "/api/alerts", to: "api#alert_index",    via: "get"
   match "/api/VERIFYUSER/:userID/:APIKey", to: "api#pnp_verifyuser",    via: "get"
   match "/api/ALL", to: "api#pnp_all",    via: "get"
+  match "/api/all", to: "api#pnp_all",    via: "get"
   match "/api/ALL/:id", to: "api#pnp_all",    via: "get"
+  match "/api/all/:id", to: "api#pnp_all",    via: "get"
   match "/api/VK", to: "api#pnp_vk",    via: "get"
   match "/api/VK/:id", to: "api#pnp_vk",    via: "get"
   match "/api/DELETE/SPOT/:callsign/:pin", to: "api#pnp_delete_spot",    via: "get"
@@ -24,6 +26,7 @@ if ENV["RAILS_API_ONLY"] == "true"
   match "/api/SITES", to: "api#pnp_sites",    via: "get"
   match "/api/GETUSERKEY/:callsign/:pin", to: "api#pnp_getuserkey",    via: "get"
   match "/api/SPOT", to: "api#pnp_spot",    via: "post"
+  match "/api/spot", to: "api#pnp_spot",    via: "post"
   match "/api/CLOSE/:lat/:long", to: "api#pnp_close",    via: "get", constraints: { lat: /[^\/]+/, long: /[^\/]+/ }
   match "/api/CLOSE/:lat/:long/:dummy", to: "api#pnp_close",    via: "get", constraints: { lat: /[^\/]+/, long: /[^\/]+/ }
   match "/api/SHIRESID/:lat/:long", to: "api#pnp_shiresid",    via: "get", constraints: { lat: /[^\/]+/, long: /[^\/]+/ }
@@ -78,6 +81,8 @@ else
   match "/api/alerts", to: "api#alert_index",    via: "get"
   match "/api/VERIFYUSER/:userID/:APIKey", to: "api#pnp_verifyuser",    via: "get"
   match "/api/ALL", to: "api#pnp_all",    via: "get"
+  match "/api/all", to: "api#pnp_all",    via: "get"
+  match "/api/all/:id", to: "api#pnp_all",    via: "get"
   match "/api/ALL/:id", to: "api#pnp_all",    via: "get"
   match "/api/VK", to: "api#pnp_vk",    via: "get"
   match "/api/VK/:id", to: "api#pnp_vk",    via: "get"
@@ -91,6 +96,7 @@ else
   match "/api/SITES", to: "api#pnp_sites",    via: "get"
   match "/api/GETUSERKEY/:callsign/:pin", to: "api#pnp_getuserkey",    via: "get"
   match "/api/SPOT", to: "api#pnp_spot",    via: "post"
+  match "/api/spot", to: "api#pnp_spot",    via: "post"
   match "/api/CLOSE/:lat/:long", to: "api#pnp_close",    via: "get", constraints: { lat: /[^\/]+/, long: /[^\/]+/ }
   match "/api/CLOSE/:lat/:long/:dummy", to: "api#pnp_close",    via: "get", constraints: { lat: /[^\/]+/, long: /[^\/]+/ }
   match "/api/SHIRESID/:lat/:long", to: "api#pnp_shiresid",    via: "get", constraints: { lat: /[^\/]+/, long: /[^\/]+/ }
