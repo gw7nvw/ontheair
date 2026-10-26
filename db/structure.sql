@@ -20,7 +20,7 @@ CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public;
 -- Name: pg_stat_statements; Type: EXTENSION; Schema: -; Owner: -
 --
 
-CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
+--CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
 
 
 --
@@ -1196,7 +1196,9 @@ CREATE TABLE public.external_spots (
     is_test boolean,
     points character varying(255),
     "altM" character varying(255),
-    is_pnp boolean
+    is_pnp boolean,
+    source_api character varying,
+    source_id character varying
 );
 
 
@@ -3908,6 +3910,13 @@ CREATE INDEX index_contacts_on_date ON public.contacts USING btree (date);
 
 
 --
+-- Name: index_external_spots_on_source_api_and_source_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_external_spots_on_source_api_and_source_id ON public.external_spots USING btree (source_api, source_id);
+
+
+--
 -- Name: index_logs_on_date; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4033,6 +4042,7 @@ CREATE UNIQUE INDEX unique_schema_migrations ON public.schema_migrations USING b
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261026055232'),
 ('20261025041512'),
 ('20261025035617'),
 ('20261016195337'),
