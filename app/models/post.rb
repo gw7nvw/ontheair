@@ -339,7 +339,7 @@ class Post < ActiveRecord::Base
         'frequency_khz': (freq.to_f * 1000).to_s,
         'reference': a_code.upcase,
         'mode': mode.upcase,
-        'remarks': (description || "") + " (ontheair.nz)",
+        'remarks': (description || "") + " (ontheair)",
         'latitude': lat.to_s,
         'longitude': long.to_s
       }
@@ -473,7 +473,7 @@ class Post < ActiveRecord::Base
         'frequency': (freq.to_f * 1000).to_s,
         'reference': a_code,
         'mode': mode.upcase,
-        'source': "ontheair.nz",
+        'source': "ontheair",
         'comments': description
       }
 
