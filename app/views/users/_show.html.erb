@@ -116,6 +116,7 @@
     <div class="erow"><i><small>If you wish to use a mobile phone for spotting / alerting (useful in limited coverage where data service is unreliable), you need to register your mobile phone number here.  If you wish your SOTA spots to be forwarded to SOTAwatch, then this must be the same mobile phone number that you have registered with SOTAwatch<br/></small></i></div>
 
 
+
     <div class="erow" id="acctnumber">
       Mobile no.: <%= @user.acctnumber %>
     </div>
@@ -209,146 +210,18 @@
     </div>
   </div>
 
-  <% if current_user and (@user==current_user or current_user.is_admin or current_user.group_admin) then %>
-    <h2>Mail</h2>
-    <p>Select the topics for which you would like to receive emails of any new posts</p>
-    <table id="mail_table">
-      <tr>
-        <th>Topic</th>
-        <th>Email</th>
-        <th>Notification</th>
-      </tr>
-      <tr>
-        <% topic=Topic.find_by_id(SPOT_TOPIC) %>
-        <td> SPOTS* </td>
-        <td> <% if topic.subscribed(@user) then  %>
-          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_spot', :onclick => "linkHandler('delete_spot')"  %> 
-        <% else %> 
-          No&nbsp;<%=  link_to "Add*", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small", remote: true,  :id => 'add_spot', :onclick => "linkHandler('add_spot')", title: "Sending large numbers of SPOT emails is the single biggest cost to running ontheair.nz.  Please consider installing the pushover app and using notifications instead. See the last section of the user's guide for details"  %>
-        <% end %></td>
-        <td> <% if @user.push_include_external then  %>
-          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=external&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_external', :onclick => "linkHandler('delete_external')"  %>
-        <% else %>
-          No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=external&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'add_external', :onclick => "linkHandler('add_external')"  %>
-        <% end %></td>
-      </tr>
-      <tr>
-        <% topic=Topic.find_by_id(ALERT_TOPIC) %>
-        <td> ALERTS </td>
-        <td> <% if topic.subscribed(@user) then  %>
-          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'delete__alert', :onclick => "linkHandler('delete_alert')"  %> 
-        <% else %> 
-          No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'add_alert', :onclick => "linkHandler('add_alert')"  %>
-        <% end %></td>
-        <td> <% if topic.subscribed_notification(@user) then %>
-          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'delete__alert', :onclick => "linkHandler('delete_alert')"  %> 
-        <% else %> 
-          No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'add_alert', :onclick => "linkHandler('add_alert')"  %>
-        <% end %></td>
-      </tr>
-      <tr>
-        <% topic=Topic.find_by_id(VK_NEWS_TOPIC) %>
-        <td> VK NEWS </td>
-        <td> <% if topic.subscribed(@user) then  %>
-          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'delete__news', :onclick => "linkHandler('delete_news')"  %> 
-        <% else %> 
-          No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'add_news', :onclick => "linkHandler('add_news')"  %>
-        <% end %></td>
-        <td> <% if topic.subscribed_notification(@user) then %>
-          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'delete__news', :onclick => "linkHandler('delete_news')"  %> 
-        <% else %> 
-          No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'add_news', :onclick => "linkHandler('add_news')"  %>
-        <% end %></td>
-      </tr>
-      <tr>
-        <% topic=Topic.find_by_id(NEWS_TOPIC) %>
-        <td> ZL NEWS </td>
-        <td> <% if topic.subscribed(@user) then  %>
-          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'delete__news', :onclick => "linkHandler('delete_news')"  %> 
-        <% else %> 
-          No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'add_news', :onclick => "linkHandler('add_news')"  %>
-        <% end %></td>
-        <td> <% if topic.subscribed_notification(@user) then %>
-          Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'delete__news', :onclick => "linkHandler('delete_news')"  %> 
-        <% else %> 
-          No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'add_news', :onclick => "linkHandler('add_news')"  %>
-        <% end %></td>
-      </tr>
-    </table>
-
-    <small><i><b>*</b>Sending large numbers of SPOT emails is the single biggest cost to running ontheair.nz.  Please consider installing the pushover app and using notifications instead. See the last section of the user's guide for details.  <br/>
-Please note that spot <b>emails</b> are limited to only spots posted at ontheair.nz.  Spot <b>notifications</b> will include all spots for all programmes that match your filter criteria irrespective of where they are posted</i></small>
-
-    <div class="erow">
-      <div class="hrline">
-        <hr noshade size="4">
-      </div>
+  <% if signed_in? and (current_user.id = @user.id or current_user.is_admin) %>
+    <div class="erow" id="awards_box">
+      <h2>Notifications and emails</h2>
+      <%=link_to "Show notification and email subscriptions", '/users/'+@user.callsign+'/notifications', remote: true,  :id => 'notificationss_link', :onclick => "linkHandler('notifications_link')"  %> 
     </div>
-
-    <% if @user.push_include_external %>
-      <% 
-        @continents=Continent.where("name != 'all'").pluck(:name)
-        @bands=Band.all.order(:min_frequency).pluck(:meter_band)
-        @modes=[ 'AM', 'CW','DATA','FM','FT4','FT8','SSB']
-        @programmes=[ 'HEMA', 'POTA', 'SOTA', 'SiOTA', 'WWFF', 'ZLOTA']
-        @priorities = [['Lowest', -2], ['Low', -1], ['Normal', 0], ['High', 1]]
-      %>
-      <div class="erow" id="notifications">
-        <h2>Spot Notification Filters</h2>
-        <small><i>The following are the filters applied to spots before they are forwarded to your mobile device via pushover notifications.  Select one or more search terms in each field, or leave blank to include all.<br><b>Note</b>: we do not allow all spots from all continents to be forwarded as the overhead is too high.  At least one filter must be specified</i></small>
-        <%= form_for(@filter, remote: true) do |f| %>
-          <table id="notification_table">
-            <tr>
-              <th>Programme</th>
-              <th><span title="Two-letter codes: OC, EU, NA, SA, AF, AS, AN">Continent</span></th>
-              <th>Mode</th>
-              <th>Band</th>
-              <th>Activator Callsign</th>
-              <th>Site Reference</th>
-              <th>Notification Priority</th>
-              <th>Actions</th>
-            </tr>
-  
-            <% @user.notification_links.each do |unl| %>
-              <% if unl.id != @filter.id %>
-                <tr>    
-                  <td> <%=(if unl.spot_types.blank? then ["All"] else unl.spot_types end).join(', ')%> </td>
-                  <td> <%=(if unl.continents.blank? then ["All"] else unl.continents end).join(', ')%> </td>
-                  <td> <%=(if unl.modes.blank? then ["All"] else unl.modes end).join(', ')%> </td>
-                  <td> <%=(if unl.bands.blank? then ["All"] else unl.bands end).join(', ')%> </td>
-                  <td> <%=unl.activator_callsign%> </td>
-                  <td> <%=unl.code%> </td>
-                  <td> <%=unl.priority_name%> </td>
-                  <td>
-                    <%=  link_to "Edit", "/user_notification_links/#{unl.id}/edit#notifications", class: "btn btn-small btn-primary", remote: true,  :id => 'edit_notification', :onclick => "linkHandler('edit_notification')"  %>
-                    <%=  link_to "Delete", "/user_notification_links/#{unl.id}/delete?user_id=#{@user.id}", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_notification', :onclick => "linkHandler('delete_notification')" %>
-                  </td>
-                </tr>
-              <% end %>
-            <% end %>
-
-            <tr>
-              <%= f.hidden_field :user_id %>
-              <td><%= f.select :spot_types, @programmes, { include_blank: "All"},  { multiple: true }%></td>
-              <td><%= f.select :continents, @continents, { include_blank: "All"},  { multiple: true }%></td>
-              <td><%= f.select :bands, @bands, { include_blank: "All"},  { multiple: true }%></td>
-              <td><%= f.select :modes, @modes, { include_blank: "All"},  { multiple: true }%></td>
-              <td><%= f.text_field :activator_callsign%></td>
-              <td><%= f.text_field :code%></td>
-              <td><%= f.select :priority, @priorities %></td>
-              <td><%= f.submit "Save filters", :id => "update", :onclick => "submitHandler('Updating...');", :class => "btn btn-small" %></td>
-            </tr>
-          </table>
-        <% end %>
-      </div>
-    <% end %>
-
     <div class="erow">
       <div class="hrline">
         <hr noshade size="4">
       </div>
     </div>
   <% end %>
+
 
   <div class="erow" id="awards_box">
     <h2>Awards</h2>

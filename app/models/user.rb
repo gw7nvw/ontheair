@@ -1635,25 +1635,19 @@ class User < ActiveRecord::Base
   #############################################################################################
   # Return the callsign segment of a call with prefix / suffix
   #############################################################################################
-  def self.remove_call_suffix(callsign)
-    theseg = nil
-    maxlen = 0
-    segs = callsign.split("/")
-    # try each segment and choose 1st that matches valid callsign pattern
-    segs.each do |seg|
-      theseg = seg if VALID_CALLSIGN_REGEX.match(seg)
-    end
+  def self.remove_call_suffix(raw_callsign)
+    return nil if raw_callsign.blank?
 
-    unless theseg
-      # try each part and choose longest
-      segs.each do |seg|
-        if seg.length > maxlen
-          theseg = seg
-          maxlen = seg.length
-        end
-      end
+    # Ensure the string is normalized to clean uppercase text first
+    clean_input = raw_callsign.to_s.strip.upcase
+
+    # Run the regex scanner to isolate the capture group
+    if match = clean_input.match(/(?:\A|\/)([A-Z0-9]{1,3}\d[A-Z]{1,4})(?:\z|\/)/)
+      match[1] # Returns the captured core base callsign
+    else
+      # Fallback safety default: If no slashes match, return the input string stripped
+      clean_input.gsub(/\/P|\/M/i, '')
     end
-    theseg
   end
 
   ###############################################################################

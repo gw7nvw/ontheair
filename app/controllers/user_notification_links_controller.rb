@@ -14,7 +14,7 @@ class UserNotificationLinksController < ApplicationController
       flash[:error] = "Invalid user or notification record"
       redirect_to '/'
     else
-      render "users/show"
+      render "users/notifications"
     end
   end
 
@@ -35,7 +35,7 @@ class UserNotificationLinksController < ApplicationController
       end
     end
     prepare_user_show_data(user_id)
-    render "users/show"
+    render "users/notifications"
   end
 
   def create
@@ -54,7 +54,7 @@ class UserNotificationLinksController < ApplicationController
       end
     end
     prepare_user_show_data(user_id)
-    render "users/show"
+    render "users/notifications"
   end
 
   def delete
@@ -69,7 +69,7 @@ class UserNotificationLinksController < ApplicationController
       @filter.user_id=user_id
     end
     prepare_user_show_data(user_id)
-    render "users/show"
+    render "users/notifications"
   end
 
   private

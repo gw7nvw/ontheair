@@ -93,6 +93,7 @@
                   <% end %>
                   
                   <%= link_to "Profile", '/users/'+current_user.callsign, remote: true, :id => 'profile_link', :onclick => "linkHandler('profile_link')", class: "dropdown-item" %>
+                  <%= link_to "Notifications / Email", '/users/'+current_user.callsign+"/notifications", remote: true, :id => 'notifications_link', :onclick => "linkHandler('notification_link')", class: "dropdown-item" %>
                   <%= link_to "Stats / Maps", '/users/'+current_user.callsign+"/stats", remote: true, :id => 'stats_link', :onclick => "linkHandler('stats_link')", class: "dropdown-item" %>
                   <%= link_to "Progress", '/users/'+current_user.callsign+"/region_progress", remote: true, :id => 'progress_link', :onclick => "linkHandler('progress_link')", class: "dropdown-item" %>
                   <%= link_to "Wishlist", '/users/'+current_user.callsign+'/wishlist', remote: true, :id => 'wishlist_link', :onclick => "linkHandler('wishlist_link')", class: "dropdown-item" %>

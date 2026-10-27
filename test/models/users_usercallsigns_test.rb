@@ -19,9 +19,13 @@ class UserUsercallsignTest < ActiveSupport::TestCase
         "Correct callsign extracted N1C"
     assert User.remove_call_suffix("N1C/")=="N1C",
         "Correct callsign extracted N1C"
-    # if no valid call, choose longest
-    assert User.remove_call_suffix("VK/DAFTCALL/P")=="DAFTCALL",
+    # if no valid call, just strip portable/mobile
+    assert User.remove_call_suffix("VK/DAFTCALL/P")=="VK/DAFTCALL",
         "Correct callsign extracted DAFTCALL"
+    assert User.remove_call_suffix("VK/DAFTCALL/M")=="VK/DAFTCALL",
+        "Correct callsign extracted DAFTCALL"
+    assert User.remove_call_suffix("VK1/VI100IARU/M")=="VI100IARU",
+        "Correct callsign extracted VI100IARU"
   end
 
   test "can search for user by callsign / date" do

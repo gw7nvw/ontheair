@@ -6,7 +6,7 @@ class UsersController < ApplicationController
   include ApplicationHelper
   include UserViewPreparer
 
-  before_action :signed_in_user, only: %i[index edit update district_progress region_progress awards stats assets p2p]
+  before_action :signed_in_user, only: %i[index edit update district_progress region_progress awards stats assets p2p notifications]
 
   def test_notification
     @user = User.find_by(callsign: params[:id].upcase)
@@ -16,7 +16,7 @@ class UsersController < ApplicationController
     else
       flash[:error] = "You need to enter your pushover credentials to use this service"
     end
-    redirect_to "/users/#{@user.callsign}"
+    redirect_to "/users/#{@user.callsign}/notifications"
   end
 
   def district_progress
@@ -32,6 +32,14 @@ class UsersController < ApplicationController
     @award_classes = AssetType.where("name not in #{class_filter}").order(:name)
     @district_assets = District.get_assets_with_type(@dxcc, @region.sota_code)
     @districts = District.where(dxcc: @dxcc, region_code: @region.sota_code)
+  end
+
+  def notifications
+    prepare_user_show_data(params[:id])
+
+    @filter = UserNotificationLink.new
+    @filter.priority=0
+    @filter.user_id = @user.id
   end
 
   def region_progress
@@ -172,10 +180,6 @@ class UsersController < ApplicationController
 
   def show
     prepare_user_show_data(params[:id])
-
-    @filter = UserNotificationLink.new
-    @filter.priority=0
-    @filter.user_id = @user.id
   end
 
   def new
@@ -314,7 +318,7 @@ class UsersController < ApplicationController
       flash[:error] = "Pushover registration is required to receive instant notifications - see Pushover Config section to configure pushover or consult the user's guide for details of how to set up the pushover app"
       @topics = Topic.where(is_active = true)
       show
-      render "show"
+      render "notifications"
     else
       if params[:topic_id] == "external" then
         @user.push_include_external = true
@@ -335,8 +339,12 @@ class UsersController < ApplicationController
         end
       end
       @topics = Topic.where(is_active: true)
-      show
-      render "show"
+      prepare_user_show_data(params[:id])
+      @filter = UserNotificationLink.new
+      @filter.priority=0
+      @filter.user_id = @user.id
+
+      render "notifications"
     end
   end
 
@@ -348,7 +356,7 @@ class UsersController < ApplicationController
       @user.push_include_external = false
       @user.save
       show
-      render "show"
+      render "notifications"
     else
       @topic = Topic.find_by_id(params[:topic_id])
 
@@ -359,8 +367,11 @@ class UsersController < ApplicationController
         flash[:error] = "Error locating user or topic specified"
       end
       @topics = Topic.where(is_active: true)
-      show
-      render "show"
+      prepare_user_show_data(params[:id])
+      @filter = UserNotificationLink.new
+      @filter.priority=0
+      @filter.user_id = @user.id
+      render "notifications"
     end
   end
 

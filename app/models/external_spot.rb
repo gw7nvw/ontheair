@@ -8,7 +8,28 @@ class ExternalSpot < ApplicationRecord
   before_validation :before_save_actions
   validate :record_is_unique
   after_save :after_save_actions
-  
+
+  # Define the absolute, uniform structure required for your bulk upserts
+  UPSERT_BLUEPRINT = {
+    source_api:        nil,
+    source_id:         nil,
+    time:              nil,
+    callsign:          nil,
+    activatorCallsign: nil,
+    code:              nil,
+    name:              nil,
+    frequency:         nil,
+    mode:              nil,
+    comments:          nil,
+    points:            nil,
+    altM:              nil,
+    is_test:           nil,
+    spot_type:         nil,
+    created_at:        nil,
+    updated_at:        nil
+  }.freeze
+
+
   def after_save_actions
     consolidate_changed_spots([self])
   end
@@ -113,7 +134,7 @@ end
     # Parse spotter out of "(HEMA_ASSISTANT) comment here"
     spotter_comment_raw = columns[6]&.strip || ""
     spotter = spotter_comment_raw.match(/\((.*?)\)/)&.captures&.first&.upcase || activator
-    comment = spotter_comment_raw.gsub(/\(.*?\)/, '').strip.slice(0, 255)
+    comment = spotter_comment_raw&.to_s&.gsub(/\(.*?\)/, '')&.scrub&.strip&.slice(0, 255)
 
     {
       source_api:        "HEMA",
@@ -130,8 +151,6 @@ end
       altM:              nil,
       is_test:           nil,
       spot_type:         "HEMA",
-      created_at:        Time.now.utc,
-      updated_at:        Time.now.utc
     }
   end.compact
 end
@@ -152,13 +171,11 @@ def normalize_llota_spots(raw_spots)
       name:              spot["reference_name"]&.strip,
       frequency:         spot["frequency"].present? ? (spot["frequency"].to_f / 1000.0).to_s : nil,
       mode:              spot["mode"]&.strip&.upcase,
-      comments:          latest_history["comment"]&.to_s&.slice(0, 255),
+      comments:          latest_history["comment"]&.to_s&.scrub&.slice(0, 255),
       points:            nil,
       altM:              nil,
       is_test:           nil,
       spot_type:         "LLOTA",
-      created_at:        Time.now.utc,
-      updated_at:        Time.now.utc
     }
   end
 end
@@ -177,13 +194,11 @@ def normalize_wwff_spots(raw_spots)
       name:              spot["reference_name"]&.strip,
       frequency:         spot["frequency_khz"].present? ? (spot["frequency_khz"].to_f / 1000.0).to_s : nil,
       mode:              spot["mode"]&.strip&.upcase,
-      comments:          spot["remarks"]&.to_s&.slice(0, 255),
+      comments:          spot["remarks"]&.to_s&.scrub&.slice(0, 255),
       points:            nil,
       altM:              nil,
       is_test:           nil,
       spot_type:         "WWFF",
-      created_at:        Time.now.utc,
-      updated_at:        Time.now.utc
     }
   end
 end
@@ -202,13 +217,11 @@ def normalize_pota_spots(raw_spots)
       name:              spot["name"]&.strip,
       frequency:         spot["frequency"].present? ? (spot["frequency"].to_f / 1000.0).to_s : nil,
       mode:              spot["mode"]&.strip&.upcase,
-      comments:          spot["comments"]&.to_s&.slice(0, 255),
+      comments:          spot["comments"]&.to_s&.scrub&.slice(0, 255),
       points:            nil,
       altM:              nil,
       is_test:           nil,
       spot_type:         "POTA",
-      created_at:        Time.now.utc,
-      updated_at:        Time.now.utc
     }
   end
 end
@@ -227,13 +240,11 @@ def normalize_sota_spots(raw_spots)
       name:              spot["summitName"]&.strip,
       frequency:         spot["frequency"]&.to_s,
       mode:              (if spot['type']=='QRT' then 'QRT' else spot['mode']&.strip&.upcase end),
-      comments:          spot["comments"]&.to_s&.slice(0, 255),
+      comments:          spot["comments"]&.to_s&.scrub&.slice(0, 255),
       points:            spot["points"]&.to_s,
       altM:              spot["AltM"]&.to_s,
       is_test:           (spot['type']=='TEST'),
       spot_type:         "SOTA",
-      created_at:        Time.now.utc,
-      updated_at:        Time.now.utc
     }
   end
 end
@@ -340,7 +351,7 @@ def consolidate_changed_spots(changed_external_rows)
   spots_to_process.each do |external_spot|
     # Step 1: Clean data and query candidate target
     round_freq = external_spot.frequency.to_d.round(4).to_s
-    base_call  = (external_spot.activatorCallsign||"UNKNOWN").gsub(/\/./, "")
+    base_call  = User.remove_call_suffix(external_spot.activatorCallsign||"UNKNOWN")
 
     # Step 2: Check if we can merge into existing spot
     matching_spot = find_matching_consolidated_spot(external_spot)

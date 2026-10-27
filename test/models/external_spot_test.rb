@@ -293,4 +293,27 @@ test "Delay of MAX_SPOT_LIFETIME should trigger new consolidated spot for thre s
   assert_equal cs.comments, [ "[HEMA] M0KCB: Test spot (#{t2.strftime("%H:%M:%S")})" ], "comments"
   assert_equal cs.spot_type, [ "HEMA" ], "Spot type"
 end
+
+test "Check sub-100 Hz frequency chnages do not trigger new consolidated spots" do
+end
+
+test "Check MYCALL/P vs MYCALL do not trigger new consolidated spots" do
+end
+
+test "Check lsb vs usb vs ssb do not trigger new consoidated spots" do
+end
+
+test "Check case changes do not trigger new consolidated spots" do
+end
+
+test "Check new comments added to same consolidated spot with no chnages to location" do
+end
+
+test "Check multiple programmes can be added to same spot" do
+end
+
+test "Check parks with no polygon data are exempt from overlap test" do
+end
+
+
 end

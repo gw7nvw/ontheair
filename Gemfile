@@ -77,6 +77,7 @@ group :test do
   gem "selenium-webdriver"
   gem "webmock"
   gem "vcr"
+  gem "minitest-mock"
 end
 
 gem "jsbundling-rails", "~> 1.3"
