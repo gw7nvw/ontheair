@@ -250,17 +250,17 @@ SQL
     # 1. Determine if this was a brand-new insert or an update
     # transaction_include_any_action?(:create) is the foolproof Rails way 
     # to detect a true INSERT state within an after_commit callback.
-    is_new_record = transaction_include_any_action?(:create)
+    is_new_record = transaction_include_any_action?([:create])
 
     # 2. For updates, confirm that significant data actually changed.
     # If a user just updates an unrelated admin flag or timestamp, we don't spam notifications.
     if !is_new_record
       significant_fields = ['frequency', 'mode', 'code', 'activatorCallsign']
       
-      return unless (significant_fields & actual_changes).any?
+      return unless (significant_fields & saved_changes.keys).any?
     end
 
-    Resque.enqueue(ProcessSpotNotificationJob, self.id, is_new_record)
+    Resque.enqueue(SendNotifications, self.id, is_new_record)
   end
 
 

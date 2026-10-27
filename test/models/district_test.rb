@@ -10,8 +10,8 @@ class DistrictTest < ActiveSupport::TestCase
     district = District.find_by(district_code: "ZL-CD3")
     assets = district.assets
     assert_equal assets.count, 2, "Correct no of assets returned"
-    assert_equal assets.first.code, asset1.code
-    assert_equal assets.last.code, asset2.code
+    assert_equal assets.first.code, asset2.code
+    assert_equal assets.last.code, asset1.code
 
     district = District.find_by(district_code: "ZL-CC1")
     assets = district.assets

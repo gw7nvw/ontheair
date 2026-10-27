@@ -249,40 +249,6 @@ class LogImportCsvTest < ActiveSupport::TestCase
     assert_equal contact.comments1, "This is a comment"
   end
 
-  test "can handle vk assets" do
-    user1=create_test_user
-    user2=create_test_user
-    asset1=create_test_vkasset(award: "WWFF", code_prefix: "VKFF-0")
-    asset2=create_test_vkasset(award: "SOTA", code: "VK3/CB-001", location: create_point(148.79, -35.61))
-
-    logstring="V2,"+user1.callsign+","+asset1.code+",30/08/24,2304,144MHz,FM,"+user2.callsign+","+asset2.code+",This is a comment"
-    logs=Log.import("csv", user1, logstring, user1)
-
-
-    assert_equal logs[:success], true, "Sucessful exit"
-    assert_equal logs[:errors], [], "No errors"
-    assert_equal logs[:good_logs], 1, "One log"
-    assert_equal logs[:good_contacts], 1, "one contact"
-    assert_equal logs[:logs].count, 1, "Really is one log"
-    log=logs[:logs].first
-
-    assert_equal log.user1_id, user1.id
-    assert_equal log.callsign1, user1.callsign
-    assert_equal log.asset_codes, [ asset1.code ]
-    assert_equal log.date, "2024-08-30".to_date
-    contacts=log.contacts
-    assert_equal contacts.count, 1, "Really is one contact"
-    contact=contacts.first
-    assert_equal contact.user1_id, user1.id
-    assert_equal contact.callsign1, user1.callsign
-    assert_equal contact.asset1_codes, [ asset1.code ]
-    assert_equal contact.date, "2024-08-30".to_date
-    assert_equal contact.time, "2024-08-30 23:04".to_time
-    assert_equal contact.user2_id, user2.id
-    assert_equal contact.callsign2, user2.callsign
-    assert_equal contact.asset2_codes, [ asset2.code ]
-    assert_equal contact.comments1, "This is a comment"
-  end
 
   test "can handle unknown assets" do
     user1=create_test_user

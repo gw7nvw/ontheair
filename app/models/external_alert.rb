@@ -56,7 +56,7 @@ def self.fetch
 
     pota_alerts = alerts || []
 
-    puts "#{pota_alerts.count} alerts received"
+    puts "#{pota_alerts.count} POTA alerts received"
 
     # WWFF
     begin
@@ -69,7 +69,7 @@ def self.fetch
       wwff_alerts = []
     end
 
-    puts "#{wwff_alerts.count} alerts received"
+    puts "#{wwff_alerts.count} WWFF alerts received"
 
     # SOTA
     sota_alerts=[]
@@ -93,7 +93,7 @@ def self.fetch
         sota_alerts = []
       end
     end
-    puts "#{sota_alerts.count} alerts received"
+    puts "#{sota_alerts.count} SOTA alerts received"
 
     @all_alerts = []
     sota_alerts.each do |alert|
@@ -158,12 +158,14 @@ def self.fetch
     #      end
     #    end
     #
+    puts "TOTAL #{@all_alerts.count} alerts"
+    puts ExternalAlert.count
     @all_alerts.each do |alert|
       # puts alert.to_json
       begin
         dups = ExternalAlert.where(starttime: alert[:starttime].tr("A-Z,a-z,[()]", "").strip, activatingCallsign: alert[:activatingCallsign], code: alert[:code], frequency: alert[:frequency], mode: alert[:mode], programme: alert[:programme])
         if !(dups && dups.count.positive?)
-           puts "Creating alert: "+alert.to_json.to_s
+           #puts "Creating alert: "+alert.to_json.to_s
            result=ExternalAlert.create(alert)
            puts "ERROR: Create alert failed" if !result
         end
@@ -171,11 +173,15 @@ def self.fetch
         puts "Failed to add an external alert with invalid formatting"
       end
     end
+    puts ExternalAlert.count
 
     # tidy up
     oneweekago=Time.at(Time.now.to_i - 60 * 60 * 24 * 7).in_time_zone("UTC").to_s
 
-    ActiveRecord::Base.connection.execute("delete from external_alerts where starttime + (duration::float * interval '1 hour') < '#{oneweekago}'")
+    if ENV["RAILS_ENV"]!='test'
+      puts "PURGING OLD ALERTS"
+      ActiveRecord::Base.connection.execute("delete from external_alerts where starttime + (duration::float * interval '1 hour') < '#{oneweekago}'"); puts "PURGING" if ENV["RAILS_ENV"]!='test'
+    end
 
   @all_alerts
 end
@@ -194,7 +200,7 @@ def self.import_hota_alerts(alerts)
       continent = dxccs.continent
       programme=asset.type.pnp_class
     end
-    ext_alert=ExternalAlert.new(id: -alert.item_id, starttime: alert.referenced_time, duration: alert.duration, activatingCallsign: alert.callsign, codes: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: programme, dxcc: dxcc, continent: continent.code)
+    ext_alert=ExternalAlert.new(id: -alert.item_id, starttime: alert.referenced_time, duration: alert.duration, activatingCallsign: alert.callsign, codes: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: programme, dxcc: dxcc, continent: continent.code, code: code)
     all_alerts+=[ ext_alert ]
   end
   all_alerts

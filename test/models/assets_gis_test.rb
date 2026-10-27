@@ -4,7 +4,7 @@ require "test_helper"
 
 class AssetSaveTest < ActiveSupport::TestCase
   test "Add area" do
-    asset1=create_test_asset(asset_type: "park", location: create_point(173.5, -41.5), boundary: "MULTIPOLYGON(((171 -45, 171.1 -45, 171.1 -45.1, 171 -45.1)))")
+    asset1=create_test_asset(asset_type: "park", location: create_point(173.5, -41.5), boundary: "MULTIPOLYGON(((171 -45, 171.1 -45, 171.1 -45.1, 171 -45.1, 171 -45)))")
     asset1.reload
     assert_in_delta 87548393, asset1.area, 50000, "Area calculated correctly +/- 0.5%"
   end
@@ -52,9 +52,9 @@ class AssetSaveTest < ActiveSupport::TestCase
 
   # no roads, DOC tracks, legal road data in test env, so just test with parks
   test "get lake access wth buffer (testable via parks only)" do
-    asset1=create_test_asset(asset_type: "park", location: create_point(170.9, -45), test_radius: 0.1)
-    asset2=create_test_asset(asset_type: "island", location: create_point(171.1025, -45), test_radius: 0.1) # near point 171.0025 is 490m from park
-    asset3=create_test_asset(asset_type: "lake", location: create_point(171.1025, -45), test_radius: 0.1) # near point 171.0025 is 490m from park
+    asset1=create_test_asset(asset_type: "park", location: create_point(178.9, -45), test_radius: 0.1)
+    asset2=create_test_asset(asset_type: "island", location: create_point(179.1025, -45), test_radius: 0.1) # near point 171.0025 is 490m from park
+    asset3=create_test_asset(asset_type: "lake", location: create_point(179.1025, -45), test_radius: 0.1) # near point 171.0025 is 490m from park
     asset2.reload
     asset3.reload
 

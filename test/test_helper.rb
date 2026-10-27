@@ -28,20 +28,21 @@ $last_asset="place-AAAA"
 $last_asset_code=1
 $last_ext_act_id=1
 NEWS_TOPIC=4
+VK_NEWS_TOPIC=49
 SPOT_TOPIC=35
 ALERT_TOPIC=1
 
 Region.destroy_all
-Region.create(dxcc: "ZL", sota_code: "CB", name: "Canterbury", boundary: "MULTIPOLYGON(((171 -40, 174 -40, 174 -41, 171 -41)))")
-Region.create(dxcc: "ZL", sota_code: "OT", name: "Otago", boundary: "MULTIPOLYGON(((171 -41, 174 -41, 174 -42, 171 -42)))")
+Region.create(dxcc: "ZL", sota_code: "CB", name: "Canterbury", boundary: "MULTIPOLYGON(((171 -40, 174 -40, 174 -41, 171 -41, 171 -40)))")
+Region.create(dxcc: "ZL", sota_code: "OT", name: "Otago", boundary: "MULTIPOLYGON(((171 -41, 174 -41, 174 -42, 171 -42, 171 -41)))")
 District.destroy_all
-District.create(dxcc: "ZL", district_code: "ZL-CC1", name: "Christchurch", region_code: "CB", boundary: "MULTIPOLYGON(((171 -40, 173 -40, 173 -41, 171 -41)))")
-District.create(dxcc: "ZL", district_code: "ZL-WD1", name: "Waimate", region_code: "CB", boundary: "MULTIPOLYGON(((173 -40, 174 -40, 174 -41, 173 -41)))")
-District.create(dxcc: "ZL", district_code: "ZL-DC1", name: "Dunedin", region_code: "OT", boundary: "MULTIPOLYGON(((171 -41, 173 -41, 173 -42, 171 -42)))")
-District.create(dxcc: "ZL", district_code: "ZL-CD3", name: "Central Otago", region_code: "OT", boundary: "MULTIPOLYGON(((173 -41, 174 -41, 174 -42, 173 -42)))")
+District.create(dxcc: "ZL", district_code: "ZL-CC1", name: "Christchurch", region_code: "CB", boundary: "MULTIPOLYGON(((171 -40, 173 -40, 173 -41, 171 -41, 171 -40)))")
+District.create(dxcc: "ZL", district_code: "ZL-WD1", name: "Waimate", region_code: "CB", boundary: "MULTIPOLYGON(((173 -40, 174 -40, 174 -41, 173 -41, 173 -40)))")
+District.create(dxcc: "ZL", district_code: "ZL-DC1", name: "Dunedin", region_code: "OT", boundary: "MULTIPOLYGON(((171 -41, 173 -41, 173 -42, 171 -42, 171 -41)))")
+District.create(dxcc: "ZL", district_code: "ZL-CD3", name: "Central Otago", region_code: "OT", boundary: "MULTIPOLYGON(((173 -41, 174 -41, 174 -42, 173 -42, 173 -41)))")
 NzTribalLand.destroy_all
-NzTribalLand.create({ "ogc_fid"=>21, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 175 -40, 175 -35, 170 -35)))", "boundary_quite_simplified" => "MULTIPOLYGON (((170 -40, 175 -40, 175 -35, 170 -35)))", "name"=>"Ngāti Apa" })
-NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 175 -40, 175 -45, 170 -45)))", "boundary_quite_simplified" => "MULTIPOLYGON (((170 -40, 175 -40, 175 -45, 170 -45)))", "name"=>"Ngāi Tahu" })
+NzTribalLand.create({ "ogc_fid"=>21, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 175 -40, 175 -35, 170 -35, 170 -40)))", "boundary_quite_simplified" => "MULTIPOLYGON (((170 -40, 175 -40, 175 -35, 170 -35, 170 -40)))", "name"=>"Ngāti Apa" })
+NzTribalLand.create({ "ogc_fid"=>20, "wkb_geometry"=> "MULTIPOLYGON (((170 -40, 175 -40, 175 -45, 170 -45i, 170 -40)))", "boundary_quite_simplified" => "MULTIPOLYGON (((170 -40, 175 -40, 175 -45, 170 -45, 170 -40)))", "name"=>"Ngāi Tahu" })
 Band.create({ "meter_band"=>"2190m", "freq_band"=>"136kHz", "group"=>"MF", "min_frequency"=>0.136, "max_frequency"=>0.137 })
 Band.create({ "meter_band"=>"560m", "freq_band"=>"501kHz", "group"=>"MF", "min_frequency"=>0.501, "max_frequency"=>0.504 })
 Band.create({ "meter_band"=>"60m", "freq_band"=>"5MHz", "group"=>"HF", "min_frequency"=>5.351, "max_frequency"=>5.367 })
@@ -161,21 +162,6 @@ Band.create({ "meter_band"=>"80m", "freq_band"=>"3.6MHz", "group"=>"HF", "min_fr
     latlon = factory.point(x, y)
   end
 
-  def create_test_vkasset(params = {})
-    if !params[:name] then
-      params[:name]=$last_asset
-      $last_asset=$last_asset.next
-    end
-
-    if params[:code_prefix] then
-      params[:code]=params[:code_prefix]+$last_asset_code.to_s.rjust(3, "0")
-      $last_asset_code=$last_asset_code+1
-      params.delete(:code_prefix)
-    end
-
-    asset=VkAsset.create(params)
-    asset.reload
-  end
 
   def create_test_asset(params = {})
      if !params[:asset_type] then params[:asset_type]="hut" end
@@ -196,7 +182,7 @@ Band.create({ "meter_band"=>"80m", "freq_band"=>"3.6MHz", "group"=>"HF", "min_fr
        params.delete(:test_radius)
        x=params[:location].x
        y=params[:location].y
-       params[:boundary]="MULTIPOLYGON(((#{x+radius} #{y+radius}, #{x+radius} #{y-radius}, #{x-radius} #{y-radius}, #{x-radius} #{y+radius})))"
+       params[:boundary]="MULTIPOLYGON(((#{x+radius} #{y+radius}, #{x+radius} #{y-radius}, #{x-radius} #{y-radius}, #{x-radius} #{y+radius}, #{x+radius} #{y+radius})))"
      end
 
      asset=Asset.create(params)

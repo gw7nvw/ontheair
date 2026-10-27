@@ -1,7 +1,7 @@
-class SendNotificationsJob
+class SendNotifications
   @queue = :notifications
 
-    def self.perform(spot_id, is_new_record)
+  def self.perform(spot_id, is_new_record)
     spot = ConsolidatedSpot.find_by(id: spot_id)
     return unless spot
 
@@ -54,3 +54,4 @@ class SendNotificationsJob
       Resque.redis.del(lock_key)
     end
   end
+end
