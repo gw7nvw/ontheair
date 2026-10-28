@@ -34,7 +34,13 @@ Rails.application.configure do
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
   # Log to STDOUT with the current request id as a default log tag.
-  config.log_tags = [ :request_id ]
+  config.log_tags = [ :request_id, lambda { |_req| Time.now.strftime('%Y-%m-%d %H:%M:%S.%L') } ]
+
+  config.log_formatter = Logger::Formatter.new do |severity, timestamp, _progname, msg|
+    # This prefixes every single SQL statement, render line, or custom logger line
+    # with a standard timestamp flag, severity marker, and your text payload
+    "[#{timestamp.strftime('%Y-%m-%d %H:%M:%S.%L')}] [#{severity}] #{msg}\n"
+  end
   #  config.logger   = ActiveSupport::TaggedLogging.logger(STDOUT)
   config.logger   = ActiveSupport::TaggedLogging.logger(
     Rails.root.join("log", "production.log")
