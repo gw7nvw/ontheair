@@ -4,6 +4,9 @@
     if ($(window).width() < 960) {
       site_smaller_map();
     }
+    <% if current_user and !current_user.location.blank? %>
+      place_init('<%=@user.location%>',  0, site_purple_star);
+    <% end %>
   }
   if (window.map_is_ready) {
     onload_tasks();

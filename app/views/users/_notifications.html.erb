@@ -172,11 +172,7 @@
       <% else %> 
         No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'add_alert', :onclick => "linkHandler('add_alert')"  %>
       <% end %></td>
-      <td> <% if topic.subscribed_notification(@user) then %>
-        Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'delete__alert', :onclick => "linkHandler('delete_alert')"  %> 
-      <% else %> 
-        No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'add_alert', :onclick => "linkHandler('add_alert')"  %>
-      <% end %></td>
+      <td></td>
     </tr>
     <tr>
       <% topic=Topic.find_by_id(VK_NEWS_TOPIC) %>

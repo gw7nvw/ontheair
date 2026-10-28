@@ -178,6 +178,10 @@ else
   resources :callsigns, only: [ :create, :edit, :update ]
   get "callsigns/:id/delete", to: "callsigns#delete"
   patch "callsigns/:id", to: "callsigns#update"
+
+  resources :mode_mappings, only: [ :index, :edit, :update, :create ]
+  get "mode_mappings/:id/delete", to: "mode_mappings#delete"
+
 # template: [:index, :show, :new, :create, :edit, :update, :destroy]
   resources :comments, only: [:index, :show, :new, :create, :edit, :update]
   get "comments/:id/delete", to: "comments#delete"

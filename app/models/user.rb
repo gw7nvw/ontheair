@@ -38,6 +38,83 @@ class User < ActiveRecord::Base
 
   VALID_PHONE_REGEX = /\A\+[1-9]\d{1,14}\z/i
   validates :acctnumber, allow_blank: true, format: { with: VALID_PHONE_REGEX }
+  # NZTM coordinates: x
+  def x
+    return nil if !location
+    if Projection.find_by_id(2193) then srs=2193 else srs=4326 end
+    if within_nztm_bounds?(location)
+      fromproj4s = Projection.find_by_id(4326).proj4
+      toproj4s = Projection.find_by_id(srs).proj4
+
+      # 2. Safety check: ensure '+type=crs' is appended to satisfy modern PROJ libraries
+      fromproj4s += " +type=crs" unless fromproj4s.include?("+type=crs")
+      toproj4s   += " +type=crs" unless toproj4s.include?("+type=crs")
+
+      fromproj = RGeo::CoordSys::Proj4.new(fromproj4s)
+      toproj = RGeo::CoordSys::Proj4.new(toproj4s)
+
+      xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, location.x, location.y)
+      xyarr[0]
+    else
+      location.x
+    end
+  end
+
+  # NZTM coordinates: y
+  def y
+    return nil if !location
+    if Projection.find_by_id(2193) then srs=2193 else srs=4326 end
+
+    if within_nztm_bounds?(location)
+      fromproj4s = Projection.find_by_id(4326).proj4
+      toproj4s = Projection.find_by_id(srs).proj4
+
+      # 2. Safety check: ensure '+type=crs' is appended to satisfy modern PROJ libraries
+      fromproj4s += " +type=crs" unless fromproj4s.include?("+type=crs")
+      toproj4s   += " +type=crs" unless toproj4s.include?("+type=crs")
+
+      fromproj = RGeo::CoordSys::Proj4.new(fromproj4s)
+      toproj = RGeo::CoordSys::Proj4.new(toproj4s)
+
+      xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, location.x, location.y)
+      xyarr[1]
+    else
+      location.y
+    end
+  end
+
+  def convert_location_params(x, y)
+    if !x.blank? and !y.blank?
+      if x.to_f>360 or x.to_f<-360 or y.to_f>90 or y.to_f<-90  then src_srs=2193 else src_srs=4326 end
+      # convert to WGS84 (EPSG4326) for database
+      fromproj = RGeo::CoordSys::Proj4.create(src_srs)
+      toproj   = RGeo::CoordSys::Proj4.create(4326)
+  
+      xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, x.to_f, y.to_f)
+  
+      if xyarr and !xyarr[0].blank? and !xyarr[1].blank?
+        locn = xyarr[0].to_s + " " + xyarr[1].to_s
+        self.location = "POINT(#{locn})"
+      else
+        self.location = nil
+      end
+    else
+     self.location = nil
+    end
+  end
+
+  def within_nztm_bounds?(coordinates)
+    # Ensure the point isn't nil
+    return false if coordinates.nil?
+
+    # ActiveRecord native point attributes are exposed as an object or array:
+    # coordinates.x is Longitude, coordinates.y is Latitude
+    lng = coordinates.x
+    lat = coordinates.y
+
+    NZTM_LNG_RANGE.cover?(lng) && NZTM_LAT_RANGE.cover?(lat)
+  end
+
 
   def email_is_valid
     if email
@@ -1726,29 +1803,14 @@ class User < ActiveRecord::Base
   end
 
   ##########################################################################
-  # NOTIFICSTIONS
+  # NOTIFIASTIONS
   ##########################################################################
 
-  def send_notification(notification, message_url, comments, image)
+  def send_notification(notification, message_url, comments, image, priority = 0)
     if ENV["RAILS_ENV"] != "production"
-        Resque.logger.info "NOTIFICATION: not sending in #{ENV['RAILS_ENV']} environment - #{notification}"
+      Resque.logger.info "NOTIFICATION: not sending in #{ENV['RAILS_ENV']} environment - #{notification}"
     else
-      puts "got into send notification"
-      if comments then notification += ": "+comments end
-      url = URI.parse("https://api.pushover.net/1/messages.json")
-      req = Net::HTTP::Post.new(url.path)
-      req.set_form_data({
-        token: self.push_app_token,
-        user: self.push_user_token,
-        message: notification,
-        attachment_base64: image,
-        attachment_type: "image/jpeg",
-        url: message_url
-      })
-      res = Net::HTTP.new(url.host, url.port)
-      res.use_ssl = true
-      res.verify_mode = OpenSSL::SSL::VERIFY_PEER
-      res.start { |http| http.request(req) }
+      PushoverService.send_alert(self, notification, message_url, comments, image, priority )
     end
   end
 

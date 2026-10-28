@@ -17,6 +17,13 @@ CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public;
 
 
 --
+-- Name: pg_stat_statements; Type: EXTENSION; Schema: -; Owner: -
+--
+
+-- CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
+
+
+--
 -- Name: pg_trgm; Type: EXTENSION; Schema: -; Owner: -
 --
 
@@ -1673,6 +1680,38 @@ ALTER SEQUENCE public.maplayers_id_seq OWNED BY public.maplayers.id;
 
 
 --
+-- Name: mode_mappings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mode_mappings (
+    id bigint NOT NULL,
+    raw_mode character varying NOT NULL,
+    parent_group character varying NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: mode_mappings_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mode_mappings_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mode_mappings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.mode_mappings_id_seq OWNED BY public.mode_mappings.id;
+
+
+--
 -- Name: nz_tribal_lands; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1931,6 +1970,17 @@ ALTER SEQUENCE public.regions_id_seq OWNED BY public.regions.id;
 
 CREATE TABLE public.schema_migrations (
     version character varying(255) NOT NULL
+);
+
+
+--
+-- Name: sent_notifications; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sent_notifications (
+    user_id integer NOT NULL,
+    consolidated_spot_id integer NOT NULL,
+    created_at timestamp(6) without time zone DEFAULT now() NOT NULL
 );
 
 
@@ -2390,7 +2440,8 @@ CREATE TABLE public.users (
     pnp_imported boolean DEFAULT false,
     pnp_username character varying(255),
     pnp_status character varying(255),
-    push_active boolean
+    push_active boolean,
+    location public.geometry(Point,4326)
 );
 
 
@@ -2902,6 +2953,13 @@ ALTER TABLE ONLY public.maplayers ALTER COLUMN id SET DEFAULT nextval('public.ma
 
 
 --
+-- Name: mode_mappings id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mode_mappings ALTER COLUMN id SET DEFAULT nextval('public.mode_mappings_id_seq'::regclass);
+
+
+--
 -- Name: nz_tribal_lands ogc_fid; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -3364,6 +3422,14 @@ ALTER TABLE ONLY public.logs
 
 ALTER TABLE ONLY public.maplayers
     ADD CONSTRAINT maplayers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: mode_mappings mode_mappings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mode_mappings
+    ADD CONSTRAINT mode_mappings_pkey PRIMARY KEY (id);
 
 
 --
@@ -3917,6 +3983,20 @@ CREATE INDEX index_logs_on_date ON public.logs USING btree (date);
 
 
 --
+-- Name: index_mode_mappings_on_parent_group; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mode_mappings_on_parent_group ON public.mode_mappings USING btree (parent_group);
+
+
+--
+-- Name: index_mode_mappings_on_raw_mode; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_mode_mappings_on_raw_mode ON public.mode_mappings USING btree (raw_mode);
+
+
+--
 -- Name: index_name; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3935,6 +4015,20 @@ CREATE INDEX index_ratings_on_asset_code ON public.ratings USING btree (asset_co
 --
 
 CREATE INDEX index_ratings_on_user_id ON public.ratings USING btree (user_id);
+
+
+--
+-- Name: index_sent_notifications_on_consolidated_spot_id_and_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_sent_notifications_on_consolidated_spot_id_and_user_id ON public.sent_notifications USING btree (consolidated_spot_id, user_id);
+
+
+--
+-- Name: index_sent_notifications_on_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_sent_notifications_on_created_at ON public.sent_notifications USING btree (created_at);
 
 
 --
@@ -4035,6 +4129,9 @@ CREATE UNIQUE INDEX unique_schema_migrations ON public.schema_migrations USING b
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261028010711'),
+('20261027233405'),
+('20261027200420'),
 ('20261027061439'),
 ('20261026055232'),
 ('20261025041512'),

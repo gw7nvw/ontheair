@@ -3,26 +3,44 @@ class UserNotificationLink < ApplicationRecord
 
   scope :matching_spot, ->(spot) {
     where(
-      "(continents IS NULL OR continents && ARRAY[:continent]) AND " \
-      "(bands IS NULL OR bands && ARRAY[:band]) AND " \
-      "(modes IS NULL OR modes && ARRAY[:mode]) AND " \
-      "(spot_types IS NULL OR spot_types && :spot_types) AND " \
-      "(activator_callsign IS NULL OR :activator_callsign LIKE REPLACE(activator_callsign, '*', '%')) AND " \
-      "(code IS NULL OR REPLACE(code, '*', '%') LIKE ANY(ARRAY[:code]))",
-      continent: spot.continent,
-      band: spot.band,
-      mode: spot.mode,
+      "(continents IS NULL or :continent='' OR continents && ARRAY[:continent::varchar]) AND " \
+      "(bands IS NULL OR :band='' OR bands && ARRAY[:band::varchar]) AND " \
+      "(modes IS NULL OR :mode='' OR modes && ARRAY[:mode::varchar]) AND " \
+      "(spot_types IS NULL OR spot_types && ARRAY[:spot_types::varchar]) AND " \
+    "(activator_callsign IS NULL OR EXISTS (
+       SELECT 1 FROM unnest(string_to_array(activator_callsign, ',')) AS pattern
+       WHERE :activator_callsign LIKE REPLACE(TRIM(pattern), '*', '%')
+    )) AND " \
+    "(code IS NULL OR EXISTS (
+       SELECT 1
+       FROM unnest(string_to_array(code, ',')) AS pattern
+       CROSS JOIN unnest(ARRAY[:code_array]::varchar[]) AS incoming_code
+       WHERE incoming_code LIKE REPLACE(TRIM(pattern), '*', '%')
+    ))",
+      continent: spot.continent||"",
+      band: spot.band||"",
+      mode: spot.mode||"",
       spot_types: spot.spot_type,
       activator_callsign: spot.activatorCallsign,
-      code: spot.code # Pass the spot's array of string codes directly (e.g. ['SOTA/VK-001', 'WWFF/VK-002'])
+      code_array: spot.code 
     )
   }
+
+  def user
+    User.find(self.user_id)
+  end
 
   def strip_blanks
     self.bands=self.bands-[""] if self.bands
     self.continents=self.continents-[""] if self.continents
     self.spot_types=self.spot_types-[""] if self.spot_types
     self.modes=self.modes-[""] if self.modes
+    self.bands=nil if self.bands.blank?
+    self.continents=nil if self.continents.blank?
+    self.spot_types=nil if self.spot_types.blank?
+    self.modes=nil if self.modes.blank?
+    self.code=nil if self.code.blank?
+    self.activator_callsign=nil if self.activator_callsign.blank?
   end
 
   def priority_name

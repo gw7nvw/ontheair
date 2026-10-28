@@ -22,8 +22,10 @@ class ConsolidatedSpot < ActiveRecord::Base
         dxccs = DxccPrefix.find_by(prefix: "VK") if !dxccs and reference.match(/^VK-.*/)
         # ILLW
         dxccs = DxccPrefix.find_by("'#{reference}' like concat(iso_code,'0%%')") if !dxccs
-        self.dxcc = dxccs.prefix if dxccs
-        self.continent = dxccs.continent_code if dxccs
+        if dxccs 
+          self.dxcc = dxccs.prefix 
+          self.continent = dxccs.continent_code
+        end
       end
 
       # fall back on callsign analysis
@@ -41,10 +43,6 @@ class ConsolidatedSpot < ActiveRecord::Base
     # keepng spots for a year
     oneyearago=Time.at(Time.now.to_i - 60 * 60 * 24 * 365).in_time_zone("UTC").to_s
     ActiveRecord::Base.connection.execute("delete from consolidated_spots where updated_at < '#{oneyearago}'")
-  end
-
-  def continent
-    DxccPrefix.continent_from_call(self.activatorCallsign)
   end
 
   def add_band
@@ -256,60 +254,21 @@ SQL
     # If a user just updates an unrelated admin flag or timestamp, we don't spam notifications.
     if !is_new_record
       significant_fields = ['frequency', 'mode', 'code', 'activatorCallsign']
-      
-      return unless (significant_fields & saved_changes.keys).any?
-    end
+      changed_fields = (significant_fields & saved_changes.keys) 
+      return unless changed_fields.any?
 
-    Resque.enqueue(SendNotifications, self.id, is_new_record)
-  end
-
-
-  def create_notifications
-   if ENV["RAILS_ENV"] == "production"
-    is_new = true if !self.old_spot_type
-
-    programme_array = self.spot_type.map { |a| "'%%:programme:%%"+a.to_s+"%%'" }.join(", ")
-    old_programme_array = self.old_spot_type.map { |a| "'%%:programme:%%"+a.to_s+"%%'" }.join(", ")
-    if is_new or programme_array != old_programme_array then
-      if is_new then
-        subs = self.get_subs(programme_array)
-      else
-        old_subs = self.get_subs(old_programme_array)
-        new_subs = self.get_subs(programme_array)
-        subs = new_subs - old_subs
-      end
-
-      if subs and subs.count>0
-        raw_image = nil
-        if self.post_id and self.post_id.count>0 then
-          i = Item.find(post_id.first.to_i)
-          raw_image = i.raw_image if i
-        else
-          # check for coords
-          assets = Asset.assets_from_code(self.code.join(", "))
-          # should probaby use get_most_accurate ... but for simplicity
-          asset = assets.first
-          asset = asset[:asset] if asset
-          location = asset.location if asset
-
-          filename = get_3857_map_x_y(location.x, location.y, 9, 3, 3, "cons_"+self.id.to_s) if location
-          image = File.read(filename) if filename
-          raw_image = Base64.encode64(image) if image
-        end
-
-
-        if self.time and self.time.max>3.minutes.ago then
-          subs.each do |sub|
-            filter = sub.push_external_filter
-            puts "send notification to #{sub.callsign}"
-            sub.send_notification(summary, self.url, if sub.push_include_comments then self.comments.last else nil end, if sub.push_include_map then raw_image else nil end)
-          end
-          system("rm #{filename}") if filename
-        end
+      # No notifications if frequency stays within the KHz
+      if changed_fields==['frequency'] and saved_change_to_frequency
+        old_frequency, new_frequency = saved_change_to_frequency
+        return if old_frequency.to_d.truncate(3)!=new_frequency.to_d.truncate(3)
       end
     end
-    self.update_column :old_spot_type, self.spot_type
-   end
-  true
+
+
+    if ENV["RAILS_ENV"] == "production"
+      Resque.enqueue(SendNotifications, self.id, is_new_record)
+    else
+      SendNotifications.perform(self.id, is_new_record)
+    end
   end
 end

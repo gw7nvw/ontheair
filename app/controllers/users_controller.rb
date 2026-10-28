@@ -193,7 +193,7 @@ class UsersController < ApplicationController
 
     logger.info user_params.to_s
     #    user = User.find_by('email = ? and callsign = ? and activated is not true', user_params[:email]&.downcase,user_params[:callsign]&.upcase)
-    user = User.new(user_params)
+    user = User.new(user_database_params)
 
     user.callsign = user.callsign.strip
     existing_user = User.find_by(callsign: user.callsign.upcase)
@@ -217,7 +217,7 @@ class UsersController < ApplicationController
     @user.hide_news_at = Time.now
 
     @user.read_only = true unless @user.valid_callsign?
-
+    @user.convert_location_params(params[:x],params[:y]) 
     if @user.save
       @user.reload
       sign_in @user
@@ -266,8 +266,9 @@ class UsersController < ApplicationController
         password_confirmation = params[:user][:password_confirmation]
 
         @user = User.find_by_id(params[:id].to_i)
+        @user.convert_location_params(params[:x],params[:y]) 
 
-        @user.assign_attributes(user_params)
+        @user.assign_attributes(user_database_params)
         if password && !password.empty?
           @user.password = password
           @user.password_confirmation = password_confirmation
@@ -284,6 +285,7 @@ class UsersController < ApplicationController
             @user.password = nil
             @user.password_confirmation = nil
           end
+
 
           if @user.save
             flash[:success] = "User details updated"
@@ -405,10 +407,14 @@ class UsersController < ApplicationController
     end
   end
 
+
   private
 
   def user_params
-    params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin, :acctnumber, :logs_pota, :logs_wwff, :push_app_token, :push_user_token, :push_include_comments, :push_include_map)
+    params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin, :acctnumber, :logs_pota, :logs_wwff, :push_app_token, :push_user_token, :push_include_comments, :push_include_map, :location, :x, :y)
   end
 
+  def user_database_params
+    user_params.except(:x, :y, :location)
+  end
 end

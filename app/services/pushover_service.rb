@@ -2,19 +2,22 @@ class PushoverService
   PUSHOVER_URL = "https://api.pushover.net/1/messages.json".freeze
 
   # Make it a class method so it can be called seamlessly without instantiation
-  def self.send_alert(app_token:, user_token:, message:, priority: 0, image_base64: nil, url: nil)
+  def self.send_alert(user, notification, priority, url, comments, image_base64)
+    if comments and user.push_include_comments then notification += ": "+comments end
+
     uri = URI.parse(PUSHOVER_URL)
     req = Net::HTTP::Post.new(uri.request_uri)
     
     payload = {
-      token:    app_token,
-      user:     user_token,
+      token:    user.push_app_token,
+      user:     user.push_user_token,
       priority: priority,
-      message:  message,
+      message:  notification,
     }
 
     unless ENV["RAILS_ENV"] == "production"
       Resque.logger.info "NOTIFICATION: not sending in #{ENV['RAILS_ENV']} environment - #{payload.to_json}"
+      puts "NOTIFICATION: not sending in #{ENV['RAILS_ENV']} environment - #{payload.to_json}"
       return
     end
 

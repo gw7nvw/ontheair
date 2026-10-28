@@ -417,8 +417,9 @@ end
 
 def find_matching_consolidated_spot(external_spot)
   # 1. Clean the incoming matching variables exactly as your logic dictates
-  round_freq = external_spot.frequency.to_d.round(4).to_s
-  base_call  = (external_spot.activatorCallsign||"UNKNOWN").gsub(/\/./, "") # Remove single character suffix
+  incoming_khz = external_spot.frequency.present? ? (external_spot.frequency.to_d * 1000).to_d.truncate.to_i : 0
+  base_call  = User.remove_call_suffix(external_spot.activatorCallsign||"UNKNOWN")
+  incoming_mode = external_spot.mode.to_s.strip.upcase
 
   # 2. Build a clean, parameterized ActiveRecord relation
   ConsolidatedSpot.where(activatorCallsign: base_call)
@@ -429,13 +430,17 @@ def find_matching_consolidated_spot(external_spot)
       code:              external_spot.code
     )
     .where(
-      "frequency = :freq OR frequency IS NULL OR frequency = '' OR frequency = '0.0' OR :freq = '' OR :freq = '0.0'",
-      freq: round_freq
+      "trunc(NULLIF(NULLIF(frequency,''), '0.0')::decimal * 1000) = :freq OR frequency IS NULL OR frequency = '' OR frequency = '0.0' OR :freq = '' OR :freq = '0'",
+      freq: incoming_khz
     )
     .where(
-      "mode = :mode OR mode IS NULL OR mode = '' OR :mode = ''",
-      mode: external_spot.mode
+      "COALESCE((SELECT parent_group FROM mode_mappings WHERE raw_mode = consolidated_spots.mode), consolidated_spots.mode) = " \
+      "COALESCE((SELECT parent_group FROM mode_mappings WHERE raw_mode = :incoming_mode), :incoming_mode) " \
+      "OR consolidated_spots.mode IS NULL OR consolidated_spots.mode = '' OR :incoming_mode = ''",
+      incoming_mode: incoming_mode
     )
     .order(created_at: :desc)
     .first
 end
+
+

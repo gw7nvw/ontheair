@@ -294,26 +294,89 @@ test "Delay of MAX_SPOT_LIFETIME should trigger new consolidated spot for thre s
   assert_equal cs.spot_type, [ "HEMA" ], "Spot type"
 end
 
-test "Check sub-100 Hz frequency chnages do not trigger new consolidated spots" do
+test "Check sub-KHz frequency changes do not trigger new consolidated spots" do
+  t1 = 1.minute.ago
+  assert_difference "ConsolidatedSpot.count", 1 do
+    es = ExternalSpot.create({ "time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "MW0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "ft8", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+    cs=ConsolidatedSpot.last
+  end
+  t2 = Time.now
+  assert_difference "ConsolidatedSpot.count", 0 do
+    es = ExternalSpot.create({ "time" => t2, "callsign" => "M0KCB", "activatorCallsign" => "MW0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.0755", "mode" => "ft8", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal "14.0755", cs.frequency
 end
 
 test "Check MYCALL/P vs MYCALL do not trigger new consolidated spots" do
+  t1 = 2.minutes.ago
+  assert_difference "ConsolidatedSpot.count", 1 do
+    es = ExternalSpot.create({ "time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "M0KCB", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "ft8", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+    cs=ConsolidatedSpot.last
+  end
+  t2 = 1.minute.ago
+  assert_difference "ConsolidatedSpot.count", 0 do
+    es = ExternalSpot.create({ "time" => t2, "callsign" => "M0KCB", "activatorCallsign" => "M0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "ft8", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal "M0KCB", cs.activatorCallsign
+  t2 = Time.now
+  assert_difference "ConsolidatedSpot.count", 0 do
+    es = ExternalSpot.create({ "time" => t2, "callsign" => "M0KCB", "activatorCallsign" => "MM/M0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "ft8", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal "M0KCB", cs.activatorCallsign
 end
 
 test "Check lsb vs usb vs ssb do not trigger new consoidated spots" do
-end
+  t1 = 3.minutes.ago
+  assert_difference "ConsolidatedSpot.count", 1 do
+    es = ExternalSpot.create({ "time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "M0KCB", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "ssb", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal "SSB", cs.mode
 
-test "Check case changes do not trigger new consolidated spots" do
+  t2 = 2.minutes.ago
+  assert_difference "ConsolidatedSpot.count", 0 do
+    es = ExternalSpot.create({ "time" => t2, "callsign" => "M0KCB", "activatorCallsign" => "M0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "SSB", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal "SSB", cs.mode
+
+  t2 = 1.minutes.ago
+  assert_difference "ConsolidatedSpot.count", 0 do
+    es = ExternalSpot.create({ "time" => t2, "callsign" => "M0KCB", "activatorCallsign" => "M0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "usb", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal "USB", cs.mode
+
+  t2 = Time.now
+  assert_difference "ConsolidatedSpot.count", 0 do
+    es = ExternalSpot.create({ "time" => t2, "callsign" => "M0KCB", "activatorCallsign" => "MM/M0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "LSB", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal "LSB", cs.mode
 end
 
 test "Check new comments added to same consolidated spot with no chnages to location" do
-end
+  t1 = 3.minutes.ago
+  assert_difference "ConsolidatedSpot.count", 1 do
+    es = ExternalSpot.create({ "time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "M0KCB", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "SSB", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal 1, cs.code.count
+  assert_equal 1, cs.comments.count
 
-test "Check multiple programmes can be added to same spot" do
-end
+  t2 = 2.minutes.ago
+  assert_difference "ConsolidatedSpot.count", 0 do
+    es = ExternalSpot.create({ "time" => t2, "callsign" => "M0KCB", "activatorCallsign" => "M0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "SSB", "comments" => "Test spot two", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal 1, cs.code.count
+  assert_equal 2, cs.comments.count
+  assert_match /Test spot two/, cs.comments.last
+  assert_match /Test spot \(/, cs.comments.first
 
-test "Check parks with no polygon data are exempt from overlap test" do
 end
-
 
 end

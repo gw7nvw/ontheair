@@ -33,6 +33,9 @@ VK_NEWS_TOPIC=49
 SPOT_TOPIC=35
 ALERT_TOPIC=1
 
+ModeMapping.destroy_all
+ModeMapping.create(raw_mode: 'USB', parent_group: 'SSB')
+ModeMapping.create(raw_mode: 'LSB', parent_group: 'SSB')
 Region.destroy_all
 Region.create(dxcc: "ZL", sota_code: "CB", name: "Canterbury", boundary: "MULTIPOLYGON(((171 -40, 174 -40, 174 -41, 171 -41, 171 -40)))")
 Region.create(dxcc: "ZL", sota_code: "OT", name: "Otago", boundary: "MULTIPOLYGON(((171 -41, 174 -41, 174 -42, 171 -42, 171 -41)))")

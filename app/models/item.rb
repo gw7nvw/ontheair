@@ -197,16 +197,16 @@ class Item < ActiveRecord::Base
   def self.send_emails_now(itemid)
     item=Item.find(itemid)
     if item and item.topic_id
-     if ENV["RAILS_ENV"] == "production"
-        raw_image = item.raw_image
-        summary = item.summary
-        subs = UserTopicLink.where(topic_id: item.topic_id)
-        subs.each do |sub|
-          @user = User.find_by_id(sub.user_id)
-          UserMailer.subscriber_mail(item, @user).deliver_now if sub.mail
-          @user.send_notification(summary, item.url, if @user.push_include_comments then item.comments else nil end, if @user.push_include_map then raw_image else nil end) if sub.notification
-        end
-     end
+      raw_image = item.raw_image
+      summary = item.summary
+      subs = UserTopicLink.where(topic_id: item.topic_id)
+      subs.each do |sub|
+        @user = User.find_by_id(sub.user_id)
+        UserMailer.subscriber_mail(item, @user).deliver_now if sub.mail and ENV["RAILS_ENV"] == "production"
+        #Only trigger notifications on alerts - spots are done in consolidated_spot.save
+        puts "HERE"
+        @user.send_notification(summary, item.url, if @user.push_include_comments then item.comments else nil end, if @user.push_include_map then raw_image else nil end) if sub.notification and item.topic_id==ALERT_TOPIC
+      end
     end
   end
 end

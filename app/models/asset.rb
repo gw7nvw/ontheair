@@ -26,8 +26,6 @@ class Asset < ApplicationRecord
   SIOTA_ASSET_URL = "https://www.silosontheair.com/silos/#"
   ILLW_ASSET_URL = "https://illw.net"
 
-  NZTM_LAT_RANGE = (-47.33..-34.1)
-  NZTM_LNG_RANGE = (166.37..178.63)
   ################################################################
   # Pre- and Post save callbacks
   ################################################################

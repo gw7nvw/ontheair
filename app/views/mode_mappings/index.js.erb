@@ -1,0 +1,2 @@
+if ((window.history.pushState!=null) && (site_back!=true)) window.history.pushState(null, '', '/mode_mappings?<%=raw(@parameters)%>');
+$('#right_panel').html("<%= escape_javascript(render(:partial => 'mode_mappings/index')).html_safe %>");

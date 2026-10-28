@@ -5,6 +5,17 @@
 module AssetGisTools
   extend ActiveSupport::Concern
 
+  def transform_coords(from_srs, to_srs, x, y)
+    fromproj4s = Projection.find_by_id(from_srs).proj4
+    toproj4s = Projection.find_by_id(to_srs).proj4
+    fromproj4s += " +type=crs" unless fromproj4s.include?("+type=crs")
+    toproj4s   += " +type=crs" unless toproj4s.include?("+type=crs")
+    fromproj = RGeo::CoordSys::Proj4.new(fromproj4s)
+    toproj = RGeo::CoordSys::Proj4.new(toproj4s)
+
+    xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, x, y)
+  end
+
   def check_for_minor(area,section)
     #size
     return true if area<100000 #10ha

@@ -1,7 +1,20 @@
 require 'mini_magick'
+include AssetGisTools
 
 class MapImageService
-  def generate_3857_matrix(lng_deg, lat_deg, zoom, xsize, ysize)
+  def self.generate_matrix(codes)
+    codes
+    asset = Asset.get_most_accurate_location(codes)
+    location = asset[:location] if asset 
+    return nil unless location
+    if NZTM_LNG_RANGE.cover?(location.x) && NZTM_LAT_RANGE.cover?(location.y) 
+      generate_2193_matrix(location.x, location.y, 9, 3, 3) if location
+    else
+      generate_3857_matrix(location.x, location.y, 9, 3, 3) if location
+    end
+  end
+
+  def self.generate_3857_matrix(lng_deg, lat_deg, zoom, xsize, ysize)
     lat_rad = lat_deg/180 * Math::PI
     n = 2.0 ** zoom
     x = ((lng_deg + 180.0) / 360.0 * n)
@@ -21,11 +34,15 @@ class MapImageService
     puts int_x, minx, maxx
     puts int_y, miny, maxy
 
-    return matrix_tiles(xsize, ysize, minx, miny, maxx, maxy, offset_x, offset_y, tile_server, false)
+    return matrix_tiles(xsize, ysize, zoom, minx, miny, maxx, maxy, offset_x, offset_y, tile_server, false)
   end
 
-  def generate_2193_matrix(gridx, gridy, z, xsize, ysize)
-    logger.error("THERE")
+  def self.generate_2193_matrix(lng_deg, lat_deg, z, xsize, ysize)
+    xyarr = transform_coords(4326, 2193, lng_deg, lat_deg)
+
+    gridx=xyarr[0]
+    gridy=xyarr[1]
+
     # X,Y coordinates for centre tile at this zoom level
     c_x = ((gridx + 20037508) / (4891.97 * 2**(13 - z))).to_i
     c_y = ((gridy + 20037508) / (4891.97 * 2**(13 - z))).to_i
@@ -47,12 +64,12 @@ class MapImageService
     offset_x = 512 - sx # apply direction / offset used in 'convert'
     offset_y = 256 + sy # apply direction / offset used in 'convert'
 
-    return matrix_tiles(xsize, ysize, minx, miny, maxx, maxy, offset_x, offset_y, tile_server, true)
+    return matrix_tiles(xsize, ysize, z, minx, miny, maxx, maxy, offset_x, offset_y, tile_server, true)
   end
-
+end
   private
   
-  def download_tile(x, y, z, tile_server, id)
+  def download_tile(x, y, z, tile_server)
     # fill in reqired x, y, z to URL
     url = tile_server.gsub("{x}", x.to_s).gsub("{y}", y.to_s).gsub("{z}", z.to_s)
 
@@ -81,20 +98,32 @@ class MapImageService
     end.to_blob
   end
 
-  def matrix_tiles(xsize, ysize, minx, miny, maxx, maxy, offset_x, offset_y, tile_server, reverse=true)
+  def matrix_tiles(xsize, ysize, z, minx, miny, maxx, maxy, offset_x, offset_y, tile_server, reverse=true)
+  begin
     y_iterator = reverse ? (miny..maxy).reverse_each : (miny..maxy).each
-
+    in_memory_images = []
     # 2. Combine the map tiles into a unified layout canvas
     montage = MiniMagick::Tool::Montage.new do |m|
       (minx..maxx).each do |x|
-        y_iterator.call do |y|
-          m << download_tile(x, y, z, tile_server)
+        y_iterator.each do |y|
+          puts "download_tile(#{x}, #{y}, #{z}, #{tile_server})"
+          raw_binary_blob = download_tile(x, y, z, tile_server)
+        
+          # INSTANTLY convert the binary string into a MiniMagick image buffer object
+          image_buffer = MiniMagick::Image.read(raw_binary_blob)
+          
+          # Track the object to keep its memory reference alive during this block execution
+          in_memory_images << image_buffer
+          
+          # Pass the memory reference pointer string path (e.g. "/tmp/mini_magick2026...") 
+          # safely into the shell command array instead of passing raw binary content!
+          m << image_buffer.path
         end
       end
 
       m.mode "Concatenate"
       m.tile "#{xsize}x#{ysize}"
-      m.quality quality
+      m.quality 40
       m << "jpeg:-" # Pipes the resulting binary stream directly to memory
     end
 
@@ -112,5 +141,8 @@ class MapImageService
   rescue StandardError => e
     Rails.logger.error "MapImageService failed: #{e.message}"
     nil
+  ensure
+    # Clean up the memory files immediately from RAM/temp space once finished
+    in_memory_images.each(&:destroy!) rescue nil
   end
 end
