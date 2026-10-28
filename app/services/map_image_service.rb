@@ -1,5 +1,6 @@
 require 'mini_magick'
 include AssetGisTools
+require_dependency Rails.root.join('app', 'models', 'local_map_tile.rb')
 
 class MapImageService
   def self.generate_matrix(codes, format = 'base64')
@@ -78,7 +79,7 @@ end
   def download_tile(x, y, z, tile_server)
     # fill in reqired x, y, z to URL
 
-    local_tile = LocalMapTile.find_by_sql [
+    local_tile = ::LocalMapTile.find_by_sql [
     "SELECT tile_bytes FROM local_map_tiles WHERE z = ? AND x = ? AND y = ?",
     z, x, y]
 
