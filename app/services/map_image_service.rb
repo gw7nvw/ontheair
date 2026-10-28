@@ -8,10 +8,11 @@ class MapImageService
     location = asset[:location] if asset 
     return nil unless location
     if NZTM_LNG_RANGE.cover?(location.x) && NZTM_LAT_RANGE.cover?(location.y) 
-      generate_2193_matrix(location.x, location.y, 9, 3, 3) if location
+      a=generate_2193_matrix(location.x, location.y, 9, 3, 3) if location
     else
-      generate_3857_matrix(location.x, location.y, 9, 3, 3) if location
+      a=generate_3857_matrix(location.x, location.y, 9, 3, 3) if location
     end
+    image = Base64.strict_encode64(a)
   end
 
   def self.generate_3857_matrix(lng_deg, lat_deg, zoom, xsize, ysize)

@@ -12,7 +12,7 @@ class PushoverService
       token:    user.push_app_token,
       user:     user.push_user_token,
       priority: priority,
-      message:  notification,
+      message:  notification.to_s.scrub.strip,
     }
 
     unless ENV["RAILS_ENV"] == "production"
