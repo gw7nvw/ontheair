@@ -5,17 +5,24 @@ require "resque-scheduler"
 # 1. Connect to your production/UAT Redis socket pool
 Resque.redis = ENV.fetch("REDIS_URL", "localhost:6379")
 
+# 1. Force the output streams to flush instantly so messages don't get buffered or lost on process forks
+$stdout.sync = true
+$stderr.sync = true
+
 # 2. THE SEPARATE LOGGER FIX: Create a dedicated log file inside log/resque.log
 # We use ActiveSupport::Logger so it retains standard Rails log-formatting helpers
 resque_log_path = Rails.root.join("log", "resque.log")
 
 resque_logger = ActiveSupport::Logger.new(resque_log_path)
-resque_logger.level = Rails.logger.level
+resque_logger.level = Logger::DEBUG
+
+resque_logger.formatter = ::Logger::Formatter.new
+
 Resque.logger = resque_logger
 
 scheduler_log_path = Rails.root.join("log", "scheduler.log")
 scheduler_logger = ActiveSupport::Logger.new(scheduler_log_path)
-scheduler_logger.level = Rails.logger.level
+scheduler_logger.level = Logger::DEBUG
 Resque::Scheduler.logger = scheduler_logger if defined?(Resque::Scheduler)
 
 # 3. Load your static cron schedule configuration file if it exists
