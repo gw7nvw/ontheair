@@ -36,7 +36,7 @@ class SendNotifications
         end
 
         # Ship individual payload using user-isolated tokens
-        PushoverService.send_alert( user, spot.summary, link.priority, message_url, spot.comments.last, image_base64 )
+        PushoverService.send_alert( user, spot.summary, message_url, spot.comments.last, image_base64, link.priority )
       end
 
       # 5. Clean up old ledger data safely at the end of the run

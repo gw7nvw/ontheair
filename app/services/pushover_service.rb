@@ -2,7 +2,7 @@ class PushoverService
   PUSHOVER_URL = "https://api.pushover.net/1/messages.json".freeze
 
   # Make it a class method so it can be called seamlessly without instantiation
-  def self.send_alert(user, notification, priority, url, comments, image_base64)
+  def self.send_alert(user, notification, url, comments, image_base64, priority)
     if comments and user.push_include_comments then notification += ": "+comments end
 
     uri = URI.parse(PUSHOVER_URL)
