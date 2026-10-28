@@ -148,7 +148,6 @@ class PostsController < ApplicationController
           if a_ext == false
             logger.debug "SAVEMAP: #{a_ext}"
             @post.add_map_image
-            res = @post.save
           end
           item = Item.new
           item.topic_id = topic_id

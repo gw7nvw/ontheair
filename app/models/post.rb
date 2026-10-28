@@ -29,7 +29,7 @@ class Post < ActiveRecord::Base
     check_codes
     self.callsign = callsign.upcase if callsign
     update_site
-    # self.comments = self.comments[0..254] if comments
+    self.site = self.site[0..254] if self.site
   end
 
   def update_site
@@ -82,65 +82,19 @@ class Post < ActiveRecord::Base
   end
 
   def add_map_image
-    #    return if !defined?(Rails) || !Rails.env.production?
-    logger.debug "SAVEMAP: ADDMAPIMAGE"
+    map_image = MapImageService.generate_matrix(self.asset_codes, 'raw')
 
-    international = false
-    logger.debug "HERE!!!"
-    if location == nil
-      logger.debug "HERE LOC NIL!!!"
-      if asset_codes
-        point_loc = nil
-        poly_loc = nil
-        asset_codes.each do |ac|
-          assets = Asset.assets_from_code(ac)
-          asset = assets.first
-          a = asset[:asset] if asset
-          #           a = Asset.find_by(code: ac)
-          if a then
-            logger.debug "HERE GOT A!!!"
-            international=true if a.class.to_s!="Asset"
-            international=true if a.country!="ZL"
-            logger.debug "HERE international=#{international}!!!"
-            if international then
-              if a.type.has_boundary
-                poly_loc = { x: a.location.x, y: a.location.y } if a.location
-              elsif a.location
-                point_loc = { x: a.location.x, y: a.location.y }
-              end
-            else
-              if a.type.has_boundary
-                poly_loc = { x: a.x, y: a.y } if a.location
-              elsif a.location
-                point_loc = { x: a.x, y: a.y }
-              end
-            end
-          end
-        end
-        calc_loc = point_loc || poly_loc
-      end
-    else
-      # user specified a location - treat all as international asor else we'd need
-      # to check where in world it was
-      international = true
-      calc_loc = { x: location.x, y: location.y }
-    end
+    # 2. Wrap the binary string in an in-memory IO stream buffer
+    image_io = StringIO.new(map_image)
 
-    if calc_loc
-      if international then
-        filename = get_3857_map_x_y(calc_loc[:x], calc_loc[:y], 9, 3, 3, "map_"+id.to_s)
-      else
-        filename = get_map(calc_loc[:x], calc_loc[:y], 9, "map_" + id.to_s)
-      end
-      #    filename=get_map_zoomed(location[:x], location[:y], 7,15, "map_"+self.id.to_s)
-      begin
-        self.image = File.open(filename, "rb")
-        save
-        system("rm #{filename}")
-      rescue StandardError
-        puts "SAVEMAP: ERROR"
-      end
-    end
+    # 3. Add an on-the-fly virtual filename attribute so Paperclip can deduce the content type
+    # (e.g., matching the extension to determine image/jpeg processing rules)
+    image_io.define_singleton_method(:original_filename) { "map_matrix_#{Time.now.to_i}.jpg" }
+    image_io.define_singleton_method(:content_type) { "image/jpeg" }
+    self.image = image_io
+    self.image_file_name_will_change!
+    self.image_updated_at_will_change!
+    self.save
   end
 
   def images

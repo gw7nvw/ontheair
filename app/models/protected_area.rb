@@ -34,8 +34,8 @@ class ProtectedArea < ActiveRecord::Base
   # protected areas table from it 
   def self.import_gpkg(filename)
     self.with_connection do |conn|
-      if conn.table_exists?('my_table')
-        conn.execute("TRUNCATE TABLE my_table RESTART IDENTITY")
+      if conn.table_exists?('protected_areas')
+        conn.execute("TRUNCATE TABLE protected_areas RESTART IDENTITY")
       end
     end
     system("ogr2ogr -f PostgreSQL 'PG:host=localhost dbname=zl_gis user=ontheair password=#{Rails.application.credentials.dig(:production, :database, :password)}' -nlt multipolygon -nln protected_areas -t_srs 'EPSG:4326' #{filename}")

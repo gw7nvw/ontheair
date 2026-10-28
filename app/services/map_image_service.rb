@@ -2,17 +2,22 @@ require 'mini_magick'
 include AssetGisTools
 
 class MapImageService
-  def self.generate_matrix(codes)
+  def self.generate_matrix(codes, format = 'base64')
     codes
     asset = Asset.get_most_accurate_location(codes)
     location = asset[:location] if asset 
     return nil unless location
-    if NZTM_LNG_RANGE.cover?(location.x) && NZTM_LAT_RANGE.cover?(location.y) 
-      a=generate_2193_matrix(location.x, location.y, 9, 3, 3) if location
-    else
+   # if NZTM_LNG_RANGE.cover?(location.x) && NZTM_LAT_RANGE.cover?(location.y) 
+   #   a=generate_2193_matrix(location.x, location.y, 9, 3, 3) if location
+   # else
       a=generate_3857_matrix(location.x, location.y, 9, 3, 3) if location
+   # end
+    if format=='base64' then
+      image = Base64.strict_encode64(a)
+    else 
+      image = a
     end
-    image = Base64.strict_encode64(a)
+    image
   end
 
   def self.generate_3857_matrix(lng_deg, lat_deg, zoom, xsize, ysize)
@@ -72,24 +77,31 @@ end
   
   def download_tile(x, y, z, tile_server)
     # fill in reqired x, y, z to URL
-    url = tile_server.gsub("{x}", x.to_s).gsub("{y}", y.to_s).gsub("{z}", z.to_s)
 
-    # download tile
-    # Open the local file for binary writing as before
-    begin
-      # Use URI.open explicitly and pass headers as a standard Ruby 3 options hash
-      remote_data = URI.open(
-        url,
-        "Referer" => "http://new.ontheair.nz",
-        "User-Agent" => "ontheair"
-      ).read
+    local_tile = LocalMapTile.find_by_sql [
+    "SELECT tile_bytes FROM local_map_tiles WHERE z = ? AND x = ? AND y = ?",
+    z, x, y]
 
-    rescue
-      remote_data = blank_tile()
+    if local_tile and local_tile.count>0
+      data = local_tile.first['tile_bytes']
+    else
+      url = tile_server.gsub("{x}", x.to_s).gsub("{y}", y.to_s).gsub("{z}", z.to_s)
+      # download tile
+      # Open the local file for binary writing as before
+      begin
+        # Use URI.open explicitly and pass headers as a standard Ruby 3 options hash
+        data = URI.open(
+          url,
+          "Referer" => "http://new.ontheair.nz",
+          "User-Agent" => "ontheair"
+        ).read
+  
+      rescue
+        data = blank_tile()
+      end
     end
-
     # return path to downloaded tile
-    remote_data
+    data
   end
 
   def blank_tile
@@ -105,8 +117,8 @@ end
     in_memory_images = []
     # 2. Combine the map tiles into a unified layout canvas
     montage = MiniMagick::Tool::Montage.new do |m|
-      (minx..maxx).each do |x|
-        y_iterator.each do |y|
+      y_iterator.each do |y|
+        (minx..maxx).each do |x|
           puts "download_tile(#{x}, #{y}, #{z}, #{tile_server})"
           raw_binary_blob = download_tile(x, y, z, tile_server)
         
@@ -139,9 +151,9 @@ end
     end
 
     combined_image.to_blob
-  rescue StandardError => e
-    Rails.logger.error "MapImageService failed: #{e.message}"
-    nil
+#  rescue StandardError => e
+#    Rails.logger.error "MapImageService failed: #{e.message}"
+#    nil
   ensure
     # Clean up the memory files immediately from RAM/temp space once finished
     in_memory_images.each(&:destroy!) rescue nil
