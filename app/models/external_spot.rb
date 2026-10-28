@@ -86,11 +86,16 @@ class ExternalSpot < ApplicationRecord
 
     # 4. Guard against empty runs (e.g. if all APIs time out)
     return if all_spots.empty?
+  
+    deduplicated_payload = all_spots.index_by { |row| 
+      "#{row[:source_api]}|#{row[:source_id]}" 
+    }.values
 
     # 5. Fire ONE single high-speed bulk transaction into PostgreSQL
     # We return both the raw IDs and the updated_at timestamp to identify state shifts.
+    logger.info all_spots.to_json
     db_result = ExternalSpot.upsert_all(
-      all_spots,
+      deduplicated_payload,
       unique_by: [:source_api, :source_id],
       returning: [:id, :updated_at]
     )
