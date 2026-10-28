@@ -266,9 +266,8 @@ class UsersController < ApplicationController
         password_confirmation = params[:user][:password_confirmation]
 
         @user = User.find_by_id(params[:id].to_i)
-        @user.convert_location_params(params[:x],params[:y]) 
-
         @user.assign_attributes(user_database_params)
+        @user.convert_location_params(params[:x],params[:y]) 
         if password && !password.empty?
           @user.password = password
           @user.password_confirmation = password_confirmation
