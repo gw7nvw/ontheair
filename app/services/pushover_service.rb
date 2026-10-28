@@ -44,8 +44,8 @@ class PushoverService
     end
     
     response
-  rescue Timeout::Error, Errno::ECONNREFUSED => e
-    Rails.logger.error "Pushover network connection failed: #{e.message}"
-    nil
+#  rescue Timeout::Error, Errno::ECONNREFUSED => e
+#    Rails.logger.error "Pushover network connection failed: #{e.message}"
+#    nil
   end
 end

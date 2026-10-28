@@ -245,6 +245,7 @@ SQL
   end
 
   def trigger_notifications
+    puts "PRocessing notifications for #{self.to_json}"
     # 1. Determine if this was a brand-new insert or an update
     # transaction_include_any_action?(:create) is the foolproof Rails way 
     # to detect a true INSERT state within an after_commit callback.
@@ -266,8 +267,10 @@ SQL
 
 
     if ENV["RAILS_ENV"] == "production"
+      puts "Enqueue notification"
       Resque.enqueue(::SendNotifications, self.id, is_new_record)
     else
+      puts "send real-time notification"
       SendNotifications.perform(self.id, is_new_record)
     end
   end
