@@ -265,10 +265,10 @@ SQL
     end
 
 
-    if ENV["RAILS_ENV"] == "production"
-      Resque.enqueue(SendNotifications, self.id, is_new_record)
-    else
+#    if ENV["RAILS_ENV"] == "production"
+#      Resque.enqueue(SendNotifications, self.id, is_new_record)
+#    else
       SendNotifications.perform(self.id, is_new_record)
-    end
+#    end
   end
 end
