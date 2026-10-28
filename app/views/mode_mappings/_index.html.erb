@@ -1,0 +1,65 @@
+
+<script>
+  function onload_tasks() {
+    reset_map_controllers();
+  }
+  document.getElementById("page_status").innerHTML = '';
+  document.body.classList.remove('loading');
+  document.title = <%= raw(@site_title) %>
+  document.getElementById('logo').innerHTML=<%= raw(@site_title) %>
+  if (window.map_is_ready) {
+    onload_tasks();
+  } else {
+    window.addEventListener('map:loaded', onload_tasks, { once: true });
+  }
+</script>
+
+<div id="actionbar" class="span7">
+   <div id="crumbs">
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     &nbsp;--&gt;&nbsp;
+     <%=link_to "Mode Mappings", '/mode_mappings', remote: true,  :id => 'mode_mappings', :onclick => "linkHandler('mode_mappings')" %>
+     </div>
+   <div id="controls">
+       <%=render 'map_controls'%>
+   </div>
+</div>
+<div id="right_scroll">
+  <%= render 'flash' %>
+
+  <%= form_for(@mode, remote: true) do |f| %>
+
+    <table class="places" id="district_table">
+      <tr>
+        <th>ID</th>
+        <th>Mode</th>
+        <th>Parent Mode</th>
+        <th>Actions</th>
+      </tr>
+      <% if @modes then @modes.each do |mode| %>
+        <% if mode.id != @mode.id %>
+          <tr>
+            <td><%=mode.id%></td>
+            <td><%=mode.raw_mode%></td>
+            <td><%=mode.parent_group%></td>
+            <td>
+              <%=  link_to "Edit", "/mode_mappings/#{mode.id}/edit", class: "btn btn-small btn-primary", remote: true,  :id => 'edit_mode', :onclick => "linkHandler('edit_mode')"  %>
+              <%=  link_to "Delete", "/mode_mappings/#{mode.id}/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_mode', :onclick => "linkHandler('delete_mode')" %>
+            </td>
+          </tr>
+        <% end %>
+      <% end end %>
+      <tr>
+        <td> <%= f.text_field :id, readonly: true %> </td>
+        <td> <%= f.text_field :raw_mode %> </td>
+        <td> <%= f.text_field :parent_group %> </td>
+        <% if @mode.id == nil then submit_name='Add mode' else submit_name='Save mode' end %>
+        <td><%= f.submit submit_name, :id => "update", :onclick => "submitHandler('Updating...');", :class => "btn btn-small" %></td>
+      </tr>
+    </table>
+  <% end %>
+</div>
+
+<script>
+  document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;
+</script>

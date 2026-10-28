@@ -12,6 +12,10 @@
   AWARDS_TOPIC=42
   PHOTO_TOPIC=41
 
+  # NZTM valid lat-long ranges
+  NZTM_LAT_RANGE = (-47.33..-34.1)
+  NZTM_LNG_RANGE = (166.37..178.63)
+
   # specific posts
   ACCESS_INFO="/posts/831/"
   VK_ACCESS_INFO="/posts/16843/"

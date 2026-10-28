@@ -354,7 +354,7 @@ class UsersControllerTest < ActionController::TestCase
     # mail
     assert_select "#mail_table"
     table=get_table_test(@response.body, "mail_table")
-    assert_equal 4, get_row_count_test(table), "4 rows"
+    assert_equal 5, get_row_count_test(table), "5 rows"
     row=get_row_test(table, 2)
     assert_match /SPOTS/, get_col_test(row, 1), "Spots"
     assert_match /No/, get_col_test(row, 2), "No mail"
@@ -487,7 +487,7 @@ class UsersControllerTest < ActionController::TestCase
     # mail
     assert_select "#mail_table"
     table=get_table_test(@response.body, "mail_table")
-    assert_equal 4, get_row_count_test(table), "4 rows"
+    assert_equal 5, get_row_count_test(table), "5 rows"
     row=get_row_test(table, 2)
     assert_match /SPOTS/, get_col_test(row, 1), "Spots"
     assert_match /No/, get_col_test(row, 2), "No mail"
@@ -619,7 +619,7 @@ class UsersControllerTest < ActionController::TestCase
     assert_match /#{make_regex_safe(asset1.codename)}/, get_col_test(row, 1), "Correct place"
     row=get_row_test(table, 2)
     assert_match /#{make_regex_safe(asset2.codename)}/, get_col_test(row, 1), "Correct place"
-    assert_match /site does not qualify/, get_col_test(row, 1), "Marked as invalid"
+    assert_match /minor site, not publicly listed/, get_col_test(row, 1), "Marked as invalid"
     row=get_row_test(table, 3)
     assert_match /#{make_regex_safe(asset3.codename)}/, get_col_test(row, 1), "Correct place"
 
@@ -628,7 +628,7 @@ class UsersControllerTest < ActionController::TestCase
     # chased
     get "assets", params: { id: "ZL3CC", asset_type: "summit", count_type: "chased" }
     # assert_select  "#valid_count", /2/  #cannot check as filled in by js
-    assert_select  "#total_count", /3/
+    assert_select  "#total_count", /4/
     assert_select  "#nq_count", /3/
 
     # list of assets - 3 unique asset chased
@@ -638,7 +638,7 @@ class UsersControllerTest < ActionController::TestCase
     assert_match /#{make_regex_safe(asset1.codename)}/, get_col_test(row, 1), "Correct place"
     row=get_row_test(table, 2)
     assert_match /#{make_regex_safe(asset2.codename)}/, get_col_test(row, 1), "Correct place"
-    assert_match /site does not qualify/, get_col_test(row, 1), "Marked as invalid"
+    assert_match /minor site, not publicly listed/, get_col_test(row, 1), "Marked as invalid"
     row=get_row_test(table, 3)
     assert_match /#{make_regex_safe(asset3.codename)}/, get_col_test(row, 1), "Correct place"
 
@@ -649,7 +649,7 @@ class UsersControllerTest < ActionController::TestCase
     get "assets", params: { id: "ZL4NVW", asset_type: "summit", count_type: "activated" }
     # activated
     # assert_select  "#act_valid_count", /2/  #cannot check as filled in by js
-    assert_select  "#act_total_count", /2/
+    assert_select  "#act_total_count", /3/
     assert_select  "#act_nq_count", /3/
     # qualified - none as not enough contacts
     # assert_select  "#valid_count", /0/  #cannot check as filled in by js
@@ -664,7 +664,6 @@ class UsersControllerTest < ActionController::TestCase
     row=get_row_test(table, 2)
     assert_match /#{make_regex_safe(asset2.codename)}/, get_col_test(row, 1), "Correct place"
     assert_match /insufficient contacts/, get_col_test(row, 1), "Not qualified"
-    assert_match /site does not qualify/, get_col_test(row, 1), "Marked as invalid"
     row=get_row_test(table, 3)
     assert_match /insufficient contacts/, get_col_test(row, 1), "Not qualified"
     assert_match /#{make_regex_safe(asset3.codename)}/, get_col_test(row, 1), "Correct place"
@@ -990,7 +989,7 @@ class UsersControllerTest < ActionController::TestCase
     sign_in(user2)
     asset1=create_test_asset(asset_type: "park")
     asset2=create_test_asset(asset_type: "park")
-    asset3=create_test_vkasset(award: "WWFF", code_prefix: "VKFF-0")
+    asset3=create_test_asset(asset_type: "wwff park", code_prefix: "VKFF-0")
     # 3 activations and 3 chases on successive days
     log=create_test_log(user1, asset_codes: [ asset1.code ], date: Time.now)
     contact=create_test_contact(user1, user2, log_id: log.id, asset1_codes: [ asset1.code ], asset2_codes: [ asset2.code ], time: Time.now)

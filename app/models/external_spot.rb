@@ -7,78 +7,37 @@ MAX_SPOT_LIFETIME = 60
 class ExternalSpot < ApplicationRecord
   before_validation :before_save_actions
   validate :record_is_unique
-  after_save :create_consolidated_spot
+  after_save :after_save_actions
+
+  # Define the absolute, uniform structure required for your bulk upserts
+  UPSERT_BLUEPRINT = {
+    source_api:        nil,
+    source_id:         nil,
+    time:              nil,
+    callsign:          nil,
+    activatorCallsign: nil,
+    code:              nil,
+    name:              nil,
+    frequency:         nil,
+    mode:              nil,
+    comments:          nil,
+    points:            nil,
+    altM:              nil,
+    is_test:           nil,
+    spot_type:         nil,
+    created_at:        nil,
+    updated_at:        nil
+  }.freeze
+
+
+  def after_save_actions
+    consolidate_changed_spots([self])
+  end
 
 
   def before_save_actions
      self.comments=self.comments[0..254] if self.comments
      self.mode = self.mode.upcase if self.mode
-  end
-
-  def create_consolidated_spot
-    newspot = false
-    if time.to_time > 1.day.ago
-      round_freq = frequency.to_d.round(4).to_s
-      base_call = activatorCallsign.gsub(/\/./, "") # remove single character suffix
-      dups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where (updated_at > ? or ('#{code}' = ANY(code) and updated_at > ?)) and \"activatorCallsign\" = '#{base_call}' and (frequency = '#{round_freq}' or frequency is null or frequency = '' or frequency = '0.0' or '#{round_freq}' = '' or '#{round_freq}' = '0.0') and (mode = '#{mode}' or mode is null or mode = '' or '#{mode}'='') order by created_at desc limit 1",  MAX_SPOT_CONSOLIDATION_TIME.minutes.ago, MAX_SPOT_LIFETIME.minutes.ago ]
-
-      reuse = false
-      if dups and dups.count>0
-        logger.error("SPOTCHECK: DUPS")
-        # check for exact matches within that result set
-        fulldups=ConsolidatedSpot.find_by_sql [ "select * from consolidated_spots where id in (?) and code @> ARRAY[?::varchar] and code <@ ARRAY[?::varchar]", dups.pluck(:id), code, code ]
-        if fulldups and fulldups.count>0 # prioritise full duplicate
-          dups = fulldups
-          reuse = true
-        else
-          reuse = true
-          # check that new assets overlap with old (VK/ZL)
-          if code.match?(/VK|ZL|AU|NZ/)
-            logger.error("SPOTCHECK: NZ/AU")
-            if !Asset.overlap_all?(dups.first.code, [ code ])
-              logger.error("SPOTCHECK: No everlap")
-              reuse = false
-            end
-          end
-
-          # check that n-fers are all programmes that allow n-fers
-          if reuse == true
-            dup = dups.first
-            combined_codes = (dup.code + [ code ]).uniq
-            combined_classes = Asset.get_pnp_classes_from_codes(combined_codes)
-            logger.error("SPOTCHECK: #{combined_classes.to_json}")
-            repeated_classes = combined_classes.tally.select { |item, count| count > 1 }.keys
-            logger.error("SPOTCHECK: #{repeated_classes.to_json}")
-            reuse = false if !AssetType.all_allow_multi?(repeated_classes)
-          end
-        end
-      end
-
-      # reuse existing spot if allowed, otherwise create new spot
-      if reuse == true
-        cs=dups.first
-      else
-        newspot = true
-        cs=ConsolidatedSpot.new
-        cs.activatorCallsign = base_call
-        cs.frequency = round_freq
-        cs.points = points if points and points>"0"
-        cs.altM = altM if altM and altM>"0"
-        cs.mode = mode
-      end
-      cs.frequency = round_freq if round_freq and round_freq != "" and round_freq.to_d != 0
-      cs.mode = mode if mode and mode != ""
-      cs.time += [ time ]
-      cs.callsign += [ callsign ]
-      if !cs.code.include?(code)
-        cs.code += [ code ]
-        cs.name += [ (name||"") ]
-        cs.spot_type += [ spot_type ]
-      end
-      cs.comments += [ "["+(if is_pnp then "PnP-" else "" end)+(spot_type||"")+"] "+((callsign||"")+": "+(comments||"") + " ("+(time.strftime("%H:%M:%S")||"")+")")[0..254] ]
-
-      cs.save
-    end
   end
 
   def record_is_unique
@@ -96,230 +55,392 @@ class ExternalSpot < ApplicationRecord
   end
 
   def self.fetch
-    spots = nil
+    all_spots = []
 
-    # only fetch if last read > 30 secs past
+    # 1. Guard against over-frequent calls
     thirtysecondsago = Time.at(Time.now.to_i - 30).in_time_zone("UTC").to_s
     as = AdminSettings.first
-    if !as.last_spot_read || (as.last_spot_read < thirtysecondsago)
-      # update last read time
-      as.last_spot_read = Time.now
-      as.save
+    return if as.last_spot_read && (as.last_spot_read > thirtysecondsago)
 
-      # clear old spots > 1 week ago from DB
-      ExternalSpot.delete_old_spots
-      ConsolidatedSpot.delete_old_spots
+    as.update_column(:last_spot_read, Time.now.utc)
 
-      # SOTA
-      spots=[]
-      # Check 'epoch' latest spot update key
-      epoch_url = "https://api-db2.sota.org.uk/api/spots/epoch"
-      as=AdminSettings.first
-      old_epoch=as.sota_epoch
-      new_epoch = fetch_external_url(epoch_url)
+    # 2. clear old spots > 1 week ago from DB
+    ExternalSpot.delete_old_spots
+    ConsolidatedSpot.delete_old_spots
 
-      # if epoch has chnaged, get new spots
-      unless old_epoch==new_epoch
-        as.sota_epoch=new_epoch
-        as.save
+    # 3. Fetch all spots
+    spots = fetch_sota
+    all_spots.concat(normalize_sota_spots(spots))
 
-        begin
-          Timeout.timeout(30) do
-            # read new spots
-            url = "https://api-db2.sota.org.uk/api/spots/50/all/all"
-            raw_response = fetch_external_url(url)
-            spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
-            # puts "GOT SOTA: "+spots.to_json
-          end
-        rescue
-          puts "ERROR: SOTA Timeout"
-        else
-        end
-      end
+    spots = fetch_pota
+    all_spots.concat(normalize_pota_spots(spots))
 
-      zlvk_sota_spots = spots || []
+    spots = fetch_llota
+    all_spots.concat(normalize_llota_spots(spots))
 
-      # POTA
-      spots=[]
-      begin
-        Timeout.timeout(30) do
-          url = "https://api.pota.app/spot/activator"
-          raw_response = fetch_external_url(url)
-          spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
-          # puts "GOT POTA: "+spots.to_json
-        end
-      rescue
-        puts "ERROR: POTA Timeout"
-      else
-      end
+    spots = fetch_wwff
+    all_spots.concat(normalize_wwff_spots(spots))
 
-      zlvk_pota_spots = spots || []
+    spots_string = fetch_hema
+    all_spots.concat(normalize_hema_spots(spots_string))
 
-      # LLOTA
-      spots=[]
-      begin
-        Timeout.timeout(30) do
-          url = "https://llota.app/api/spots"
-          raw_response = fetch_external_url(url)
-          spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
-          # puts "GOT LLOTA: "+spots.to_json
-        end
-      rescue
-        puts "ERROR: LLOTA Timeout"
-      else
-      end
+    # 4. Guard against empty runs (e.g. if all APIs time out)
+    return if all_spots.empty?
 
-      zlvk_llota_spots = spots || []
+    # 5. Fire ONE single high-speed bulk transaction into PostgreSQL
+    # We return both the raw IDs and the updated_at timestamp to identify state shifts.
+    db_result = ExternalSpot.upsert_all(
+      all_spots,
+      unique_by: [:source_api, :source_id],
+      returning: [:id, :updated_at]
+    )
 
-
-      # WWFF
-      spots=[]
-      begin
-        Timeout.timeout(30) do
-          url = "https://spots.wwff.co/static/spots.json"
-          raw_response = fetch_external_url(url)
-          spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
-          # puts "GOT WWFF: "+spots.to_json
-        end
-      rescue
-        puts "ERROR: WWFF Timeout"
-      else
-      end
-      wwff_spots = spots || []
-
-      # HEMA
-      hemaspots = []
-      begin
-        Timeout.timeout(30) do
-          url = "http://hema.org.uk/spotsMobile.jsp"
-          spots_string = fetch_external_url(url)
-          spots_list = spots_string.split("=")
-          spots_list[1..-1].each do |spotstring|
-            next unless spotstring && spotstring[";"]
-            # puts spotstring
-            spot = spotstring.split(";")
-            hemaspot = { time: spot[0], activatorCallsign: spot[2], code: spot[3], name: spot[4], frequency: spot[5].split(" ")[0], mode: (spot[5] || "").split("(")[1].split(")")[0], callsign: (spot[6] || "").split("(")[1].split(")")[0], comments: (spot[6] || "").split(" ")[1], spot_type: "HEMA" }
-            hemaspot[:time] = (hemaspot[:time].to_datetime ? hemaspot[:time].to_datetime.in_time_zone("UTC") : nil)
-            hemaspots += [ hemaspot ]
-            # puts 'done'
-          end
-        end
-      rescue
-        puts "ERROR: HEMA Timeout"
-      else
-      end
-
-      # Parks N Peaks
-#      pnp_spots=[]
-#      begin
-#        Timeout.timeout(30) do
-#          url = "http://www.parksnpeaks.org/api/ALL"
-#          raw_response = fetch_external_url(url)
-#          pnp_spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
-#          puts pnp_spots.to_json
-#        end
-#      rescue
-#        puts "ERROR: PnP Timeout"
-#      else
-#      end
-
-      # add to db
-      zlvk_sota_spots.each do |spot|
-        ExternalSpot.create(
-          time: spot["timeStamp"].to_datetime ? spot["timeStamp"].to_datetime.in_time_zone("UTC") : nil,
-          callsign: spot["callsign"].strip,
-          activatorCallsign: spot["activatorCallsign"].strip,
-          code: spot["summitCode"].gsub("?", "X"),
-          name: spot["summitName"],
-          frequency: spot["frequency"].to_s,
-          mode: (if spot["type"]=="QRT" then "QRT" else spot["mode"] end),
-          comments: spot["comments"],
-          epoch: spot["epoch"] || "",
-          points: spot["points"].to_s || "",
-          altM: spot["AltM"].to_s || "",
-          is_test: (spot["type"]=="TEST"),
-          spot_type: "SOTA"
-        )
-      end
-
-      zlvk_llota_spots.each do |spot|
-        spot["reference"]="LL"+spot["reference"] if spot["reference"] and spot["reference"][2]=="-"
-        ExternalSpot.create(
-          time: spot["updated_at"].to_datetime ? spot["updated_at"].to_datetime.in_time_zone("UTC") : nil,
-          callsign: spot["history"][-1]["spotter_callsign"] ? spot["history"][-1]["spotter_callsign"] : spot["callsign"].strip,
-          activatorCallsign: spot["callsign"].strip,
-          code: spot["reference"],
-          name: spot["reference_name"],
-          frequency: (spot["frequency"].to_f / 1000).to_s,
-          mode: spot["mode"],
-          #          comments: spot['history'][-1]['comment'][0..255],
-          comments: spot.dig("history", -1, "comment")&.slice(0..255),
-          spot_type: "LLOTA"
-        )
-      end
-      zlvk_pota_spots.each do |spot|
-        ExternalSpot.create(
-          time: spot["spotTime"].to_datetime ? spot["spotTime"].to_datetime.in_time_zone("UTC") : nil,
-          callsign: spot["spotter"].strip,
-          activatorCallsign: spot["activator"].strip,
-          code: spot["reference"],
-          name: spot["name"],
-          frequency: (spot["frequency"].to_f / 1000).to_s,
-          mode: spot["mode"],
-          comments: spot["comments"][0..255],
-          spot_type: "POTA"
-        )
-      end
-      wwff_spots.each do |spot|
-        result=ExternalSpot.create(
-          time: spot["spot_time_formatted"].to_datetime ? spot["spot_time_formatted"].to_datetime.in_time_zone("UTC") : nil,
-          callsign: spot["spotter"].strip,
-          activatorCallsign: spot["activator"].strip,
-          code: spot["reference"] && !spot["reference"].empty? ? spot["reference"] : "UNKNOWN",
-          name: spot["reference_name"] && !spot["reference_name"].empty? ? spot["reference_name"] : "UNKNOWN",
-          frequency: (if spot["frequency_khz"].to_f then (spot["frequency_khz"].to_f/1000).to_s else "" end),
-          mode: spot["mode"],
-          comments: spot["remarks"][0..255],
-          spot_type: "WWFF"
-        )
-      end
-#      pnp_spots.each do |spot|
-#        ExternalSpot.create(
-#          time: spot["actTime"].to_datetime ? spot["actTime"].to_datetime.in_time_zone("UTC") : nil,
-#          callsign: spot["actSpoter"].strip,
-#          activatorCallsign: spot["actCallsign"].strip,
-#          code: (spot["actSiteID"] && !spot["actSiteID"].empty? ? spot["actSiteID"] : spot["actLocation"]).gsub("?", "X"),
-#          name: spot["altLocation"] && !spot["altLocation"].empty? ? spot["altLocation"] : spot["actLocation"],
-#          frequency: spot["actFreq"],
-#          mode: spot["actMode"],
-#          comments: spot["actComments"][0..255],
-#          spot_type: spot["actClass"],
-#          is_pnp: true
-#        )
-#      end
-
-
-      hemaspots.each do |spot|
-        ExternalSpot.create(spot)
-      end
+    # 6. Filter for only the external records that actually CHANGED or were NEW 
+    # during this minute's sweep (ignoring pristine un-changed duplicates)
+    changed_external_rows = db_result.select do |row|
+      row['updated_at'] >= 1.minute.ago
     end
-  end
 
-  private
-
-  def self.send_wwff_spot_now(spotid)
-    # Do anything here, like access models, etc
-    puts Time.now.to_s + " DEBUG: sending wwff spot"
-    es=ExternalSpot.find_by(id: spotid)
-    if (Time.now-es.time) <180
-      puts es.to_json
-      topic=Topic.find(SPOT_TOPIC)
-      if es and es.time then
-        pnp_response = Post.send_to_pnp(true, "[#{es.code}]", es.activatorCallsign, es.frequency, es.mode, es.comments, topic, es.time.strftime("%Y-%m-%d"), es.time.strftime("%H:%M"), "UTC", callsign)
-        puts pnp_response.to_json
-      end
-    else
-      puts "Too old: "+es.time.to_s
+    # If there are changes, consolidate them into consolidated_spots
+    if changed_external_rows.any?
+     consolidate_changed_spots(changed_external_rows)
     end
   end
 end
+  private
+
+  def normalize_hema_spots(raw_text_stream)
+  # 1. Split rows by '=', ignoring the header/timestamp line if it doesn't contain a spot
+  rows = raw_text_stream.to_s.split('=')
+
+  # Remove the very first element if it's just the top-level timestamp (e.g., "26/10/2026 05:47")
+  rows.shift if rows.first&.include?('/') && !rows.first&.include?(';')
+
+  rows.map do |row|
+    columns = row.split(';')
+    next if columns.size < 6 # Skip malformed or trailing empty splits
+
+    # Safe extraction based on the positions we mapped out
+    hema_id   = columns[1]&.strip
+    activator = columns[2]&.strip&.upcase
+    code      = columns[3]&.strip&.upcase
+    name      = columns[4]&.strip
+
+    # Parse "7.085 (SSB)" into components
+    freq_mode_raw = columns[5]&.strip || ""
+    frequency     = freq_mode_raw.split(' ').first # "7.085"
+    mode          = freq_mode_raw.match(/\((.*?)\)/)&.captures&.first&.upcase # "SSB"
+
+    # Parse spotter out of "(HEMA_ASSISTANT) comment here"
+    spotter_comment_raw = columns[6]&.strip || ""
+    spotter = spotter_comment_raw.match(/\((.*?)\)/)&.captures&.first&.upcase || activator
+    comment = spotter_comment_raw&.to_s&.gsub(/\(.*?\)/, '')&.scrub&.strip&.slice(0, 255)
+
+    {
+      source_api:        "HEMA",
+      source_id:         hema_id.to_s, # "6261" - Clean and verified!
+      time:              columns[0] ? Time.zone.parse(columns[0]).utc : Time.now.utc,
+      callsign:          spotter,
+      activatorCallsign: activator,
+      code:              code,
+      name:              name,
+      frequency:         frequency,
+      mode:              mode,
+      comments:          comment,
+      points:            nil,
+      altM:              nil,
+      is_test:           nil,
+      spot_type:         "HEMA",
+    }
+  end.compact
+end
+
+def normalize_llota_spots(raw_spots)
+  raw_spots.map do |spot|
+    latest_history = spot["history"]&.last || {}
+
+    {
+      # The 2-field matching anchors
+      source_api:        "LLOTA",
+      source_id:         spot["id"].to_s, # Ensure the API's unique ID is mapped here
+
+      time:              spot["updated_at"] ? Time.zone.parse(spot["updated_at"]).utc : Time.now.utc,
+      callsign:          latest_history["spotter_callsign"]&.strip&.upcase || spot["callsign"]&.strip&.upcase,
+      activatorCallsign: spot["callsign"]&.strip&.upcase,
+      code:              spot["reference"]&.strip&.upcase,
+      name:              spot["reference_name"]&.strip,
+      frequency:         spot["frequency"].present? ? (spot["frequency"].to_f / 1000.0).to_s : nil,
+      mode:              spot["mode"]&.strip&.upcase,
+      comments:          latest_history["comment"]&.to_s&.scrub&.slice(0, 255),
+      points:            nil,
+      altM:              nil,
+      is_test:           nil,
+      spot_type:         "LLOTA",
+    }
+  end
+end
+
+def normalize_wwff_spots(raw_spots)
+  raw_spots.map do |spot|
+    {
+      # The 2-field matching anchors
+      source_api:        "wWFF",
+      source_id:         spot["id"].to_s, # Ensure the API's unique ID is mapped here
+
+      time:              spot["spot_time_formatted"] ? Time.zone.parse(spot["spot_time_formatted"]).utc : Time.now.utc,
+      callsign:          spot["spotter"]&.strip&.upcase,
+      activatorCallsign: spot["activator"]&.strip&.upcase,
+      code:              spot["reference"]&.strip&.upcase,
+      name:              spot["reference_name"]&.strip,
+      frequency:         spot["frequency_khz"].present? ? (spot["frequency_khz"].to_f / 1000.0).to_s : nil,
+      mode:              spot["mode"]&.strip&.upcase,
+      comments:          spot["remarks"]&.to_s&.scrub&.slice(0, 255),
+      points:            nil,
+      altM:              nil,
+      is_test:           nil,
+      spot_type:         "WWFF",
+    }
+  end
+end
+
+def normalize_pota_spots(raw_spots)
+  raw_spots.map do |spot|
+    {
+      # The 2-field matching anchors
+      source_api:        "POTA",
+      source_id:         spot["spotId"].to_s, # Ensure the API's unique ID is mapped here
+
+      time:              spot["spotTime"] ? Time.zone.parse(spot["spotTime"]).utc : Time.now.utc,
+      callsign:          spot["spotter"]&.strip&.upcase,
+      activatorCallsign: spot["activator"]&.strip&.upcase,
+      code:              spot["reference"]&.strip&.upcase,
+      name:              spot["name"]&.strip,
+      frequency:         spot["frequency"].present? ? (spot["frequency"].to_f / 1000.0).to_s : nil,
+      mode:              spot["mode"]&.strip&.upcase,
+      comments:          spot["comments"]&.to_s&.scrub&.slice(0, 255),
+      points:            nil,
+      altM:              nil,
+      is_test:           nil,
+      spot_type:         "POTA",
+    }
+  end
+end
+
+def normalize_sota_spots(raw_spots)
+  raw_spots.map do |spot|
+    {
+      # The 2-field matching anchors
+      source_api:        "SOTA",
+      source_id:         spot["id"].to_s, # Ensure the API's unique ID is mapped here
+
+      time:              spot["timeStamp"] ? Time.zone.parse(spot["timeStamp"]).utc : Time.now.utc,
+      callsign:          spot["callsign"]&.strip&.upcase,
+      activatorCallsign: spot["activatorCallsign"]&.strip&.upcase,
+      code:              spot["summitCode"]&.strip&.upcase,
+      name:              spot["summitName"]&.strip,
+      frequency:         spot["frequency"]&.to_s,
+      mode:              (if spot['type']=='QRT' then 'QRT' else spot['mode']&.strip&.upcase end),
+      comments:          spot["comments"]&.to_s&.scrub&.slice(0, 255),
+      points:            spot["points"]&.to_s,
+      altM:              spot["AltM"]&.to_s,
+      is_test:           (spot['type']=='TEST'),
+      spot_type:         "SOTA",
+    }
+  end
+end
+
+def fetch_sota
+  spots=[]
+  # Check 'epoch' latest spot update key
+  epoch_url = "https://api-db2.sota.org.uk/api/spots/epoch"
+  as=AdminSettings.first
+  old_epoch=as.sota_epoch
+  new_epoch = fetch_external_url(epoch_url)
+
+  # if epoch has chnaged, get new spots
+  unless old_epoch==new_epoch
+    as.sota_epoch=new_epoch
+    as.save
+
+    begin
+      Timeout.timeout(10) do
+        # read new spots
+        url = "https://api-db2.sota.org.uk/api/spots/50/all/all"
+        raw_response = fetch_external_url(url)
+        spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
+        # puts "GOT SOTA: "+spots.to_json
+      end
+    rescue
+      puts "ERROR: SOTA Timeout"
+    else
+    end
+  end
+  spots
+end
+
+def fetch_pota
+  # POTA
+  spots=[]
+  begin
+    Timeout.timeout(10) do
+      url = "https://api.pota.app/spot/activator"
+      raw_response = fetch_external_url(url)
+      spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
+      # puts "GOT POTA: "+spots.to_json
+    end
+  rescue
+    puts "ERROR: POTA Timeout"
+  else
+  end
+  spots
+end
+
+def fetch_wwff
+  # WWFF
+  spots=[]
+  begin
+    Timeout.timeout(30) do
+      url = "https://spots.wwff.co/static/spots.json"
+      raw_response = fetch_external_url(url)
+      spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
+      # puts "GOT WWFF: "+spots.to_json
+    end
+  rescue
+    puts "ERROR: WWFF Timeout"
+  else
+  end
+  spots
+end
+
+def fetch_llota
+  # LLOTA
+  spots=[]
+  begin
+    Timeout.timeout(30) do
+      url = "https://llota.app/api/spots"
+      raw_response = fetch_external_url(url)
+      spots = JSON.parse(raw_response.blank? ? "[]" : raw_response)
+      # puts "GOT LLOTA: "+spots.to_json
+    end
+  rescue
+    puts "ERROR: LLOTA Timeout"
+  else
+  end
+  spots
+end
+
+def fetch_hema
+  # HEMA
+  spots_string=""
+  begin
+    Timeout.timeout(30) do
+      url = "http://hema.org.uk/spotsMobile.jsp"
+      spots_string = fetch_external_url(url)
+    end
+  rescue
+    puts "ERROR: HEMA Timeout"
+  else
+  end
+  spots_string
+end
+
+def consolidate_changed_spots(changed_external_rows)
+  external_spot_ids = changed_external_rows.map { |row| row['id'] }
+  spots_to_process  = ExternalSpot.where(id: external_spot_ids).to_a
+
+  spots_to_process.each do |external_spot|
+    # Step 1: Clean data and query candidate target
+    round_freq = external_spot.frequency.to_d.round(4).to_s
+    base_call  = User.remove_call_suffix(external_spot.activatorCallsign||"UNKNOWN")
+
+    # Step 2: Check if we can merge into existing spot
+    matching_spot = find_matching_consolidated_spot(external_spot)
+
+    merge = true if matching_spot and consolidation_valid?(external_spot, matching_spot)
+
+    if merge == true
+      cs = matching_spot
+    else
+      cs = ConsolidatedSpot.new(
+        activatorCallsign: base_call,
+        frequency:         round_freq,
+        mode:              external_spot.mode
+      )
+      cs.points = external_spot.points if external_spot.points.present? && external_spot.points.to_i > 0
+      cs.altM   = external_spot.altM   if external_spot.altM.present? && external_spot.altM.to_i > 0
+    end
+    # 4. Safe Attribute Overlay
+    cs.frequency = round_freq if round_freq.present? && round_freq.to_d != 0
+    cs.mode      = external_spot.mode if external_spot.mode.present?
+    cs.time += [ external_spot.time ]
+    cs.callsign += [ external_spot.callsign ]
+    if !cs.code.include?(external_spot.code)
+      cs.code += [ external_spot.code ]
+      cs.name += [ (external_spot.name||"") ]
+      cs.spot_type += [ external_spot.spot_type ]
+    end
+    formatted_comment = "["+(external_spot.spot_type||"")+"] "+((external_spot.callsign||"")+": "+(external_spot.comments||"") + " ("+(external_spot.time.strftime("%H:%M:%S")||"")+")")
+    cs.comments = cs.comments + [formatted_comment.slice(0, 255)]
+    
+    # 7. Persist and hand off to Step 3 Notifications Ledger
+    if cs.changed?
+      cs.save!
+    end
+  end
+end
+
+def consolidation_valid?(external_spot, consolidated_spot)
+  #allow if code alrady there
+  return true if consolidated_spot.code.include?(external_spot.code)
+
+
+  # check that new assets overlap with old (VK/ZL)
+  if external_spot.code.match?(/VK|ZL|AU|NZ/)
+    logger.debug("SPOTCHECK: NZ/AU")
+    if !Asset.overlap_all?(consolidated_spot.code, [ external_spot.code ])
+      logger.debug("SPOTCHECK: No overlap")
+      return false
+    end
+  end
+
+  # check that n-fers are all programmes that allow n-fers
+  combined_codes = (consolidated_spot.code + [ external_spot.code ]).uniq
+  combined_classes = Asset.get_pnp_classes_from_codes(combined_codes)
+  logger.debug("SPOTCHECK: #{combined_classes.to_json}")
+  repeated_classes = combined_classes.tally.select { |item, count| count > 1 }.keys
+  logger.error("SPOTCHECK: #{repeated_classes.to_json}")
+  return false if !AssetType.all_allow_multi?(repeated_classes)
+
+  return true
+end
+
+
+def find_matching_consolidated_spot(external_spot)
+  # 1. Clean the incoming matching variables exactly as your logic dictates
+  incoming_khz = external_spot.frequency.present? ? (external_spot.frequency.to_d * 1000).to_d.truncate.to_i : 0
+  base_call  = User.remove_call_suffix(external_spot.activatorCallsign||"UNKNOWN")
+  incoming_mode = external_spot.mode.to_s.strip.upcase
+
+  # 2. Build a clean, parameterized ActiveRecord relation
+  ConsolidatedSpot.where(activatorCallsign: base_call)
+    .where(
+      "(updated_at > :max_consolidation) OR (:code = ANY(code) AND updated_at > :max_lifetime)",
+      max_consolidation: MAX_SPOT_CONSOLIDATION_TIME.minutes.ago,
+      max_lifetime:      MAX_SPOT_LIFETIME.minutes.ago,
+      code:              external_spot.code
+    )
+    .where(
+      "trunc(NULLIF(NULLIF(frequency,''), '0.0')::decimal * 1000) = :freq OR frequency IS NULL OR frequency = '' OR frequency = '0.0' OR :freq = '' OR :freq = '0'",
+      freq: incoming_khz
+    )
+    .where(
+      "COALESCE((SELECT parent_group FROM mode_mappings WHERE raw_mode = consolidated_spots.mode), consolidated_spots.mode) = " \
+      "COALESCE((SELECT parent_group FROM mode_mappings WHERE raw_mode = :incoming_mode), :incoming_mode) " \
+      "OR consolidated_spots.mode IS NULL OR consolidated_spots.mode = '' OR :incoming_mode = ''",
+      incoming_mode: incoming_mode
+    )
+    .order(created_at: :desc)
+    .first
+end
+
+

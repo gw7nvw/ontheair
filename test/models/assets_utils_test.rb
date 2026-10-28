@@ -39,7 +39,7 @@ class AssetSaveTest < ActiveSupport::TestCase
     asset3=create_test_asset(asset_type: "park", location: create_point(173.01, -45.01), test_radius: 0.1)
 
     loc=Asset.get_most_accurate_location([ asset1.code, asset2.code, asset3.code ])
-    assert_equal create_point(173, -45).to_s, loc[:location].to_s, "Point location preferreed"
+    assert_equal "POINT (173 -45)", loc[:location].to_s, "Point location preferreed"
     assert_equal "point", loc[:source], "Point lcoation preferred"
     assert_equal asset2, loc[:asset], "Point asset returned"
   end

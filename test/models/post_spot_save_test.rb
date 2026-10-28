@@ -17,8 +17,8 @@ class PostSpotSaveTest < ActiveSupport::TestCase
 
   test "Known VK asset codes handled OK" do
     user1=create_test_user
-    asset1=create_test_vkasset(award: "SOTA", code: "VK3/CB-001", location: create_point(148.79, -35.61))
-    asset2=create_test_vkasset(award: "WWFF", code_prefix: "VKFF-0")
+    asset1=create_test_asset(asset_type: "summit", code: "VK3/CB-001", location: create_point(148.79, -35.61))
+    asset2=create_test_asset(asset_type: "wwff park", code_prefix: "VKFF-0")
 
     item=create_test_spot(user1, asset_codes: [ asset1.code, asset2.code ])
     spot=item.post
@@ -121,18 +121,7 @@ class PostSpotSaveTest < ActiveSupport::TestCase
     spot=item.post
 
     location=spot.get_most_accurate_location
-    assert_equal create_point(173, -45).to_s, location.to_s, "Point location preferreed"
-  end
-
-  test "Get loction for spot handles vk-asset" do
-    user1=create_test_user(logs_pota: true, logs_wwff: false)
-    asset1=create_test_vkasset(award: "SOTA", code: "VK3/CB-001", location: create_point(148.79, -35.61))
-
-    item=create_test_spot(user1, asset_codes: [ asset1.code ])
-    spot=item.post
-
-    location=spot.get_most_accurate_location
-    assert_equal "", location.to_s, "VK asset returns blank location"
+    assert_equal "POINT (173 -45)", location.to_s, "Point location preferreed"
   end
 
   test "Get loction for spot handles unknown-asset" do

@@ -65,12 +65,47 @@
       <%= f.label :timezone, 'Timezone you will use in logs, spots, etc' %>
       <%= collection_select( :user, :timezone, Timezone.all.order(:name), :id, :name, {}) %>
 
+      <div class="erow">
+        <div class="hrline">
+          <hr noshade size="4">
+        </div>
+      </div>
+
+      <div class="erow">
+        <div class="leftbuttons">
+          <span title="Click to draw location on map">
+            <img id="placeplus" src="/icons/draw-point.png" onclick="site_drawPlace('placetick', 'placeplus', 'user_location', 'user_x', 'user_y')" width="16" style="display:block">
+          </span>
+
+          <span title="Click to confirm selection">
+            <img id="placetick" src="/icons/tick.png" onclick="site_selectNothing('placetick', 'placeplus')" width="16" style="display:none">
+          </span>
+        </div>
+
+      <div class="sectiontitle25">Home QTH:</div>
+      </div>
+      <%= f.hidden_field :location, :readonly => true %>
+
+      <%= f.label :x %>
+      <%= f.text_field :x, :size => 8 %>
+
+      <%= f.label :y %>
+      <%= f.text_field :y, :size => 8 %>
+      <div class="erow"><small><i>QTH location is used as the map centre point when you access this website.  Your location is visible to other registered users, but not the general public. You can leave this field blank, or generalise your location to the nearest township, etc if you are concerned about privacy. Select your location by clicking on the pencil and drawing a point on the map, then click the creen tick to confirm. Or enter the coordinates in decimal degrees or NZTM2000 coordinates.<br/></i></small></div>
+
+      <div class="erow">
+        <div class="hrline">
+          <hr noshade size="4">
+        </div>
+      </div>
+
+
       <%= f.label :password %>
       <%= f.password_field :password %>
 
       <%= f.label :password_confirmation, "Confirmation" %>
       <%= f.password_field :password_confirmation %>
-      <div class="erow"><small><i>Password rules: any combination of letters and numbers. No spaces or extended characters<br/></i></small></div>
+      <div class="erow"><small><i>Password rules: any combination of letters and numbers. No spaces or extended characters. You can leave password blank when editing user details to retain your existing password<br/></i></small></div>
 
       <div class="erow">
         <div class="hrline">

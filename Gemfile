@@ -30,7 +30,8 @@ gem "htmlentities"
 gem "keycloak"
 gem "rexml", "~> 3.3"
 gem "rack-cors"
-
+# magemagik tools
+gem "mini_magick"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
 
@@ -76,6 +77,7 @@ group :test do
   gem "selenium-webdriver"
   gem "webmock"
   gem "vcr"
+  gem "minitest-mock"
 end
 
 gem "jsbundling-rails", "~> 1.3"

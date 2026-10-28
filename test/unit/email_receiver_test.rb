@@ -35,7 +35,7 @@ or with GPS. To learn more, visit http://explore.garmin.com/inreach.
     # 2. Assert that running the parser triggers your model creation instantly!
     # (Swap 'ExternalSpot' below with whatever your self.perform method builds)
     assert_difference "ConsolidatedSpot.count", 1, "The email failed to create a spot record inline" do
-      EmailReceive.new(raw_email)
+      EmailReceiver.new(raw_email)
     end
 
     # 3. Verify the record properties match the parsed email fields
@@ -70,7 +70,7 @@ More sotamat-related bumph goes here
     # 2. Assert that running the parser triggers your model creation instantly!
     # (Swap 'ExternalSpot' below with whatever your self.perform method builds)
     assert_difference "ConsolidatedSpot.count", 1, "The email failed to create a spot record inline" do
-      EmailReceive.new(raw_email)
+      EmailReceiver.new(raw_email)
     end
 
     # 3. Verify the record properties match the parsed email fields
@@ -113,13 +113,13 @@ or with GPS. To learn more, visit http://explore.garmin.com/inreach.
     # 2. Assert that running the parser triggers your model creation instantly!
     # (Swap 'ExternalSpot' below with whatever your self.perform method builds)
     assert_difference "Post.count", 1, "The email failed to create an alert record inline" do
-      EmailReceive.new(raw_email)
+      EmailReceiver.new(raw_email)
     end
 
     # 3. Verify the record properties match the parsed email fields
     newest_alert = Post.order(created_at: :desc).first
-    assert_equal newest_alert.attributes.excluding([ "created_at", "updated_at", "id", "time", "comments", "post_id" ]),
-      { "title" => "ALERT: #{user1.callsign} going portable to #{asset1.name} [#{asset1.code}] on 3.690/SSB at #{t1.strftime("%Y-%m-%d %H:%M UTC")}", "description" => "time +/- (via InReach)", "created_by_id" => user1.id, "updated_by_id" => user1.id, "filename" => nil, "image_file_name" => nil, "image_content_type" => nil, "image_file_size" => nil, "image_updated_at" => nil, "do_not_publish" => nil, "referenced_datetime" => nil, "referenced_date" => t1.to_date, "referenced_time" => t1, "duration" => nil, "site" => "#{asset1.name} [#{asset1.code}] {RE44nt}", "code" => nil, "mode" => "SSB", "freq" => "3.690", "is_hut" => nil, "is_park" => nil, "is_island" => nil, "is_summit" => nil, "hut" => nil, "park" => nil, "island" => nil, "summit" => nil, "callsign" => user1.callsign, "asset_codes" => [ asset1.code ], "user_id" => nil, "do_not_lookup" => nil, "location" => nil, "loc_source" => nil }
+    assert_equal newest_alert.attributes.excluding([ "created_at", "updated_at", "id", "time", "comments", "post_id", "filename", "image_file_name", "image_file_size", "image_updated_at" ]),
+      { "title" => "ALERT: #{user1.callsign} going portable to #{asset1.name} [#{asset1.code}] on 3.690/SSB at #{t1.strftime("%Y-%m-%d %H:%M UTC")}", "description" => "time +/- (via InReach)", "created_by_id" => user1.id, "updated_by_id" => user1.id, "image_content_type" => "image/jpeg", "do_not_publish" => nil, "referenced_datetime" => nil, "referenced_date" => t1.to_date, "referenced_time" => t1, "duration" => nil, "site" => "#{asset1.name} [#{asset1.code}] {RE44nt}", "code" => nil, "mode" => "SSB", "freq" => "3.690", "is_hut" => nil, "is_park" => nil, "is_island" => nil, "is_summit" => nil, "hut" => nil, "park" => nil, "island" => nil, "summit" => nil, "callsign" => user1.callsign, "asset_codes" => [ asset1.code ], "user_id" => nil, "do_not_lookup" => nil, "location" => nil, "loc_source" => nil }
     "Wrong parameters in alert"
   end
 
@@ -150,7 +150,7 @@ or with GPS. To learn more, visit http://explore.garmin.com/inreach.
     EMAIL
 
     assert_emails 1 do
-      EmailReceive.new(raw_email)
+      EmailReceiver.new(raw_email)
     end
 
     sent_emails = ActionMailer::Base.deliveries
@@ -166,8 +166,8 @@ or with GPS. To learn more, visit http://explore.garmin.com/inreach.
     user1.lastname="user"
     user1.save
 
-    asset1=create_test_asset(asset_type: "wwff park", region: "OT", location: create_point(169.1, -45.2), test_radius: 0.1, code_prefix: "ZLFF-")
-    asset2=create_test_asset(asset_type: "wwff park", region: "OT", location: create_point(169.1, -45.2), test_radius: 0.2, code_prefix: "ZLFF-")
+    asset1=create_test_asset(asset_type: "pota park", region: "OT", location: create_point(169.1, -45.2), test_radius: 0.1, code_prefix: "NZ-0")
+    asset2=create_test_asset(asset_type: "pota park", region: "OT", location: create_point(169.1, -45.2), test_radius: 0.2, code_prefix: "NZ-0")
 
     # 1. Prepare raw incoming email text
     raw_email = <<~EMAIL
@@ -191,7 +191,7 @@ or with GPS. To learn more, visit http://explore.garmin.com/inreach.
     # 2. Assert that running the parser triggers your model creation instantly!
     # (Swap 'ExternalSpot' below with whatever your self.perform method builds)
     assert_difference "ConsolidatedSpot.count", 1, "The email failed to create a spot record inline" do
-      EmailReceive.new(raw_email)
+      EmailReceiver.new(raw_email)
     end
 
     # 3. Verify the record properties match the parsed email fields
@@ -232,7 +232,7 @@ or with GPS. To learn more, visit http://explore.garmin.com/inreach.
     # 2. Assert that running the parser triggers your model creation instantly!
     # (Swap 'ExternalSpot' below with whatever your self.perform method builds)
     assert_difference "ConsolidatedSpot.count", 1, "The email failed to create a spot record inline" do
-      EmailReceive.new(raw_email)
+      EmailReceiver.new(raw_email)
     end
 
     # 3. Verify the record properties match the parsed email fields
@@ -276,7 +276,7 @@ test "should authenticate user via subject and extract attached ADIF log file te
   EMAIL
 
   assert_difference "Log.count", 1, "The email failed to create a log record" do
-    EmailReceive.new(raw_upload_email)
+    EmailReceiver.new(raw_upload_email)
   end
   # 3. Verify the record properties match the parsed email fields
   log = Log.order(created_at: :desc).first
@@ -341,7 +341,7 @@ test "should authenticate user via subject and reject log if not matching" do
   EMAIL
 
   assert_difference "Log.count", 0, "The email created a log record when it should have been rejected" do
-    EmailReceive.new(raw_upload_email)
+    EmailReceiver.new(raw_upload_email)
   end
 end
 end

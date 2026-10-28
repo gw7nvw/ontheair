@@ -256,47 +256,6 @@ File generated on 03 Feb, 2023 at 07:11
   end
 
 
-  test "can handle vk assets" do
-    user1=create_test_user
-    asset1=create_test_vkasset(award: "WWFF", code_prefix: "VKFF-0")
-    asset2=create_test_vkasset(award: "SOTA", code: "VK3/CB-001", location: create_point(148.79, -35.61))
-
-    logstring=ADIF_HEADER+ADIF_ENTRY
-    logstring=logstring.gsub("CALLSIGN1", user1.callsign)
-    logstring=logstring.gsub("CALLSIGN2", "VK2IO")
-    logstring=logstring.gsub("ASSET1", asset1.code)
-    logstring=logstring.gsub("ASSET2", asset2.code)
-
-    logs=Log.import("adif", user1, logstring, user1)
-
-    assert_equal logs[:success], true, "Sucessful exit"
-    assert_equal logs[:errors], [], "No errors"
-    assert_equal logs[:good_logs], 1, "One log"
-    assert_equal logs[:good_contacts], 1, "one contact"
-    assert_equal logs[:logs].count, 1, "Really is one log"
-    log=logs[:logs].first
-
-    user2=User.find_by(callsign: "VK2IO")
-    assert_equal "VK2IO", user2.callsign
-    assert_equal log.user1_id, user1.id
-    assert_equal log.callsign1, user1.callsign
-    assert_equal log.asset_codes, [ asset1.code ]
-    assert_equal log.date.to_date, "2023-02-02".to_date
-    contacts=log.contacts
-    assert_equal contacts.count, 1, "Really is one contact"
-    contact=contacts.first
-    assert_equal contact.user1_id, user1.id
-    assert_equal contact.callsign1, user1.callsign
-    assert_equal contact.asset1_codes, [ asset1.code ]
-    assert_equal contact.date.to_date, "2023-02-02".to_date
-    assert_equal contact.time.to_time, "2023-02-02 22:17".to_time
-    assert_equal contact.user2_id, user2.id
-    assert_equal contact.callsign2, user2.callsign
-    assert_equal contact.asset2_codes, [ asset2.code ]
-    assert_equal contact.mode, "SSB"
-    assert_equal contact.frequency, 7.090
-  end
-
   test "rejects contact with no date" do
     user1=create_test_user
     user2=create_test_user
@@ -961,7 +920,7 @@ File generated on 03 Feb, 2023 at 07:11
     assert_equal logs[:good_contacts], 1, "one contact"
     log=logs[:logs].first
     contact=log.contacts.first
-    assert_equal "POINT (169.0 -44.5)", contact.location2.to_s
+    assert_equal "POINT (169 -44.5)", contact.location2.to_s
     assert_equal "user", contact.loc_source2
 
     # lat,lon preferred
@@ -1364,7 +1323,7 @@ test "parameter combinations and formats (name)" do
     assert_equal logs[:good_contacts], 1, "one contact"
     log=logs[:logs].first
     contact=log.contacts.first
-    assert_equal "POINT (169.0 -44.5)", contact.location1.to_s
+    assert_equal "POINT (169 -44.5)", contact.location1.to_s
     assert_equal "user", log.loc_source
 
     # lat,lon preferred

@@ -164,7 +164,7 @@ function site_init() {
       }
       if(typeof(def_x)!='undefined' && typeof(def_y)!='undefined') {
          var centre='POINT('+def_x+' '+def_y+')';
-         map_centre(centre,site_projection);
+         map_centre(centre,'EPSG:4326');
       }
     }
 

@@ -18,9 +18,11 @@ if ENV["RAILS_API_ONLY"] == "true"
   match "/api/VK/:id", to: "api#pnp_vk",    via: "get"
   match "/api/DELETE/SPOT/:callsign/:pin", to: "api#pnp_delete_spot",    via: "get"
   match "/api/CHECK/SPOTS", to: "api#pnp_check_spots",    via: "get"
+  match "/api/check/spots", to: "api#pnp_check_spots",    via: "get"
   match "/api/ALERTS", to: "api#pnp_alerts",    via: "get"
   match "/api/ALERT", to: "api#pnp_post_alert",    via: "post"
   match "/api/CHECK", to: "api#pnp_check",    via: "get"
+  match "/api/check", to: "api#pnp_check",    via: "get"
   match "/api/SITES/CHECK", to: "api#pnp_check",    via: "get"
   match "/api/SITES/:id", to: "api#pnp_sites_by_class",    via: "get"
   match "/api/SITES", to: "api#pnp_sites",    via: "get"
@@ -176,6 +178,10 @@ else
   resources :callsigns, only: [ :create, :edit, :update ]
   get "callsigns/:id/delete", to: "callsigns#delete"
   patch "callsigns/:id", to: "callsigns#update"
+
+  resources :mode_mappings, only: [ :index, :edit, :update, :create ]
+  get "mode_mappings/:id/delete", to: "mode_mappings#delete"
+
 # template: [:index, :show, :new, :create, :edit, :update, :destroy]
   resources :comments, only: [:index, :show, :new, :create, :edit, :update]
   get "comments/:id/delete", to: "comments#delete"
@@ -238,6 +244,7 @@ else
   get "users/:id/test_notification", to: "users#test_notification"
   get "users/:id/awards", to: "users#awards"
   get "users/:id/stats", to: "users#stats"
+  get "users/:id/notifications", to: "users#notifications"
   get "users/:id/region_progress", to: "users#region_progress"
   get "users/:id/district_progress", to: "users#district_progress"
   get "users/:id/p2p", to: "users#p2p"
@@ -245,6 +252,9 @@ else
   get "users/:id/delete", to: "users#delete"
   get "users/:id/set_external", to: "users#update_external"
   match "/signup",  to: "users#new",         via: "get"
+
+  resources :user_notification_links, only: [:new, :create, :edit, :update]
+  get "user_notification_links/:id/delete", to: "user_notification_links#delete"
 
   post "posts/sms", to: "posts#sms"
   get "posts/sms", to: "posts#sms"

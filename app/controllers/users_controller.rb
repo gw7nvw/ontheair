@@ -4,8 +4,9 @@
 
 class UsersController < ApplicationController
   include ApplicationHelper
+  include UserViewPreparer
 
-  before_action :signed_in_user, only: %i[index edit update district_progress region_progress awards stats assets p2p]
+  before_action :signed_in_user, only: %i[index edit update district_progress region_progress awards stats assets p2p notifications]
 
   def test_notification
     @user = User.find_by(callsign: params[:id].upcase)
@@ -15,7 +16,7 @@ class UsersController < ApplicationController
     else
       flash[:error] = "You need to enter your pushover credentials to use this service"
     end
-    redirect_to "/users/#{@user.callsign}"
+    redirect_to "/users/#{@user.callsign}/notifications"
   end
 
   def district_progress
@@ -31,6 +32,14 @@ class UsersController < ApplicationController
     @award_classes = AssetType.where("name not in #{class_filter}").order(:name)
     @district_assets = District.get_assets_with_type(@dxcc, @region.sota_code)
     @districts = District.where(dxcc: @dxcc, region_code: @region.sota_code)
+  end
+
+  def notifications
+    prepare_user_show_data(params[:id])
+
+    @filter = UserNotificationLink.new
+    @filter.priority=0
+    @filter.user_id = @user.id
   end
 
   def region_progress
@@ -170,26 +179,7 @@ class UsersController < ApplicationController
   end
 
   def show
-    users = User.find_by_sql [ "select * from users where callsign='#{params[:id]}' or id=#{params[:id].to_i}" ]
-    if !users || (users.count < 1)
-      users = UserCallsign.where(callsign: params[:id])
-      if users && (users.count > 0)
-        user = users.first.user
-        if user
-          redirect_to "/users/" + user.callsign
-        else
-          flash[:error] = "Callsign " + params[:id] + " not found"
-          redirect_to "/"
-        end
-      else
-        flash[:error] = "Callsign " + params[:id] + " not found"
-        redirect_to "/"
-      end
-    elsif users && (users.count > 0)
-      @user = users.first
-      @callsign = UserCallsign.new
-      @callsign.user_id = @user.id
-    end
+    prepare_user_show_data(params[:id])
   end
 
   def new
@@ -203,7 +193,7 @@ class UsersController < ApplicationController
 
     logger.info user_params.to_s
     #    user = User.find_by('email = ? and callsign = ? and activated is not true', user_params[:email]&.downcase,user_params[:callsign]&.upcase)
-    user = User.new(user_params)
+    user = User.new(user_database_params)
 
     user.callsign = user.callsign.strip
     existing_user = User.find_by(callsign: user.callsign.upcase)
@@ -227,7 +217,7 @@ class UsersController < ApplicationController
     @user.hide_news_at = Time.now
 
     @user.read_only = true unless @user.valid_callsign?
-
+    @user.convert_location_params(params[:x],params[:y]) 
     if @user.save
       @user.reload
       sign_in @user
@@ -276,8 +266,9 @@ class UsersController < ApplicationController
         password_confirmation = params[:user][:password_confirmation]
 
         @user = User.find_by_id(params[:id].to_i)
+        @user.convert_location_params(params[:x],params[:y]) 
 
-        @user.assign_attributes(user_params)
+        @user.assign_attributes(user_database_params)
         if password && !password.empty?
           @user.password = password
           @user.password_confirmation = password_confirmation
@@ -294,6 +285,7 @@ class UsersController < ApplicationController
             @user.password = nil
             @user.password_confirmation = nil
           end
+
 
           if @user.save
             flash[:success] = "User details updated"
@@ -318,29 +310,7 @@ class UsersController < ApplicationController
     end
   end
 
-  # update users external spot filters
-  def update_external
-    @user = current_user
-    if current_user && current_user.is_admin || current_user.group_admin then @user = User.where(callsign: params[:id]).first end
-    @user.push_external_filter={ programme: params[:programme], continent: params[:continent], mode: params[:mode], callsign: (params[:callsign]||"").gsub("*", "%").gsub(" ", ""), reference: (params[:reference]||"").gsub("*", "%").gsub(" ", ""), band: params[:band] }
-    @user.push_external_filter={ continent: [ "OC" ] } if @user.push_external_filter == "" or @user.push_external_filter==nil or @user.push_external_filter=={} or @user.push_external_filter.values.join("") == ""
-    @user.push_external_filter.delete(:reference) if @user.push_external_filter[:reference]==""
-    @user.push_external_filter.delete(:callsign) if @user.push_external_filter[:callsign]==""
-    @user.push_external_filter.delete(:mode) if @user.push_external_filter[:mode]=="" or @user.push_external_filter[:mode]==[ "" ]
-    @user.push_external_filter.delete(:continent) if @user.push_external_filter[:continent]=="" or @user.push_external_filter[:continent]==[ "" ]
-    @user.push_external_filter.delete(:programme) if @user.push_external_filter[:programme]=="" or @user.push_external_filter[:programme]==[ "" ]
-    @user.push_external_filter.delete(:band) if @user.push_external_filter[:band]==""  or @user.push_external_filter[:band]==[ "" ]
-    if @user.push_external_filter[:reference]
-      if @user.push_external_filter[:reference][0]!="%" then @user.push_external_filter[:reference]="%"+@user.push_external_filter[:reference] end
-      if @user.push_external_filter[:reference][-1]!="%" then @user.push_external_filter[:reference]=@user.push_external_filter[:reference]+"%" end
-    end
-    @user.push_external_filter.compact!
-    if !@user.save
-      flash[:error]=@user.errors
-    end
-    show
-    render "show"
-  end
+
   # Add a user-topic-link (mailer)
   def add
     @user = current_user
@@ -350,7 +320,7 @@ class UsersController < ApplicationController
       flash[:error] = "Pushover registration is required to receive instant notifications - see Pushover Config section to configure pushover or consult the user's guide for details of how to set up the pushover app"
       @topics = Topic.where(is_active = true)
       show
-      render "show"
+      render "notifications"
     else
       if params[:topic_id] == "external" then
         @user.push_include_external = true
@@ -371,8 +341,12 @@ class UsersController < ApplicationController
         end
       end
       @topics = Topic.where(is_active: true)
-      show
-      render "show"
+      prepare_user_show_data(params[:id])
+      @filter = UserNotificationLink.new
+      @filter.priority=0
+      @filter.user_id = @user.id
+
+      render "notifications"
     end
   end
 
@@ -384,7 +358,7 @@ class UsersController < ApplicationController
       @user.push_include_external = false
       @user.save
       show
-      render "show"
+      render "notifications"
     else
       @topic = Topic.find_by_id(params[:topic_id])
 
@@ -395,8 +369,11 @@ class UsersController < ApplicationController
         flash[:error] = "Error locating user or topic specified"
       end
       @topics = Topic.where(is_active: true)
-      show
-      render "show"
+      prepare_user_show_data(params[:id])
+      @filter = UserNotificationLink.new
+      @filter.priority=0
+      @filter.user_id = @user.id
+      render "notifications"
     end
   end
 
@@ -430,9 +407,14 @@ class UsersController < ApplicationController
     end
   end
 
+
   private
 
   def user_params
-    params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin, :acctnumber, :logs_pota, :logs_wwff, :push_app_token, :push_user_token, :push_include_comments, :push_include_map)
+    params.require(:user).permit(:callsign, :firstname, :lastname, :email, :timezone, :home_qth, :pin, :acctnumber, :logs_pota, :logs_wwff, :push_app_token, :push_user_token, :push_include_comments, :push_include_map, :location, :x, :y)
+  end
+
+  def user_database_params
+    user_params.except(:x, :y, :location)
   end
 end

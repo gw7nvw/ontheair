@@ -39,13 +39,13 @@ class ApplicationController < ActionController::Base
 
     if @current_country=="VK"
       @dxcc = "VK"
-      @default_x =  16085209
-      @default_y = -4006631
+      @default_x =  147
+      @default_y = -35
       @zoomlevel = 6
     else
       @dxcc = "ZL"
-      @default_x =  19430000
-      @default_y = -5040000
+      @default_x =  174.2
+      @default_y = -40.5
       @zoomlevel = 7
     end
 
@@ -72,8 +72,6 @@ class ApplicationController < ActionController::Base
     else
       @tz = Timezone.find_by(name: "UTC")
     end
-    # @map_x=as.default_x.to_d
-    # @map_y=as.default_y.to_d
     x = params[:x] if params[:x]
     y = params[:y] if params[:y]
     if x and y then
@@ -87,6 +85,9 @@ class ApplicationController < ActionController::Base
       xyarr= transform_geom(x, y, srs, trs)
       @map_x=xyarr[0]  if xyarr
       @map_y=xyarr[1] if xyarr
+    elsif current_user and !current_user.location.blank?
+      @map_x=current_user.location.x
+      @map_y=current_user.location.y
     end
     @zoomlevel = params[:zoom] if params[:zoom]
     @proj=as.default_projection
@@ -162,6 +163,10 @@ class ApplicationController < ActionController::Base
 
   def signed_in_user
     redirect_to signin_url + "?referring_url=" + CGI.escape(request.fullpath), notice: "Please sign in." unless signed_in?
+  end
+
+  def admin_user
+    redirect_to '/', notice: "You do not have permissions to access this page" unless current_user.is_admin
   end
 
   def log_visit
