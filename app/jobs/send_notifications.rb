@@ -26,6 +26,7 @@ class SendNotifications
       # Because the image is pre-compiled, this loop executes extremely fast.
       potential_matches.each do |link|
         user = link.user
+        next if spot.code==["K-TEST"] and user.id!=4 
         next unless user
 
         # Deduplicate updates using your one-hour ledger table
