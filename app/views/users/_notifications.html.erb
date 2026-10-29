@@ -73,7 +73,7 @@
 
   <% if @user.push_include_external %>
     <% 
-      @continents=Continent.where("name != 'all'").pluck(:name)
+      @continents=Continent.where("name != 'all'").pluck(:name, :code)
       @bands=Band.all.order(:min_frequency).pluck(:meter_band)
       @modes=[ 'AM', 'CW','DATA','FM','FT4','FT8','SSB']
       @programmes=[ 'HEMA', 'POTA', 'SOTA', 'SiOTA', 'WWFF', 'ZLOTA']

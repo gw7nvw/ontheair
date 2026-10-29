@@ -3,7 +3,12 @@ class PushoverService
 
   # Make it a class method so it can be called seamlessly without instantiation
   def self.send_alert(user, notification, url, comments, image_base64, priority)
+    if user.push_app_token.blank? or user.push_user_token.blank?
+      Resque.logger.error "User has no pushover credentials: #{user.callsign} (#{user.id})"
+      return
+    end
     if comments and user.push_include_comments then notification += ": "+comments end
+
 
     uri = URI.parse(PUSHOVER_URL)
     req = Net::HTTP::Post.new(uri.request_uri)
