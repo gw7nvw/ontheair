@@ -31,7 +31,16 @@ RAILS_ENV=production bundle exec rails assets:precompile
 
 # 6. RELOAD PHUSION PASSENGER INSTANTLY WITHOUT DOWNTIME
 sudo service apache2 restart
-sudo service resque-worker restart
+# 1. Reload the systemd daemon config matrix just in case any unit files shifted
+sudo systemctl daemon-reload
+
+# 2. Restart your master process loop coordinator
+sudo systemctl restart resque-scheduler.service
+
+# 3. Restart your primary background workers (wildcard handles all active queues)
+sudo systemctl restart "resque-worker"
+sudo systemctl restart "resque-worker@*"
+sudo systemctl restart "resque-notifications"
 
 echo "Deployment completed successfully!"
 
