@@ -19,10 +19,10 @@ class SendNotifications
       return if potential_matches.empty?
 
       # 3. HEAVY CPU OPERATION: Generate map/payload EXACTLY ONCE
-      if spot.code==["ZL3/HSL-001"] #debug 
+     # if spot.code==["ZL3/HSL-001"] #debug 
       image_base64 = MapImageService.generate_matrix(spot.code) # Matrix 9 tiles into 1 jpeg
       message_url  = spot.url
-      end
+    #  end
       # 4. ITERATE & DISPATCH HTTP CALLS SEQUENTIALLY
       # Because the image is pre-compiled, this loop executes extremely fast.
       potential_matches.each do |link|
