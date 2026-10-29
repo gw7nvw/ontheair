@@ -27,7 +27,7 @@ class Post < ActiveRecord::Base
     add_containing_codes
     # again to vet child codes added
     check_codes
-    self.callsign = callsign.upcase if callsign
+    self.callsign=User.remove_call_suffix(callsign.upcase) if callsign
     update_site
     self.site = self.site[0..254] if self.site
   end
