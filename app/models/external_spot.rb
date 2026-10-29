@@ -86,7 +86,7 @@ class ExternalSpot < ApplicationRecord
 
     # 4. Guard against empty runs (e.g. if all APIs time out)
     return if all_spots.empty?
-  
+
     deduplicated_payload = all_spots.index_by { |row| 
       "#{row[:source_api]}|#{row[:source_id]}" 
     }.values
@@ -124,7 +124,7 @@ end
   rows.map do |row|
     columns = row.split(';')
     next if columns.size < 6 # Skip malformed or trailing empty splits
-
+    next if columns[0] and Time.zone.parse(columns[0]).utc<2.hours.ago
     # Safe extraction based on the positions we mapped out
     activator = columns[2]&.strip&.upcase
     code      = columns[3]&.strip&.upcase
@@ -139,6 +139,7 @@ end
     spotter_comment_raw = columns[6]&.strip || ""
     spotter = spotter_comment_raw.match(/\((.*?)\)/)&.captures&.first&.upcase || activator
     comment = spotter_comment_raw&.to_s&.gsub(/\(.*?\)/, '')&.scrub&.strip&.slice(0, 255)
+    
 
     spotstr = [
       callsign:          spotter,
