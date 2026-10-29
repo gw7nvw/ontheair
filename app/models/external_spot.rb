@@ -126,7 +126,6 @@ end
     next if columns.size < 6 # Skip malformed or trailing empty splits
 
     # Safe extraction based on the positions we mapped out
-    hema_id   = columns[1]&.strip
     activator = columns[2]&.strip&.upcase
     code      = columns[3]&.strip&.upcase
     name      = columns[4]&.strip
@@ -141,10 +140,7 @@ end
     spotter = spotter_comment_raw.match(/\((.*?)\)/)&.captures&.first&.upcase || activator
     comment = spotter_comment_raw&.to_s&.gsub(/\(.*?\)/, '')&.scrub&.strip&.slice(0, 255)
 
-    {
-      source_api:        "HEMA",
-      source_id:         hema_id.to_s, # "6261" - Clean and verified!
-      time:              columns[0] ? Time.zone.parse(columns[0]).utc : Time.now.utc,
+    spotstr = [
       callsign:          spotter,
       activatorCallsign: activator,
       code:              code,
@@ -152,12 +148,28 @@ end
       frequency:         frequency,
       mode:              mode,
       comments:          comment,
+    ].join('|')
+
+    stable_hema_id = Digest::SHA256.hexdigest(spotstr)
+
+    {
+      source_api:        "HEMA",
+      source_id:         stable_hema_id,
+      callsign:          spotter,
+      activatorCallsign: activator,
+      code:              code,
+      name:              name,
+      frequency:         frequency.to_s,
+      mode:              mode,
+      comments:          comment,
       points:            nil,
       altM:              nil,
+      time:              columns[0] ? Time.zone.parse(columns[0]).utc : Time.now.utc,
       is_test:           nil,
       spot_type:         "HEMA",
     }
   end.compact
+
 end
 
 def normalize_llota_spots(raw_spots)
@@ -436,7 +448,7 @@ def find_matching_consolidated_spot(external_spot)
     )
     .where(
       "trunc(NULLIF(NULLIF(frequency,''), '0.0')::decimal * 1000) = :freq OR frequency IS NULL OR frequency = '' OR frequency = '0.0' OR :freq = '' OR :freq = '0'",
-      freq: incoming_khz
+      freq: incoming_khz.to_s
     )
     .where(
       "COALESCE((SELECT parent_group FROM mode_mappings WHERE raw_mode = consolidated_spots.mode), consolidated_spots.mode) = " \

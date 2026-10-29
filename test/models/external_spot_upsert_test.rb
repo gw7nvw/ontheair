@@ -34,7 +34,7 @@ class ExternalSpotUpsertTest < ActiveSupport::TestCase
     end
     # 3. VERIFY PRODUCTION DATA INTEGRITY
     sota_spot = ExternalSpot.find_by(source_api: "SOTA", source_id: "416542")
-    hema_spot = ExternalSpot.find_by(source_api: "HEMA", source_id: "6261")
+    hema_spot = ExternalSpot.find_by(source_api: "HEMA", source_id: "36aff3626286d64d6ec4e2de23c4d632232de3413d1a1d01a42332b87d575e4c")
 
     #store for later
     sota_updated = sota_spot.updated_at
@@ -71,7 +71,7 @@ class ExternalSpotUpsertTest < ActiveSupport::TestCase
       end
     end
     sota_spot = ExternalSpot.find_by(source_api: "SOTA", source_id: "416542")
-    hema_spot = ExternalSpot.find_by(source_api: "HEMA", source_id: "6261")
+    hema_spot = ExternalSpot.find_by(source_api: "HEMA", source_id: "36aff3626286d64d6ec4e2de23c4d632232de3413d1a1d01a42332b87d575e4c")
 puts sota_spot.to_json
 
     # Check the spots were not updated
@@ -99,7 +99,7 @@ puts sota_spot.to_json
     end
     # 3. VERIFY PRODUCTION DATA INTEGRITY
     sota_spot = ExternalSpot.find_by(source_api: "SOTA", source_id: "416542")
-    hema_spot = ExternalSpot.find_by(source_api: "HEMA", source_id: "6261")
+    hema_spot = ExternalSpot.find_by(source_api: "HEMA", source_id: "36aff3626286d64d6ec4e2de23c4d632232de3413d1a1d01a42332b87d575e4c")
 
     assert_not_nil sota_spot
     assert_equal "JO2BWZ/2", sota_spot.activatorCallsign
@@ -130,7 +130,7 @@ puts sota_spot.to_json
     end
     # 3. VERIFY PRODUCTION DATA INTEGRITY
     sota_spot = ExternalSpot.find_by(source_api: "SOTA", source_id: "416542")
-    hema_spot = ExternalSpot.find_by(source_api: "HEMA", source_id: "6261")
+    hema_spot = ExternalSpot.find_by(source_api: "HEMA", source_id: "36aff3626286d64d6ec4e2de23c4d632232de3413d1a1d01a42332b87d575e4c")
 
     # SOTA spot updated
     assert_not_nil sota_spot
