@@ -40,6 +40,8 @@ class PushoverService
     
     # Optional: Parse response to log bad credentials
     if response.code == "400"
+      puts "ERROR: Pushover API 400 Error: #{response.body}"
+      Resque.logger.error "Pushover API 400 Error: #{response.body}"
       Rails.logger.error "Pushover API 400 Error: #{response.body}"
     end
     
