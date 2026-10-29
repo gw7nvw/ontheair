@@ -148,11 +148,9 @@
           <br/>
           <span>
             <% if topic.is_spot then %>
-              Publish on SOTA/WWFF/ParksnPeaks
-            <% else %>
-              Publish on Parks n Peaks
+              Publish on SOTA/WWFF/etc
+              <input id="pnp" name="pnp" type="checkbox" <% if !topic.is_test then%> checked="checked" <% end %>>
             <% end %>
-            <input id="pnp" name="pnp" type="checkbox" checked="checked">
           </span>
           <% if(@submit_button != "Save Changes" and current_user and current_user.is_admin) %>
             <span>

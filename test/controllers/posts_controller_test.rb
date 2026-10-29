@@ -132,7 +132,6 @@ class PostsControllerTest < ActionController::TestCase
     assert_select "#post_freq"
     assert_select "#post_mode"
     assert_select "#post_asset_codes"
-    assert_select "#pnp"
     assert_select "#submit", { value: "Create Post" }
 
     thedate=Time.now

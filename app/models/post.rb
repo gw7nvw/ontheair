@@ -34,9 +34,11 @@ class Post < ActiveRecord::Base
   end
 
   def assign_operating_conditions
-    self.is_portable = true if self.callsign.upcase.match(/\/P$/)
-    self.is_qrp = true if self.callsign.upcase.match(/\/QRP$/)
-    self.is_mobile = true if self.callsign.upcase.match(/\/M$/)
+    if self.callsign 
+      self.is_portable = true if self.callsign.upcase.match(/\/P$/)
+      self.is_qrp = true if self.callsign.upcase.match(/\/QRP$/)
+      self.is_mobile = true if self.callsign.upcase.match(/\/M$/)
+    end
   end
 
   def update_site

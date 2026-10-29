@@ -20,7 +20,7 @@ CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public;
 -- Name: pg_stat_statements; Type: EXTENSION; Schema: -; Owner: -
 --
 
---CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
+-- CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
 
 
 --
@@ -2147,7 +2147,8 @@ CREATE TABLE public.topics (
     duration_required boolean,
     is_alert boolean,
     is_spot boolean,
-    allow_attachments boolean
+    allow_attachments boolean,
+    is_test boolean
 );
 
 
@@ -4135,6 +4136,7 @@ CREATE UNIQUE INDEX unique_schema_migrations ON public.schema_migrations USING b
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261029065950'),
 ('20261029060159'),
 ('20261029053717'),
 ('20261028010711'),
