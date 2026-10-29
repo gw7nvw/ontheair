@@ -415,12 +415,18 @@ class PostsController < ApplicationController
       end
 
       if @topic.is_spot
-
         @post.referenced_time = Time.now
         @post.referenced_date = Time.now
-
       end
       @topic.last_updated = Time.now
+
+      @post.is_portable = true if @post.callsign.upcase.match(/\/P$/)
+      @post.is_qrp = true if @post.callsign.upcase.match(/\/QRP$/)
+      @post.is_mobile = true if @post.callsign.upcase.match(/\/M$/)
+
+      suffix=""
+      suffix='/M' if @post.is_mobile
+      suffix='/P' if @post.is_portable
 
       if !invalid && (debug || (!debug && @post.save))
         @post.add_map_image if @topic.is_spot || @topic.is_alert
@@ -438,10 +444,9 @@ class PostsController < ApplicationController
         end
         flash[:success] = "Posted! "
         @edit = true
-
         if params[:pnp] == "on"
           @post.do_not_publish = false #override if pnp specified
-          success = @post.send_to_all(debug, current_user, @post.callsign, @post.asset_codes, @post.freq, @post.mode, @post.description, @topic, @post.referenced_date.strftime("%Y-%m-%d"), @post.referenced_time.strftime("%H:%M"), "UTC")
+          success = @post.send_to_all(debug, current_user, @post.callsign+suffix, @post.asset_codes, @post.freq, @post.mode, @post.description, @topic, @post.referenced_date.strftime("%Y-%m-%d"), @post.referenced_time.strftime("%H:%M"), "UTC")
           puts "DEBUG: controller success: " + success.to_s
           flash[:error] = success[:messages] if success[:result] == false
           if (success[:result] == true) && (success[:messages] != "") then flash[:success] += success[:messages] end

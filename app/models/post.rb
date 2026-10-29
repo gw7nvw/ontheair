@@ -27,9 +27,16 @@ class Post < ActiveRecord::Base
     add_containing_codes
     # again to vet child codes added
     check_codes
+    assign_operating_conditions
     self.callsign=User.remove_call_suffix(callsign.upcase) if callsign
     update_site
     self.site = self.site[0..254] if self.site
+  end
+
+  def assign_operating_conditions
+    self.is_portable = true if self.callsign.upcase.match(/\/P$/)
+    self.is_qrp = true if self.callsign.upcase.match(/\/QRP$/)
+    self.is_mobile = true if self.callsign.upcase.match(/\/M$/)
   end
 
   def update_site

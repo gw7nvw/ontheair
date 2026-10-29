@@ -391,6 +391,9 @@ def consolidate_changed_spots(changed_external_rows)
     cs.mode      = external_spot.mode if external_spot.mode.present?
     cs.time += [ external_spot.time ]
     cs.callsign += [ external_spot.callsign ]
+    cs.is_portable = true if external_spot.activatorCallsign.upcase.match(/\/P$/)
+    cs.is_qrp = true if external_spot.activatorCallsign.upcase.match(/\/QRP$/)
+    cs.is_mobile = true if external_spot.activatorCallsign.upcase.match(/\/M$/)
     if !cs.code.include?(external_spot.code)
       cs.code += [ external_spot.code ]
       cs.name += [ (external_spot.name||"") ]

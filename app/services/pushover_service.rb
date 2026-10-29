@@ -24,7 +24,7 @@ class PushoverService
     # Add optional fields only if they are present
     payload[:url] = url if url.present?
     
-    if image_base64.present?
+    if image_base64.present? and user.push_include_map!=false
       payload[:attachment_base64] = image_base64
       payload[:attachment_type]   = "image/jpeg"
     end

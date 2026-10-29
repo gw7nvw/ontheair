@@ -43,10 +43,10 @@ test "should successfully fetch data from external APIs" do
 
   assert_equal hema.count, 10, "Got 10 HEMA records"
   assert_equal hema.first.attributes.excluding([ "created_at", "updated_at", "id" ]),
-    { "time" => "2026-08-25 08:44:00.000000000 UTC +00:00".to_time, "callsign" => "HEMA_ASSISTANT", "activatorCallsign" => "5B/VK2JI/P", "code" => "5B/HCY-050", "name" => "Gerakómoutti", "frequency" => "14.285", "mode" => "SSB", "comments" => "", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => nil, "altM" => nil, "is_pnp" => nil, "source_api" => "HEMA", "source_id" => "2740" },
+    { "time" => "2026-08-25 08:44:00.000000000 UTC +00:00".to_time, "callsign" => "HEMA_ASSISTANT", "activatorCallsign" => "5B/VK2JI/P", "code" => "5B/HCY-050", "name" => "Gerakómoutti", "frequency" => "14.285", "mode" => "SSB", "comments" => "", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => nil, "altM" => nil, "is_pnp" => nil, "source_api" => "HEMA", "source_id" => "2522fabab79c345514807d9b583c407f5fd71e9be5fb556bc1b2c82285eb1dfb" },
     "Got correct 1st HEMA spot"
   assert_equal hema.last.attributes.excluding([ "created_at", "updated_at", "id" ]),
-    { "time" => "2026-08-23 10:03:00.000000000 UTC +00:00".to_time, "callsign" => "M0KCB", "activatorCallsign" => "MW0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.313", "mode" => "SSB", "comments" => "Qsy", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => nil, "altM" => nil, "is_pnp" => nil, "source_api" => "HEMA", "source_id" => "5541" },
+    { "time" => "2026-08-23 10:03:00.000000000 UTC +00:00".to_time, "callsign" => "M0KCB", "activatorCallsign" => "MW0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.313", "mode" => "SSB", "comments" => "Qsy", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => nil, "altM" => nil, "is_pnp" => nil, "source_api" => "HEMA", "source_id" => "a0484861c27070228e686ebd7217732e30edd9d186171f637b13014fd60ee61a" },
     "Got correct last HEMA spot"
 
   # assert_equal llota.count, 10, 'Got 10 LLOTA records'
@@ -379,4 +379,79 @@ test "Check new comments added to same consolidated spot with no chnages to loca
 
 end
 
+test "/P should be recorded in new spot if provided" do
+  t1 = 3.minutes.ago
+  assert_difference "ConsolidatedSpot.count", 1 do
+    es = ExternalSpot.create({ "time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "M0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "SSB", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal true, cs.is_portable
+  assert_equal "M0KCB", cs.activatorCallsign
 end
+
+test "/P should be added to spot if provided" do
+  t1 = 3.minutes.ago
+  assert_difference "ConsolidatedSpot.count", 1 do
+    es = ExternalSpot.create({ "time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "M0KCB", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "SSB", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_nil cs.is_portable
+  assert_equal "M0KCB", cs.activatorCallsign
+
+  t1 = 2.minutes.ago
+  assert_difference "ConsolidatedSpot.count", 0 do
+    es = ExternalSpot.create({ "time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "M0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "SSB", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal true, cs.is_portable
+  assert_equal "M0KCB", cs.activatorCallsign
+end
+
+test "/P elsewhere in call does not trigger portable" do
+  t1 = 3.minutes.ago
+  assert_difference "ConsolidatedSpot.count", 1 do
+    es = ExternalSpot.create({ "time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "MM/P0KCB", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "SSB", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_nil cs.is_portable
+  assert_equal "P0KCB", cs.activatorCallsign
+end
+
+test "/M should be added to spot if provided" do
+  t1 = 3.minutes.ago
+  assert_difference "ConsolidatedSpot.count", 1 do
+    es = ExternalSpot.create({ "time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "M0KCB", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "SSB", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_nil cs.is_mobile
+  assert_equal "M0KCB", cs.activatorCallsign
+
+  t1 = 2.minutes.ago
+  assert_difference "ConsolidatedSpot.count", 0 do
+    es = ExternalSpot.create({ "time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "M0KCB/M", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "SSB", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal true, cs.is_mobile
+  assert_equal "M0KCB", cs.activatorCallsign
+end
+
+test "/QRP should be added to spot if provided" do
+  t1 = 3.minutes.ago
+  assert_difference "ConsolidatedSpot.count", 1 do
+    es = ExternalSpot.create({ "time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "M0KCB", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "SSB", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_nil cs.is_qrp
+  assert_equal "M0KCB", cs.activatorCallsign
+
+  t1 = 2.minutes.ago
+  assert_difference "ConsolidatedSpot.count", 0 do
+    es = ExternalSpot.create({ "time" => t1, "callsign" => "M0KCB", "activatorCallsign" => "M0KCB/QRP", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.075", "mode" => "SSB", "comments" => "Test spot", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => "6", "altM" => "1213", "is_pnp" => nil })
+  end
+  cs=ConsolidatedSpot.last
+  assert_equal true, cs.is_qrp
+  assert_equal "M0KCB", cs.activatorCallsign
+end
+
+end
+

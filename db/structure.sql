@@ -20,7 +20,7 @@ CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public;
 -- Name: pg_stat_statements; Type: EXTENSION; Schema: -; Owner: -
 --
 
--- CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
+--CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
 
 
 --
@@ -737,7 +737,10 @@ CREATE TABLE public.consolidated_spots (
     old_spot_type character varying(255)[] DEFAULT '{}'::character varying[],
     band character varying(255),
     dxcc character varying(255),
-    continent character varying(255)
+    continent character varying(255),
+    is_portable boolean,
+    is_qrp boolean,
+    is_mobile boolean
 );
 
 
@@ -1831,7 +1834,10 @@ CREATE TABLE public.posts (
     user_id integer,
     do_not_lookup boolean,
     location public.geometry(Point,4326),
-    loc_source character varying(255)
+    loc_source character varying(255),
+    is_portable boolean,
+    is_qrp boolean,
+    is_mobile boolean
 );
 
 
@@ -4129,6 +4135,8 @@ CREATE UNIQUE INDEX unique_schema_migrations ON public.schema_migrations USING b
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261029060159'),
+('20261029053717'),
 ('20261028010711'),
 ('20261027233405'),
 ('20261027200420'),
