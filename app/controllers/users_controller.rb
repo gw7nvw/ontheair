@@ -325,7 +325,6 @@ class UsersController < ApplicationController
     else
       if params[:topic_id] == "external" then
         @user.push_include_external = true
-        @user.push_external_filter={ continent: "OC" } if @user.push_external_filter == "" or @user.push_external_filter==nil or @user.push_external_filter=={} or @user.push_external_filter.values.join("") == ""
         @user.save
       else
         @topic = Topic.find_by_id(params[:topic_id])

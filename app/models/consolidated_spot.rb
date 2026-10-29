@@ -107,50 +107,6 @@ class ConsolidatedSpot < ActiveRecord::Base
     find_by_sql(sanitized_sql).map(&:attributes)
   end
 
-  def self.get_pnp_spots_orig(start_time, zone)
-    sql = <<-SQL
-      SELECT jsonb_agg(spot_json) AS final_payload FROM (
-        SELECT#{' '}
-         (
-           jsonb_build_object(
-             'actTime', f.t_val, 'actId', f.id, 'actSiteID', f.c_val, 'ID', f.c_val,
-             'actCallsign', f."activatorCallsign", 'actMode', f.mode,
-             'actComments', CASE WHEN LENGTH(f.codes_str) - LENGTH(REPLACE(f.codes_str, ',', '')) > 0 THEN CONCAT('[', f.codes_str, '] ', f.comm_val) ELSE f.comm_val END,
-             'actFreq', f.frequency, 'actClass', f.st_val, 'altLocation', f.n_val, 'actSpoter', f.cs_val,
-             'actLocation', CASE WHEN f.st_val IN ('SOTA', 'SIOTA', 'SHIRES', 'ZLOTA') THEN f.c_val ELSE f.n_val END
-           ) ||
-           jsonb_strip_nulls(
-             jsonb_build_object(
-               'WWFFid', f.code_array[array_position(f.spot_type_array, 'WWFF')],
-               'WWFFID', f.code_array[array_position(f.spot_type_array, 'WWFF')],
-               'ParkID', f.code_array[array_position(f.spot_type_array, 'WWFF')],
-               'POTAID', f.code_array[array_position(f.spot_type_array, 'POTA')],
-               'SOTAID', f.code_array[array_position(f.spot_type_array, 'SOTA')],
-               'SANPCPAID', f.code_array[array_position(f.spot_type_array, 'SANPCPA')],
-               'KRMNPAID', f.code_array[array_position(f.spot_type_array, 'KRMNPA')]
-             )
-           )
-         ) AS spot_json
-        FROM (#{' '}
-           SELECT id, "activatorCallsign", mode, frequency, code AS code_array, spot_type AS spot_type_array,
-               time[cardinality(time)] AS t_val, code[cardinality(code)] AS c_val, spot_type[cardinality(spot_type)] AS st_val,
-               name[cardinality(name)] AS n_val, callsign[cardinality(callsign)] AS cs_val,
-               TRIM(REGEXP_REPLACE(LEFT(comments[cardinality(comments)], -10), '^[^:]*:', '')) AS comm_val,
-               array_to_string(ARRAY(SELECT DISTINCT unnest(code)), ', ') AS codes_str
-           FROM consolidated_spots
-           WHERE updated_at >= :start_time::timestamptz#{' '}
-             AND (:zone = 'ALL' OR continent = :zone)
-        ) as f
-        ORDER BY f.t_val DESC
-      ) as sub;
-    SQL
-
-    # 2. Bind the variables safely (Double-check that start_time and zone are not nil)
-    sanitized_sql = sanitize_sql_array([ sql, { start_time: start_time, zone: zone } ])
-
-    # 3. Pull raw string text directly from the execution block
-    connection.select_value(sanitized_sql) || "[]"
-  end
   def self.get_pnp_spots(start_time, zone)
 sql = <<-SQL
   SELECT jsonb_agg(spot_json) AS final_payload FROM (
@@ -221,28 +177,6 @@ SQL
     connection.select_value(sanitized_sql) || "[]"
   end
 
-  def get_subs(programme_array)
-    if !programme_array.blank?
-      subs = User.find_by_sql [ "
-        SELECT * from users where \
-            push_include_external is true  \
-          AND \
-            (push_external_filter not like '%%:programme:%%' or push_external_filter LIKE ANY ( ARRAY [#{programme_array}] )) \
-          AND \
-            (push_external_filter not like '%%:continent:%%' or push_external_filter LIKE '%%:continent:%%#{self.continent}%%') \
-          AND \
-            (push_external_filter not like '%%:mode:%%' or push_external_filter ILIKE '%%:mode:%%#{self.mode}%%') \
-          AND \
-            (push_external_filter not like '%%:band:%%' or push_external_filter ILIKE '%%:band:%%#{self.band}%%') \
-          AND \
-            (push_external_filter not like '%%:callsign:%%' or '#{self.activatorCallsign}' ILIKE ANY ( ARRAY ( select string_to_array ( array_to_string(regexp_matches(replace(push_external_filter,'\"',''), ':callsign: ([a-zA-Z0-9\\-\\/\\\%%,]+).*'),''), ',')))) \
-          AND \
-            (push_external_filter not like '%%:reference:%%' or '#{self.code.join(", ")}' ILIKE ANY ( ARRAY ( select string_to_array ( array_to_string(regexp_matches(replace(push_external_filter,'\"',''), ':reference: ([a-zA-Z0-9\\-\\/\\\%%,]+).*'),''), ',')))) \
-        ;" ]
-    else
-      []
-    end
-  end
 
   def trigger_notifications
     puts "Processing notifications for #{self.to_json}"

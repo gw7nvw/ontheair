@@ -25,13 +25,24 @@ class UserNotificationLinksController < ApplicationController
     else
       @filter = UserNotificationLink.find_by(id: params[:id])
       @filter.assign_attributes(user_notification_link_params) if @filter
-      if @filter.save
-        flash[:success]="Saved notification filter"
-        @filter=UserNotificationLink.new
-        @filter.priority=0
-        @filter.user_id=user_id
+      #disallow blank entries
+      cleaned_values = @filter.attributes
+        .except("id", "created_at", "updated_at", "user_id", "priority")
+        .values
+        .flatten
+        .reject(&:blank?)
+
+      if cleaned_values.empty?
+        flash[:error]="You must enter at least one filter criterium"
       else
-        flash[:error]=@filter.errors
+        if @filter.save
+          flash[:success]="Saved notification filter"
+          @filter=UserNotificationLink.new
+          @filter.priority=0
+          @filter.user_id=user_id
+        else
+          flash[:error]=@filter.errors
+        end
       end
     end
     prepare_user_show_data(user_id)
@@ -44,13 +55,25 @@ class UserNotificationLinksController < ApplicationController
       flash[:error]="You do not have permission to edit this record"
     else
       @filter = UserNotificationLink.new(user_notification_link_params)
-      if @filter.save
-        flash[:success]="Saved notification filter"
-        @filter=UserNotificationLink.new
-        @filter.priority=0
-        @filter.user_id=user_id
+      #disallow blank entries
+      # Flatten nested arrays and remove empty strings/nils
+      cleaned_values = @filter.attributes
+        .except("id", "created_at", "updated_at", "user_id", "priority")
+        .values
+        .flatten
+        .reject(&:blank?)
+
+      if cleaned_values.empty?
+        flash[:error]="You must enter at least one filter criterium"
       else
-        flash[:error]=@filter.errors
+        if @filter.save
+          flash[:success]="Saved notification filter"
+          @filter=UserNotificationLink.new
+          @filter.priority=0
+          @filter.user_id=user_id
+        else
+          flash[:error]=@filter.errors
+        end
       end
     end
     prepare_user_show_data(user_id)

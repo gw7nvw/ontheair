@@ -12,7 +12,6 @@ class User < ActiveRecord::Base
   serialize :qualified_count_total, coder: YAML, type: Hash
   serialize :chased_count, coder: YAML, type: Hash
   serialize :chased_count_total, coder: YAML, type: Hash
-  serialize :push_external_filter, coder: YAML, type: Hash
 
 
   attr_accessor :remeber_token, :activation_token, :reset_token
