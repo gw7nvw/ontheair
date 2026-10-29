@@ -105,8 +105,8 @@
               <tr>    
                 <td> <%=(if unl.spot_types.blank? then ["All"] else unl.spot_types end).join(', ')%> </td>
                 <td> <%=(if unl.continents.blank? then ["All"] else unl.continents end).join(', ')%> </td>
-                <td> <%=(if unl.modes.blank? then ["All"] else unl.modes end).join(', ')%> </td>
                 <td> <%=(if unl.bands.blank? then ["All"] else unl.bands end).join(', ')%> </td>
+                <td> <%=(if unl.modes.blank? then ["All"] else unl.modes end).join(', ')%> </td>
                 <td> <%=unl.activator_callsign%> </td>
                 <td> <%=unl.code%> </td>
                 <td> <%=unl.priority_name%> </td>
