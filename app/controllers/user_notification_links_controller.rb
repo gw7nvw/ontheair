@@ -19,7 +19,7 @@ class UserNotificationLinksController < ApplicationController
   end
 
   def update
-    user_id = params[:user_notification_link][:user_id]
+    user_id = params[:user_notification_link][:user_id].to_i
     if user_id!=current_user.id and current_user.is_admin==false
       flash[:error]="You do not have permission to edit this record"
     else
@@ -50,10 +50,15 @@ class UserNotificationLinksController < ApplicationController
   end
 
   def create
-    user_id = params[:user_notification_link][:user_id]
+    puts "USERID: #{current_user.id}"
+    user_id = params[:user_notification_link][:user_id].to_i
+    puts "SAVED USERID: #{user_id}"
     if user_id!=current_user.id and current_user.is_admin==false
       flash[:error]="You do not have permission to edit this record"
+      @filter=UserNotificationLink.new
+      puts "HERE ***************************************"
     else
+      puts "THERE ***************************************"
       @filter = UserNotificationLink.new(user_notification_link_params)
       #disallow blank entries
       # Flatten nested arrays and remove empty strings/nils
@@ -65,13 +70,17 @@ class UserNotificationLinksController < ApplicationController
 
       if cleaned_values.empty?
         flash[:error]="You must enter at least one filter criterium"
+      puts "EMPTY ***************************************"
       else
+      puts "BEFORE SAVE ***************************************"
         if @filter.save
+      puts "AFTER SAVE ***************************************"
           flash[:success]="Saved notification filter"
           @filter=UserNotificationLink.new
           @filter.priority=0
           @filter.user_id=user_id
         else
+      puts "ERROR SAVE ***************************************"
           flash[:error]=@filter.errors
         end
       end
@@ -81,7 +90,7 @@ class UserNotificationLinksController < ApplicationController
   end
 
   def delete
-    user_id = params[:user_id]
+    user_id = params[:user_id].to_i
     if user_id!=current_user.id and current_user.is_admin==false
       flash[:error]="You do not have permission to edit this record"
     else
