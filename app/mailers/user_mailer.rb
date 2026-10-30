@@ -78,7 +78,8 @@ class UserMailer < ActionMailer::Base
         mail to: user.email, subject: callsign + " spotted on " + ((@item.end_item.freq && !@item.end_item.freq.empty?) || (@item.end_item.mode && !@item.end_item.mode.empty?) ? @item.end_item.freq + " - " + @item.end_item.mode : "UNKNOWN")
 
       elsif item.topic.is_alert
-        sites = @item.end_item.site.split("; ")
+        sites = []
+        sites = @item.end_item.site.split("; ") if @item.end_item.site
         mail to: user.email, subject: callsign + " alerted for " + (@item.end_item.referenced_date ? @item.end_item.referenced_date.strftime("%Y-%m-%d") : "") + " " + (@item.end_item.referenced_time ? @item.end_item.referenced_time.strftime("%H:%M (UTC)") : "") + " at " + (sites && sites.count.positive? ? sites.first + (if sites && (sites.count > 1) then " et al." else "" end) : "UNKNOWN")
 
       else
