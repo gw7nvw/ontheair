@@ -94,7 +94,7 @@ class UserNotificationLinksController < ApplicationController
     if user_id!=current_user.id and current_user.is_admin==false
       flash[:error]="You do not have permission to edit this record"
     else
-      @filter = UserNotificationLink.find_by(id: params[:id])
+      @filter = UserNotificationLink.find_by(id: params[:id].to_i)
       @filter.destroy
       @filter=UserNotificationLink.new
       @filter.priority=0
