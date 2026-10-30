@@ -397,7 +397,9 @@ def consolidate_changed_spots(changed_external_rows)
     cs.is_mobile = true if external_spot.activatorCallsign.upcase.match(/\/M$/)
     if !cs.code.include?(external_spot.code)
       cs.code += [ external_spot.code ]
-      cs.name += [ (external_spot.name||"") ]
+      asset = Asset.find_by(code: external_spot.code)
+      name = asset.blank? ? external_spot.name : asset.full_name
+      cs.name += [ (name||"") ]
       cs.spot_type += [ external_spot.spot_type ]
     end
     formatted_comment = "["+(external_spot.spot_type||"")+"] "+((external_spot.callsign||"")+": "+(external_spot.comments||"") + " ("+(external_spot.time.strftime("%H:%M:%S")||"")+")")

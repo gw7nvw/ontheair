@@ -263,6 +263,10 @@ class Asset < ApplicationRecord
     "[" + code + "] " + name
   end
 
+  def full_name
+    self.name + " [" + self.code + "] {" + self.maidenhead + "}"
+  end
+
   # AssetType
   def type
     type = AssetType.find_by(name: asset_type)
