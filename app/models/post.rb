@@ -171,7 +171,7 @@ class Post < ActiveRecord::Base
   end
 
   def get_all_asset_codes
-    codes = asset_codes
+    codes = asset_codes.uniq
     initial_classes = Asset.get_pnp_classes_from_codes(asset_codes)
     newcodes = codes
     if loc_source=="user" then
@@ -187,6 +187,9 @@ class Post < ActiveRecord::Base
     if user && (user.logs_pota == false) then newcodes = newcodes.reject { |code| Asset.get_asset_type_from_code(code) == "pota park" } end
     if user && (user.logs_wwff == false) then newcodes = newcodes.reject { |code| Asset.get_asset_type_from_code(code) == "wwff park" } end
 
+    #check we heven't deleted the original spotted codes
+    newcodes = (newcodes + asset_codes).uniq
+
     # check we haven't added illegal nfers
     added_codes = newcodes - asset_codes
     added_classes = Asset.get_pnp_classes_from_codes(added_codes)
@@ -201,7 +204,7 @@ class Post < ActiveRecord::Base
         end
       end
     end
-
+    
     newcodes
   end
 
