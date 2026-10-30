@@ -6,7 +6,7 @@ class UsersController < ApplicationController
   include ApplicationHelper
   include UserViewPreparer
 
-  before_action :signed_in_user, only: %i[index edit update district_progress region_progress awards stats assets p2p notifications]
+  before_action :signed_in_user, only: %i[index edit update district_progress region_progress awards stats assets p2p notifications test_notification]
 
   def test_notification
     @user = User.find_by(callsign: params[:id].upcase)
@@ -14,9 +14,15 @@ class UsersController < ApplicationController
       @user.send_notification("Test message from ontheair.nz", nil, nil, nil)
       flash[:success] = "Notification sent"
     else
-      flash[:error] = "You need to enter your pushover credentials to use this service"
+      flash[:error] = "Pushover registration is required to receive instant notifications - click Edit above and compete the Pushover Config section to configure pushover, or consult the user's guide for details of how to set up the pushover app"
+
     end
-    redirect_to "/users/#{@user.callsign}/notifications"
+    prepare_user_show_data(params[:id])
+    @filter = UserNotificationLink.new
+    @filter.priority=0
+    @filter.user_id = @user.id
+
+    render "notifications"
   end
 
   def district_progress
@@ -322,8 +328,8 @@ class UsersController < ApplicationController
     if current_user && current_user.is_admin || current_user.group_admin then @user = User.where(callsign: params[:id]).first end
 
     if params[:method] == "notification" and (@user.push_app_token.blank? or @user.push_user_token.blank?) then
-      flash[:error] = "Pushover registration is required to receive instant notifications - see Pushover Config section to configure pushover or consult the user's guide for details of how to set up the pushover app"
-      @topics = Topic.where(is_active = true)
+      flash[:error] = "Pushover registration is required to receive instant notifications - click Edit above and compete the Pushover Config section to configure pushover, or consult the user's guide for details of how to set up the pushover app"
+      @topics = Topic.where(is_active: true)
       show
       render "notifications"
     else

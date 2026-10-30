@@ -37,7 +37,7 @@ class SendNotifications
         end
 
         Resque.logger.info("SEND_NOTIFICTAION: #{user.callsign} #{spot.summary}")
-
+        puts "SEND_NOTIFICTAION: #{user.callsign} #{spot.summary}"
         # Ship individual payload using user-isolated tokens
         PushoverService.send_alert( user, spot.summary, message_url, spot.comments.last, image_base64, link.priority )
       end
