@@ -7,14 +7,14 @@
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
-    <%=  link_to  "Districts:", '/districts', remote: true,  :id => 'assets', :onclick => "linkHandler('assets')" %>
+    <%=  link_to  "Districts:", '/districts', remote: true,  :id => 'assets', :onclick => "linkHandler(event,'assets')" %>
     &nbsp;--&gt;&nbsp;
     <b><%= @district.name %></b>
     </div>
   <div id="controls">
-     <%=  link_to "Index", "/districts", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+     <%=  link_to "Index", "/districts", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler(event,'index')" %>
      <%=render 'map_controls'%>
   </div>
 </div>
@@ -30,14 +30,14 @@
   <div class="erow" id="name">
     <div class="rowtitle"><%= "Name" %></div>
     <div class="rowtext"> 
-      <%=link_to @district.name, '/districts/'+@district.district_code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+      <%=link_to @district.name, '/districts/'+@district.district_code, remote: true,  :id => 'asset', :onclick => "linkHandler(event,'asset')" %>
     </div>
   </div>
   <div class="erow" id="name">
     <div class="rowtitle"><%= "Region" %></div>
     <div class="rowtext"> 
       <% if @district.region_code and @district.region_code!='' then %>
-        <%=link_to @district.region_name, '/regions/'+@district.region_code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+        <%=link_to @district.region_name, '/regions/'+@district.region_code, remote: true,  :id => 'asset', :onclick => "linkHandler(event,'asset')" %>
       <% end %>
     </div>
   </div>
@@ -47,7 +47,7 @@
       <div class="rowtext"> 
         <form action="/districts/<%=@district.district_code%>" method="get" accept-charset="UTF-8"  data-remote="true">
           <input id="callsign" name="callsign" type="text" value=<%=@callsign%> />
-          <input name="commit" value="Show" id="submit" class="btn btn-small" type="submit" onclick="linkHandler(&#39;clear&#39;)">
+          <input name="commit" value="Show" id="submit" class="btn btn-small" type="submit" onclick="linkHandler(event,&#39;clear&#39;)">
         </form>
       </div>
     <% else %>
@@ -94,7 +94,7 @@
  
           <tr>
             <td>
-              <%=link_to asset.name, '/assets/'+asset.safecode, remote: true,  :id => 'parent'+asset.safecode, :onclick => "linkHandler('parent')"   %>
+              <%=link_to asset.name, '/assets/'+asset.safecode, remote: true,  :id => 'parent'+asset.safecode, :onclick => "linkHandler(event,'parent')"   %>
             </td>
             <td>
               <%=asset.code%>

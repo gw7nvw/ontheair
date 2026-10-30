@@ -31,8 +31,8 @@
    </div>
    <div id="controls">
      <% if write_access?  %>
-       <%=  link_to "Add Spot", "/posts/new?topic_id="+SPOT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
-       <%=  link_to "Add Alert", "/posts/new?topic_id="+ALERT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=  link_to "Add Spot", "/posts/new?topic_id="+SPOT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler(event,'add')"%>
+       <%=  link_to "Add Alert", "/posts/new?topic_id="+ALERT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler(event,'add')"%>
      <% end %>
      <%=render 'map_controls'%>
    </div>
@@ -47,15 +47,15 @@
   <table style='table-layout:fixed'>
     <tr>
       <% AssetType.where("name not in #{@asset_type_filter}").order(:name).each do |at| %>
-        <th style='font-size: 1.1vw; text-align: center'><%=link_to at.display_name.pluralize, '/assets/?asset_type[name]='+at.name,remote: true,:onclick => "linkHandler('"+at.name+"')", :style=>'color:#fff' %></th>
+        <th style='font-size: 1.1vw; text-align: center'><%=link_to at.display_name.pluralize, '/assets/?asset_type[name]='+at.name,remote: true,:onclick => "linkHandler(event,'"+at.name+"')", :style=>'color:#fff' %></th>
       <% end %>
     </tr>
   </table>
 
 <% if signed_in? and ((@items and @items.count>0) or (@awards and @awards.count>0)) then %>
   <h2>
-    <span class="heading2"><%=link_to "What's New", '/topics/4',  remote: true,:onclick => "linkHandler('more')"%></span>
-    <%=link_to "Hide", 'ack_news', remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler('acklink')"%>
+    <span class="heading2"><%=link_to "What's New", '/topics/4',  remote: true,:onclick => "linkHandler(event,'more')"%></span>
+    <%=link_to "Hide", 'ack_news', remote: true, class: "btn btn-small btn-primary",   :onclick => "linkHandler(event,'acklink')"%>
   </h2>
 
   <% if @awards and @awards.count>0 %>
@@ -83,7 +83,7 @@
   </div>
 
   <div class="buttonshort">
-    <%= submit_tag "Find", :id => "find", :onclick => "submitHandler('Finding...');", :class => "btn btn-small" %>
+    <%= submit_tag "Find", :id => "find", :onclick => "submitHandler(event,'Finding...');", :class => "btn btn-small" %>
   </div>
 </form>
 
@@ -95,8 +95,8 @@
 
   <%=render 'alert_summary'%>
   <div>
-    <span class="heading2"><%= link_to 'Latest Oceania Spots', '/spots', remote: true, :onclick => "linkHandler('results')"%></span>
-    <i><%=  link_to "More (with auto-refresh)...", '/spots', remote: true, :onclick => "linkHandler('refresh_link')"%></i>
+    <span class="heading2"><%= link_to 'Latest Oceania Spots', '/spots', remote: true, :onclick => "linkHandler(event,'results')"%></span>
+    <i><%=  link_to "More (with auto-refresh)...", '/spots', remote: true, :onclick => "linkHandler(event,'refresh_link')"%></i>
   </div>
   <% @all_spots=@all_spots[0..9] %>
   <%=render 'spot_list'%>
@@ -107,9 +107,9 @@
      </div>
   </div>
 
-  <span class="heading2"><%=link_to "Top Ten", '/results',  remote: true, :onclick => "linkHandler('results')"%></span>
+  <span class="heading2"><%=link_to "Top Ten", '/results',  remote: true, :onclick => "linkHandler(event,'results')"%></span>
   <% if signed_in? %>
-    <i><%=link_to "More ...", '/results',  remote: true, :onclick => "linkHandler('results')"%></i>
+    <i><%=link_to "More ...", '/results',  remote: true, :onclick => "linkHandler(event,'results')"%></i>
   <% else %>
     <i>Sign in to see full honour rolls</i>
   <% end %>
@@ -129,9 +129,9 @@
      </div>
   </div>
 
-  <span class="heading2"><%=link_to "Recent Activity", '/recent', remote: true,:onclick => "linkHandler('recent')"%></span>
+  <span class="heading2"><%=link_to "Recent Activity", '/recent', remote: true,:onclick => "linkHandler(event,'recent')"%></span>
   <% if signed_in? %>
-    <i><%=link_to "More ...", '/recent', remote: true,:onclick => "linkHandler('recent')"%></i>
+    <i><%=link_to "More ...", '/recent', remote: true,:onclick => "linkHandler(event,'recent')"%></i>
   <% else %>
     <i>Sign in to see full activity history</i>
   <% end %>

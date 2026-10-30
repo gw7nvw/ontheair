@@ -16,9 +16,9 @@
 
 <div id="actionbar" class="span7">
    <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
      &nbsp;--&gt;&nbsp;
-     <%=  link_to  "Topics", '/topics',  remote: true,  :id => 'topics', :onclick => "linkHandler('topics')"%>
+     <%=  link_to  "Topics", '/topics',  remote: true,  :id => 'topics', :onclick => "linkHandler(event,'topics')"%>
      &nbsp;--&gt;&nbsp;
      <% if params[:title] then %>
        <b><%= link_to @topic.name, @topic.url %></b>
@@ -30,12 +30,12 @@
 </div>
    <div id="controls">
        <% if write_access? and (current_user.is_admin or (@topic.is_public or (@topic.is_owners and current_user.id == @topic.owner_id))) %>
-            <%=  link_to "New post", '/posts/new/?topic_id='+@topic.url, class: "btn btn-small btn-primary",  remote: true,  :id => 'new', :onclick => "linkHandler('new')"%>
+            <%=  link_to "New post", '/posts/new/?topic_id='+@topic.url, class: "btn btn-small btn-primary",  remote: true,  :id => 'new', :onclick => "linkHandler(event,'new')"%>
        <% end %>
        <% if write_access? and (current_user.is_admin or (current_user.id == @topic.owner_id)) %>
-            <%=  link_to "Edit Topic", '/topics/'+@topic.url+'/edit', class: "btn btn-small btn-primary",  remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
+            <%=  link_to "Edit Topic", '/topics/'+@topic.url+'/edit', class: "btn btn-small btn-primary",  remote: true,  :id => 'edit', :onclick => "linkHandler(event,'edit')"%>
        <% end %>
-       <%=  link_to "Index", "/topics", class: "btn btn-small btn-primary",  remote: true,  :id => 'index', :onclick => "linkHandler('index')"%>
+       <%=  link_to "Index", "/topics", class: "btn btn-small btn-primary",  remote: true,  :id => 'index', :onclick => "linkHandler(event,'index')"%>
        <%=render 'map_controls'%>
    </div>
 </div>
@@ -47,7 +47,7 @@
 
 <% if params[:title] then %>
    <div class="sectiontitle" id="page_title">
-     <%=  link_to @topic.name, '/topics/'+@topic.url,  remote: true,  :id => 'topic', :onclick => "linkHandler('topic')" %> 
+     <%=  link_to @topic.name, '/topics/'+@topic.url,  remote: true,  :id => 'topic', :onclick => "linkHandler(event,'topic')" %> 
      &nbsp;--&gt;&nbsp;
      Subject: <%=params[:title]%>
      <br/>
@@ -56,7 +56,7 @@
 
 <% else %>
    <div class="sectiontitle" id="page_title">
-     <%=  link_to @topic.name, '/topics/'+@topic.url,  remote: true,  :id => 'topic', :onclick => "linkHandler('topic')" %> <br/>
+     <%=  link_to @topic.name, '/topics/'+@topic.url,  remote: true,  :id => 'topic', :onclick => "linkHandler(event,'topic')" %> <br/>
      <br/>
    </div>
 
@@ -114,7 +114,7 @@
   <% end %>
   <div class="name_pagination"> <%= will_paginate(@items) %></div>
 <% else %>
-  <div style="color:red"><i>Please <%=link_to "sign in", signin_path,  remote: true,  :id => 'signin', :onclick => "linkHandler('signin')"%> or <%=link_to "sign up", signup_path,  remote: true,  :id => 'signup', :onclick => "linkHandler('signup')" %> to view posts in this topic</i></div>
+  <div style="color:red"><i>Please <%=link_to "sign in", signin_path,  remote: true,  :id => 'signin', :onclick => "linkHandler(event,'signin')"%> or <%=link_to "sign up", signup_path,  remote: true,  :id => 'signup', :onclick => "linkHandler(event,'signup')" %> to view posts in this topic</i></div>
 <% end %>
 </div>
 <script>

@@ -16,13 +16,13 @@
       <tr>
         <td>
           <% if !@brief and !@zlota_logs and current_user  and (current_user.id==contact.user1_id or current_user.is_admin) %>
-            <%= link_to 'Edit', '/contacts/'+contact.id.to_s+'/editlog?referring=index', remote: true, :id => 'editbutton'+contact.id.to_s, :onclick => "linkHandler('editbutton"+contact.id.to_s+"')" %><br/>
+            <%= link_to 'Edit', '/contacts/'+contact.id.to_s+'/editlog?referring=index', remote: true, :id => 'editbutton'+contact.id.to_s, :onclick => "linkHandler(event,'editbutton"+contact.id.to_s+"')" %><br/>
           <% end %>
           <% if @orphans and current_user  and (current_user.id==contact.user2_id or current_user.is_admin) %>
-            <%= link_to 'Confirm', '/contacts/'+contact.id.to_s+'/confirm?referring=index', remote: true, data: {confirm: "Create a new activator log entry for your station from this chaser contact: Are you sure?"}, :id => 'confirmbutton'+contact.id.to_s, :onclick => "linkHandler('confirmbutton"+contact.id.to_s+"')" %><br/>
-            <%= link_to 'Refute', '/contacts/'+contact.id.to_s+'/refute?referring=index', remote: true, data: {confirm: "Mark the location shown in this contact for yourself as incorrect: Are you sure?"},  :id => 'refutebutton'+contact.id.to_s, :onclick => "linkHandler('refutebutton"+contact.id.to_s+"')" %><br/>
+            <%= link_to 'Confirm', '/contacts/'+contact.id.to_s+'/confirm?referring=index', remote: true, data: {confirm: "Create a new activator log entry for your station from this chaser contact: Are you sure?"}, :id => 'confirmbutton'+contact.id.to_s, :onclick => "linkHandler(event,'confirmbutton"+contact.id.to_s+"')" %><br/>
+            <%= link_to 'Refute', '/contacts/'+contact.id.to_s+'/refute?referring=index', remote: true, data: {confirm: "Mark the location shown in this contact for yourself as incorrect: Are you sure?"},  :id => 'refutebutton'+contact.id.to_s, :onclick => "linkHandler(event,'refutebutton"+contact.id.to_s+"')" %><br/>
           <% else %>
-            <%= link_to 'View', '/contacts/'+contact.id.to_s, remote: true, :id => 'contact_link_'+contact.id.to_s, :onclick => "linkHandler('contact_link_"+contact.id.to_s+"')" %>
+            <%= link_to 'View', '/contacts/'+contact.id.to_s, remote: true, :id => 'contact_link_'+contact.id.to_s, :onclick => "linkHandler(event,'contact_link_"+contact.id.to_s+"')" %>
           <% end %>
         </td>
         <%
@@ -33,8 +33,8 @@
           if contact.is_qrp2 then style2=style2+"color:green;" end 
           if !contact.is_portable2 then style2=style2+"text-decoration:underline;" end 
         %>
-        <td> <%=link_to contact.callsign1, '/users/'+contact.callsign1, remote: true,  :id => 'user', :onclick => "linkHandler('user')", :style => style1%> </td>
-        <td> <%=link_to contact.callsign2, '/users/'+contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler('user')", :style => style2  %> </td>
+        <td> <%=link_to contact.callsign1, '/users/'+contact.callsign1, remote: true,  :id => 'user', :onclick => "linkHandler(event,'user')", :style => style1%> </td>
+        <td> <%=link_to contact.callsign2, '/users/'+contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler(event,'user')", :style => style2  %> </td>
         <td> <%= contact.localdate(current_user) %> </td>
         <td> <%= if contact.time then contact.localtime(current_user) else '' end %> <%=contact.localtimezone(current_user) %></td>
         <td> <%= if contact.frequency then '%.3f' % contact.frequency else '' end%> </td>
@@ -49,7 +49,7 @@
                     <%=link_to link[:code], link[:url], target: "_blank"%><img src="/icons/external-link-symbol.png">
                   <% else %>
                     <% if link[:asset] then %>
-                    <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                    <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler(event,'link')"  %>
                     <% else %>
                       Asset no lnger exists: <%=cal%>
                     <% end %>
@@ -72,7 +72,7 @@
                     <%=link_to link[:code], link[:url], target: "_blank"%><img src="/icons/external-link-symbol.png">
                   <% else %>
                     <% if link[:asset] then %>
-                      <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                      <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler(event,'link')"  %>
                     <% else %>
                       <div class="rowtext">Asset no longer exists <%=cal%></div>
                     <% end %>

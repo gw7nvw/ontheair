@@ -1,6 +1,6 @@
 <div class="alert_bar_outer">
   <div class="alert_bar">
-    <b><%= link_to 'Active Alerts', "/alerts?#{raw(@parameters)}", remote: true, id: "add",   :onclick => "linkHandler('add')"%>:</b>
+    <b><%= link_to 'Active Alerts', "/alerts?#{raw(@parameters)}", remote: true, id: "add",   :onclick => "linkHandler(event,'add')"%>:</b>
     <% count = 0 %>
     <% @all_alerts.sort_by(&:activatingCallsign).each do |alert| %>
        <% if Time.now > alert.starttime.to_time and Time.now < alert.starttime.to_time + alert.duration.to_f*3600 %>

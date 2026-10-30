@@ -10,12 +10,12 @@
   <%= form_for(@user) do |f| %>
     <div id="actionbar" class="span7">
       <div id="crumbs">
-        <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+        <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
         &nbsp;--&gt;&nbsp;
-        <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+        <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler(event,'users')" %>
         &nbsp;--&gt;&nbsp;
         <%if @user.id%>
-          <b><%=link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true, :id => 'user', :onclick => "linkHandler('user')" %></b>
+          <b><%=link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true, :id => 'user', :onclick => "linkHandler(event,'user')" %></b>
           &nbsp;--&gt;&nbsp;
           <b>Edit</b>
         <% else %>
@@ -26,9 +26,9 @@
       <div id="controls">
         <% if @user.id %>
           <% if params[:referring]=='index'%>
-            <%=  link_to "Cancel", '/users', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+            <%=  link_to "Cancel", '/users', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'cancel')" %>
           <% else %>
-            <%=  link_to "Cancel", '/users/'+@user.callsign, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+            <%=  link_to "Cancel", '/users/'+@user.callsign, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'cancel')" %>
           <% end %> 
         <% end %>
 
@@ -185,7 +185,12 @@
 
       <%= f.submit @submit_button, id: "submit", onclick: "signupHandler();", class: "btn btn-small btn-primary btn-highlight" %>
       <%  if(@submit_button == "Save Changes" and current_user and current_user.is_admin) %>
-        <%= f.submit "Delete", confirm: "Delete user: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>
+           <%= button_to "Delete User",
+              user_path(@user),
+              method: :delete,
+              form: { onsubmit: "submitHandler(event,'delete');" },
+              data: { confirm: "Are you sure?" }, # If you want a quick native confirmation popup
+              class: "btn btn-danger" %>
       <% end %>
 
       <div class="erow"><small><i>By registering to this site you are agreeing to our privacy and security policy. Details are available on the <%=link_to 'Pricacy and Security Policy', '/topics/46', target: '_blank'%> page</i></small></div>

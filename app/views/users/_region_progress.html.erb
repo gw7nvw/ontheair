@@ -14,19 +14,19 @@
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
-    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler(event,'users')" %>
     &nbsp;--&gt;&nbsp;
-    <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler(event,'users')" %>
     &nbsp;--&gt;&nbsp;
-    <%=  link_to  "Awards", '/users/'+@user.callsign+"/awards", remote: true,  :id => 'awards', :onclick => "linkHandler('awards')" %>
+    <%=  link_to  "Awards", '/users/'+@user.callsign+"/awards", remote: true,  :id => 'awards', :onclick => "linkHandler(event,'awards')" %>
     &nbsp;--&gt;&nbsp;
     <b>Regions</b>
   </div>
 
   <div id="controls">
-    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler(event,'index')" %>
     <%=render 'map_controls'%>
   </div>
 </div>
@@ -38,7 +38,7 @@
     <div class="sectiontitle" style="margin-top: 12px;">Progress towards <%=@dxcc%> worked-all-Region awards:</div>
     Show instead:&nbsp;
     <% DxccPrefix.where(is_active: true).each do |dxcc| %>
-      <%=link_to dxcc.prefix, '/users/'+@user.callsign+"/region_progress?dxcc=#{dxcc.prefix}", remote: true,  :id => "dxcc#{dxcc.prefix}", :onclick => "linkHandler('dxcc#{dxcc.prefix}')" %>
+      <%=link_to dxcc.prefix, '/users/'+@user.callsign+"/region_progress?dxcc=#{dxcc.prefix}", remote: true,  :id => "dxcc#{dxcc.prefix}", :onclick => "linkHandler(event,'dxcc#{dxcc.prefix}')" %>
     <% end %>
 
     <div class="sectiontitle" style="margin-top: 12px;">Activations:</div>
@@ -54,8 +54,8 @@
 
       <%@regions.each do |region|%>
         <tr>
-          <td><%=link_to region.name, '/regions/'+region.sota_code+"?callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler('award')" %></td>
-          <td><%=link_to "#{region.districts.count} districts", '/users/'+@user.callsign+"/district_progress?dxcc=#{@dxcc}&region=#{region.sota_code}", remote: true,  :id => 'dist#{region.code}', :onclick => "linkHandler('dist')"%></td>
+          <td><%=link_to region.name, '/regions/'+region.sota_code+"?callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler(event,'award')" %></td>
+          <td><%=link_to "#{region.districts.count} districts", '/users/'+@user.callsign+"/district_progress?dxcc=#{@dxcc}&region=#{region.sota_code}", remote: true,  :id => 'dist#{region.code}', :onclick => "linkHandler(event,'dist')"%></td>
           <%@award_classes.each do |award_class|%>
             <% assets=@region_assets.select {|d| d.name==region.sota_code and d.type==award_class.name} %>
             <% activation=@activations.select {|d| d.name==region.sota_code and d.type==award_class.name} %>
@@ -77,8 +77,8 @@
 
       <%@regions.each do |region|%>
         <tr>
-          <td><%=link_to region.name, '/regions/'+region.sota_code+"?callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler('award')" %></td>
-          <td><%=link_to "#{region.districts.count} districts", '/users/'+@user.callsign+"/district_progress?dxcc=#{@dxcc}&region=#{region.sota_code}", remote: true,  :id => 'dist#{region.code}', :onclick => "linkHandler('dist')"%></td>
+          <td><%=link_to region.name, '/regions/'+region.sota_code+"?callsign="+@user.callsign, remote: true,  :id => 'award', :onclick => "linkHandler(event,'award')" %></td>
+          <td><%=link_to "#{region.districts.count} districts", '/users/'+@user.callsign+"/district_progress?dxcc=#{@dxcc}&region=#{region.sota_code}", remote: true,  :id => 'dist#{region.code}', :onclick => "linkHandler(event,'dist')"%></td>
           <%@award_classes.each do |award_class|%>
             <% assets=@region_assets.select {|d| d.name==region.sota_code and d.type==award_class.name} %>
             <% chase=@chases.select {|d| d.name==region.sota_code and d.type==award_class.name} %>

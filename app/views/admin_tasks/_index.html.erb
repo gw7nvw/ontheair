@@ -16,13 +16,13 @@
 </script>
 <div id="actionbar" class="span7">
    <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
      &nbsp;--&gt;&nbsp;
-     <b><%=link_to "Admin Tasks", '/admin_tasks', remote: true, :onclick => "linkHandler('admin_tasks')"%></b>
+     <b><%=link_to "Admin Tasks", '/admin_tasks', remote: true, :onclick => "linkHandler(event,'admin_tasks')"%></b>
      </div>
    <div id="controls">
        <% if signed_in? and current_user.is_admin  then %>
-            <%=  link_to "Add", '/awards/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+            <%=  link_to "Add", '/awards/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'edit')" %>
        <% end %>
        <%=render 'map_controls'%>
    </div>
@@ -44,7 +44,7 @@
     </div>
 
     <div class="buttonshort">
-      <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+      <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler(event,'Finding...');" %>
     </div>
   </form>
 
@@ -62,16 +62,16 @@
           <%= at.task_type %>
         </td>
         <td>
-          <%= link_to "#{at.affected_table}:#{at.affected_id}", '/'+at.affected_url.to_s, remote: true,  :id => "#{at.affected_table}:#{at.affected_id}", :onclick => "linkHandler('home')" %>
+          <%= link_to "#{at.affected_table}:#{at.affected_id}", '/'+at.affected_url.to_s, remote: true,  :id => "#{at.affected_table}:#{at.affected_id}", :onclick => "linkHandler(event,'home')" %>
         </td>
         <td>
-         <% if !at.action_url.blank? %> <%= link_to "Here", at.action_url, remote: true,  :id => "#{at.affected_table}:#{at.affected_id}A", :onclick => "linkHandler('home')" %> <% end %>
+         <% if !at.action_url.blank? %> <%= link_to "Here", at.action_url, remote: true,  :id => "#{at.affected_table}:#{at.affected_id}A", :onclick => "linkHandler(event,'home')" %> <% end %>
         </td>
         <td>
           <%= at.description %>
         </td>
         <td>
-          <%= link_to "Done", "/admin_tasks/#{at.id}/delete", class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')" %>
+          <%= link_to "Done", "/admin_tasks/#{at.id}/delete", class: "btn btn-small", remote: true, :onclick => "linkHandler(event,'clear')" %>
         </td>
       </tr>
       <% end end %>

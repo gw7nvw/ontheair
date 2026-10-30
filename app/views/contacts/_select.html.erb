@@ -1,14 +1,14 @@
 <div class="fullform">
   <div id="actionbar" class="span7" style="margin-top: -32px; margin-left: -6px">
     <div id="crumbs">
-      <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+      <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
       &nbsp;--&gt;&nbsp;
-      <%=  link_to  "Contacts:", '/contacts', remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %>
+      <%=  link_to  "Contacts:", '/contacts', remote: true,  :id => 'contacts', :onclick => "linkHandler(event,'contacts')" %>
       &nbsp;--&gt;&nbsp;
       <b>New</b>
     </div>
     <div id="controls">
-      <%=  link_to "Cancel", '/contacts', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+      <%=  link_to "Cancel", '/contacts', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'cancel')" %>
       <%=  link_to "Show/Hide Map", "#", class: "btn btn-small btn-primary",   :onclick => "toggle_map(); return false;"%>
     </div>
   </div>

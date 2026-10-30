@@ -13,16 +13,16 @@
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
-    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler(event,'users')" %>
     &nbsp;--&gt;&nbsp;
-    <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler(event,'users')" %>
     &nbsp;--&gt;&nbsp;
     <b>Awards</b>
   </div>
   <div id="controls">
-    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler(event,'index')" %>
     <%=render 'map_controls'%>
   </div>
 </div>

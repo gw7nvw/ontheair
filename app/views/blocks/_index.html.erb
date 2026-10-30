@@ -74,15 +74,15 @@ $(function () {
     </div>
 
     <div class="buttonshort">
-      <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
-      <%= link_to "Clear", '/blocks', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')" %>
+      <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler(event,'Finding...');" %>
+      <%= link_to "Clear", '/blocks', class: "btn btn-small", remote: true, :onclick => "linkHandler(event,'clear')" %>
     </div>
   </form>
 
   <div class="erow">
     <div class="rowtitle">Actions:</div>
     <div class="rowtext">
-      <%=link_to 'Purge tracking table [DANGER!!!]',"/blocks/reset",data: {confirm: "Delete all firewall data: This will remove all blocks and potentially force valid users to re-verify. Are you sure?"}, remote: true,  :id => 'view', :onclick => "linkHandler('reset')"%>
+      <%=link_to 'Purge tracking table [DANGER!!!]',"/blocks/reset",data: {confirm: "Delete all firewall data: This will remove all blocks and potentially force valid users to re-verify. Are you sure?"}, remote: true,  :id => 'view', :onclick => "linkHandler(event,'reset')"%>
     </div>
   </div>
 
@@ -104,9 +104,9 @@ $(function () {
     <% @blocks.each do |block| %>
       <tr>
         <td>
-           <%=link_to 'Delete',"/blocks/#{block.id}/delete",remote: true,  :id => 'view', :onclick => "linkHandler('delete')"%>
-           <%=link_to 'Human',"/blocks/#{block.id}/human",remote: true,  :id => 'view', :onclick => "linkHandler('human')"%>
-           <%=link_to 'Robot',"/blocks/#{block.id}/robot",remote: true,  :id => 'view', :onclick => "linkHandler('robot')"%>
+           <%=link_to 'Delete',"/blocks/#{block.id}/delete",remote: true,  :id => 'view', :onclick => "linkHandler(event,'delete')"%>
+           <%=link_to 'Human',"/blocks/#{block.id}/human",remote: true,  :id => 'view', :onclick => "linkHandler(event,'human')"%>
+           <%=link_to 'Robot',"/blocks/#{block.id}/robot",remote: true,  :id => 'view', :onclick => "linkHandler(event,'robot')"%>
         <td><%= block.user_ip %></td> 
         <td><%= block.created_at %></td> 
         <td><%= block.updated_at %></td> 

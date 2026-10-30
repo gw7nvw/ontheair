@@ -1,11 +1,11 @@
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
-    <%=link_to "Logs", '/logs', :remote => true,  :onclick => "linkHandler('logs')" %>
+    <%=link_to "Logs", '/logs', :remote => true,  :onclick => "linkHandler(event,'logs')" %>
     &nbsp;--&gt;&nbsp;
     <% if @log and @log.id then %>
-      <%=link_to @log.id.to_s, '/logs/'+@log.id.to_s, :remote => true,  :onclick => "linkHandler('log')" %>
+      <%=link_to @log.id.to_s, '/logs/'+@log.id.to_s, :remote => true,  :onclick => "linkHandler(event,'log')" %>
       &nbsp;--&gt;&nbsp;
       <b>Edit</b>
     <% else %>
@@ -14,14 +14,14 @@
   </div>
   <div id="controls">
     <% if @log.id and (@log.user1_id==current_user.id or current_user.is_admin) then %>
-      <%=  link_to "Delete", '/logs/'+@log.id.to_s+'/delete', class: "btn btn-small btn-primary", data: {confirm: "Delete log: Are you sure?"}, :remote => true,  :onclick => "linkHandler('delete')"%>
+      <%=  link_to "Delete", '/logs/'+@log.id.to_s+'/delete', class: "btn btn-small btn-primary", data: {confirm: "Delete log: Are you sure?"}, :remote => true,  :onclick => "linkHandler(event,'delete')"%>
     <% end %>
     <% if @log.id then %>
-      <%=  link_to "Cancel", '/logs/'+@log.id.to_s, class: 'btn btn-small btn-primary', :remote => true,  :onclick => "linkHandler('cancel')"%>
+      <%=  link_to "Cancel", '/logs/'+@log.id.to_s, class: 'btn btn-small btn-primary', :remote => true,  :onclick => "linkHandler(event,'cancel')"%>
     <% else %>
-      <%=  link_to "Cancel", '/logs/', class: 'btn btn-small btn-primary', :remote => true,  :onclick => "linkHandler('cancel')" %>
+      <%=  link_to "Cancel", '/logs/', class: 'btn btn-small btn-primary', :remote => true,  :onclick => "linkHandler(event,'cancel')" %>
     <% end %>
-    <%=  link_to "Index", '/logs/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
+    <%=  link_to "Index", '/logs/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler(event,'index')"%>
     <%=render 'map_controls'%>   
   </div>
 </div>
@@ -91,7 +91,7 @@
         <%= f.hidden_field :location1 %>
 
         <tr>
-          <td colspan=3> <%= f.submit @submit_button, id: 'submit_button', class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Saving ...');" %></td>
+          <td colspan=3> <%= f.submit @submit_button, id: 'submit_button', class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler(event,'Saving ...');" %></td>
           <td class="td-l" colspan=4>
             <%=f.label "I will specify parks manually - do not add automatically" %>
           </td>

@@ -7,17 +7,17 @@
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
-    <%=  link_to  "Places:", '/assets', remote: true,  :id => 'assets', :onclick => "linkHandler('assets')" %>
+    <%=  link_to  "Places:", '/assets', remote: true,  :id => 'assets', :onclick => "linkHandler(event,'assets')" %>
     &nbsp;--&gt;&nbsp;
-    <%= link_to @asset.name, '/'+@asset.url, remote: true, onclick: "linkHandler('asset');" %>
+    <%= link_to @asset.name, '/'+@asset.url, remote: true, onclick: "linkHandler(event,'asset');" %>
     &nbsp;--&gt;&nbsp;
     <b>Associations</b>
   </div>
 
   <div id="controls">
-    <%=  link_to "Cancel", "/assets/"+@asset.safecode, class: "btn btn-small btn-primary", remote: true,  :id => 'asset', :onclick => "linkHandler('index')" %>
+    <%=  link_to "Cancel", "/assets/"+@asset.safecode, class: "btn btn-small btn-primary", remote: true,  :id => 'asset', :onclick => "linkHandler(event,'index')" %>
     <%=render 'map_controls'%>
   </div>
 </div>
@@ -32,7 +32,7 @@
   <div class="erow" id="name">
     <div class="rowtitle"><%= "Name" %></div>
     <div class="rowtext"> 
-      <%=link_to @asset.name, '/assets/'+@asset.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+      <%=link_to @asset.name, '/assets/'+@asset.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler(event,'asset')" %>
     </div>
   </div>
 
@@ -54,7 +54,7 @@
             <td><%= aa.code %></td>
             <td><%= aa.name %></td>
             <% if write_access? and current_user.is_modifier %>
-              <td><%=  link_to "Delete", '/asset_links/'+asset_link.id.to_s+'/delete?asset_code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('delete')" %></td>
+              <td><%=  link_to "Delete", '/asset_links/'+asset_link.id.to_s+'/delete?asset_code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'delete')" %></td>
             <% end %>
           </tr>
         <% end %>
@@ -98,7 +98,7 @@
             <td><%= aa.code %></td>
             <td><%= aa.name %></td>
             <% if write_access? and current_user.is_modifier %>
-              <td><%=  link_to "Delete", '/asset_links/'+asset_link.id.to_s+'/delete?asset_code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('delete')" %></td>
+              <td><%=  link_to "Delete", '/asset_links/'+asset_link.id.to_s+'/delete?asset_code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'delete')" %></td>
             <% end %>
           </tr>
         <% end %>

@@ -16,14 +16,14 @@
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
-    <%=  link_to  "States:", '/states', remote: true,  :id => 'assets', :onclick => "linkHandler('assets')" %>
+    <%=  link_to  "States:", '/states', remote: true,  :id => 'assets', :onclick => "linkHandler(event,'assets')" %>
     &nbsp;--&gt;&nbsp;
     <b><%= @state.name %></b>
   </div>
   <div id="controls">
-      <%=  link_to "Index", "/states", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+      <%=  link_to "Index", "/states", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler(event,'index')" %>
       <%=render 'map_controls'%>
   </div>
 </div>
@@ -38,7 +38,7 @@
   <div class="erow" id="name">
     <div class="rowtitle"><%= "Name" %></div>
     <div class="rowtext"> 
-      <%=link_to @state.name, '/states/'+@state.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+      <%=link_to @state.name, '/states/'+@state.code, remote: true,  :id => 'asset', :onclick => "linkHandler(event,'asset')" %>
      </div>
   </div>
   <div class="erow" id="callsign_div">
@@ -47,7 +47,7 @@
       <div class="rowtext"> 
         <form action="/states/<%=@state.code%>" method="get" accept-charset="UTF-8"  data-remote="true">
           <input id="callsign" name="callsign" type="text" value=<%=@callsign%> />
-          <input name="commit" id="submit" class="btn btn-small" value="Show" type="submit" onclick="linkHandler(&#39;clear&#39;)">
+          <input name="commit" id="submit" class="btn btn-small" value="Show" type="submit" onclick="linkHandler(event,&#39;clear&#39;)">
         </form>
       </div>
     <% else %>
@@ -66,7 +66,7 @@
         <tr>
           <td><%=region.sota_code%></td>
           <td>
-            <%= link_to region.name, '/regions/'+region.sota_code, remote: true, :id => 'region_link_'+region.id.to_s, :onclick => "linkHandler('region_link_"+region.id.to_s+"')" %>
+            <%= link_to region.name, '/regions/'+region.sota_code, remote: true, :id => 'region_link_'+region.id.to_s, :onclick => "linkHandler(event,'region_link_"+region.id.to_s+"')" %>
           </td>
         </tr>
       <% end end %>
@@ -115,7 +115,7 @@
  
           <tr>
             <td>
-              <%=link_to asset.name, '/assets/'+asset.safecode, remote: true,  :id => 'parent'+asset.safecode, :onclick => "linkHandler('parent')"   %>
+              <%=link_to asset.name, '/assets/'+asset.safecode, remote: true,  :id => 'parent'+asset.safecode, :onclick => "linkHandler(event,'parent')"   %>
             </td>
             <td>
               <%=asset.code%>

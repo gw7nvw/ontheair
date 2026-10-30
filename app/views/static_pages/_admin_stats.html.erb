@@ -19,7 +19,7 @@
 
 <div id="actionbar" class="span7">
    <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
      &nbsp;--&gt;&nbsp;
      <b>Admin</b>
    </div>
@@ -70,11 +70,11 @@
      </div>
   </div>
 
-   <div class="rowtitle"><%=link_to "Tasks", '/admin_tasks', :id => 'admin_tasks', remote: true,  :id => 'view', :onclick => "linkHandler('admin_tasks')" %></div>
+   <div class="rowtitle"><%=link_to "Tasks", '/admin_tasks', :id => 'admin_tasks', remote: true,  :id => 'view', :onclick => "linkHandler(event,'admin_tasks')" %></div>
    <div class="rowtitle"><%=link_to "Resque", '/resque', target: '_blank',  :id => 'resque' %></div>
    <div class="rowtitle"><%=link_to "Netdata", '/netdata', target: '_blank',  :id => 'netdata' %></div>
-   <div class="rowtitle"><%=link_to "IP Blocking", '/blocks', :id => 'blocks', remote: true,  :id => 'view', :onclick => "linkHandler('blocks')" %></div>
-   <div class="rowtitle"><%=link_to "Modes", '/mode_mappings', :id => 'mode_mappings', remote: true,  :id => 'mode_mappings', :onclick => "linkHandler('mode_mappings')" %></div>
+   <div class="rowtitle"><%=link_to "IP Blocking", '/blocks', :id => 'blocks', remote: true,  :id => 'view', :onclick => "linkHandler(event,'blocks')" %></div>
+   <div class="rowtitle"><%=link_to "Modes", '/mode_mappings', :id => 'mode_mappings', remote: true,  :id => 'mode_mappings', :onclick => "linkHandler(event,'mode_mappings')" %></div>
 </div>
 
 

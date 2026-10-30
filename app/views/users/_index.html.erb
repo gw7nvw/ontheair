@@ -25,14 +25,14 @@
 
 <div id="actionbar" class="span7">
    <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
      &nbsp;--&gt;&nbsp;
      <b>Users</b>
      </div>
    <div id="controls">
        <% if current_user and current_user.is_admin %>
-            <%=  link_to "Edit Table", '/users/editgrid', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
-            <%=  link_to "Add User", '/users/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('add')" %>
+            <%=  link_to "Edit Table", '/users/editgrid', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'edit')" %>
+            <%=  link_to "Add User", '/users/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'add')" %>
             <%=  link_to "Download", '/users.csv', class: "btn btn-small btn-primary"%>
        <% end %>
        <%=render 'map_controls'%>
@@ -49,8 +49,8 @@
     <input type="text" id="searchtext" name="searchtext" value='<%=@searchtext%>'/>
   </div>
   <div class="buttonshort">
-    <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
-    <%=  link_to "Clear", '/users', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
+    <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler(event,'Finding...');" %>
+    <%=  link_to "Clear", '/users', class: "btn btn-small", remote: true, :onclick => "linkHandler(event,'clear')"%>
 
   </div>
 </form>
@@ -85,9 +85,9 @@
       <tr>
         <td>
           <% if current_user and (current_user.is_admin or current_user.id == user.id) %>
-            <span title="Click to edit"><%= link_to image_tag("/icons/pencil_edit.png", :class => 'dock-item'), '/users/'+user.callsign+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+            <span title="Click to edit"><%= link_to image_tag("/icons/pencil_edit.png", :class => 'dock-item'), '/users/'+user.callsign+'/edit?referring=index', remote: true, onclick: "linkHandler(event,'editbutton')", id:  "editbutton", alt: "Edit"  %></span>
           <% end %>
-          <%= link_to user.callsign.upcase, '/users/'+user.callsign, remote: true, :id => 'user_link_'+user.id.to_s, :style => (if not user.activated then 'color:grey' else '' end), :onclick => "linkHandler('user_link_"+user.id.to_s+"')" %>
+          <%= link_to user.callsign.upcase, '/users/'+user.callsign, remote: true, :id => 'user_link_'+user.id.to_s, :style => (if not user.activated then 'color:grey' else '' end), :onclick => "linkHandler(event,'user_link_"+user.id.to_s+"')" %>
 
         </td>
 

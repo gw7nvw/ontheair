@@ -2,11 +2,11 @@
    <%= form_for @callsign, remote: true, url: '/callsigns/'+@callsign.id.to_s do |f| %>
     <div id="actionbar" class="span7">
        <div id="crumbs">
-         <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+         <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
          &nbsp;--&gt;&nbsp;
-         <%=  link_to  "Users:", '/users', remote: true,  :id => 'assets', :onclick => "linkHandler('users')" %>
+         <%=  link_to  "Users:", '/users', remote: true,  :id => 'assets', :onclick => "linkHandler(event,'users')" %>
          &nbsp;--&gt;&nbsp;
-         <%=  link_to  @callsign.user.callsign, '/users/'+@callsign.user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
+         <%=  link_to  @callsign.user.callsign, '/users/'+@callsign.user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler(event,'user')" %>
          &nbsp;--&gt;&nbsp;
          Callsigns
          &nbsp;--&gt;&nbsp;
@@ -20,8 +20,8 @@
        </div>
 
        <div id="controls">
-          <%=  link_to "Delete", '/callsigns/'+@callsign.id.to_s+"/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_call', :onclick => "linkHandler('delete_call')", confirm: "Delete callsign?  This will remove this callsign from the system and you will lose any associated points/contacts.  Use 'Edit' and enter an 'End date' if you wish to retire this callsign and retain past contacts. Really delete?"  %>
-          <%=  link_to "Cancel", '/users/'+@callsign.user.callsign, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+          <%=  link_to "Delete", '/callsigns/'+@callsign.id.to_s+"/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_call', :onclick => "linkHandler(event,'delete_call')", confirm: "Delete callsign?  This will remove this callsign from the system and you will lose any associated points/contacts.  Use 'Edit' and enter an 'End date' if you wish to retire this callsign and retain past contacts. Really delete?"  %>
+          <%=  link_to "Cancel", '/users/'+@callsign.user.callsign, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'cancel')" %>
           <%=render 'map_controls'%>
        </div>
     </div>

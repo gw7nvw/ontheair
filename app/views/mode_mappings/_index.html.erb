@@ -16,9 +16,9 @@
 
 <div id="actionbar" class="span7">
    <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
      &nbsp;--&gt;&nbsp;
-     <%=link_to "Mode Mappings", '/mode_mappings', remote: true,  :id => 'mode_mappings', :onclick => "linkHandler('mode_mappings')" %>
+     <%=link_to "Mode Mappings", '/mode_mappings', remote: true,  :id => 'mode_mappings', :onclick => "linkHandler(event,'mode_mappings')" %>
      </div>
    <div id="controls">
        <%=render 'map_controls'%>
@@ -43,8 +43,8 @@
             <td><%=mode.raw_mode%></td>
             <td><%=mode.parent_group%></td>
             <td>
-              <%=  link_to "Edit", "/mode_mappings/#{mode.id}/edit", class: "btn btn-small btn-primary", remote: true,  :id => 'edit_mode', :onclick => "linkHandler('edit_mode')"  %>
-              <%=  link_to "Delete", "/mode_mappings/#{mode.id}/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_mode', :onclick => "linkHandler('delete_mode')" %>
+              <%=  link_to "Edit", "/mode_mappings/#{mode.id}/edit", class: "btn btn-small btn-primary", remote: true,  :id => 'edit_mode', :onclick => "linkHandler(event,'edit_mode')"  %>
+              <%=  link_to "Delete", "/mode_mappings/#{mode.id}/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_mode', :onclick => "linkHandler(event,'delete_mode')" %>
             </td>
           </tr>
         <% end %>
@@ -54,7 +54,7 @@
         <td> <%= f.text_field :raw_mode %> </td>
         <td> <%= f.text_field :parent_group %> </td>
         <% if @mode.id == nil then submit_name='Add mode' else submit_name='Save mode' end %>
-        <td><%= f.submit submit_name, :id => "update", :onclick => "submitHandler('Updating...');", :class => "btn btn-small" %></td>
+        <td><%= f.submit submit_name, :id => "update", :onclick => "submitHandler(event,'Updating...');", :class => "btn btn-small" %></td>
       </tr>
     </table>
   <% end %>

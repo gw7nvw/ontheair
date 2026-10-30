@@ -8,14 +8,14 @@
 
 <div id="actionbar" class="span7">
    <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
      &nbsp;--&gt;&nbsp;
-     <%=link_to "Spots", '/spots', remote: true,  :id => 'spots_link', :onclick => "linkHandler('spots')" %>
+     <%=link_to "Spots", '/spots', remote: true,  :id => 'spots_link', :onclick => "linkHandler(event,'spots')" %>
      &nbsp;--&gt;&nbsp;
      <b>History</b>
    </div>
    <div id="controls">
-     <%=  link_to "Current", '/spots', remote: true,  :id => 'spots_current', :onclick => "linkHandler('spots_current')", class: "btn btn-small btn-primary" %>
+     <%=  link_to "Current", '/spots', remote: true,  :id => 'spots_current', :onclick => "linkHandler(event,'spots_current')", class: "btn btn-small btn-primary" %>
      <%=render 'map_controls'%>
    </div>
 </div>
@@ -58,7 +58,7 @@
       </tr>
       <tr>
         <td colspan=6>
-          <%= submit_tag "Find", :id => "find", :onclick => "submitHandler('Finding ...');" %>
+          <%= submit_tag "Find", :id => "find", :onclick => "submitHandler(event,'Finding ...');" %>
         </td>
       </tr>
     </table>

@@ -64,9 +64,8 @@ class AwardsController < ApplicationController
     end
   end
 
-  def update
+  def destroy
     if signed_in? && current_user.is_admin
-      if params[:delete]
         award = Award.find_by_id(params[:id])
         if award && award.destroy
           auls = AwardUserLink.where(award_id: award.id)
@@ -77,7 +76,14 @@ class AwardsController < ApplicationController
           edit
           render "edit"
         end
-      else
+    else
+      flash[:error] = "You do not have permissions to edit an award"
+      redirect_to "/awards"
+    end
+  end
+
+  def update
+    if signed_in? && current_user.is_admin
         unless (@award = Award.find_by_id(params[:id]))
           flash[:error] = "Award does not exist: " + @award.id.to_s
 
@@ -100,7 +106,6 @@ class AwardsController < ApplicationController
         else
           render "edit"
         end
-      end
     else
       flash[:error] = "You do not have permissions to edit an award"
       redirect_to "/awards"

@@ -881,55 +881,139 @@ function closeAllHandlers() {
     document.getElementById("page_status").innerHTML = ''
 }
 
-function submitHandler(entity_name) {
-    document.body.classList.add("loading");
-    document.getElementById("page_status").innerHTML = 'Loading ...'
+// Generic helper to fetch partials with a 5000ms timeout
+async function loadPartial(url, options = {}) {
+  const timeoutMs = options.timeout || 5000;
+  
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      method: options.method || 'GET',
+      headers: {
+        // Keeps Rails controllers recognizing it as an AJAX request
+        'X-Requested-With': 'XMLHttpRequest', 
+        'Accept': 'text/html'
+      },
+      signal: controller.signal,
+      ...options
+    });
+
+    clearTimeout(id);
+
+    // Handles HTTP errors like 404, 500
+    if (!response.ok) {
+      throw new Error(`HTTP Error: ${response.status}`);
+    }
+
+    // Return the HTML text on success
+    return await response.text();
+
+  } catch (error) {
+    clearTimeout(id);
+    
+    // Explicitly check for timeouts
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out');
+    }
+    
+    throw error;
+  }
 }
 
-    $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
-       options.tryCount= (!options.tryCount) ? 0 : options.tryCount;0;
-       options.timeout = 5000*(options.tryCount+1);
-       options.retryLimit=0;
-       // Override the complete callback defensively
-       var originalComplete = options.complete;
+async function submitHandler(event, entity_name) {
+  // Prevent standard form post redirection
+  if (event) event.preventDefault();
 
-       options.complete = function(jqXHR, thrownError) {
-         /* complete also fires when error ocurred, so only clear if no error has been shown */
-         if(thrownError=="timeout") {
-           this.tryCount++;
-           document.getElementById("page_status").innerHTML = 'Retrying ...';
-           this.timeout=15000*this.tryCount;
-           if(this.tryCount<=this.retryLimit) {
-             $.rails.ajax(this);
-           } else {
-             document.getElementById("page_status").innerHTML = 'Timeout';
-             document.body.classList.remove("loading");
-//             window.currentActiveModal = map_create_dialog(
-//               "Loading",
-//               '<div id="page_status2">Timeout</div>'
-//             );
-           }
-         }
-         if(thrownError=="error") {
-           document.getElementById("page_status").innerHTML = 'Error: '+(HTTP_STATUS[jqXHR.status] || '')+'['+jqXHR.status+']';
-           document.body.classList.remove("loading");
-           window.currentActiveModal = map_create_dialog(
-             "Loading",
-             '<div id="page_status2">Error: '+(HTTP_STATUS[jqXHR.status] || '')+'['+jqXHR.status+']</div>'
-           );
+  let form = null;
+  if (event) {
+    const element = event.currentTarget || event.target;
+    if (element && typeof element.closest === 'function') {
+      form = element.closest('form');
+    }
+  }
+  if (!form && document.activeElement) {
+    form = document.activeElement.closest('form');
+  }
 
-         }
-         if(thrownError=="success") {
-           //if(site_map_size==0) site_bigger_map();
-           document.getElementById("page_status").innerHTML = ''
-           document.body.classList.remove("loading");
-           site_resizeHeader()
-         }
-         window.lastUrl=document.URL;
-     };
-   });
+  if (!form) {
+    console.error("submitHandler was called, but no parent form could be determined.");
+    return;
+  }
 
-function linkHandler(entity_name) {
+  // 1. Check for Rails hidden override input (e.g., <input type="hidden name="_method" value="patch">)
+  // Fall back to the explicit form method attribute, or default to 'POST'
+  const railsMethodOverride = form.querySelector('input[name="_method"]')?.value;
+  const method = (railsMethodOverride || form.method || 'POST').toUpperCase();
+  let url = form.action;
+  let fetchOptions = {
+    method: method,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'Accept': 'text/javascript, application/javascript'
+    }
+  };
+
+  // 2. Handle GET vs POST/PATCH differences for the Fetch API
+  if (method === 'GET') {
+    // For GET: Convert form data into a query string (?param1=val&param2=val)
+    const formData = new FormData(form);
+    const queryString = new URLSearchParams(formData).toString();
+
+    // Append parameters directly onto the destination URL string
+    if (queryString) {
+      const separator = url.includes('?') ? '&' : '?';
+      url = `${url}${separator}${queryString}`;
+    }
+    // Absolutely NO fetchOptions.body allowed here for GET requests!
+  } else {
+    // For POST/PATCH/PUT/DELETE: Safely send data inside the body + include authenticity token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    fetchOptions.headers['X-CSRF-Token'] = csrfToken;
+    fetchOptions.body = new FormData(form);
+  }
+
+  // 1. Enable loading spinner
+  document.body.classList.add("loading");
+
+  const timeoutMs = 5000;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  fetchOptions.signal = controller.signal;
+
+  try {
+    const response = await fetch(url, fetchOptions);
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP Error: ${response.status} (${response.statusText})`);
+    }
+
+    // 2. Success lifecycle hook: Run the returned form updates
+    const scriptContent = await response.text();
+    (0, eval)(scriptContent);
+
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.error('Submit Error:', error.message);
+
+    const reason = error.name === 'AbortError' ? 'The submission timed out.' : error.message;
+
+    // 3. Failure lifecycle hook: Launch your app's modal window
+    window.currentActiveModal = map_create_dialog(
+	    "Loading",
+             `<div id="page_status2">Unable to complete action. Reason: ${reason}</div>`
+    );
+
+  } finally {
+    document.body.classList.remove("loading");
+    document.getElementById("page_status").innerHTML = ''
+  }
+}
+
+async function linkHandler(event, entity_name) {
     clearTimeout(refreshInterval);
 
     if(entity_name=='back_link') {
@@ -945,9 +1029,61 @@ function linkHandler(entity_name) {
     $('#mainNavbarResponsive').collapse('hide');
 
     document.body.classList.add("loading");
-
     document.getElementById("page_status").innerHTML = 'Loading ...'
+
+	  // Prevent the browser from following the href link natively
+  if (event) event.preventDefault();
+
+  const link = event.currentTarget || event.target;
+  if (!link) return;
+
+  const url = link.href;
+
+  // 1. Enable loading spinner
+  document.body.classList.add("loading");
+
+  const timeoutMs = 30000;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'text/javascript, application/javascript'
+      },
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP Error: ${response.status} (${response.statusText})`);
+    }
+
+    // 2. Success lifecycle hook: Run the returned .js.erb code targeting #right_panel
+    const scriptContent = await response.text();
+    (0, eval)(scriptContent);
+
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.error('AJAX/Execution Error:', error.message);
+
+    const reason = error.name === 'AbortError' ? 'Request timed out' : error.message;
+
+    // 3. Failure lifecycle hook: Open your app's custom dialog
+    window.currentActiveModal = map_create_dialog(
+      "Request Failed",
+      `Unable to complete the action. Reason: ${reason}`
+    );
+  } finally {
+    // Equivalent to options.complete: clean up spinner state
+    document.body.classList.remove("loading");
+    document.getElementById("page_status").innerHTML = ''
+  }
 }
+
 
 function site_clear_element(formids) {
   var length=formids.length;

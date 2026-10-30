@@ -16,9 +16,9 @@
 
 <div id="actionbar" class="span7">
    <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
      &nbsp;--&gt;&nbsp;
-     <%=link_to "Districts", '/districts', remote: true,  :id => 'districts', :onclick => "linkHandler('districts')" %>
+     <%=link_to "Districts", '/districts', remote: true,  :id => 'districts', :onclick => "linkHandler(event,'districts')" %>
      </div>
    <div id="controls">
        <%=render 'map_controls'%>
@@ -38,16 +38,16 @@
       <tr>
         <td><%=district.district_code%></td>
         <td>
-          <%= link_to district.name, '/districts/'+district.district_code, remote: true, :id => 'district_link_'+district.id.to_s, :onclick => "linkHandler('district_link_"+district.id.to_s+"')" %>
+          <%= link_to district.name, '/districts/'+district.district_code, remote: true, :id => 'district_link_'+district.id.to_s, :onclick => "linkHandler(event,'district_link_"+district.id.to_s+"')" %>
         </td>
         <td>
             <% if district.state_code and district.state_code!='' then %>
-              <%=link_to district.state_code, '/states/'+district.state_code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+              <%=link_to district.state_code, '/states/'+district.state_code, remote: true,  :id => 'asset', :onclick => "linkHandler(event,'asset')" %>
             <% end %>
         </td>
         <td>
             <% if district.region_code and district.region_code!='' then %>
-              <%=link_to district.region_name, '/regions/'+district.region_code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+              <%=link_to district.region_name, '/regions/'+district.region_code, remote: true,  :id => 'asset', :onclick => "linkHandler(event,'asset')" %>
             <% end %>
         </td>
       </tr>

@@ -6,7 +6,7 @@ class PhotosController < ApplicationController
   require "uri"
   require "net/http"
 
-  before_action :signed_in_user, only: %i[delete create update new edit]
+  before_action :signed_in_user, only: %i[destroy create update new edit]
   skip_before_action :verify_authenticity_token, only: %i[create update]
 
   def index
@@ -42,7 +42,7 @@ class PhotosController < ApplicationController
     @image.asset_codes = @image.get_asset_codes
   end
 
-  def delete
+  def destroy
     if signed_in?
       @image = Image.find_by_id(params[:id])
       topic = @image.topic
@@ -74,22 +74,6 @@ class PhotosController < ApplicationController
       @image = Image.find_by_id(params[:id])
       topic = @image.topic
       if @image && (current_user.is_admin || (current_user.id == @image.created_by_id))
-        if params[:commit] == "Delete Image"
-          @item = @image.item
-          @item.destroy
-          @image.links.each(&:destroy)
-          if @image.destroy
-            flash[:success] = "Image deleted, id:" + params[:id]
-            @topic = topic
-            #      @items=topic.items
-            redirect_to "/topics/" + topic.id.to_s
-
-          else
-            flash[:error] = "Failed to delete image"
-            edit
-            render "edit"
-          end
-        else
           @image.assign_attributes(image_params)
 
           @image.updated_by_id = current_user.id
@@ -110,7 +94,6 @@ class PhotosController < ApplicationController
 
           # Handle a successful update.
           render "show"
-        end # delete or edit
       else
         flash[:error] = "Sorry - you don't have permissions to post to this topic"
         redirect_to "/"

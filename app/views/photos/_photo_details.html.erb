@@ -4,7 +4,7 @@
   <div class="box_header">
     <p><div class="sectiontitle"><%=@image.title%></div></p>
     <p>
-      <%= link_to @image.updated_by_name, '/users/'+@image.updated_by_name,remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
+      <%= link_to @image.updated_by_name, '/users/'+@image.updated_by_name,remote: true,  :id => 'user', :onclick => "linkHandler(event,'user')" %>
       <%=if @image.updated_at > @image.created_at then " updated in " else " posted in " end %> 
       <%=if @image.topic then @image.topic.name else "??" end %> on 
       <%=if @image.updated_at then @image.updated_at.strftime("%Y-%m-%d") else "" end%>
@@ -19,7 +19,7 @@
             <% if asset.first[:external] then %>
               <%=link_to "["+asset.first[:code]+"] ",asset.first[:url], target: "_blank"%><img src="/icons/external-link-symbol.png">&nbsp
             <% else %>
-             <%=link_to asset.first[:codename],asset.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>&nbsp;
+             <%=link_to asset.first[:codename],asset.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler(event,'link')"  %>&nbsp;
             <% end %>
           <% end %>
         <% end %>
@@ -27,8 +27,8 @@
     <% end %>
 
     <% if current_user and (current_user.id==@image.created_by_id or current_user.is_admin) then %>
-      <%=  link_to "Edit", '/photos/'+@image.id.to_s+'/edit', class: 'link_to', remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
-      <%= link_to "Delete", '/photos/'+@image.id.to_s+'/delete', data: {confirm: "Delete photo: Are you sure?"}, class: 'link_to', remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+      <%=  link_to "Edit", '/photos/'+@image.id.to_s+'/edit', class: 'link_to', remote: true,  :id => 'edit', :onclick => "linkHandler(event,'edit')"%>
+      <%= link_to "Delete", '/photos/'+@image.id.to_s+'/delete', data: {confirm: "Delete photo: Are you sure?"}, class: 'link_to', remote: true,  :id => 'delete', :onclick => "linkHandler(event,'delete')" %>
     <% end %>
 
   </div>

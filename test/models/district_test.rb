@@ -8,7 +8,7 @@ class DistrictTest < ActiveSupport::TestCase
     asset2=create_test_asset(asset_type: "summit", code_prefix: "ZL1/OT-", location: create_point(173.5, -41.6), country: "ZL")
     asset3=create_test_asset(asset_type: "summit", code_prefix: "ZL1/CB-", location: create_point(171.5, -40.6), country: "ZL")
     district = District.find_by(district_code: "ZL-CD3")
-    assets = district.assets
+    assets = district.assets.sort_by {|a| a.code}
     assert_equal assets.count, 2, "Correct no of assets returned"
     assert_equal assets.first.code, asset2.code
     assert_equal assets.last.code, asset1.code

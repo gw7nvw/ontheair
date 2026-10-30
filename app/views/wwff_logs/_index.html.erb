@@ -17,15 +17,15 @@
 
 <div id="actionbar" class="span7">
    <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
      &nbsp;--&gt;&nbsp;
      <b>WWFF Logs</b>
      </div>
    <div id="controls">
      <% if @resubmit==true %>
-     <%=  link_to "Hide Submitted", '/wwff_logs/?user='+@user.callsign+'&resubmit=false', class: "btn btn-small btn-primary", remote: true, :id => 'resubmit', :onclick => "linkHandler('resubmit')" %>
+     <%=  link_to "Hide Submitted", '/wwff_logs/?user='+@user.callsign+'&resubmit=false', class: "btn btn-small btn-primary", remote: true, :id => 'resubmit', :onclick => "linkHandler(event,'resubmit')" %>
      <% else %>
-     <%=  link_to "Show Submitted", '/wwff_logs/?user='+@user.callsign+'&resubmit=true', class: "btn btn-small btn-primary", remote: true, :id => 'resubmit', :onclick => "linkHandler('resubmit')" %>
+     <%=  link_to "Show Submitted", '/wwff_logs/?user='+@user.callsign+'&resubmit=true', class: "btn btn-small btn-primary", remote: true, :id => 'resubmit', :onclick => "linkHandler(event,'resubmit')" %>
      <% end %>
      <%=render 'map_controls'%>
    </div>
@@ -53,7 +53,7 @@
            end
         %>
 
-        <td><%=if !submitted_to_wwff then  link_to "Submit Log", '/wwff_logs/'+logday[:park][:wwffpark]+"?user="+@user.callsign+"&resubmit="+@resubmit.to_s, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" else link_to "Resend Log", '/wwff_logs/'+logday[:park][:wwffpark]+"?user="+@user.callsign+"&resubmit="+@resubmit.to_s, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" end%></td>
+        <td><%=if !submitted_to_wwff then  link_to "Submit Log", '/wwff_logs/'+logday[:park][:wwffpark]+"?user="+@user.callsign+"&resubmit="+@resubmit.to_s, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler(event,'submit')" else link_to "Resend Log", '/wwff_logs/'+logday[:park][:wwffpark]+"?user="+@user.callsign+"&resubmit="+@resubmit.to_s, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler(event,'submit')" end%></td>
       </tr>
     <% end%>
   </table>

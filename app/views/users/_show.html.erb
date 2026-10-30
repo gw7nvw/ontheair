@@ -19,18 +19,18 @@
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
-    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler(event,'users')" %>
     &nbsp;--&gt;&nbsp;
     <b><%= @user.callsign.upcase %></b>
   </div>
 
   <div id="controls">
     <% if current_user and (current_user.is_admin or current_user.id == @user.id) %>
-      <%=  link_to "Edit", '/users/'+@user.callsign+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
+      <%=  link_to "Edit", '/users/'+@user.callsign+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler(event,'edit')" %>
     <% end %>
-    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler(event,'index')" %>
     <%=render 'map_controls'%>
   </div>
 </div>
@@ -152,7 +152,7 @@
       Notifications include map: <%= if @user.push_include_map==true then "Yes" else "No" end %>
     </div>
 
-    <%=  link_to "Test Notifications", '/users/'+@user.callsign+"/test_notification", class: "btn btn-small btn-primary", remote: true,  :id => 'test_noti', :onclick => "linkHandler('test_noti')"  %>
+    <%=  link_to "Test Notifications", '/users/'+@user.callsign+"/test_notification", class: "btn btn-small btn-primary", remote: true,  :id => 'test_noti', :onclick => "linkHandler(event,'test_noti')"  %>
  
   <%end%>
 
@@ -180,8 +180,8 @@
             <td><%=if c.to_date then c.to_date.to_date else "present" end%></td>
             <td>
               <% if signed_in? and (current_user.id==@user.id or current_user.is_admin) then %>
-                <%=  link_to "Edit", '/callsigns/'+c.id.to_s+"/edit", class: "btn btn-small btn-primary", remote: true,  :id => 'edit_call', :onclick => "linkHandler('edit_call')"  %>
-                <%=  link_to "Delete", '/callsigns/'+c.id.to_s+"/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_call', :onclick => "linkHandler('delete_call')", data: {confirm: "Delete callsign?  This will remove this callsign from the system and you will lose any associated points/contacts.  Use 'Edit' and enter an 'End date' if you wish to retire this callsign and retain past contacts. Really delete?"}  %>
+                <%=  link_to "Edit", '/callsigns/'+c.id.to_s+"/edit", class: "btn btn-small btn-primary", remote: true,  :id => 'edit_call', :onclick => "linkHandler(event,'edit_call')"  %>
+                <%=  link_to "Delete", '/callsigns/'+c.id.to_s+"/delete", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_call', :onclick => "linkHandler(event,'delete_call')", data: {confirm: "Delete callsign?  This will remove this callsign from the system and you will lose any associated points/contacts.  Use 'Edit' and enter an 'End date' if you wish to retire this callsign and retain past contacts. Really delete?"}  %>
               <% end %>
             </td>
           </tr>
@@ -216,7 +216,7 @@
   <% if signed_in? and (current_user.id = @user.id or current_user.is_admin) %>
     <div class="erow" id="awards_box">
       <h2>Notifications and emails</h2>
-      <%=link_to "Show notification and email subscriptions", '/users/'+@user.callsign+'/notifications', remote: true,  :id => 'notificationss_link', :onclick => "linkHandler('notifications_link')"  %> 
+      <%=link_to "Show notification and email subscriptions", '/users/'+@user.callsign+'/notifications', remote: true,  :id => 'notificationss_link', :onclick => "linkHandler(event,'notifications_link')"  %> 
     </div>
     <div class="erow">
       <div class="hrline">
@@ -229,7 +229,7 @@
   <div class="erow" id="awards_box">
     <h2>Awards</h2>
     <% if signed_in? %>
-      <%=link_to "Show awards", '/users/'+@user.callsign+'/awards', remote: true,  :id => 'awards_link', :onclick => "linkHandler('awards_link')"  %> 
+      <%=link_to "Show awards", '/users/'+@user.callsign+'/awards', remote: true,  :id => 'awards_link', :onclick => "linkHandler(event,'awards_link')"  %> 
     <% else %>
       <i>Sign in to see awards</i>
     <% end %>
@@ -244,7 +244,7 @@
   <div class="erow" id="stats_box">
     <h2>Statistics and mapping</h2>
     <% if signed_in? %>
-      <%=link_to "Show statistics and mapping", '/users/'+@user.callsign+'/stats', remote: true,  :id => 'stats_link', :onclick => "linkHandler('stats_link')"  %> 
+      <%=link_to "Show statistics and mapping", '/users/'+@user.callsign+'/stats', remote: true,  :id => 'stats_link', :onclick => "linkHandler(event,'stats_link')"  %> 
     <% else %>
       <i>Sign in to see statistics and mapping</i>
     <% end %>
@@ -259,7 +259,7 @@
   <div class="erow" id="logs_box">
     <h2>Logs</h2>
     <% if signed_in? %>
-      <%=link_to "Show "+@user.logs.count.to_s+" logs", '/logs?user='+@user.callsign, remote: true,  :id => 'logs_link', :onclick => "linkHandler('logs_link')"  %> 
+      <%=link_to "Show "+@user.logs.count.to_s+" logs", '/logs?user='+@user.callsign, remote: true,  :id => 'logs_link', :onclick => "linkHandler(event,'logs_link')"  %> 
     <% else %>
       <i>Sign in to see <%=@user.logs.count.to_s%> logs</i>
     <% end %>
@@ -274,7 +274,7 @@
   <div class="erow" id="contacts_box">
     <h2>Contacts</h2>
     <% if signed_in? %>
-      <%=link_to "Show "+@user.contacts.count.to_s+" contacts", '/contacts?user='+@user.callsign, remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')"  %> 
+      <%=link_to "Show "+@user.contacts.count.to_s+" contacts", '/contacts?user='+@user.callsign, remote: true,  :id => 'contacts_link', :onclick => "linkHandler(event,'contacts_link')"  %> 
     <% else %>
       <i>Sign in to see <%=@user.contacts.count.to_s%> contacts</i>
     <% end %>

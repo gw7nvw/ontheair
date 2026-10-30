@@ -16,13 +16,13 @@
       <tr>
         <td>
           <% if !@brief and current_user and (current_user.id==log.user1_id or current_user.is_admin) %>
-            <%= link_to 'Edit', '/logs/'+log.id.to_s+'/edit?referring=index', remote: true, :id => 'editbutton'+log.id.to_s, :onclick => "linkHandler('editbutton"+log.id.to_s+"')" %><br/>
+            <%= link_to 'Edit', '/logs/'+log.id.to_s+'/edit?referring=index', remote: true, :id => 'editbutton'+log.id.to_s, :onclick => "linkHandler(event,'editbutton"+log.id.to_s+"')" %><br/>
           <% end %>
           <% if signed_in? %>
-            <%= link_to 'View', '/logs/'+log.id.to_s, remote: true, :id => 'log_link_'+log.id.to_s, :onclick => "linkHandler('log_link_"+log.id.to_s+"')" %>
+            <%= link_to 'View', '/logs/'+log.id.to_s, remote: true, :id => 'log_link_'+log.id.to_s, :onclick => "linkHandler(event,'log_link_"+log.id.to_s+"')" %>
           <% end %>
         </td>
-        <td> <%= link_to log.callsign1, '/users/'+log.callsign1, remote: true, :id => 'user', :onclick => "linkHandler('user')" %> </td>
+        <td> <%= link_to log.callsign1, '/users/'+log.callsign1, remote: true, :id => 'user', :onclick => "linkHandler(event,'user')" %> </td>
         <td> <% if signed_in? then %><%= log.localdate(current_user)%> <% else %> <%= log.localdate(nil)%><% end %> </td>
         <td>  
           <ul style="list-style-type:none;padding:0;margin:0;">
@@ -35,7 +35,7 @@
                       <%= link_to link[:code], link[:url], target: "_blank" %> <img src="/icons/external-link-symbol.png">
                     <% else %>
                       <% if link[:asset] %>
-                        <%= link_to link[:asset].codename, (if(link[:url][0] != '/' and link[:url][0..3] != "http") then "/" else "" end) + link[:url], remote: true, :id => 'link', :onclick => "linkHandler('link')" %>
+                        <%= link_to link[:asset].codename, (if(link[:url][0] != '/' and link[:url][0..3] != "http") then "/" else "" end) + link[:url], remote: true, :id => 'link', :onclick => "linkHandler(event,'link')" %>
                       <% else %>
                         <%= "Unknown" %>
                       <% end %>

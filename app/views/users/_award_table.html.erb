@@ -12,7 +12,7 @@
       <% awarded=@user.has_award(a.id) %>
       <tr>
         <td>
-          <%=link_to a.name, '/awards/'+a.id.to_s, remote: true,  :id => 'award', :onclick => "linkHandler('award')" %>
+          <%=link_to a.name, '/awards/'+a.id.to_s, remote: true,  :id => 'award', :onclick => "linkHandler(event,'award')" %>
         </td>
         <td>
           <% if a.chased==true and a.activated==true then %>

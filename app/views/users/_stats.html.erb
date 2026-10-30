@@ -25,17 +25,17 @@
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
-    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler(event,'users')" %>
     &nbsp;--&gt;&nbsp;
-    <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler(event,'users')" %>
 &nbsp;--&gt;&nbsp;
     <b>Stats</b>
   </div>
 
   <div id="controls">
-    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler(event,'index')" %>
     <%=render 'map_controls'%>
   </div>
 </div>
@@ -63,10 +63,10 @@
     <div class="erow" id="<%=at.name.pluralize%>">
       <div class="sectiontitle" style="margin-top: 12px;"><%=if at.name == 'qrp' then "QRP" else at.name.capitalize.pluralize end%>:</div>
       <ul>
-        <li><%=link_to "Bagged: "+(@user.score[at.name]||0).to_s+" unique", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=bagged", remote: true,  :id => "#{at.name.pluralize}_bagged", :onclick => "linkHandler('bagged')"%></li>
-        <li><%=link_to "Activated: "+(@user.activated_count[at.name]||0).to_s+" unique ("+(@user.activated_count_total[at.name]||0).to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=activated", remote: true,  :id => "#{at.name.pluralize}_activated", :onclick => "linkHandler('activated')"%></li>
-        <li><%=link_to "Qualified: "+(@user.qualified_count[at.name]||0).to_s+" unique ("+(@user.qualified_count_total[at.name]||0).to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=activated", remote: true,  :id => "#{at.name.pluralize}_qualified", :onclick => "linkHandler('qualified')"%></li>
-        <li><%=link_to "Chased: "+(@user.chased_count[at.name]||0).to_s+" unique ("+(@user.chased_count_total[at.name]||0).to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=chased", remote: true,  :id => "#{at.name.pluralize}_chased", :onclick => "linkHandler('chased')"%></li>
+        <li><%=link_to "Bagged: "+(@user.score[at.name]||0).to_s+" unique", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=bagged", remote: true,  :id => "#{at.name.pluralize}_bagged", :onclick => "linkHandler(event,'bagged')"%></li>
+        <li><%=link_to "Activated: "+(@user.activated_count[at.name]||0).to_s+" unique ("+(@user.activated_count_total[at.name]||0).to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=activated", remote: true,  :id => "#{at.name.pluralize}_activated", :onclick => "linkHandler(event,'activated')"%></li>
+        <li><%=link_to "Qualified: "+(@user.qualified_count[at.name]||0).to_s+" unique ("+(@user.qualified_count_total[at.name]||0).to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=activated", remote: true,  :id => "#{at.name.pluralize}_qualified", :onclick => "linkHandler(event,'qualified')"%></li>
+        <li><%=link_to "Chased: "+(@user.chased_count[at.name]||0).to_s+" unique ("+(@user.chased_count_total[at.name]||0).to_s+" total)", '/users/'+@user.callsign+"/assets?asset_type="+at.name+"&count_type=chased", remote: true,  :id => "#{at.name.pluralize}_chased", :onclick => "linkHandler(event,'chased')"%></li>
       </ul>
     </div>
   <% end %>
@@ -74,9 +74,9 @@
   <div class="erow" id="NZ Summit elevations">
     <div class="sectiontitle" style="margin-top: 12px;">NZ Summit elevations:</div>
     <ul>
-      <li><%=link_to "Bagged: "+number_with_precision((@user.score["elevation"]||0).to_f/1000,:precision => 1, :delimiter => ',').to_s+" km unique", '/users/'+@user.callsign+"/assets?asset_type=summit&count_type=bagged", remote: true,  :id => "summits_bagged", :onclick => "linkHandler('bagged')"%></li>
-      <li><%=link_to "Activated: "+number_with_precision((@user.activated_count["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km ("+number_with_precision((@user.activated_count_total["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km total)", '/users/'+@user.callsign+"/assets?asset_type=summit&count_type=activated", remote: true,  :id => "summits_activated", :onclick => "linkHandler('activated')"%></li>
-      <li><%=link_to "Chased: "+number_with_precision((@user.chased_count["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km ("+number_with_precision((@user.chased_count_total["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km total)", '/users/'+@user.callsign+"/assets?asset_type=summit&count_type=chased", remote: true,  :id => "summits_chased", :onclick => "linkHandler('chased')"%></li>
+      <li><%=link_to "Bagged: "+number_with_precision((@user.score["elevation"]||0).to_f/1000,:precision => 1, :delimiter => ',').to_s+" km unique", '/users/'+@user.callsign+"/assets?asset_type=summit&count_type=bagged", remote: true,  :id => "summits_bagged", :onclick => "linkHandler(event,'bagged')"%></li>
+      <li><%=link_to "Activated: "+number_with_precision((@user.activated_count["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km ("+number_with_precision((@user.activated_count_total["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km total)", '/users/'+@user.callsign+"/assets?asset_type=summit&count_type=activated", remote: true,  :id => "summits_activated", :onclick => "linkHandler(event,'activated')"%></li>
+      <li><%=link_to "Chased: "+number_with_precision((@user.chased_count["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km ("+number_with_precision((@user.chased_count_total["elevation"]||0).to_f/1000, :precision => 1, :delimiter => ',').to_s+" km total)", '/users/'+@user.callsign+"/assets?asset_type=summit&count_type=chased", remote: true,  :id => "summits_chased", :onclick => "linkHandler(event,'chased')"%></li>
     </ul>
   </div>
 
@@ -85,7 +85,7 @@
   <div class="erow">
     <div class="sectiontitle" style="margin-top: 12px;">P2P:</div>
     <ul>
-      <li><%=link_to "Contacts: "+assets.count.to_s, '/users/'+@user.callsign+"/p2p", remote: true,  :id => 'p2p_count', :onclick => "linkHandler('users')"%></li>
+      <li><%=link_to "Contacts: "+assets.count.to_s, '/users/'+@user.callsign+"/p2p", remote: true,  :id => 'p2p_count', :onclick => "linkHandler(event,'users')"%></li>
     </ul>
   </div>
 
@@ -98,7 +98,7 @@
   <div class="erow" id="logs_box">
     <h2>Logs</h2>
     <% if signed_in? %>
-      <%=link_to "Show "+@user.logs.count.to_s+" logs", '/logs?user='+@user.callsign, remote: true,  :id => 'logs_link', :onclick => "linkHandler('logs_link')"  %>
+      <%=link_to "Show "+@user.logs.count.to_s+" logs", '/logs?user='+@user.callsign, remote: true,  :id => 'logs_link', :onclick => "linkHandler(event,'logs_link')"  %>
     <% else %>
       <i>Sign in to see <%=@user.logs.count.to_s%> logs</i>
     <% end %>
@@ -113,7 +113,7 @@
   <div class="erow" id="contacts_box">
     <h2>Contacts</h2>
     <% if signed_in? %>
-      <%=link_to "Show "+@user.contacts.count.to_s+" contacts", '/contacts?user='+@user.callsign, remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')"  %>
+      <%=link_to "Show "+@user.contacts.count.to_s+" contacts", '/contacts?user='+@user.callsign, remote: true,  :id => 'contacts_link', :onclick => "linkHandler(event,'contacts_link')"  %>
     <% else %>
       <i>Sign in to see <%=@user.contacts.count.to_s%> contacts</i>
     <% end %>

@@ -38,29 +38,9 @@ class TopicsController < ApplicationController
   end
 
   def update
-    if signed_in?
       id = params[:id].to_i
       @topic = Topic.find_by_id(id)
-      if @topic && (current_user.is_admin || (current_user.id == @topic.owner_id))
-        if params[:commit] == "Delete Topic"
-          # delete all item
-          @items = Item.where(topic_id: @topic.id)
-          count = 0
-          if @items then @items.each do |item|
-            item.end_item.destroy if item.end_item
-            item.destroy if item
-            count += 1
-          end
-          end
-          if @topic.destroy
-            flash[:success] = "Topic containing " + count.to_s + " posts deleted, id:" + id.to_s
-            index
-            render "index"
-          else
-            edit
-            render "edit"
-          end
-        else
+      if @topic
           @topic.assign_attributes(topic_params)
           @topic.updated_by_id = current_user.id
           if @topic.save
@@ -77,13 +57,9 @@ class TopicsController < ApplicationController
           else
             render "edit"
           end
-        end # delete or edit
       else
-        redirect_to "/"
-      end # do we have permissions
-    else
-      redirect_to "/"
-    end # does it exist
+        redirect_to '/'
+      end
   end
 
   def edit
@@ -130,7 +106,31 @@ class TopicsController < ApplicationController
     end
   end
 
-  def destroy; end
+  def destroy
+      id = params[:id].to_i
+      @topic = Topic.find_by_id(id)
+      if @topic && (current_user.is_admin || (current_user.id == @topic.owner_id))
+          # delete all item
+          @items = Item.where(topic_id: @topic.id)
+          count = 0
+          if @items then @items.each do |item|
+            item.end_item.destroy if item.end_item
+            item.destroy if item
+            count += 1
+          end
+          end
+          if @topic.destroy
+            flash[:success] = "Topic containing " + count.to_s + " posts deleted, id:" + id.to_s
+            index
+            render "index"
+          else
+            edit
+            render "edit"
+          end
+      else
+        redirect_to "/"
+      end
+  end
 
   private
 

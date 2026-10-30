@@ -11,12 +11,12 @@ function startEdit() {
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', remote: true, :onclick => "linkHandler('home')"%>
+    <%=link_to "Home", '/', remote: true, :onclick => "linkHandler(event,'home')"%>
     &nbsp;--&gt;&nbsp;
-    <%=  link_to  "Topics", '/topics', remote: true, :onclick => "linkHandler('home')"%>
+    <%=  link_to  "Topics", '/topics', remote: true, :onclick => "linkHandler(event,'home')"%>
     &nbsp;--&gt;&nbsp;
     <%if @topic.id%>
-       <b><%=link_to @topic.name, '/topics/'+@topic.url, remote: true, :onclick => "linkHandler('home')"%></b>
+       <b><%=link_to @topic.name, '/topics/'+@topic.url, remote: true, :onclick => "linkHandler(event,'home')"%></b>
        &nbsp;--&gt;&nbsp;
        <b>Edit</b>
     <% else %>
@@ -26,9 +26,9 @@ function startEdit() {
 
   <div id="controls">
     <% if @topic.id %><% if params[:referring]=='index'%>
-      <%=  link_to "Cancel", '/topics', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('home')"%>
+      <%=  link_to "Cancel", '/topics', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'home')"%>
     <% else %>
-      <%=  link_to "Cancel", '/topics/'+@topic.url, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('home')"%>
+      <%=  link_to "Cancel", '/topics/'+@topic.url, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'home')"%>
     <% end %> <% end %>
 
 
@@ -96,7 +96,12 @@ function startEdit() {
         </span>
         <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight" %>
         <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@topic.owner_id)) %>
-          <%= f.submit "Delete Topic", confirm: "Delete entire topic: Are you sure?", class: "btn btn-small btn-primary", callsign: "delete", id:  "deletebutton", remote: true, :onclick => "linkHandler('home')" %>
+          <%= button_to "Delete Topic",
+              topic_path(@topic),
+              method: :delete,
+              form: { onsubmit: "submitHandler(event,'delete');" },
+              data: { confirm: "Are you sure?" }, # If you want a quick native confirmation popup
+              class: "btn btn-danger" %>
         <% end %>
      </div>
 

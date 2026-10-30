@@ -6,18 +6,18 @@
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
-    <%=link_to "Awards", '/awards', :remote => true,  :onclick => "linkHandler('awards')" %>
+    <%=link_to "Awards", '/awards', :remote => true,  :onclick => "linkHandler(event,'awards')" %>
     &nbsp;--&gt;&nbsp;
     <%= @award.name %>
   </div>
 
   <div id="controls">
     <% if signed_in? and current_user.is_admin then %>
-      <%=  link_to "Edit", '/awards/'+@award.id.to_s+'/edit', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('edit')"%>
+      <%=  link_to "Edit", '/awards/'+@award.id.to_s+'/edit', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler(event,'edit')"%>
     <% end %>
-    <%=  link_to "Index", '/awards/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
+    <%=  link_to "Index", '/awards/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler(event,'index')"%>
     <%=render 'map_controls'%>
   </div>
 </div>
@@ -27,7 +27,7 @@
   <div class="erow" id="name">
     <div class="rowtitle"><%= "Name" %></div>
     <div class="rowtext">
-      <%=link_to @award.name, '/awards/'+@award.id.to_s, remote: true,  :id => 'award', :onclick => "linkHandler('home')" %>
+      <%=link_to @award.name, '/awards/'+@award.id.to_s, remote: true,  :id => 'award', :onclick => "linkHandler(event,'home')" %>
     </div>
   </div>
   <div class="erow" id="description">
@@ -94,7 +94,7 @@
           <% if ua.user %>
             <tr>
               <td>
-                <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
+                <%=link_to ua.user.callsign, '/users/'+ua.user.callsign+"/awards", remote: true,  :id => 'user', :onclick => "linkHandler(event,'user')" %>
               </td>
               <% if @award.count_based then %>
                 <td><%=ua.threshold_name%> (<%=ua.threshold.to_s%>)</td>

@@ -8,7 +8,7 @@
         <% as=Asset.where("code in ('"+(assets[:a][at.name]+assets[:c][at.name]).uniq.join("','")+"')") %>
         <% count=0; as.order(:name).each do |a|; count+=1 %>
           <%= if count>1 then ', ' end %>
-          <%=link_to a.name, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+          <%=link_to a.name, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler(event,'asset')" %>
         <% end %>
       </div>
 
@@ -17,7 +17,7 @@
         <% as=Asset.where("code in ('"+assets[:c][at.name].uniq.join("','")+"')") %>
         <% count=0; as.order(:name).each do |a|; count+=1 %>
           <%= if count>1 then ', ' end %>
-          <%=link_to a.name, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+          <%=link_to a.name, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler(event,'asset')" %>
         <% end %>
       </div>
     </ul>
@@ -35,7 +35,7 @@
           <% a_arr=a.split(' ') %>
           <% contact=Contact.find_contact_from_p2p(@user.id, a_arr[0], a_arr[1], a_arr[2]) %>
           <% if contact then contact_id=contact.id.to_s else contact_id="" end %>
-          <li><%=link_to a_arr[0]+" -> "+a_arr[1]+" ("+a_arr[2]+")", '/contacts/'+contact_id, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %></li>
+          <li><%=link_to a_arr[0]+" -> "+a_arr[1]+" ("+a_arr[2]+")", '/contacts/'+contact_id, remote: true,  :id => 'asset', :onclick => "linkHandler(event,'asset')" %></li>
         <% end %>
       </ul>
     </div>

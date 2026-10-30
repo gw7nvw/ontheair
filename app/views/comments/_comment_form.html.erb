@@ -16,14 +16,14 @@
   <%= form_for @comment, remote: true, :html => {:name => 'commentform'}  do |f| %>
     <div id="actionbar" class="span7">
       <div id="crumbs">
-        <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+        <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
         &nbsp;--&gt;&nbsp;
-        <%=link_to "Comments", "/comment", remote: true,  :id => 'comment', :onclick => "linkHandler('comment')"%>
+        <%=link_to "Comments", "/comment", remote: true,  :id => 'comment', :onclick => "linkHandler(event,'comment')"%>
         &nbsp;--&gt;&nbsp;
-          <b><%=if @comment.code then link_to @comment.code, '/assets/'+@comment.code.gsub('/','_'), remote: true,  :id => 'comment', :onclick => "linkHandler('comment')" else "nothing" end%></b>
+          <b><%=if @comment.code then link_to @comment.code, '/assets/'+@comment.code.gsub('/','_'), remote: true,  :id => 'comment', :onclick => "linkHandler(event,'comment')" else "nothing" end%></b>
         &nbsp;--&gt;&nbsp;
         <%if @comment.id%>
-          <b><%=link_to @comment.id.to_s, '/comments/'+@comment.id.to_s, remote: true,  :id => 'comment', :onclick => "linkHandler('comment')"%></b>
+          <b><%=link_to @comment.id.to_s, '/comments/'+@comment.id.to_s, remote: true,  :id => 'comment', :onclick => "linkHandler(event,'comment')"%></b>
           &nbsp;--&gt;&nbsp;
           <b>Edit</b>
         <% else %>
@@ -32,9 +32,9 @@
       </div>
       <div id="controls">
         <% if params[:referring]=='index'%>
-          <%=  link_to "Cancel", '/comments', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+          <%=  link_to "Cancel", '/comments', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler(event,'cancel')"%>
         <% else %>
-          <%=  link_to "Cancel", '/assets/'+(if @comment.asset then @comment.asset.safecode else '' end), class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+          <%=  link_to "Cancel", '/assets/'+(if @comment.asset then @comment.asset.safecode else '' end), class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler(event,'cancel')"%>
         <% end %>
 
         <%=render 'map_controls'%>
@@ -55,9 +55,15 @@
       </div>      
 
       <div class="erow">   
-        <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight", id: 'submit', :onclick => "submitHandler('Commenting ...');" %>
+        <%= f.submit @submit_button, class: "btn btn-small btn-primary btn-highlight", id: 'submit', :onclick => "submitHandler(event,'Commenting ...');" %>
         <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@comment.updated_by_id)) %>
-          <%= f.submit "Delete Comment", confirm: "Delete comment: Are you sure?", class: "btn btn-small btn-primary", remote: true,  :id => 'deletebutton', :onclick => "linkHandler('delete')" %>
+        <%= button_to "Delete Comment",
+              comment_path(@comment),
+              method: :delete,
+              form: { onsubmit: "submitHandler(event,'delete');" },
+              data: { confirm: "Are you sure?" }, # If you want a quick native confirmation popup
+              class: "btn btn-danger",
+              id: "deletebutton"%>
         <% end %>
       </div>
 

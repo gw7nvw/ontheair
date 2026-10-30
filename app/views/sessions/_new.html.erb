@@ -7,13 +7,13 @@
   <%= form_for(:session, url: sessions_path) do |f| %>
     <div id="actionbar" class="span7">
        <div id="crumbs">
-         <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+         <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
          &nbsp;--&gt;&nbsp;
          <b>Sign In</b>
        </div>
 
        <div id="controls">
-          <%= link_to "Forgotten Password", new_password_reset_path, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('forgot')" %>
+          <%= link_to "Forgotten Password", new_password_reset_path, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'forgot')" %>
           <%=render 'map_controls'%>
        </div>
     </div>
@@ -31,7 +31,7 @@
       <%= f.submit "Sign in", id: "submit", class: "btn btn-small btn-primary btn-highlight" %>
     </div>
     <div class="erow">
-      <p><i>Existing parksnpeaks.org user arriving on this new site for the first time? <%= link_to "Click here for details ", '/migrate',  remote: true, :onclick => "linkHandler('forgot')" %> of how to re-activate your old account</i></p>
+      <p><i>Existing parksnpeaks.org user arriving on this new site for the first time? <%= link_to "Click here for details ", '/migrate',  remote: true, :onclick => "linkHandler(event,'forgot')" %> of how to re-activate your old account</i></p>
     </div>
   <% end %>
 </div>

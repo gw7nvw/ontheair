@@ -16,14 +16,14 @@ $(function () {
 
 <div id="actionbar" class="span7">
    <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
      &nbsp;--&gt;&nbsp;
      <b>Topics</b>
    </div>
    <div id="controls">
        <% if current_user  %>
           <% if current_user.is_admin then %>
-            <%=  link_to "Add Topic", '/topics/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+            <%=  link_to "Add Topic", '/topics/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'edit')" %>
           <% end %>
        <% end %>
        <%=render 'map_controls'%>
@@ -37,7 +37,7 @@ $(function () {
       <% count=0%>
       <% @topics.each do |topic| %>
         <tr>
-           <td><%= link_to topic.name, '/topics/'+topic.url, remote: true, :onclick => "linkHandler('topic#{count}')"%></td>
+           <td><%= link_to topic.name, '/topics/'+topic.url, remote: true, :onclick => "linkHandler(event,'topic#{count}')"%></td>
         </tr>
         <% count+=1%>
       <% end %>

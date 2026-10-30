@@ -1,15 +1,15 @@
 <div class="fullform">
   <div id="actionbar" class="span7">
      <div id="crumbs">
-       <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+       <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
        &nbsp;--&gt;&nbsp;
-       <%=link_to "HEMA Logs", '/hema_logs/?'+@parameters, remote: true,  :id => 'index', :onclick => "linkHandler('home')" %>
+       <%=link_to "HEMA Logs", '/hema_logs/?'+@parameters, remote: true,  :id => 'index', :onclick => "linkHandler(event,'home')" %>
        &nbsp;--&gt;&nbsp;
        <b><%= @log.id %></b>
      </div>
   
      <div id="controls">
-       <%=link_to "Index", '/hema_logs/?'+@parameters, class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+       <%=link_to "Index", '/hema_logs/?'+@parameters, class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler(event,'index')" %>
        <%=render 'map_controls'%>
      </div>
   </div>
@@ -40,9 +40,9 @@
         </div>
       </div>
   
-      <%= submit_tag "Submit", id: "submit", class: "btn btn-small btn-primary btn-hightlight", :onclick => "submitHandler('Uploading ...');"%>
+      <%= submit_tag "Submit", id: "submit", class: "btn btn-small btn-primary btn-hightlight", :onclick => "submitHandler(event,'Uploading ...');"%>
   
-      <%= link_to "Cancel", '/hema_logs?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
+      <%= link_to "Cancel", '/hema_logs?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler(event,'submit')"%>
     </form>
   
     <div class='erow'>

@@ -470,7 +470,7 @@ class AwardsControllerTest < ActionController::TestCase
     awards=Award.count
     sign_in users(:zl4nvw)
 
-    patch :update, params: { delete: true, id: award.id }
+    delete :destroy, params: { id: award.id }
     assert_response :redirect
     assert_no_match /Failed/, flash[:error]
     assert_match /Award deleted/, flash[:success]

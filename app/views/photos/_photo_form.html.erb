@@ -19,7 +19,7 @@
   <%= form_for @image, url: photo_url, remote: true, :html => {:name => 'imageform'}  do |f| %>
     <div id="actionbar" class="span7">
       <div id="crumbs">
-        <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+        <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
         &nbsp;--&gt;&nbsp;Photos&nbsp;--&gt;&nbsp;
         <%if @image.id%>
           <b><%=link_to @image.title, '/images/'+@image.id.to_s%></b>
@@ -32,9 +32,9 @@
 
       <div id="controls">
         <% if @image.id %><% if params[:referring]=='index'%>
-          <%=  link_to "Cancel", '/photos', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+          <%=  link_to "Cancel", '/photos', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler(event,'cancel')"%>
         <% else %>
-          <%=  link_to "Cancel", '/photos/'+@image.id.to_s, class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+          <%=  link_to "Cancel", '/photos/'+@image.id.to_s, class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler(event,'cancel')"%>
         <% end %> <% end %>
         <%=render 'map_controls'%>
       </div>
@@ -79,7 +79,12 @@
 
       <%= f.submit @submit_button, id: "submit", class: "btn btn-small btn-primary btn-highlight" %>
       <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@image.created_by_id)) %>
-        <%= f.submit "Delete Photo", data: {confirm: "Delete image: Are you sure?"}, class: "btn btn-small btn-primary", remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+        <%= button_to "Delete Photo",
+              photo_path(@image),
+              method: :delete,
+              form: { onsubmit: "submitHandler(event,'delete');" },
+              data: { confirm: "Are you sure?" }, # If you want a quick native confirmation popup
+              class: "btn btn-danger" %>
       <% end %>
     </div>
   <% end %>

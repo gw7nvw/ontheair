@@ -2,7 +2,7 @@
 # typed: false
 
 class ContactsController < ApplicationController
-  before_action :signed_in_user, only: %i[index show edit create new refute confirm]
+  before_action :signed_in_user, only: %i[index show create new refute confirm]
 
   def index_prep
     whereclause = "true"

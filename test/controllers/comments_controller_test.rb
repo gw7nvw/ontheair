@@ -369,7 +369,7 @@ class CommentsControllerTest < ActionController::TestCase
     comment1=Comment.create(comment: "The Oamaru lookout point at the end of Tamar Road ...", code: asset1.code, updated_by_id: user.id)
     sign_in user
 
-    get :delete, params: { id: comment1.id }
+    get :destroy, params: { id: comment1.id }
     assert_response :redirect
     assert_redirected_to "/assets/"+asset1.safecode
     assert_match "Comment deleted", flash[:success]
@@ -383,7 +383,7 @@ class CommentsControllerTest < ActionController::TestCase
     user=create_test_user
     comment1=Comment.create(comment: "The Oamaru lookout point at the end of Tamar Road ...", code: asset1.code, updated_by_id: user.id)
 
-    get :delete, params: { id: comment1.id }
+    get :destroy, params: { id: comment1.id }
     assert_response :redirect
     assert_redirected_to /signin/
 
@@ -397,11 +397,11 @@ class CommentsControllerTest < ActionController::TestCase
     comments=Comment.count
     sign_in users(:zl3cc)
 
-    patch :update, params: { id: comment1.id, comment: { code: asset1.code, comment: "This is a comment" } }
+    get :destroy, params: { id: comment1.id }
     assert_response :redirect
-    assert_redirected_to "/assets/"+comment1.asset.safecode
+    assert_redirected_to "/"
 
-    assert_equal "You do not have permissions to update this comment",  flash[:error]
+    assert_equal "You do not have permissions to delete this comment",  flash[:error]
     assert_equal comments, Comment.count, "Nothing deleted"
   end
 end

@@ -3,7 +3,7 @@
   <% @all_spots.each do |spot| %>
     <% count += 1 %>
       <tr>
-        <td rowspan=2><% spot[:spot_type].uniq.each do |st| %><%if st=="ZLOTA" then %><b><%=st%></b><% else %><%=st%> <% end %> <br/> <% end %> <%if spot[:is_qrp] then %> QRP <br/> <%end%> <%if spot[:post_id] and spot[:post_id].count>0 then %><%=link_to 'View','/topics/35?post='+(-spot[:post_id].last).to_s,remote: true,  :id => 'view', :onclick => "linkHandler('view')"%><% end %></td>
+        <td rowspan=2><% spot[:spot_type].uniq.each do |st| %><%if st=="ZLOTA" then %><b><%=st%></b><% else %><%=st%> <% end %> <br/> <% end %> <%if spot[:is_qrp] then %> QRP <br/> <%end%> <%if spot[:post_id] and spot[:post_id].count>0 then %><%=link_to 'View','/topics/35?post='+(-spot[:post_id].last).to_s,remote: true,  :id => 'view', :onclick => "linkHandler(event,'view')"%><% end %></td>
         <td><%if spot[:time] and spot[:time].last then %><%=spot[:time].last.to_time.in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=spot[:time].last.to_time.in_time_zone(@tz.name).strftime("%H:%M:%S")%></b> (<%=@tz.name%>)<% end %></td>
         <td><b><%=render :partial => 'callsign',  :locals => {:this_callsign => spot[:activatorCallsign]} %></b><%=render :partial => 'call_suffix',  :locals => {:item => spot} %></td>
         <td>@ 
@@ -18,7 +18,7 @@
                 <% if link.first[:external] then %>
                   <%=link_to code.upcase,link.first[:url], target: "_blank"%><img src="/icons/external-link-symbol.png">
                 <% else %>
-                 <%=link_to code.upcase,link.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                 <%=link_to code.upcase,link.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler(event,'link')"  %>
                 <% end %>
               <% else %>
                 <%=code.upcase%>
@@ -34,8 +34,8 @@
         <td colspan=7>
           <%=spot[:name].uniq.join("; ")%> -
           <i><small><%if signed_in? and validlink  %> 
-            <%=link_to '(respot)','/posts/new?topic_id='+SPOT_TOPIC.to_s+'&spot='+spot[:id].to_s, remote: true,  :id => 'respot', :onclick => "linkHandler('respot')" %>
-            <%=link_to '(log chase)','/contacts/new?spot='+spot[:id].to_s, remote: true,  :id => 'chase', :onclick => "linkHandler('chase')" %>
+            <%=link_to '(respot)','/posts/new?topic_id='+SPOT_TOPIC.to_s+'&spot='+spot[:id].to_s, remote: true,  :id => 'respot', :onclick => "linkHandler(event,'respot')" %>
+            <%=link_to '(log chase)','/contacts/new?spot='+spot[:id].to_s, remote: true,  :id => 'chase', :onclick => "linkHandler(event,'chase')" %>
           <% end%></small></i>
           <br/>&rarr;<%=spot[:comments].last%>
           <% if spot[:comments].count>1 %>

@@ -6,8 +6,8 @@
     <tr <%=raw(stylestr)%> >
       <td>
          <%if alert[:programme]=="ZLOTA" then %><b><%=alert[:programme]%></b><% else %><%=alert[:programme]%> <% end %><br>
-         <%if alert[:id] and alert[:id].to_i<0 then %><%=link_to 'View','/topics/1?post='+(-alert[:id]).to_s,remote: true,  :id => 'view', :onclick => "linkHandler('view')"%><% end %> 
-         <%if alert[:id] and alert[:id].to_i>0 and current_user and (current_user.is_admin or current_user.is_web_admin or current_user.callsign == alert[:activatingCallsign]) then %> <%=link_to 'Delete','/alerts/'+(alert[:id]).to_s+"/delete",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')"%><% end %>
+         <%if alert[:id] and alert[:id].to_i<0 then %><%=link_to 'View','/topics/1?post='+(-alert[:id]).to_s,remote: true,  :id => 'view', :onclick => "linkHandler(event,'view')"%><% end %> 
+         <%if alert[:id] and alert[:id].to_i>0 and current_user and (current_user.is_admin or current_user.is_web_admin or current_user.callsign == alert[:activatingCallsign]) then %> <%=link_to 'Delete','/alerts/'+(alert[:id]).to_s+"/delete",remote: true,  :id => 'delete', :onclick => "linkHandler(event,'delete')"%><% end %>
       </td>
         <td><%if alert[:starttime] then %><%=alert[:starttime].in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=alert[:starttime].in_time_zone(@tz.name).strftime("%H:%M")%></b> <%if alert[:duration] then %> - <%=(alert[:starttime]+alert[:duration].to_f*3600).in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=(alert[:starttime]+alert[:duration].to_f*3600).in_time_zone(@tz.name).strftime("%H:%M")%></b> <% end %> (<%=@tz.name%>)<% end %></td>
         <td><b><%=render :partial => 'callsign',  :locals => {:this_callsign => alert[:activatingCallsign]} %></b></td>
@@ -23,7 +23,7 @@
                 <% if link.first[:external] then %>
                   <%=link_to code.upcase,link.first[:url], target: "_blank"%><img src="/icons/external-link-symbol.png">
                 <% else %>
-                 <%=link_to code.upcase,link.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                 <%=link_to code.upcase,link.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler(event,'link')"  %>
                 <% end %>
               <% else %>
                 <%=if code then code.upcase else "" end %>
@@ -39,9 +39,9 @@
           <%=alert[:name]%> -
           <%=alert[:comments]%>
           <i><small><%if signed_in? and validlink  %> 
-            <%=link_to '(spot)','/posts/new?topic_id='+SPOT_TOPIC.to_s+'&alert='+alert[:id].to_s, remote: true,  :id => 'spot', :onclick => "linkHandler('spot')" %>
+            <%=link_to '(spot)','/posts/new?topic_id='+SPOT_TOPIC.to_s+'&alert='+alert[:id].to_s, remote: true,  :id => 'spot', :onclick => "linkHandler(event,'spot')" %>
 
-            <%#=link_to '(spot)','/posts/new?topic_id='+SPOT_TOPIC.to_s+'&alert='+alert[:id].to_s, remote: true,  :id => 'spot', :onclick => "linkHandler('spot')" %>
+            <%#=link_to '(spot)','/posts/new?topic_id='+SPOT_TOPIC.to_s+'&alert='+alert[:id].to_s, remote: true,  :id => 'spot', :onclick => "linkHandler(event,'spot')" %>
           <% end%></small></i>
         </td>
       </tr>

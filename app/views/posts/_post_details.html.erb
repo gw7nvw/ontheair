@@ -4,15 +4,15 @@
       <p><div class="sectiontitle"><%=@post.title%></div>
       </p>
       <p>
-      <%= link_to @post.updated_by_name, '/users/'+@post.updated_by_name,remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
+      <%= link_to @post.updated_by_name, '/users/'+@post.updated_by_name,remote: true,  :id => 'user', :onclick => "linkHandler(event,'user')" %>
       <%=if @post.updated_at > @post.created_at then " updated in " else " posted in " end %> 
       <%=if @post.topic then @post.topic.name else "??" end %> on 
       <%=if @post.updated_at then @post.updated_at.in_time_zone(@tz.name).strftime("%Y-%m-%d") else "" end%>
       </p>
       <% if write_access? and (current_user.id==@post.created_by_id or current_user.is_admin) then %>
-        <%=  link_to "Edit", '/posts/'+@post.id.to_s+'/edit', class: 'link_to', remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
-        <%=  link_to "Reply", '/posts/new?topic_id='+@post.topic.id.to_s, class: 'link_to',remote: true,  :id => 'reply', :onclick => "linkHandler('reply')"%>
-        <%= link_to "Delete", '/posts/'+@post.id.to_s+'/delete', data: {confirm: "Delete post: Are you sure?"}, class: 'link_to', remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+        <%=  link_to "Edit", '/posts/'+@post.id.to_s+'/edit', class: 'link_to', remote: true,  :id => 'edit', :onclick => "linkHandler(event,'edit')"%>
+        <%=  link_to "Reply", '/posts/new?topic_id='+@post.topic.id.to_s, class: 'link_to',remote: true,  :id => 'reply', :onclick => "linkHandler(event,'reply')"%>
+        <%= link_to "Delete", '/posts/'+@post.id.to_s+'/delete', data: {confirm: "Delete post: Are you sure?"}, class: 'link_to', remote: true,  :id => 'delete', :onclick => "linkHandler(event,'delete')" %>
       <% end %>
 
       <% if @post.referenced_date then %>
@@ -29,7 +29,7 @@
               <% if asset.first[:external] then %>
                 <%=link_to "["+asset.first[:code]+"] ",asset.first[:url], target: "_blank"%><img src="/icons/external-link-symbol.png">&nbsp
               <% else %>
-               <%=link_to "["+asset.first[:code]+"] "+asset.first[:name],asset.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>&nbsp;
+               <%=link_to "["+asset.first[:code]+"] "+asset.first[:name],asset.first[:url], remote: true,  :id => 'link', :onclick => "linkHandler(event,'link')"  %>&nbsp;
               <% end %>
             <% end %>
           <% end %>

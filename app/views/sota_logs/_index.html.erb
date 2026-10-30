@@ -17,7 +17,7 @@
 
 <div id="actionbar" class="span7">
    <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
      &nbsp;--&gt;&nbsp;
      <b>SOTA Logs</b>
      </div>
@@ -41,7 +41,7 @@
         <td></td>
         <td></td>
         <td><%=chaser_logs.first[:contacts].count%></td>        
-        <td><%=link_to "Submit New", '/sota_logs/chaser?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>&nbsp;<%=link_to "Resend All", '/sota_logs/chaser?resubmit=true&user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%></td>
+        <td><%=link_to "Submit New", '/sota_logs/chaser?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler(event,'submit')"%>&nbsp;<%=link_to "Resend All", '/sota_logs/chaser?resubmit=true&user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler(event,'submit')"%></td>
     </tr>
     <tr><td></td><td></td><td></td><td></td><td></td></tr>
     <% logdays=@user.sota_logs(nil,true) %>
@@ -58,7 +58,7 @@
            #  if !c.submitted_to_sota then submitted_to_sota=false end 
            #end
         %>
-        <td><%=if !submitted_to_sota then  link_to "Submit Log", '/sota_logs/'+logday[:safecode]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" else link_to "Resend Log", '/sota_logs/'+logday[:safecode]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')" end%></td>
+        <td><%=if !submitted_to_sota then  link_to "Submit Log", '/sota_logs/'+logday[:safecode]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler(event,'submit')" else link_to "Resend Log", '/sota_logs/'+logday[:safecode]+"?date="+logday[:date].strftime("%Y%m%d")+"&user="+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler(event,'submit')" end%></td>
       </tr>
     <% end%>
   </table>

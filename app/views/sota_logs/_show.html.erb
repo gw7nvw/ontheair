@@ -10,7 +10,7 @@ Filename: <%=@filename%><br/>
 <br/>
 Invalid contacts rejected: <%=@invalid_contacts.count%><br/>
 <% @invalid_contacts.each do |contact| %>
-  <%=link_to "Contact: "+contact[:contact].id.to_s, '/contacts/'+contact[:contact].id.to_s ,remote: true, :onclick => "linkHandler('submit')"%> -- <%=contact[:message]%><br/>
+  <%=link_to "Contact: "+contact[:contact].id.to_s, '/contacts/'+contact[:contact].id.to_s ,remote: true, :onclick => "linkHandler(event,'submit')"%> -- <%=contact[:message]%><br/>
 <% end %>
 <% if @chaser then %>
   <% if @resubmit then resubmit_str="&resubmit=true" else resubmit_str="" end %>
@@ -18,7 +18,7 @@ Invalid contacts rejected: <%=@invalid_contacts.count%><br/>
 <% else %>
   <%=link_to "Download Log", '/sota_logs/'+@summit.safecode+".adi?date="+@logdate+"&user="+@user.callsign, class: "btn btn-small btn-primary" %>
 <% end %>
-<%=link_to "Cancel", '/sota_logs?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
+<%=link_to "Cancel", '/sota_logs?user='+@user.callsign, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler(event,'submit')"%>
 <script>
   document.body.classList.remove('loading');
   document.getElementById('actionbar-full').innerHTML=document.getElementById('actionbar').innerHTML;

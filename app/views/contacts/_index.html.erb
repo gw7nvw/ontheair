@@ -40,7 +40,7 @@
  
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
     <b>Contacts</b>
     <% if @whochased then %>&nbsp;--&gt;&nbsp;Who Chased<% end %>
@@ -55,9 +55,9 @@
   <div id="controls">
     <% if write_access?  %>
       <% if current_user.is_admin then %>
-        <%=  link_to "View All", '/contacts/?user=all', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('all')" %>
+        <%=  link_to "View All", '/contacts/?user=all', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'all')" %>
       <% end %>
-      <%=  link_to "Add Contacts", '/logs/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+      <%=  link_to "Add Contacts", '/logs/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'edit')" %>
     <% end %>
     <% if signed_in? %>
       <%=  link_to "Download", '/contacts.csv?download=true&'+raw(@parameters), class: "btn btn-small btn-primary"%>
@@ -126,8 +126,8 @@
       <input type="hidden" name="zlota_logs" value='<%=@zlota_logs%>'/>
       <div class="erow">
         <div class="buttonshort">
-          <%= submit_tag "Filter", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
-          <%if !@zlota_logs %><%= link_to "Clear", '/contacts', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%><% end %>
+          <%= submit_tag "Filter", :id => "find", :class => "btn btn-small", :onclick => "submitHandler(event,'Finding...');" %>
+          <%if !@zlota_logs %><%= link_to "Clear", '/contacts', class: "btn btn-small", remote: true, :onclick => "linkHandler(event,'clear')"%><% end %>
       <% if signed_in? and @fullcontacts %>
         <% if @zlota_logs == true %>
           <%=  link_to "Download Site List", "/users/#{@callsign}/assets.csv?asset_type=#{@class}&count_type=#{@asset_count_type}", class: "btn btn-small btn-primary"%>

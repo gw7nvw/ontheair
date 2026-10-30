@@ -8,7 +8,7 @@
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
     <b>Photos</b>
     <%if @image.id%>
@@ -19,8 +19,8 @@
 
   <div id="controls">
     <% if current_user and (current_user.is_admin or @image.created_by_id==current_user.id) %>
-      <%=  link_to "Edit Photo", '/photos/'+@image.id.to_s+'/edit', class: "btn btn-small btn-primary",remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
-      <%=  link_to "Delete Photo", '/photos/'+@image.id.to_s+'/delete', data: {confirm: "Delete image: Are you sure?"}, class: "btn btn-small btn-primary",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')"%>
+      <%=  link_to "Edit Photo", '/photos/'+@image.id.to_s+'/edit', class: "btn btn-small btn-primary",remote: true,  :id => 'edit', :onclick => "linkHandler(event,'edit')"%>
+      <%=  link_to "Delete Photo", '/photos/'+@image.id.to_s+'/delete', data: {confirm: "Delete image: Are you sure?"}, class: "btn btn-small btn-primary",remote: true,  :id => 'delete', :onclick => "linkHandler(event,'delete')"%>
     <% end %>
     <%=render 'map_controls'%> 
   </div>

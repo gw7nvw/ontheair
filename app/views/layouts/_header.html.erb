@@ -20,12 +20,12 @@
                      <b class="caret"></b>
                   </a>
                   <div class="dropdown-menu dropdown-menu-right">
-                    <%= link_to image_tag("/icons/new_zealand_flag_background_20.png") + " ZL", '/dxcc/zl', :onclick => "def_centre=[19430000, -5040000];map_map.getView().setCenter(def_centre);map_show_only_layer('NZTM Topo 2019'); map_current_proj = '2193'; map_current_projname = 'NZTM2000'; map_mpc.setProjection(getProjection('EPSG:'+map_current_proj)); map_current_projdp = 0; map_set_coord_format();linkHandler('home_link');", remote: true, data: {turbo_frame: "_top"}, class: "dropdown-item" %>
+                    <%= link_to image_tag("/icons/new_zealand_flag_background_20.png") + " ZL", '/dxcc/zl', :onclick => "def_centre=[19430000, -5040000];map_map.getView().setCenter(def_centre);map_show_only_layer('NZTM Topo 2019'); map_current_proj = '2193'; map_current_projname = 'NZTM2000'; map_mpc.setProjection(getProjection('EPSG:'+map_current_proj)); map_current_projdp = 0; map_set_coord_format();linkHandler(event,'home_link');", remote: true, data: {turbo_frame: "_top"}, class: "dropdown-item" %>
                     <div class="dropdown-divider"></div>
-                    <%= link_to image_tag("/icons/australia_flag_background_20.png") + " VK", '/dxcc/vk', onclick: "def_centre=[16085209, -4006631];map_map.getView().setCenter(def_centre);map_show_only_layer('OpenHikingMap'); map_current_proj = '4326'; map_current_projname = 'WGS'; map_mpc.setProjection(getProjection('EPSG:'+map_current_proj)); map_current_projdp = 4; map_set_coord_format(); linkHandler('home_link');", remote: true, data: {turbo_frame: "_top"}, class: "dropdown-item" %>
+                    <%= link_to image_tag("/icons/australia_flag_background_20.png") + " VK", '/dxcc/vk', onclick: "def_centre=[16085209, -4006631];map_map.getView().setCenter(def_centre);map_show_only_layer('OpenHikingMap'); map_current_proj = '4326'; map_current_projname = 'WGS'; map_mpc.setProjection(getProjection('EPSG:'+map_current_proj)); map_current_projdp = 4; map_set_coord_format(); linkHandler(event,'home_link');", remote: true, data: {turbo_frame: "_top"}, class: "dropdown-item" %>
                   </div>
                 </li>
-                <li id="home_link"><%= link_to '...OnTheAir', '/', remote: true, :id => 'home_link', :onclick => "linkHandler('home_link')", class: "nav-link"  %></li>
+                <li id="home_link"><%= link_to '...OnTheAir', '/', remote: true, :id => 'home_link', :onclick => "linkHandler(event,'home_link')", class: "nav-link"  %></li>
                 <li id="fat-menu" class="nav-item dropdown">
                   <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
                      Info <b class="caret"></b>
@@ -34,7 +34,7 @@
                     <%= link_to "Users Guide", '/assets/ontheair-users-guide.pdf', target: "_blank", class: "dropdown-item" %>
                     <div class="dropdown-divider"></div>
                     <%Topic.all.order(:name).each do |topic|%>
-                      <%= link_to topic.name, '/topics/'+topic.id.to_s, remote: true, :id => 'about_link', :onclick => "linkHandler('about_link')", class: "dropdown-item"  %>
+                      <%= link_to topic.name, '/topics/'+topic.id.to_s, remote: true, :id => 'about_link', :onclick => "linkHandler(event,'about_link')", class: "dropdown-item"  %>
                     <% end %>
                   </div>
                 </li>
@@ -46,11 +46,11 @@
                      Places <b class="caret"></b>
                   </a>
                   <div class="dropdown-menu dropdown-menu-right">
-                    <%= link_to "Places", '/assets',  remote: true,  :id => 'places_link', :onclick => "linkHandler('places_link')", class: "dropdown-item"  %>
-                    <%= link_to 'Districts', '/districts', remote: true, :id => 'district_link', :onclick => "linkHandler('district_link')" , class: "dropdown-item" %>
-                    <%= link_to 'Regions', '/regions', remote: true, :id => 'region_link', :onclick => "linkHandler('region_link')", class: "dropdown-item"  %>
-                    <%= link_to 'States/Territories', '/states', remote: true, :id => 'region_link', :onclick => "linkHandler('states_link')", class: "dropdown-item"  %>
-                    <%= link_to 'Geology', '/geology', remote: true, :id => 'geology_link', :onclick => "linkHandler('geology_link')", class: "dropdown-item"  %>
+                    <%= link_to "Places", '/assets',  remote: true,  :id => 'places_link', :onclick => "linkHandler(event,'places_link')", class: "dropdown-item"  %>
+                    <%= link_to 'Districts', '/districts', remote: true, :id => 'district_link', :onclick => "linkHandler(event,'district_link')" , class: "dropdown-item" %>
+                    <%= link_to 'Regions', '/regions', remote: true, :id => 'region_link', :onclick => "linkHandler(event,'region_link')", class: "dropdown-item"  %>
+                    <%= link_to 'States/Territories', '/states', remote: true, :id => 'region_link', :onclick => "linkHandler(event,'states_link')", class: "dropdown-item"  %>
+                    <%= link_to 'Geology', '/geology', remote: true, :id => 'geology_link', :onclick => "linkHandler(event,'geology_link')", class: "dropdown-item"  %>
                   </div>
                 </li>
 
@@ -60,19 +60,19 @@
                   </a>
                   <div class="dropdown-menu dropdown-menu-right">
                     <% if signed_in? %>
-                      <%= link_to "Recent", '/recent',  remote: true,  :id => 'recent_link', :onclick => "linkHandler('recent_link')", class: "dropdown-item"  %>
-                      <%= link_to "Honour Rolls", '/results',  remote: true,  :id => 'results_link', :onclick => "linkHandler('results_link')", class: "dropdown-item"  %>
-                      <%= link_to "Awards", '/awards',  remote: true,  :id => 'awards_link', :onclick => "linkHandler('awards_link')", class: "dropdown-item"  %>
+                      <%= link_to "Recent", '/recent',  remote: true,  :id => 'recent_link', :onclick => "linkHandler(event,'recent_link')", class: "dropdown-item"  %>
+                      <%= link_to "Honour Rolls", '/results',  remote: true,  :id => 'results_link', :onclick => "linkHandler(event,'results_link')", class: "dropdown-item"  %>
+                      <%= link_to "Awards", '/awards',  remote: true,  :id => 'awards_link', :onclick => "linkHandler(event,'awards_link')", class: "dropdown-item"  %>
                     <% else %>
                       Sign in to see user activity
                     <% end %>
                   </div>
                 </li>
               <% if write_access? %>
-                <li><%= link_to "My Logs", '/logs',  remote: true,  :id => 'logs_link', :onclick => "linkHandler('logs_link')", class: "nav-link"  %></li>
+                <li><%= link_to "My Logs", '/logs',  remote: true,  :id => 'logs_link', :onclick => "linkHandler(event,'logs_link')", class: "nav-link"  %></li>
               <% end %>
-                <li><%= link_to "Spots", '/spots',  remote: true,  :id => 'spots_link', :onclick => "linkHandler('spots_link')", class: "nav-link"  %></li>
-                <li><%= link_to "Alerts", '/alerts',  remote: true,  :id => 'alerts_link', :onclick => "linkHandler('alerts_link')", class: "nav-link"  %></li>
+                <li><%= link_to "Spots", '/spots',  remote: true,  :id => 'spots_link', :onclick => "linkHandler(event,'spots_link')", class: "nav-link"  %></li>
+                <li><%= link_to "Alerts", '/alerts',  remote: true,  :id => 'alerts_link', :onclick => "linkHandler(event,'alerts_link')", class: "nav-link"  %></li>
 
               <% if signed_in? %>
                      
@@ -88,45 +88,45 @@
                 </a>
                 <div class="dropdown-menu dropdown-menu-right">
                   <% if current_user.is_web_admin %>
-                    <%= link_to "Admin", '/admin_stats', remote: true, :id => 'adminst_link', :onclick => "linkHandler('adminst_link')", class: "dropdown-item" %>
+                    <%= link_to "Admin", '/admin_stats', remote: true, :id => 'adminst_link', :onclick => "linkHandler(event,'adminst_link')", class: "dropdown-item" %>
                     <div class="dropdown-divider"></div>
                   <% end %>
                   
-                  <%= link_to "Profile", '/users/'+current_user.callsign, remote: true, :id => 'profile_link', :onclick => "linkHandler('profile_link')", class: "dropdown-item" %>
-                  <%= link_to "Notifications / Email", '/users/'+current_user.callsign+"/notifications", remote: true, :id => 'notifications_link', :onclick => "linkHandler('notification_link')", class: "dropdown-item" %>
-                  <%= link_to "Stats / Maps", '/users/'+current_user.callsign+"/stats", remote: true, :id => 'stats_link', :onclick => "linkHandler('stats_link')", class: "dropdown-item" %>
-                  <%= link_to "Progress", '/users/'+current_user.callsign+"/region_progress", remote: true, :id => 'progress_link', :onclick => "linkHandler('progress_link')", class: "dropdown-item" %>
-                  <%= link_to "Wishlist", '/users/'+current_user.callsign+'/wishlist', remote: true, :id => 'wishlist_link', :onclick => "linkHandler('wishlist_link')", class: "dropdown-item" %>
+                  <%= link_to "Profile", '/users/'+current_user.callsign, remote: true, :id => 'profile_link', :onclick => "linkHandler(event,'profile_link')", class: "dropdown-item" %>
+                  <%= link_to "Notifications / Email", '/users/'+current_user.callsign+"/notifications", remote: true, :id => 'notifications_link', :onclick => "linkHandler(event,'notification_link')", class: "dropdown-item" %>
+                  <%= link_to "Stats / Maps", '/users/'+current_user.callsign+"/stats", remote: true, :id => 'stats_link', :onclick => "linkHandler(event,'stats_link')", class: "dropdown-item" %>
+                  <%= link_to "Progress", '/users/'+current_user.callsign+"/region_progress", remote: true, :id => 'progress_link', :onclick => "linkHandler(event,'progress_link')", class: "dropdown-item" %>
+                  <%= link_to "Wishlist", '/users/'+current_user.callsign+'/wishlist', remote: true, :id => 'wishlist_link', :onclick => "linkHandler(event,'wishlist_link')", class: "dropdown-item" %>
                   <div class="dropdown-divider"></div>
 
-                  <%= link_to "My Awards", '/users/'+current_user.callsign+"/awards",  remote: true,  :id => 'awards_link', :onclick => "linkHandler('awards_link')", class: "dropdown-item"  %>
+                  <%= link_to "My Awards", '/users/'+current_user.callsign+"/awards",  remote: true,  :id => 'awards_link', :onclick => "linkHandler(event,'awards_link')", class: "dropdown-item"  %>
                   <% if write_access? then %>
-                    <%= link_to "My Contacts", '/contacts',  remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')", class: "dropdown-item"  %>
-                    <%= link_to "Unmatched contacts with Me", '/contacts?orphans=true',  remote: true,  :id => 'orphans_link', :onclick => "linkHandler('orphans_link')", class: "dropdown-item"  %>
+                    <%= link_to "My Contacts", '/contacts',  remote: true,  :id => 'contacts_link', :onclick => "linkHandler(event,'contacts_link')", class: "dropdown-item"  %>
+                    <%= link_to "Unmatched contacts with Me", '/contacts?orphans=true',  remote: true,  :id => 'orphans_link', :onclick => "linkHandler(event,'orphans_link')", class: "dropdown-item"  %>
                     <div class="dropdown-divider"></div>
                     <div class="dropdown-item">Export Logs:</div>
 
-                    <%= link_to "⋯ ZLOTA / KRMNPA / SANPCPA", '/contacts?zlota_logs=true',  remote: true,  :id => 'contacts_link', :onclick => "linkHandler('contacts_link')", class: "dropdown-item"  %>
-                    <%= link_to "⋯ HEMA", '/hema_logs', remote: true, :id => 'pota_link', :onclick => "linkHandler('hema_link')", class: "dropdown-item" %>
-                    <%= link_to "⋯ LLOTA", '/llota_logs', remote: true, :id => 'llota_link', :onclick => "linkHandler('llota_link')", class: "dropdown-item" %>
-                    <%= link_to "⋯ POTA", '/pota_logs', remote: true, :id => 'pota_link', :onclick => "linkHandler('pota_link')", class: "dropdown-item" %>
-                    <%= link_to "⋯ SiOTA", '/siota_logs', remote: true, :id => 'siota_link', :onclick => "linkHandler('siota_link')", class: "dropdown-item" %>
-                    <%= link_to "⋯ SOTA", '/sota_logs', remote: true, :id => 'sota_link', :onclick => "linkHandler('sota_link')", class: "dropdown-item" %>
-                    <%= link_to "⋯ WWFF", '/wwff_logs', remote: true, :id => 'wwff_link', :onclick => "linkHandler('wwff_link')", class: "dropdown-item" %>
+                    <%= link_to "⋯ ZLOTA / KRMNPA / SANPCPA", '/contacts?zlota_logs=true',  remote: true,  :id => 'contacts_link', :onclick => "linkHandler(event,'contacts_link')", class: "dropdown-item"  %>
+                    <%= link_to "⋯ HEMA", '/hema_logs', remote: true, :id => 'pota_link', :onclick => "linkHandler(event,'hema_link')", class: "dropdown-item" %>
+                    <%= link_to "⋯ LLOTA", '/llota_logs', remote: true, :id => 'llota_link', :onclick => "linkHandler(event,'llota_link')", class: "dropdown-item" %>
+                    <%= link_to "⋯ POTA", '/pota_logs', remote: true, :id => 'pota_link', :onclick => "linkHandler(event,'pota_link')", class: "dropdown-item" %>
+                    <%= link_to "⋯ SiOTA", '/siota_logs', remote: true, :id => 'siota_link', :onclick => "linkHandler(event,'siota_link')", class: "dropdown-item" %>
+                    <%= link_to "⋯ SOTA", '/sota_logs', remote: true, :id => 'sota_link', :onclick => "linkHandler(event,'sota_link')", class: "dropdown-item" %>
+                    <%= link_to "⋯ WWFF", '/wwff_logs', remote: true, :id => 'wwff_link', :onclick => "linkHandler(event,'wwff_link')", class: "dropdown-item" %>
                   <% end %>
                   <div class="dropdown-divider"></div>
                   <% if current_user.mailuser and current_user.mailuser.length>0 then %>
                     <%= link_to "Mail"+mail, '/webmail', class: "dropdown-item" %>
                     <div class="dropdown-divider"></div>
                   <% end %>
-                  <%= link_to "Users", '/users',  remote: true,  :id => 'users_link', :onclick => "linkHandler('users_link')", class: "dropdown-item"  %>
+                  <%= link_to "Users", '/users',  remote: true,  :id => 'users_link', :onclick => "linkHandler(event,'users_link')", class: "dropdown-item"  %>
                     <div class="dropdown-divider"></div>
                     <%= link_to "Sign out", signout_path, method: "delete", class: "dropdown-item" %>
                 </ul>
               </li>
               <% else %>
-                <%= link_to "Sign in", signin_path, remote: true, class: "nav-link", :onclick => "linkHandler('sign_in_link')" %>
-                <%= link_to "Sign up", signup_path, remote: true, class: "nav-link", :onclick => "linkHandler('sign_up_link')" %>
+                <%= link_to "Sign in", signin_path, remote: true, class: "nav-link", :onclick => "linkHandler(event,'sign_in_link')" %>
+                <%= link_to "Sign up", signup_path, remote: true, class: "nav-link", :onclick => "linkHandler(event,'sign_up_link')" %>
               <% end %>
 
             </ul>
@@ -136,7 +136,7 @@
       </div>
     </header>
     <div id="ota_name">
-      <%= link_to '...OnTheAir', '/', remote: true, :id => 'home_link2', :onclick => "linkHandler('home_link')", class: "navbar-brand ml-auto mr-0", style: "color: rgba(255, 255, 255, 0.75) !important;"%></li>
+      <%= link_to '...OnTheAir', '/', remote: true, :id => 'home_link2', :onclick => "linkHandler(event,'home_link')", class: "navbar-brand ml-auto mr-0", style: "color: rgba(255, 255, 255, 0.75) !important;"%></li>
 
     </div>
     <div id="ota_logo">

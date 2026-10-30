@@ -11,6 +11,7 @@ class Log < ActiveRecord::Base
 
   def before_save_actions
     remove_call_suffix
+    tidy_codes
     self.callsign1 = UserCallsign.clean(callsign1)
     add_user_ids
     check_codes_in_location
@@ -78,6 +79,17 @@ class Log < ActiveRecord::Base
   #################################
   # BEFORE SAVE ACTIONS
   #################################
+  def tidy_codes
+    codes=[]
+    self.asset_codes.each do |ac|
+      this_codes=ac.split(' ')
+      this_codes.each do |this_code|
+        codes << this_code.upcase&.strip if this_code
+      end
+    end
+    self.asset_codes = codes
+  end
+
   def add_user_ids
     # look up callsign1 at contact.time
     user1 = User.find_by_callsign_date(callsign1, date, true)

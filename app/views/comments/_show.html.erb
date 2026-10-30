@@ -9,7 +9,7 @@
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
     Comments
     &nbsp;--&gt;&nbsp;
@@ -17,10 +17,10 @@
   </div>
 
   <div id="controls">
-    <%=  link_to "Index", '/comments/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
+    <%=  link_to "Index", '/comments/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler(event,'index')"%>
     <% if write_access? and current_user and (current_user.is_admin or @comment.updated_by_id==current_user.id) %>
-      <%=  link_to "Edit", '/comments/'+@comment.id.to_s+'/edit', class: "btn btn-small btn-primary",remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
-      <%=  link_to "Delete", '/comments/'+@comment.id.to_s+'/delete', confirm: "Delete comment: Are you sure?", class: "btn btn-small btn-primary",remote: true,  :id => 'delete', :onclick => "linkHandler('delete')"%>
+      <%=  link_to "Edit", '/comments/'+@comment.id.to_s+'/edit', class: "btn btn-small btn-primary",remote: true,  :id => 'edit', :onclick => "linkHandler(event,'edit')"%>
+      <%=  link_to "Delete", '/comments/'+@comment.id.to_s+'/delete', confirm: "Delete comment: Are you sure?", class: "btn btn-small btn-primary",remote: true,  :id => 'delete', :onclick => "linkHandler(event,'delete')"%>
     <% end %>
     <%=render 'map_controls'%> 
   </div>

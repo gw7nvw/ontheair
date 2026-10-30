@@ -15,14 +15,14 @@
 
 <div id="actionbar" class="span7">
    <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
      &nbsp;--&gt;&nbsp;
      <b>Moving from PnP</b>
    </div>
    <div id="controls">
      <% if write_access?  %>
-       <%=  link_to "Add Spot", "/posts/new?topic_id="+SPOT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
-       <%=  link_to "Add Alert", "/posts/new?topic_id="+ALERT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler('add')"%>
+       <%=  link_to "Add Spot", "/posts/new?topic_id="+SPOT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler(event,'add')"%>
+       <%=  link_to "Add Alert", "/posts/new?topic_id="+ALERT_TOPIC.to_s, class: "btn btn-small btn-primary",remote: true, id: "add",   :onclick => "linkHandler(event,'add')"%>
      <% end %>
      <%=render 'map_controls'%>
    </div>
@@ -50,8 +50,8 @@
      <p>If neither of these options work for you, then get in touch with me, mattbriggs@yahoo.com and I'll help get things working for you.</p>
    </div>
    <div class="erow">
-     <%=  link_to "Password Reset", new_password_reset_path, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('forgot')" %>
-     <%=  link_to "Create Account", "/users/new", class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('new')" %>
+     <%=  link_to "Password Reset", new_password_reset_path, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'forgot')" %>
+     <%=  link_to "Create Account", "/users/new", class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'new')" %>
    </div>
     <div class="erow">
       <div class="hrline">

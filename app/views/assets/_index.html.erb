@@ -41,16 +41,16 @@
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
-    <%=link_to "Places", '/assets', remote: true,  :id => 'assets', :onclick => "linkHandler('assets')" %>
+    <%=link_to "Places", '/assets', remote: true,  :id => 'assets', :onclick => "linkHandler(event,'assets')" %>
     &nbsp;--&gt;&nbsp;
     <b><%=@asset_type.display_name%></b>
   </div>
 
   <div id="controls">
     <% if write_access? and current_user.is_modifier %>
-      <%=  link_to "Add", '/assets/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('add')" %>
+      <%=  link_to "Add", '/assets/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'add')" %>
     <% end %>
     <% if signed_in? %>
       <%=  link_to "-> CSV", '/assets.csv?type='+@asset_type.name, class: "btn btn-small btn-primary"%>
@@ -102,8 +102,8 @@
     <% end %>
 
     <div class="buttonshort">
-      <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
-      <%= link_to "Clear", '/assets', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')" %>
+      <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler(event,'Finding...');" %>
+      <%= link_to "Clear", '/assets', class: "btn btn-small", remote: true, :onclick => "linkHandler(event,'clear')" %>
     </div>
   </form>
 
@@ -143,15 +143,15 @@
           <td><%=asset.code%></td>
           <td>
             <% if write_access? and current_user.is_modifier %>
-              <span title="Click to edit row"><%= link_to image_tag("/icons/pencil_edit.png", :class => 'dock-item'), '/assets/'+asset.safecode+'/edit?referring=index', remote: true, onclick: "linkHandler('editbutton')", id:  "editbutton", alt: "Edit"  %></span>
+              <span title="Click to edit row"><%= link_to image_tag("/icons/pencil_edit.png", :class => 'dock-item'), '/assets/'+asset.safecode+'/edit?referring=index', remote: true, onclick: "linkHandler(event,'editbutton')", id:  "editbutton", alt: "Edit"  %></span>
             <% end %>
-            <%= link_to asset.name, '/assets/'+asset.safecode, remote: true, :id => 'asset_link_'+asset.id.to_s, :onclick => "linkHandler('asset_link_"+asset.id.to_s+"')" %>
+            <%= link_to asset.name, '/assets/'+asset.safecode, remote: true, :id => 'asset_link_'+asset.id.to_s, :onclick => "linkHandler(event,'asset_link_"+asset.id.to_s+"')" %>
           </td>
           <td> <%=asset.region%> </td>
           <td>
             <ul style="list-style-type:none;padding:0;margin:0;">
               <%if asset.contained_by_names then %><% asset.contained_by_names.each do |link|%>
-                <li><%= link_to link.codename, '/assets/'+link.safecode, remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></li>
+                <li><%= link_to link.codename, '/assets/'+link.safecode, remote: true,  :id => 'link', :onclick => "linkHandler(event,'home')"  %></li>
               <% end %><% end %>
             </ul>
           </td>

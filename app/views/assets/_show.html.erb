@@ -7,28 +7,28 @@
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%= link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    <%= link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
-    <%= link_to  "Places:", '/assets', remote: true,  :id => 'assets', :onclick => "linkHandler('assets')" %>
+    <%= link_to  "Places:", '/assets', remote: true,  :id => 'assets', :onclick => "linkHandler(event,'assets')" %>
     &nbsp;--&gt;&nbsp;
     <b><%= @asset.name %></b>
   </div>
 
   <div id="controls">
     <% if @asset.asset_type=="summit" %>
-      <%=  link_to "Update from SOTA", '/assets/'+@asset.safecode+'/refresh_sota', class: "btn btn-small btn-primary", remote: true, :id => 'sota', :onclick => "linkHandler('sota')" %>
+      <%=  link_to "Update from SOTA", '/assets/'+@asset.safecode+'/refresh_sota', class: "btn btn-small btn-primary", remote: true, :id => 'sota', :onclick => "linkHandler(event,'sota')" %>
     <% end %>
     <% if @asset.asset_type=="pota park" %>
-      <%=  link_to "Update from POTA", '/assets/'+@asset.safecode+'/refresh_pota', class: "btn btn-small btn-primary", remote: true, :id => 'sota', :onclick => "linkHandler('sota')" %>
+      <%=  link_to "Update from POTA", '/assets/'+@asset.safecode+'/refresh_pota', class: "btn btn-small btn-primary", remote: true, :id => 'sota', :onclick => "linkHandler(event,'sota')" %>
     <% end %>
     <% if write_access? and current_user.is_admin %>
-      <%= link_to "Find Boundary", '/assets/'+@asset.safecode+'/map_associate', class: "btn btn-small btn-primary", remote: true, :id => 'map_associate', :onclick => "linkHandler('map_associate')" %>
+      <%= link_to "Find Boundary", '/assets/'+@asset.safecode+'/map_associate', class: "btn btn-small btn-primary", remote: true, :id => 'map_associate', :onclick => "linkHandler(event,'map_associate')" %>
     <% end %>
     <% if write_access? and current_user.is_modifier %>
-      <%= link_to "Associate", '/assets/'+@asset.safecode+'/associations', class: "btn btn-small btn-primary", remote: true, :id => 'associations', :onclick => "linkHandler('associations')" %>
-      <%= link_to "Edit", '/assets/'+@asset.safecode+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
+      <%= link_to "Associate", '/assets/'+@asset.safecode+'/associations', class: "btn btn-small btn-primary", remote: true, :id => 'associations', :onclick => "linkHandler(event,'associations')" %>
+      <%= link_to "Edit", '/assets/'+@asset.safecode+'/edit', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler(event,'edit')" %>
     <% end %>
-    <%= link_to "Index", "/assets", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%= link_to "Index", "/assets", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler(event,'index')" %>
     <%= render 'map_controls'%>
   </div>
 </div>
@@ -51,7 +51,7 @@
   <div class="erow" id="name">
     <div class="rowtitle"><%= "Name" %></div>
     <div class="rowtext"> 
-      <%=link_to @asset.name, '/assets/'+@asset.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+      <%=link_to @asset.name, '/assets/'+@asset.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler(event,'asset')" %>
     </div>
   </div>
 
@@ -66,7 +66,7 @@
     <div class="erow" id="master_code">
       <div class="rowtitle" style='color:#bb0000'>REPLACED BY</div>
       <div class="rowtext"> 
-        <%= link_to @asset.master_code, '/assets/'+@asset.master_code.gsub('/','_'), remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+        <%= link_to @asset.master_code, '/assets/'+@asset.master_code.gsub('/','_'), remote: true,  :id => 'asset', :onclick => "linkHandler(event,'asset')" %>
       </div>
     </div>
   <% end %>
@@ -102,8 +102,8 @@
     <div class="erow" id="publicaccess" style='color:#bb0000'>
       <div class="rowtitle" style='color:#bb0000'><%= "Public access to AZ" %></div>
       <div class="rowtext" >
-        None known <%= link_to image_tag("/icons/info.png"), access_info , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
-        <small><i><%= link_to '(what does this mean?)', access_info , remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></i></small>
+        None known <%= link_to image_tag("/icons/info.png"), access_info , remote: true,  :id => 'link', :onclick => "linkHandler(event,'home')"%>  
+        <small><i><%= link_to '(what does this mean?)', access_info , remote: true,  :id => 'link', :onclick => "linkHandler(event,'home')"  %></i></small>
       </div>
     </div>
   <% end %>
@@ -112,8 +112,8 @@
     <div class="erow" id="publicaccess" style="color:#00bb00">
       <div class="rowtitle" style="color:#00bb00"><%= "Public access to AZ" %></div>
       <div class="rowtext">
-        Yes <%= link_to image_tag("/icons/info.png"), access_info , remote: true,  :id => 'link', :onclick => "linkHandler('home')"%>  
-        <small><i><%= link_to '(what does this mean?)', access_info , remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></i></small>
+        Yes <%= link_to image_tag("/icons/info.png"), access_info , remote: true,  :id => 'link', :onclick => "linkHandler(event,'home')"%>  
+        <small><i><%= link_to '(what does this mean?)', access_info , remote: true,  :id => 'link', :onclick => "linkHandler(event,'home')"  %></i></small>
       </div>
     </div>
   <% end %>
@@ -212,7 +212,7 @@
       <%if @asset.contained_by_assets then %>
         <ul style="list-style-type:none;padding:0;margin:0;">
           <% @asset.contained_by_assets.each do |link|%>
-            <li><%= link_to link.codename, '/assets/'+link.safecode, remote: true,  :id => 'link', :onclick => "linkHandler('home')"  %></li>
+            <li><%= link_to link.codename, '/assets/'+link.safecode, remote: true,  :id => 'link', :onclick => "linkHandler(event,'home')"  %></li>
           <% end %>
         </ul>
       <% end %>
@@ -232,7 +232,7 @@
     <div class="erow" id="region">
       <div class="rowtitle">State / Territory</div>
       <div class="rowtext"> 
-        <%=link_to @asset.state_name, '/states/'+@asset.state, remote: true,  :id => 'region', :onclick => "linkHandler('region')"  %>
+        <%=link_to @asset.state_name, '/states/'+@asset.state, remote: true,  :id => 'region', :onclick => "linkHandler(event,'region')"  %>
       </div>
     </div>
   <% end %>
@@ -241,7 +241,7 @@
     <div class="erow" id="region">
       <div class="rowtitle">Region</div>
       <div class="rowtext"> 
-        <%=link_to @asset.region_name, '/regions/'+@asset.region, remote: true,  :id => 'region', :onclick => "linkHandler('region')"  %>
+        <%=link_to @asset.region_name, '/regions/'+@asset.region, remote: true,  :id => 'region', :onclick => "linkHandler(event,'region')"  %>
       </div>
     </div>
   <% end %>
@@ -250,7 +250,7 @@
     <div class="erow" id="district">
       <div class="rowtitle">District</div>
       <div class="rowtext"> 
-        <%=link_to @asset.district_name, '/districts/'+@asset.district, remote: true,  :id => 'district', :onclick => "linkHandler('district')"  %>
+        <%=link_to @asset.district_name, '/districts/'+@asset.district, remote: true,  :id => 'district', :onclick => "linkHandler(event,'district')"  %>
       </div>
     </div>
   <% end %>
@@ -259,7 +259,7 @@
     <div class="erow" id="geology">
       <div class="rowtitle">Geology</div>
       <div class="rowtext"> 
-        <%=link_to @asset.geology.name, '/'+@asset.geology.url, remote: true,  :id => 'geology', :onclick => "linkHandler('geology')"  %>
+        <%=link_to @asset.geology.name, '/'+@asset.geology.url, remote: true,  :id => 'geology', :onclick => "linkHandler(event,'geology')"  %>
       </div>
     </div>
   <% end %>
@@ -354,7 +354,7 @@
     <div class="erow" id="doc">
       <div class="rowtitle"><%= "First activation" %></div>
       <% if c.callsign2!=nil then%>
-        <div class="textext" id="first_activation"><%=link_to c.callsign1+' -> '+c.callsign2+c.time.strftime(' (%Y-%m-%d)'), '/contacts/'+c.id.to_s, remote: true, :onclick => "linkHandler('first')" %></div>
+        <div class="textext" id="first_activation"><%=link_to c.callsign1+' -> '+c.callsign2+c.time.strftime(' (%Y-%m-%d)'), '/contacts/'+c.id.to_s, remote: true, :onclick => "linkHandler(event,'first')" %></div>
       <% else %>
         <div class="textext" id="first_activation"><%= c.callsign1+' -> '+c.callsign2+c.time.strftime(' (%Y-%m-%d)')%></div>
       <% end %>
@@ -409,7 +409,7 @@
         <div class="erow" id="showratings3" style="display:none">
           <%= f.submit 'Rate', class: "btn btn-small btn-primary btn-hightlight" %> 
           <% if @myrating and @myrating.id %>
-            <%=  link_to "Delete", '/assets/'+@asset.safecode+'/derate', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('derate')" %>
+            <%=  link_to "Delete", '/assets/'+@asset.safecode+'/derate', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'derate')" %>
           <% end %>
         </div>
       <% end %>
@@ -445,7 +445,7 @@
               <tr> 
                 <td><%= awl.web_link_class.display_name %></td>
                 <td><%= link_to awl.url, awl.url, :target=>"_blank"%></td>
-                <td><%=  link_to "Delete", '/asset_web_links/'+awl.id.to_s+'/delete', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('delete')" %></td>
+                <td><%=  link_to "Delete", '/asset_web_links/'+awl.id.to_s+'/delete', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'delete')" %></td>
               </tr>
             <% end %>
   
@@ -478,14 +478,14 @@
          callsigns = chasers.map { |chaser| chaser.callsign }
          chase_count = callsigns.count
          if current_user and callsigns.include?(current_user.callsign) then  %>
-           <%=link_to current_user.callsign, '/users/'+current_user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp; <%
+           <%=link_to current_user.callsign, '/users/'+current_user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler(event,'user')" %>,&nbsp; <%
            callsigns = callsigns - [current_user.callsign] 
            chase_count-=1 
          end 
          callsigns = callsigns[0..39]
          chase_count -= 40  %>
       <% callsigns.each do |callsign| %>
-        <%=link_to callsign, '/users/'+callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp;
+        <%=link_to callsign, '/users/'+callsign, remote: true,  :id => 'user', :onclick => "linkHandler(event,'user')" %>,&nbsp;
       <% end %>
 
       <% if chase_count>0 then %> <%= "... and #{chase_count.to_s} more" %> <% end %>
@@ -497,7 +497,7 @@
         <i>No-one has activated this place yet. Be the first!</i><br/>
       <% end %>
       <% @asset.activators_including_external.each do |user| %>
-        <%=link_to user.callsign, '/users/'+user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>,&nbsp;
+        <%=link_to user.callsign, '/users/'+user.callsign, remote: true,  :id => 'user', :onclick => "linkHandler(event,'user')" %>,&nbsp;
       <% end %>
     </div> 
   
@@ -505,10 +505,10 @@
     <div class="erow">
       <% if signed_in? %>
         <% if @asset.logs and @asset.logs.count>0 then %>
-          <b><%=@asset.activation_count.to_s+" Activations "%><%=link_to "(View)", '/logs/?asset='+@asset.safecode+"&user=ALL", remote: true,  :id => 'user', :onclick => "linkHandler('logs')" %></b>
+          <b><%=@asset.activation_count.to_s+" Activations "%><%=link_to "(View)", '/logs/?asset='+@asset.safecode+"&user=ALL", remote: true,  :id => 'user', :onclick => "linkHandler(event,'logs')" %></b>
         <% end %>
         <% if @asset.contact_count>0 then %>
-          <b><%=@asset.contact_count.to_s+" Contacts "%><%=link_to "(View)", '/contacts/?asset='+@asset.safecode+"&user=ALL", remote: true,  :id => 'user', :onclick => "linkHandler('contact')" %></b>
+          <b><%=@asset.contact_count.to_s+" Contacts "%><%=link_to "(View)", '/contacts/?asset='+@asset.safecode+"&user=ALL", remote: true,  :id => 'user', :onclick => "linkHandler(event,'contact')" %></b>
         <% end %>
       <% else %>
         <% if @asset.logs and @asset.logs.count>0 then %>
@@ -522,13 +522,13 @@
     </div>
 
     <% if write_access? %>
-      <%=  link_to "Add Contacts", '/logs/new?asset1='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
-      <%=  link_to "Add Spot", '/posts/new?topic_id='+SPOT_TOPIC.to_s+'&code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
-      <%=  link_to "Add Alert", '/posts/new?topic_id='+ALERT_TOPIC.to_s+'&code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+      <%=  link_to "Add Contacts", '/logs/new?asset1='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'edit')" %>
+      <%=  link_to "Add Spot", '/posts/new?topic_id='+SPOT_TOPIC.to_s+'&code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'edit')" %>
+      <%=  link_to "Add Alert", '/posts/new?topic_id='+ALERT_TOPIC.to_s+'&code='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'edit')" %>
       <% if @wishlist %>
-        <%=  link_to "Remove from wishlist", '/assets/'+@asset.safecode+'/remove_wish', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('dewish')" %>
+        <%=  link_to "Remove from wishlist", '/assets/'+@asset.safecode+'/remove_wish', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'dewish')" %>
       <% else %>
-        <%=  link_to "Add to wishlist", '/assets/'+@asset.safecode+'/add_wish', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('wish')" %>
+        <%=  link_to "Add to wishlist", '/assets/'+@asset.safecode+'/add_wish', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'wish')" %>
       <% end %>
     <% end %>
   
@@ -559,7 +559,7 @@
     </div>
     <div class="erow">
       <% if write_access? then %>
-        <%=link_to "Add Photo", '/photos/new?asset='+@asset.safecode+'&topic_id='+PHOTO_TOPIC.to_s, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('photo')" %>
+        <%=link_to "Add Photo", '/photos/new?asset='+@asset.safecode+'&topic_id='+PHOTO_TOPIC.to_s, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'photo')" %>
       <% end %>
     </div>
  
@@ -576,7 +576,7 @@
         <% assets.each do |parent| %>
           <tr>
             <td>
-              <%=link_to parent.codename, "/assets/#{parent.safecode}", remote: true,  :id => "parent-#{parent.safecode}", :onclick => "linkHandler('parent')"   %>
+              <%=link_to parent.codename, "/assets/#{parent.safecode}", remote: true,  :id => "parent-#{parent.safecode}", :onclick => "linkHandler(event,'parent')"   %>
             </td>
           </tr>
         <% end %>
@@ -601,12 +601,12 @@
   <% @comments.each do |comment|%>
     <div class="bordered_box" id="comment_box">
       <div class="box_header">
-        <%= link_to comment.updated_by_name, '/users/'+comment.updated_by_name,remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
+        <%= link_to comment.updated_by_name, '/users/'+comment.updated_by_name,remote: true,  :id => 'user', :onclick => "linkHandler(event,'user')" %>
         <%=if comment.updated_at > comment.created_at then " updated comment " else " commented " end %>
         <%=if comment.updated_at then comment.updated_at.in_time_zone('UTC').strftime("%Y-%m-%d") else "" end%>
         <% if current_user and (current_user.id==comment.updated_by_id or current_user.is_admin) then %>
-          <%= link_to "Edit", '/comments/'+comment.id.to_s+'/edit', class: 'link_to', remote: true,  :id => 'edit', :onclick => "linkHandler('edit')"%>
-          <%= link_to "Delete", '/comments/'+comment.id.to_s+'/delete', confirm: "Delete post: Are you sure?", class: 'link_to', remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+          <%= link_to "Edit", '/comments/'+comment.id.to_s+'/edit', class: 'link_to', remote: true,  :id => 'edit', :onclick => "linkHandler(event,'edit')"%>
+          <%= link_to "Delete", '/comments/'+comment.id.to_s+'/delete', confirm: "Delete post: Are you sure?", class: 'link_to', remote: true,  :id => 'delete', :onclick => "linkHandler(event,'delete')" %>
         <% end %>
       </div>
 
@@ -618,7 +618,7 @@
 
   <div class="erow">
     <% if write_access? then %>
-      <%=link_to "Add Comment", '/comments/new?asset='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('comment')" %>
+      <%=link_to "Add Comment", '/comments/new?asset='+@asset.safecode, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'comment')" %>
     <% end %>
   </div>
 </div>

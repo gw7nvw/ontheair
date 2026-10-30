@@ -158,7 +158,7 @@ else
   resources :asset_web_links, only: [ :create ]
   get "asset_web_links/:id/delete", to: "asset_web_links#delete"
 
-  resources :assets, only: [ :index, :show, :edit, :new, :create, :update ]
+  resources :assets, only: [ :index, :show, :edit, :new, :create, :update, :destroy ]
   match "/assets/:id/associations", to: "assets#associations", via: "get"
   match "/assets/:id/map_associate", to: "assets#map_associate", via: "get"
   match "/assets/:id/find_poly", to: "assets#map_find_poly", via: "get"
@@ -173,7 +173,7 @@ else
   get "assets/:id/refresh_sota", to: "assets#refresh_sota"
   get "assets/:id/refresh_pota", to: "assets#refresh_pota"
 
-  resources :awards, only: [ :index, :show, :edit, :new, :create, :update ]
+  resources :awards, only: [ :index, :show, :edit, :new, :create, :update, :destroy ]
 
   resources :callsigns, only: [ :create, :edit, :update ]
   get "callsigns/:id/delete", to: "callsigns#delete"
@@ -183,8 +183,8 @@ else
   get "mode_mappings/:id/delete", to: "mode_mappings#delete"
 
 # template: [:index, :show, :new, :create, :edit, :update, :destroy]
-  resources :comments, only: [:index, :show, :new, :create, :edit, :update]
-  get "comments/:id/delete", to: "comments#delete"
+  resources :comments, only: [:index, :show, :new, :create, :edit, :update, :destroy]
+  get "comments/:id/delete", to: "comments#destroy"
 
   resources :contacts, only: [ :index, :show, :new, :create ]
   match "/contacts/:id/editlog", to: "logs#editcontact", via: "get"
@@ -238,7 +238,7 @@ else
   resources :sessions, only: [ :new, :create, :destroy ]
   # resources :qsl, only: [:show] #not currently active
 
-  resources :users, only: [:index, :show, :new, :create, :edit, :update]
+  resources :users, only: [:index, :show, :new, :create, :edit, :update, :destroy]
   get "users/:id/assets", to: "users#assets"
   get "users/:id/wishlist", to: "users#wishlist"
   get "users/:id/test_notification", to: "users#test_notification"
@@ -258,13 +258,13 @@ else
 
   post "posts/sms", to: "posts#sms"
   get "posts/sms", to: "posts#sms"
-  resources :posts, only: [ :new, :create, :show, :edit, :update ]
-  get "posts/:id/delete", to: "posts#delete"
+  resources :posts, only: [ :new, :create, :show, :edit, :update, :destroy ]
+  get "posts/:id/delete", to: "posts#destroy"
 
-  resources :photos, only: [ :new, :create, :show, :edit, :update ]
-  get "photos/:id/delete", to: "photos#delete"
+  resources :photos, only: [ :new, :create, :show, :edit, :update, :destroy ]
+  get "photos/:id/delete", to: "photos#destroy"
 
-  resources :topics, only: [ :index, :new, :create, :show, :edit, :update ]
+  resources :topics, only: [ :index, :new, :create, :show, :edit, :update, :destroy ]
 
   # match '/queries/asset', to: 'queries#asset',    via:'get'
   resources :query, only: [ :index ]

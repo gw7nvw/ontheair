@@ -3,7 +3,7 @@
 # typed: false
 
 class CommentsController < ApplicationController
-  before_action :signed_in_user, only: %i[delete create update new edit]
+  before_action :signed_in_user, only: %i[destroy create update new edit]
   skip_before_action :verify_authenticity_token, only: %i[create update]
 
   def index
@@ -30,7 +30,7 @@ class CommentsController < ApplicationController
     redirect_to "/" unless (@comment = Comment.where(id: params[:id]).first)
   end
 
-  def delete
+  def destroy
     if signed_in?
       @comment = Comment.find_by_id(params[:id])
       code = @comment.code
@@ -61,18 +61,6 @@ class CommentsController < ApplicationController
     if signed_in?
       @comment = Comment.find_by_id(params[:id])
       if @comment && (current_user.is_admin || (current_user.id == @comment.updated_by_id))
-        if params[:commit] == "Delete Comment"
-          code = @comment.code
-          if @comment.destroy
-            flash[:success] = "Comment deleted, id:" + params[:id]
-            redirect_to "/assets/" + code.tr("/", "_")
-          else
-            flash[:error] = "Failed to update comment"
-            edit
-            render "edit"
-          end
-        else
-
           @comment.assign_attributes(comment_params)
           @comment.updated_by_id = current_user.id
           if @comment.save
@@ -88,7 +76,6 @@ class CommentsController < ApplicationController
           else
             render "edit"
           end
-        end # delete or edit
       else
         flash[:error] = "You do not have permissions to update this comment"
         redirect_to "/assets/" + @comment.code.tr("/", "_")

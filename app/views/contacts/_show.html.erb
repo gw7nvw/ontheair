@@ -7,18 +7,18 @@
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%= link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    <%= link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
-    <%=  link_to  "Contacts:", '/contacts', remote: true,  :id => 'contacts', :onclick => "linkHandler('contacts')" %>
+    <%=  link_to  "Contacts:", '/contacts', remote: true,  :id => 'contacts', :onclick => "linkHandler(event,'contacts')" %>
     &nbsp;--&gt;&nbsp;
     <b><%= @contact.id.to_s %></b>
   </div>
 
   <div id="controls">
     <% if write_access? and (current_user.id==@contact.user1_id or current_user.is_admin) %>
-      <%=  link_to "Edit", '/contacts/'+@contact.id.to_s+'/editlog', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler('edit')" %>
+      <%=  link_to "Edit", '/contacts/'+@contact.id.to_s+'/editlog', class: "btn btn-small btn-primary", remote: true, :id => 'edit', :onclick => "linkHandler(event,'edit')" %>
     <% end %>
-    <%= link_to "Index", "/contacts", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%= link_to "Index", "/contacts", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler(event,'index')" %>
     <%= render 'map_controls' %>
   </div>
 </div>
@@ -31,11 +31,11 @@
   </div>
   <div class="erow" id="log_id">
     <div class="rowtitle">Log Id</div>
-    <div class="rowtext"><%= if @contact.log_id then link_to @contact.log_id.to_s, '/logs/'+@contact.log_id.to_s, remote: true,  :id => 'log', :onclick => "linkHandler('log')" end %></div>
+    <div class="rowtext"><%= if @contact.log_id then link_to @contact.log_id.to_s, '/logs/'+@contact.log_id.to_s, remote: true,  :id => 'log', :onclick => "linkHandler(event,'log')" end %></div>
   </div>
   <div class="erow" id="callsign1">
     <div class="rowtitle">Callsign 1</div>
-    <div class="rowtext"><%=link_to @contact.callsign1, '/users/'+@contact.callsign1, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
+    <div class="rowtext"><%=link_to @contact.callsign1, '/users/'+@contact.callsign1, remote: true,  :id => 'user', :onclick => "linkHandler(event,'user')" %>
       <% if @contact.is_qrp1 or @contact.is_portable1 then  %>
         &nbsp;(
         <%=if @contact.is_qrp1 then "QRP " end %>
@@ -46,7 +46,7 @@
   </div>
   <div class="erow" id="callsign2">
     <div class="rowtitle">Callsign 2</div>
-    <div class="rowtext"><%= link_to @contact.callsign2, '/users/'+@contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %>
+    <div class="rowtext"><%= link_to @contact.callsign2, '/users/'+@contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler(event,'user')" %>
       <% if @contact.is_qrp2 or @contact.is_portable2 then  %>
         &nbsp;(
         <%=if @contact.is_qrp2 then "QRP " end %>
@@ -84,7 +84,7 @@
   </div> 
   <div class="erow" id="p1_callsign">
     <div class="rowtitle">Callsign</div>
-    <div class="rowtext"><b><%=link_to @contact.callsign1, '/users/'+@contact.callsign1, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %></b>
+    <div class="rowtext"><b><%=link_to @contact.callsign1, '/users/'+@contact.callsign1, remote: true,  :id => 'user', :onclick => "linkHandler(event,'user')" %></b>
       <% if @contact.is_qrp1 or @contact.is_portable1 %>
         &nbsp;(
         <%=if @contact.is_qrp1 then "QRP " end %>
@@ -115,7 +115,7 @@
         <div class="erow" id="p1_asset_code<%= count %>">
           <% if link[:asset] then %>
             <div class="rowtitle"><%= link[:asset].type.display_name %></div>
-            <div class="rowtext"><%= link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')" %></div>
+            <div class="rowtext"><%= link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler(event,'link')" %></div>
           <% else %>
             <div class="rowtext">Asset no longer exists <%= cal %></div>
           <% end %>
@@ -167,7 +167,7 @@
 
   <div class="erow" id="p2_callsign">
     <div class="rowtitle">Callsign</div>
-    <div class="rowtext"><b><%=link_to @contact.callsign2, '/users/'+@contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler('user')" %></b>
+    <div class="rowtext"><b><%=link_to @contact.callsign2, '/users/'+@contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler(event,'user')" %></b>
       <% if @contact.is_qrp2 or @contact.is_portable2 then  %>
         &nbsp;(
         <%=if @contact.is_qrp2 then "QRP " end %>
@@ -198,7 +198,7 @@
         <div class="erow" id="p2_asset_code<%=count%>">
           <% if link[:asset] then %>
             <div class="rowtitle"><%= if link[:asset].respond_to?(:type) and link[:asset].type!=nil then link[:asset].type.display_name else link[:type] end %></div>
-            <div class="rowtext"><%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')" %></div>
+            <div class="rowtext"><%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler(event,'link')" %></div>
           <% else %>
             <div class="rowtext">Asset no longer exists <%= cal %></div>
           <% end %>

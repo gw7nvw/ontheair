@@ -19,11 +19,11 @@
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
-    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    <%=  link_to  "Users", '/users', remote: true,  :id => 'users', :onclick => "linkHandler(event,'users')" %>
     &nbsp;--&gt;&nbsp;
-    <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+    <%= link_to @user.callsign.upcase, '/users/'+@user.callsign, remote: true,  :id => 'users', :onclick => "linkHandler(event,'users')" %>
     &nbsp;--&gt;&nbsp;
     <b><%=@asset_type.capitalize.pluralize%> <%@count_type%></b>
   </div>
@@ -32,7 +32,7 @@
     <% if signed_in? %>
       <%=  link_to "Download", "/users/#{@user.callsign.upcase}/assets.csv?"+raw(@parameters), class: "btn btn-small btn-primary"%>
     <% end %>
-    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler('index')" %>
+    <%=  link_to "Index", "/users", class: "btn btn-small btn-primary", remote: true,  :id => 'index', :onclick => "linkHandler(event,'index')" %>
     <%=render 'map_controls'%>
   </div>
 </div>
@@ -57,12 +57,12 @@
         <tr>
           <td>
             <%if a.type.keep_score==false or not @valid_codes.include?(a.code) %>
-              <%=link_to a.codename, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :class => "link_to", :onclick => "linkHandler('asset')" %>
+              <%=link_to a.codename, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :class => "link_to", :onclick => "linkHandler(event,'asset')" %>
               <% invalid_count+=1 %>
               <%if a.type.keep_score==false or (a.is_active!=true and a.valid_to==nil)%> - site does not qualify<%end%>
               <%if not @valid_codes.include?(a.code)%> - insufficient contacts<%end%>
             <%else%>
-              <%=link_to a.codename, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+              <%=link_to a.codename, '/contacts?user='+@user.callsign+'&asset='+a.code, remote: true,  :id => 'asset', :onclick => "linkHandler(event,'asset')" %>
               <%if a.is_active!=true and a.valid_to != nil %> - note: site was retired <%=a.valid_to.strftime('%Y-%m-%d')%><%end%>
               <%if a.minor==true %> - note: minor site, not publicly listed<%end%>
               <% valid_count+=1 %>

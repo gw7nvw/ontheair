@@ -17,9 +17,9 @@
 
 <div id="actionbar" class="span7">
    <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
      &nbsp;--&gt;&nbsp;
-     <%=link_to "States", '/states', remote: true,  :id => 'states', :onclick => "linkHandler('states')" %>
+     <%=link_to "States", '/states', remote: true,  :id => 'states', :onclick => "linkHandler(event,'states')" %>
      </div>
    <div id="controls">
        <%=render 'map_controls'%>
@@ -37,7 +37,7 @@
       <tr>
         <td><%=state.code%></td>
         <td>
-          <%= link_to state.name, '/states/'+state.code, remote: true, :id => 'state_link_'+state.id.to_s, :onclick => "linkHandler('state_link_"+state.id.to_s+"')" %>
+          <%= link_to state.name, '/states/'+state.code, remote: true, :id => 'state_link_'+state.id.to_s, :onclick => "linkHandler(event,'state_link_"+state.id.to_s+"')" %>
         </td>
       </tr>
     <% end end %>

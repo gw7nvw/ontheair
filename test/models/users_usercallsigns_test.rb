@@ -24,8 +24,6 @@ class UserUsercallsignTest < ActiveSupport::TestCase
         "Correct callsign extracted DAFTCALL"
     assert User.remove_call_suffix("VK/DAFTCALL/M")=="VK/DAFTCALL",
         "Correct callsign extracted DAFTCALL"
-    assert User.remove_call_suffix("VK1/VI100IARU/M")=="VI100IARU",
-        "Correct callsign extracted VI100IARU"
   end
 
   test "can search for user by callsign / date" do

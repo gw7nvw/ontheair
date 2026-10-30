@@ -21,10 +21,10 @@
   <%= form_for @post, remote: true, :html => {:name => 'postform'}  do |f| %>
     <div id="actionbar" class="span7">
       <div id="crumbs">
-        <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+        <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
         &nbsp;--&gt;&nbsp;
-        <%if @topic.id==1 then %><b><%=link_to "Alerts", "/alerts", remote: true,  :id => 'alerts', :onclick => "linkHandler('alerts')"%></b><% end%>
-        <%if @topic.id==35 then %><b><%=link_to "Spots", "/spots", remote: true,  :id => 'spots', :onclick => "linkHandler('spots')"%></b><% end%>
+        <%if @topic.id==1 then %><b><%=link_to "Alerts", "/alerts", remote: true,  :id => 'alerts', :onclick => "linkHandler(event,'alerts')"%></b><% end%>
+        <%if @topic.id==35 then %><b><%=link_to "Spots", "/spots", remote: true,  :id => 'spots', :onclick => "linkHandler(event,'spots')"%></b><% end%>
         &nbsp;--&gt;&nbsp;
         <%if @post.id%>
           <b><%=link_to @post.title, '/posts/'+@post.id.to_s%></b>
@@ -37,9 +37,9 @@
       <div id="controls">
         <% if @post.id %>
           <% if params[:referring]=='index'%>
-            <%=  link_to "Cancel", '/posts', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+            <%=  link_to "Cancel", '/posts', class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler(event,'cancel')"%>
           <% else %>
-            <%=  link_to "Cancel", '/posts/'+@post.id.to_s, class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler('cancel')"%>
+            <%=  link_to "Cancel", '/posts/'+@post.id.to_s, class: "btn btn-small btn-primary",remote: true,  :id => 'cancel', :onclick => "linkHandler(event,'cancel')"%>
           <% end %> 
         <% end %>
 
@@ -137,9 +137,14 @@
       <% end %>
 
       <div class="erow">   
-        <%= f.submit @submit_button, id: "submit", class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler('Posting ...');" %>
+        <%= f.submit @submit_button, id: "submit", class: "btn btn-small btn-primary btn-highlight", :onclick => "submitHandler(event,'Posting ...');" %>
         <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@post.created_by_id)) %>
-          <%= f.submit "Delete Post", data: {confirm: "Delete post: Are you sure?"}, class: "btn btn-small btn-primary", remote: true,  :id => 'delete', :onclick => "linkHandler('delete')" %>
+           <%= button_to "Delete Post",
+              post_path(@post),
+              method: :delete,
+              form: { onsubmit: "submitHandler(event,'delete');" },
+              data: { confirm: "Are you sure?" }, # If you want a quick native confirmation popup
+              class: "btn btn-danger" %>
         <% end %>
       </div>
 

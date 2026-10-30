@@ -1,13 +1,13 @@
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
     Logs
     &nbsp;--&gt;&nbsp;
     <b>Upload</b>
   </div>
   <div id="controls">
-    <%= link_to "Index", '/logs/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
+    <%= link_to "Index", '/logs/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler(event,'index')"%>
     <%= render 'map_controls'%>
   </div>
 </div>
@@ -93,7 +93,7 @@
         <%= f.file_field :doc %>
       </div>
       <div class="erow">
-        <%= f.submit @submit_button, class: "btn btn-small btn-primary", :onclick => "submitHandler('Uploading ...');" %>
+        <%= f.submit @submit_button, class: "btn btn-small btn-primary", :onclick => "submitHandler(event,'Uploading ...');" %>
       </div>
     <% end %>
   </div>

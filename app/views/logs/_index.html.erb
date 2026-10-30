@@ -23,7 +23,7 @@
  
 <div id="actionbar" class="span7">
    <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
      &nbsp;--&gt;&nbsp;
      <b>Logs</b>
      <% if @user then %>&nbsp;--&gt;&nbsp;<b><%= @user.callsign %></b><% end %>
@@ -36,10 +36,10 @@
    <div id="controls">
        <% if write_access?  %>
             <% if current_user.is_admin then %>
-              <%=  link_to "View All", '/logs?user=all', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('all')" %>
+              <%=  link_to "View All", '/logs?user=all', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'all')" %>
             <% end %>
-            <%=  link_to "Upload Log", '/logs/upload', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('upload')" %>
-            <%=  link_to "Add Log", '/logs/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('edit')" %>
+            <%=  link_to "Upload Log", '/logs/upload', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'upload')" %>
+            <%=  link_to "Add Log", '/logs/new', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'edit')" %>
        <% end %>
        <% if signed_in? and ((@user and current_user.id==@user.id) or current_user.is_admin) %>
           <% 
@@ -64,8 +64,8 @@
       <input type="hidden" id="user" name="user" value='<%=@callsign%>'/>
     </div>
     <div class="buttonshort">
-      <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
-      <%=  link_to "Clear", '/logs', class: "btn btn-small", remote: true, :onclick => "linkHandler('clear')"%>
+      <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler(event,'Finding...');" %>
+      <%=  link_to "Clear", '/logs', class: "btn btn-small", remote: true, :onclick => "linkHandler(event,'clear')"%>
 
     </div>
   </form>

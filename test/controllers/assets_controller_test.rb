@@ -586,7 +586,7 @@ class AssetsControllerTest < ActionController::TestCase
     assets=Asset.count
     sign_in users(:zl4nvw)
 
-    patch :update, params: { delete: true, id: asset.id }
+    delete :destroy, params: { id: asset.id }
     assert_response :redirect
     assert_no_match /Failed/, flash[:error]
     assert_match /Asset deleted/, flash[:success]

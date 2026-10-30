@@ -7,7 +7,7 @@ class AssetsController < ApplicationController
   include ApplicationHelper
   include AssetGisTools
 
-  before_action :signed_in_user, only: %i[edit update create new map_associate associations add_wish remove_wish rate map_associate map_find_poly map_apply_poly]
+  before_action :signed_in_user, only: %i[edit update create new map_associate associations add_wish remove_wish rate map_associate map_find_poly map_apply_poly destroy]
 
   def associations
     @asset=Asset.find_by(code: params[:id].gsub("_", "/"))
@@ -409,31 +409,39 @@ class AssetsController < ApplicationController
     end
   end
 
-  def update
+  def destroy
     do_not_cache()
-
     if signed_in? && current_user.is_modifier
-      if params[:delete]
         asset = Asset.find_by_id(params[:id])
         if asset
-          als = AssetLink.where(contained_code: asset.code)
+          als = AssetLink.where(contained_code: asset.code) 
           als.destroy_all
           als = AssetLink.where(containing_code: asset.code)
           als.destroy_all
           als = AssetWebLink.where(asset_code: asset.code)
           als.destroy_all
         end
-
+  
         if asset && asset.destroy
           index_prep
           flash[:success] = "Asset deleted, id:" + params[:id]
           redirect_to "/assets"
-        else
-          edit
+        else 
+          edit 
           flash[:error] = "Failed to delete asset, id:" + params[:id]
           render "edit"
         end
-      elsif !@asset = Asset.find_by_id(params[:id])
+    else
+      flash[:error] = "You do not have permissions to update an asset"
+      redirect_to "/assets"
+    end
+  end
+
+  def update
+    do_not_cache()
+
+    if signed_in? && current_user.is_modifier
+      if !@asset = Asset.find_by_id(params[:id])
         flash[:error] = "Asset not found: " + params[:id]
 
         # tried to update a nonexistant asset

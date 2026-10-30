@@ -8,17 +8,17 @@
 
 <div id="actionbar" class="span7">
   <div id="crumbs">
-    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+    <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
     &nbsp;--&gt;&nbsp;
-    <%=  link_to  "Places:", '/assets', remote: true,  :id => 'assets', :onclick => "linkHandler('assets')" %>
+    <%=  link_to  "Places:", '/assets', remote: true,  :id => 'assets', :onclick => "linkHandler(event,'assets')" %>
     &nbsp;--&gt;&nbsp;
-    <%= link_to @asset.name, '/'+@asset.url, remote: true, onclick: "linkHandler('asset');" %>
+    <%= link_to @asset.name, '/'+@asset.url, remote: true, onclick: "linkHandler(event,'asset');" %>
     &nbsp;--&gt;&nbsp;
     <b>Associations</b>
   </div>
 
   <div id="controls">
-    <%=  link_to "Cancel", "/assets/"+@asset.safecode, class: "btn btn-small btn-primary", remote: true,  :id => 'asset', :onclick => "linkHandler('index')" %>
+    <%=  link_to "Cancel", "/assets/"+@asset.safecode, class: "btn btn-small btn-primary", remote: true,  :id => 'asset', :onclick => "linkHandler(event,'index')" %>
     <%=render 'map_controls'%>
   </div>
 </div>
@@ -33,7 +33,7 @@
   <div class="erow" id="name">
     <div class="rowtitle"><%= "Name" %></div>
     <div class="rowtext"> 
-      <%=link_to @asset.name, '/assets/'+@asset.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler('asset')" %>
+      <%=link_to @asset.name, '/assets/'+@asset.safecode, remote: true,  :id => 'asset', :onclick => "linkHandler(event,'asset')" %>
     </div>
   </div>
 
@@ -81,7 +81,7 @@
     </div>
 
     <div class="buttonshort">
-      <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+      <%= submit_tag "Find", :id => "find", :class => "btn btn-small", :onclick => "submitHandler(event,'Finding...');" %>
     </div>
 
   </form>
@@ -92,7 +92,7 @@
       <% id = item.try(:ogc_fid) %>
       <% id = item.try(:id) if !id %>
       <% id = 0 if !id %>
-      <li> <%= link_to @item.name, "poly_by_id?select_type=#{item.class.table_name}&select_id=#{id}",  remote: true, :onclick => "linkHandler('clear')" %> </li>
+      <li> <%= link_to @item.name, "poly_by_id?select_type=#{item.class.table_name}&select_id=#{id}",  remote: true, :onclick => "linkHandler(event,'clear')" %> </li>
     <% end %>
   </ul>
   <%= form_tag 'apply_poly', :name => 'asset', :id => 'asset', :remote => true, :method => 'post', :style => 'margin-bottom: 0px' %>
@@ -105,7 +105,7 @@
     <%= check_box_tag :add_to_existing %>
 
     <div class="buttonshort">
-      <%= submit_tag "Apply", :id => "apply", :class => "btn btn-small", :onclick => "submitHandler('Finding...');" %>
+      <%= submit_tag "Apply", :id => "apply", :class => "btn btn-small", :onclick => "submitHandler(event,'Finding...');" %>
     </div>
   </form>
 

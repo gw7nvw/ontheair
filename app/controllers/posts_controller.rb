@@ -6,7 +6,7 @@ class PostsController < ApplicationController
   require "uri"
   require "net/http"
 
-  before_action :signed_in_user, only: %i[delete create update new edit]
+  before_action :signed_in_user, only: %i[destroy create update new edit]
   skip_before_action :verify_authenticity_token, only: %i[create update sms]
 
   def sms
@@ -259,7 +259,7 @@ class PostsController < ApplicationController
     @topic = Topic.find_by_id(@post.topic_id)
   end
 
-  def delete
+  def destroy
     if signed_in?
       @post = Post.find_by_id(params[:id])
       topic = @post.topic
@@ -292,21 +292,6 @@ class PostsController < ApplicationController
       @post = Post.find_by_id(params[:id])
       topic = @post.topic
       if @post && (current_user.is_admin || (current_user.id == @post.created_by_id))
-        if params[:commit] == "Delete Post"
-          @item = @post.item
-          @item.destroy
-          if @post.destroy
-            flash[:success] = "Post deleted, id:" + params[:id]
-            @topic = topic
-            #       @items=topic.items
-            redirect_to "/topics/" + topic.id.to_s
-
-          else
-            flash[:error] = "Failed to delete post"
-            edit
-            render "edit"
-          end
-        else
           @post.assign_attributes(post_params)
           if params[:post][:asset_codes]
             # check fo X,Y
@@ -360,7 +345,6 @@ class PostsController < ApplicationController
           else
             render "edit"
           end
-        end # delete or edit
       else
         redirect_to "/"
       end # do we have permissions

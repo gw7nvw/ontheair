@@ -1,7 +1,7 @@
 <div class="fullform">
 <div id="actionbar" class="span7">
    <div id="crumbs">
-     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+     <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
      &nbsp;--&gt;&nbsp;
      <b>HEMA Logs</b>
    </div>
@@ -19,8 +19,8 @@
   <%= hidden_field_tag(:referring, @referring) %>
   <div class="erow">
     Check the uploaded log below that was returned by the HEMA website, and click 'Finalise' if it is correct. Logs on HEMA cannot be edited once 'Finalised'.
-     <%=link_to "Finalise", "/hema_logs/"+@log.id.to_s+"/finalise?activationKey="+@response[:key]+"&summitKey="+@response[:summit]+"&cookie="+@response[:cookie], class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('finalise')"%>
-     <%=link_to "Cancel", '/hema_logs?user='+@log.callsign1, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler('submit')"%>
+     <%=link_to "Finalise", "/hema_logs/"+@log.id.to_s+"/finalise?activationKey="+@response[:key]+"&summitKey="+@response[:summit]+"&cookie="+@response[:cookie], class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler(event,'finalise')"%>
+     <%=link_to "Cancel", '/hema_logs?user='+@log.callsign1, class: "btn btn-small btn-primary",remote: true, :onclick => "linkHandler(event,'submit')"%>
 
     <div class='sectiontitle'>
       <%=raw @response[:body].split('table>')[5][1..-2]%>

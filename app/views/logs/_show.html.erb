@@ -1,8 +1,8 @@
 <div id="actionbar" class="span7">
    <div id="crumbs">
-     <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler('home')" %>
+     <%=link_to "Home", '/', :remote => true,  :onclick => "linkHandler(event,'home')" %>
      &nbsp;--&gt;&nbsp;
-     <%=link_to "Logs", '/logs', :remote => true,  :onclick => "linkHandler('logs')" %>
+     <%=link_to "Logs", '/logs', :remote => true,  :onclick => "linkHandler(event,'logs')" %>
      &nbsp;--&gt;&nbsp;
      <%= @log.id.to_s %>
    </div>
@@ -18,14 +18,14 @@
           if loc_asset then 
        %>
           
-     <%=  link_to "Who Chased Me?", "/contacts?user=#{@log.callsign1}&whochased=#{loc_asset_safecode}&date=#{@log.date.strftime("%Y-%m-%d")}", class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('whochasedme')"%>
+     <%=  link_to "Who Chased Me?", "/contacts?user=#{@log.callsign1}&whochased=#{loc_asset_safecode}&date=#{@log.date.strftime("%Y-%m-%d")}", class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler(event,'whochasedme')"%>
        <% end %>
        
        <%=  link_to ":as Markdown", '/logs/'+@log.id.to_s+'.txt', class: "btn btn-small btn-primary", :blank => true%>
-       <%=  link_to "Edit", '/logs/'+@log.id.to_s+'/edit', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('edit')"%>
+       <%=  link_to "Edit", '/logs/'+@log.id.to_s+'/edit', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler(event,'edit')"%>
        <%=  link_to "Download", '/logs/'+@log.id.to_s+'.adi', class: "btn btn-small btn-primary"%>
      <% end %>
-     <%=  link_to "Index", '/logs/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler('index')"%>
+     <%=  link_to "Index", '/logs/', class: "btn btn-small btn-primary", :remote => true,  :onclick => "linkHandler(event,'index')"%>
      <%=render 'map_controls'%>   
   </div>
 </div>
@@ -73,7 +73,7 @@
                       <% if link[:external] then %>
                         <%=link_to link[:code], link[:url], target: "_blank"%><img src="/icons/external-link-symbol.png">
                       <% else %>
-                        <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                        <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler(event,'link')"  %>
                       <% end %>
                     <% end %>
                   </li>
@@ -106,9 +106,9 @@
       <%contacts=Contact.find_by_sql [ " select * from contacts where log_id = "+@log.id.to_s+" order by time asc ;" ] %>
       <% contacts.each do |contact| %>
         <tr>
-          <td><%=link_to 'View', '/contacts/'+contact.id.to_s, :remote => true,  :onclick => "linkHandler('index')"%></td>
+          <td><%=link_to 'View', '/contacts/'+contact.id.to_s, :remote => true,  :onclick => "linkHandler(event,'index')"%></td>
           <td> <%= if contact.time then contact.localtime(current_user) else '' end %> <%=contact.localtimezone(current_user) %></td>
-          <td><span title="<%=DxccPrefix.name_from_call(contact.callsign2)%>"> <%=link_to contact.callsign2, '/users/'+contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler('user')"  %> </span></td>
+          <td><span title="<%=DxccPrefix.name_from_call(contact.callsign2)%>"> <%=link_to contact.callsign2, '/users/'+contact.callsign2, remote: true,  :id => 'user', :onclick => "linkHandler(event,'user')"  %> </span></td>
           <td> <%= if contact.is_qrp2 then "Yes" else "No" end%></td>
           <td> <%= if contact.is_portable2 then "Yes" else "No" end%></td>
           <td> <%= contact.mode %> </td>
@@ -123,7 +123,7 @@
                     <% if link[:external] then %>
                       <%=link_to link[:code], link[:url], target: "_blank"%><img src="/icons/external-link-symbol.png">
                     <% else %>
-                      <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler('link')"  %>
+                      <%=link_to link[:asset].codename, (if(link[:url][0]!='/' and link[:url][0..3]!="http") then "/" else "" end)+link[:url],remote: true,  :id => 'link', :onclick => "linkHandler(event,'link')"  %>
                     <% end %>
                   <% end %>
                 </li>

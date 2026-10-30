@@ -245,9 +245,8 @@ class UsersController < ApplicationController
     end
   end
 
-  def update
+  def destroy
     if signed_in? && (current_user.is_admin || (current_user.id == params[:id].to_i))
-      if params[:delete] == "Delete"
         callsigns = UserCallsign.where(user_id: params[:id].to_i)
         callsigns.each(&:destroy)
         topics = UserTopicLink.where(user_id: params[:id].to_i)
@@ -261,7 +260,13 @@ class UsersController < ApplicationController
           edit
           render "edit"
         end
-      else
+    else
+      redirect_to "/"
+    end
+  end
+
+  def update
+    if signed_in? && (current_user.is_admin || (current_user.id == params[:id].to_i))
         password = params[:user][:password]
         password_confirmation = params[:user][:password_confirmation]
 
@@ -305,7 +310,6 @@ class UsersController < ApplicationController
             render "edit"
           end
         end
-      end
     else
       redirect_to "/"
     end

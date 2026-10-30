@@ -7,12 +7,12 @@
   <%= form_for(@award) do |f| %>
     <div id="actionbar" class="span7">
       <div id="crumbs">
-        <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler('home')" %>
+        <%=link_to "Home", '/', remote: true,  :id => 'home', :onclick => "linkHandler(event,'home')" %>
         &nbsp;--&gt;&nbsp;
-        <%=  link_to  "Awards", '/awards', remote: true,  :id => 'users', :onclick => "linkHandler('users')" %>
+        <%=  link_to  "Awards", '/awards', remote: true,  :id => 'users', :onclick => "linkHandler(event,'users')" %>
         &nbsp;--&gt;&nbsp;
         <%if @award.id%>
-          <%=link_to @award.name, '/awards/'+@award.id.to_s, remote: true, :id => 'user', :onclick => "linkHandler('user')" %>
+          <%=link_to @award.name, '/awards/'+@award.id.to_s, remote: true, :id => 'user', :onclick => "linkHandler(event,'user')" %>
           &nbsp;--&gt;&nbsp;
           <b>Edit</b>
         <% else %>
@@ -22,9 +22,9 @@
 
       <div id="controls">
         <% if params[:referring]=='index' or !@award.id %>
-          <%=  link_to "Cancel", '/awards', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+          <%=  link_to "Cancel", '/awards', class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'cancel')" %>
         <% else %>
-          <%=  link_to "Cancel", '/awards/'+@award.id.to_s, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler('cancel')" %>
+          <%=  link_to "Cancel", '/awards/'+@award.id.to_s, class: "btn btn-small btn-primary", remote: true, :onclick => "linkHandler(event,'cancel')" %>
         <% end %> 
 
         <%=render 'map_controls'%>
@@ -90,7 +90,12 @@
 
       <%= f.submit @submit_button, id: "submit", class: "btn btn-small btn-primary btn-hightlight" %>
       <%  if(@submit_button == "Save Changes" and current_user and current_user.is_admin) %>
-        <%= f.submit "Delete", confirm: "Delete award: Are you sure?", class: "btn btn-small btn-primary", name: "delete", id:  "deletebutton", remote: true %>
+        <%= button_to "Delete Award",
+              award_path(@award),
+              method: :delete,
+              form: { onsubmit: "submitHandler(event,'delete');" },
+              data: { confirm: "Are you sure?" }, # If you want a quick native confirmation popup
+              class: "btn btn-danger" %>
       <% end %>
  
     </div>
