@@ -10,7 +10,7 @@ class SendNotifications
 
     # Set a 5-minute expiring lock in Redis. If it's already locked, exit.
     # (Resque.redis handles the underlying Redis connection)
-    return unless Resque.redis.set(lock_key, "true", {ex: 300, nx: true})
+    return unless Resque.redis.set(lock_key, "true", { ex: 300, nx: true })
 
 
     begin
@@ -26,7 +26,7 @@ class SendNotifications
       # Because the image is pre-compiled, this loop executes extremely fast.
       potential_matches.each do |link|
         user = link.user
-        next if spot.code==["ZL3/HSL-001"] and user.id!=4  #Test site only for ZL4NVW!
+        next if spot.code==[ "ZL3/HSL-001" ] and user.id!=4  # Test site only for ZL4NVW!
         next unless user
 
         # Deduplicate updates using your one-hour ledger table
@@ -39,11 +39,11 @@ class SendNotifications
         Resque.logger.info("SEND_NOTIFICTAION: #{user.callsign} #{spot.summary}")
         puts "SEND_NOTIFICTAION: #{user.callsign} #{spot.summary}"
         # Ship individual payload using user-isolated tokens
-        PushoverService.send_alert( user, spot.summary, message_url, spot.comments.last, image_base64, link.priority )
+        PushoverService.send_alert(user, spot.summary, message_url, spot.comments.last, image_base64, link.priority)
       end
 
       # 5. Clean up old ledger data safely at the end of the run
-      SentNotification.where('created_at < ?', 1.hour.ago).delete_all
+      SentNotification.where("created_at < ?", 1.hour.ago).delete_all
 
     ensure
       # ALWAYS release the concurrency lock when finished or if an error occurs

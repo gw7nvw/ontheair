@@ -376,7 +376,6 @@ test "Check new comments added to same consolidated spot with no chnages to loca
   assert_equal 2, cs.comments.count
   assert_match /Test spot two/, cs.comments.last
   assert_match /Test spot \(/, cs.comments.first
-
 end
 
 test "/P should be recorded in new spot if provided" do
@@ -452,6 +451,4 @@ test "/QRP should be added to spot if provided" do
   assert_equal true, cs.is_qrp
   assert_equal "M0KCB", cs.activatorCallsign
 end
-
 end
-

@@ -75,7 +75,7 @@ class LogsController < ApplicationController
           @log.reload
           @id = @log.id
           params[:id] = @id
-          redirect_to "/logs/" + @id.to_s + "/edit"
+          redirect_to "/logs/" + @id.to_s + "/edit", status: :see_other
         else
           render "new"
         end
@@ -85,7 +85,7 @@ class LogsController < ApplicationController
       end
     else
       flash[:error]="You do not have permission to create a log"
-      redirect_to "/"
+      redirect_to "/", status: :see_other
     end
   end
 
@@ -150,7 +150,7 @@ class LogsController < ApplicationController
     if signed_in?
       unless (@log = Log.find_by_id(params[:id]))
         flash[:error] = "Log does not exist: " + @log.id.to_s
-        redirect_to "/"
+        redirect_to "/", status: :see_other
       end
 
       @log.assign_attributes(log_params)
@@ -161,11 +161,11 @@ class LogsController < ApplicationController
           flash[:success] = "Log details updated"
           @user = User.find_by(callsign: @log.callsign1)
           @contacts = Contact.where(log_id: @log.id).order(:time)
-          redirect_to "/logs/" + @log.id.to_s + "/edit"
+          redirect_to "/logs/" + @log.id.to_s + "/edit", status: :see_other
         else
           @user = User.find_by(callsign: @log.callsign1)
           @contacts = Contact.where(log_id: @log.id).order(:time)
-          redirect_to "/logs/" + @log.id.to_s + "/edit"
+          redirect_to "/logs/" + @log.id.to_s + "/edit", status: :see_other
         end
       else
         @log.errors.add(:callsign1, "You do not have permission to use this callsign on this date")
@@ -173,7 +173,7 @@ class LogsController < ApplicationController
       end
     else
       flash[:error] = "You do not have permissions to take this action"
-      redirect_to "/"
+      redirect_to "/", status: :see_other
     end
   end
 
@@ -189,10 +189,10 @@ class LogsController < ApplicationController
         else
           flash[:error] = "You do not have permission to use this callsign on this date"
         end
-        redirect_to "/logs/"
+        redirect_to "/logs/", status: :see_other
       end
     else
-      redirect_to "/"
+      redirect_to "/", status: :see_other
     end
   end
 

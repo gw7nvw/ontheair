@@ -349,21 +349,21 @@ class UsersControllerTest < ActionController::TestCase
     assert_select "#user_callsign_submit"
 
     # mail
-#    assert_select "#mail_table"
-#    table=get_table_test(@response.body, "mail_table")
-#    assert_equal 5, get_row_count_test(table), "5 rows"
-#    row=get_row_test(table, 2)
-#    assert_match /SPOTS/, get_col_test(row, 1), "Spots"
-#    assert_match /No/, get_col_test(row, 2), "No mail"
-#    assert_match /Add/, get_col_test(row, 2), "Add button"
-#    row=get_row_test(table, 3)
-#    assert_match /ALERTS/, get_col_test(row, 1), "Alerts"
-#    assert_match /Yes/, get_col_test(row, 2), "mail"
-#    assert_match /Delete/, get_col_test(row, 2), "Delete button"
-#    row=get_row_test(table, 4)
-#    assert_match /NEWS/, get_col_test(row, 1), "News"
-#    assert_match /No/, get_col_test(row, 2), "No mail"
-#    assert_match /Add/, get_col_test(row, 2), "Add button"
+    #    assert_select "#mail_table"
+    #    table=get_table_test(@response.body, "mail_table")
+    #    assert_equal 5, get_row_count_test(table), "5 rows"
+    #    row=get_row_test(table, 2)
+    #    assert_match /SPOTS/, get_col_test(row, 1), "Spots"
+    #    assert_match /No/, get_col_test(row, 2), "No mail"
+    #    assert_match /Add/, get_col_test(row, 2), "Add button"
+    #    row=get_row_test(table, 3)
+    #    assert_match /ALERTS/, get_col_test(row, 1), "Alerts"
+    #    assert_match /Yes/, get_col_test(row, 2), "mail"
+    #    assert_match /Delete/, get_col_test(row, 2), "Delete button"
+    #    row=get_row_test(table, 4)
+    #    assert_match /NEWS/, get_col_test(row, 1), "News"
+    #    assert_match /No/, get_col_test(row, 2), "No mail"
+    #    assert_match /Add/, get_col_test(row, 2), "Add button"
 
     # awards
     assert_select "#awards_link"
@@ -482,21 +482,21 @@ class UsersControllerTest < ActionController::TestCase
     assert_select "#user_callsign_submit"
 
     # mail
- #   assert_select "#mail_table"
- #   table=get_table_test(@response.body, "mail_table")
- #   assert_equal 5, get_row_count_test(table), "5 rows"
- #   row=get_row_test(table, 2)
- #   assert_match /SPOTS/, get_col_test(row, 1), "Spots"
- #   assert_match /No/, get_col_test(row, 2), "No mail"
- #   assert_match /Add/, get_col_test(row, 2), "Add button"
- #   row=get_row_test(table, 3)
- #   assert_match /ALERTS/, get_col_test(row, 1), "Alerts"
- #   assert_match /Yes/, get_col_test(row, 2), "mail"
- #   assert_match /Delete/, get_col_test(row, 2), "Delete button"
- #   row=get_row_test(table, 4)
- #   assert_match /NEWS/, get_col_test(row, 1), "News"
- #   assert_match /No/, get_col_test(row, 2), "No mail"
- #   assert_match /Add/, get_col_test(row, 2), "Add button"
+    #   assert_select "#mail_table"
+    #   table=get_table_test(@response.body, "mail_table")
+    #   assert_equal 5, get_row_count_test(table), "5 rows"
+    #   row=get_row_test(table, 2)
+    #   assert_match /SPOTS/, get_col_test(row, 1), "Spots"
+    #   assert_match /No/, get_col_test(row, 2), "No mail"
+    #   assert_match /Add/, get_col_test(row, 2), "Add button"
+    #   row=get_row_test(table, 3)
+    #   assert_match /ALERTS/, get_col_test(row, 1), "Alerts"
+    #   assert_match /Yes/, get_col_test(row, 2), "mail"
+    #   assert_match /Delete/, get_col_test(row, 2), "Delete button"
+    #   row=get_row_test(table, 4)
+    #   assert_match /NEWS/, get_col_test(row, 1), "News"
+    #   assert_match /No/, get_col_test(row, 2), "No mail"
+    #   assert_match /Add/, get_col_test(row, 2), "Add button"
   end
 
   ####################################################################

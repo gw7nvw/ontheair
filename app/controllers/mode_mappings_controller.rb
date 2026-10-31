@@ -13,14 +13,14 @@ class ModeMappingsController < ApplicationController
   def edit
     @mode = ModeMapping.find(params[:id])
     @modes = ModeMapping.all.order(:raw_mode)
-    render 'index'
+    render "index"
   end
 
   def create
     mode = ModeMapping.create(mode_params)
     @modes = ModeMapping.all.order(:raw_mode)
     @mode = ModeMapping.new
-    render 'index'
+    render "index"
   end
 
   def delete
@@ -28,7 +28,7 @@ class ModeMappingsController < ApplicationController
     mode.destroy
     @modes = ModeMapping.all.order(:raw_mode)
     @mode = ModeMapping.new
-    render 'index'
+    render "index"
   end
 
   def update
@@ -37,7 +37,7 @@ class ModeMappingsController < ApplicationController
     mode.save
     @modes = ModeMapping.all.order(:raw_mode)
     @mode = ModeMapping.new
-    render 'index'
+    render "index"
   end
 
   private

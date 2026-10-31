@@ -152,7 +152,7 @@ class StaticPagesController < ApplicationController
   def spot_panel
     spots
   end
-  
+
   def spots
     alerts
 

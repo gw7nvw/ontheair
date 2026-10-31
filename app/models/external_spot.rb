@@ -31,7 +31,7 @@ class ExternalSpot < ApplicationRecord
 
 
   def after_save_actions
-    consolidate_changed_spots([self])
+    consolidate_changed_spots([ self ])
   end
 
 
@@ -87,8 +87,8 @@ class ExternalSpot < ApplicationRecord
     # 4. Guard against empty runs (e.g. if all APIs time out)
     return if all_spots.empty?
 
-    deduplicated_payload = all_spots.index_by { |row| 
-      "#{row[:source_api]}|#{row[:source_id]}" 
+    deduplicated_payload = all_spots.index_by { |row|
+      "#{row[:source_api]}|#{row[:source_id]}"
     }.values
 
     # 5. Fire ONE single high-speed bulk transaction into PostgreSQL
@@ -96,14 +96,14 @@ class ExternalSpot < ApplicationRecord
     logger.info all_spots.to_json
     db_result = ExternalSpot.upsert_all(
       deduplicated_payload,
-      unique_by: [:source_api, :source_id],
-      returning: [:id, :updated_at]
+      unique_by: [ :source_api, :source_id ],
+      returning: [ :id, :updated_at ]
     )
 
-    # 6. Filter for only the external records that actually CHANGED or were NEW 
+    # 6. Filter for only the external records that actually CHANGED or were NEW
     # during this minute's sweep (ignoring pristine un-changed duplicates)
     changed_external_rows = db_result.select do |row|
-      row['updated_at'] >= 1.minute.ago
+      row["updated_at"] >= 1.minute.ago
     end
 
     # If there are changes, consolidate them into consolidated_spots
@@ -116,13 +116,13 @@ end
 
   def normalize_hema_spots(raw_text_stream)
   # 1. Split rows by '=', ignoring the header/timestamp line if it doesn't contain a spot
-  rows = raw_text_stream.to_s.split('=')
+  rows = raw_text_stream.to_s.split("=")
 
   # Remove the very first element if it's just the top-level timestamp (e.g., "26/10/2026 05:47")
-  rows.shift if rows.first&.include?('/') && !rows.first&.include?(';')
+  rows.shift if rows.first&.include?("/") && !rows.first&.include?(";")
 
   rows.map do |row|
-    columns = row.split(';')
+    columns = row.split(";")
     next if columns.size < 6 # Skip malformed or trailing empty splits
     next if columns[0] and Time.zone.parse(columns[0]).utc<2.hours.ago
     # Safe extraction based on the positions we mapped out
@@ -132,14 +132,14 @@ end
 
     # Parse "7.085 (SSB)" into components
     freq_mode_raw = columns[5]&.strip || ""
-    frequency     = freq_mode_raw.split(' ').first # "7.085"
+    frequency     = freq_mode_raw.split(" ").first # "7.085"
     mode          = freq_mode_raw.match(/\((.*?)\)/)&.captures&.first&.upcase # "SSB"
 
     # Parse spotter out of "(HEMA_ASSISTANT) comment here"
     spotter_comment_raw = columns[6]&.strip || ""
     spotter = spotter_comment_raw.match(/\((.*?)\)/)&.captures&.first&.upcase || activator
-    comment = spotter_comment_raw&.to_s&.gsub(/\(.*?\)/, '')&.scrub&.strip&.slice(0, 255)
-    
+    comment = spotter_comment_raw&.to_s&.gsub(/\(.*?\)/, "")&.scrub&.strip&.slice(0, 255)
+
 
     spotstr = [
       callsign:          spotter,
@@ -148,8 +148,8 @@ end
       name:              name,
       frequency:         frequency,
       mode:              mode,
-      comments:          comment,
-    ].join('|')
+      comments:          comment
+    ].join("|")
 
     stable_hema_id = Digest::SHA256.hexdigest(spotstr)
 
@@ -167,10 +167,9 @@ end
       altM:              nil,
       time:              columns[0] ? Time.zone.parse(columns[0]).utc : Time.now.utc,
       is_test:           nil,
-      spot_type:         "HEMA",
+      spot_type:         "HEMA"
     }
   end.compact
-
 end
 
 def normalize_llota_spots(raw_spots)
@@ -193,7 +192,7 @@ def normalize_llota_spots(raw_spots)
       points:            nil,
       altM:              nil,
       is_test:           nil,
-      spot_type:         "LLOTA",
+      spot_type:         "LLOTA"
     }
   end
 end
@@ -216,7 +215,7 @@ def normalize_wwff_spots(raw_spots)
       points:            nil,
       altM:              nil,
       is_test:           nil,
-      spot_type:         "WWFF",
+      spot_type:         "WWFF"
     }
   end
 end
@@ -239,7 +238,7 @@ def normalize_pota_spots(raw_spots)
       points:            nil,
       altM:              nil,
       is_test:           nil,
-      spot_type:         "POTA",
+      spot_type:         "POTA"
     }
   end
 end
@@ -257,12 +256,12 @@ def normalize_sota_spots(raw_spots)
       code:              spot["summitCode"]&.strip&.upcase,
       name:              spot["summitName"]&.strip,
       frequency:         spot["frequency"]&.to_s,
-      mode:              (if spot['type']=='QRT' then 'QRT' else spot['mode']&.strip&.upcase end),
+      mode:              (if spot["type"]=="QRT" then "QRT" else spot["mode"]&.strip&.upcase end),
       comments:          spot["comments"]&.to_s&.scrub&.slice(0, 255),
       points:            spot["points"]&.to_s,
       altM:              spot["AltM"]&.to_s,
-      is_test:           (spot['type']=='TEST'),
-      spot_type:         "SOTA",
+      is_test:           (spot["type"]=="TEST"),
+      spot_type:         "SOTA"
     }
   end
 end
@@ -363,7 +362,7 @@ def fetch_hema
 end
 
 def consolidate_changed_spots(changed_external_rows)
-  external_spot_ids = changed_external_rows.map { |row| row['id'] }
+  external_spot_ids = changed_external_rows.map { |row| row["id"] }
   spots_to_process  = ExternalSpot.where(id: external_spot_ids).to_a
 
   spots_to_process.each do |external_spot|
@@ -403,8 +402,8 @@ def consolidate_changed_spots(changed_external_rows)
       cs.spot_type += [ external_spot.spot_type ]
     end
     formatted_comment = "["+(external_spot.spot_type||"")+"] "+((external_spot.callsign||"")+": "+(external_spot.comments||"") + " ("+(external_spot.time.strftime("%H:%M:%S")||"")+")")
-    cs.comments = cs.comments + [formatted_comment.slice(0, 255)]
-    
+    cs.comments = cs.comments + [ formatted_comment.slice(0, 255) ]
+
     # 7. Persist and hand off to Step 3 Notifications Ledger
     if cs.changed?
       cs.save!
@@ -413,7 +412,7 @@ def consolidate_changed_spots(changed_external_rows)
 end
 
 def consolidation_valid?(external_spot, consolidated_spot)
-  #allow if code alrady there
+  # allow if code alrady there
   return true if consolidated_spot.code.include?(external_spot.code)
 
 
@@ -434,7 +433,7 @@ def consolidation_valid?(external_spot, consolidated_spot)
   logger.error("SPOTCHECK: #{repeated_classes.to_json}")
   return false if !AssetType.all_allow_multi?(repeated_classes)
 
-  return true
+  true
 end
 
 
@@ -465,5 +464,3 @@ def find_matching_consolidated_spot(external_spot)
     .order(created_at: :desc)
     .first
 end
-
-

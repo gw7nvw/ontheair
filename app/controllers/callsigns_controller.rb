@@ -9,7 +9,7 @@ class CallsignsController < ApplicationController
     @callsign = UserCallsign.find(params[:id])
     unless signed_in? && ((current_user.id == @callsign.user_id) || current_user.is_admin)
       flash[:error] = "You do not have permissions to edit this callsign"
-      redirect_to "/users"
+      redirect_to "/users", status: :see_other
     end
   end
 
@@ -26,13 +26,13 @@ class CallsignsController < ApplicationController
         else
           User.reassign_userids_used_by_callsign(@callsign.callsign)
         end
-        redirect_to "/users/" + @callsign.user.callsign
+        redirect_to "/users/" + @callsign.user.callsign, status: :see_other
       else
         render "new"
       end
     else
       flash[:error] = "You do not have permissions to take this action"
-      redirect_to "/"
+      redirect_to "/", status: :see_other
     end
   end
 
@@ -53,14 +53,14 @@ class CallsignsController < ApplicationController
             User.reassign_userids_used_by_callsign(oldcallsign)
           end
         end
-        redirect_to "/users/" + usercall
+        redirect_to "/users/" + usercall, status: :see_other
       else
         flash[:error] = "You do not have permissions to delete this callsign"
-        redirect_to "/users"
+        redirect_to "/users", status: :see_other
       end
     else
       flash[:error] = "You do not have permissions to delete this callsign"
-      redirect_to "/users"
+      redirect_to "/users", status: :see_other
     end
   end
 
@@ -70,7 +70,7 @@ class CallsignsController < ApplicationController
         flash[:error] = "Callsign does not exist: " + params[:id]
 
         # tried to update a nonexistant asset
-        redirect_to "/"
+        redirect_to "/", status: :see_other
       end
 
       oldcallsign = @callsign.callsign
@@ -86,17 +86,17 @@ class CallsignsController < ApplicationController
             User.reassign_userids_used_by_callsign(oldcallsign)
             User.reassign_userids_used_by_callsign(@callsign.callsign)
           end
-          redirect_to "/users/" + @callsign.user.callsign
+          redirect_to "/users/" + @callsign.user.callsign, status: :see_other
         else
           render "edit"
         end
       else
         flash[:error] = "You do not have permissions to edit this callsign"
-        redirect_to "/users"
+        redirect_to "/users", status: :see_other
       end
     else
       flash[:error] = "You do not have permissions to edit this callsign"
-      redirect_to "/users"
+      redirect_to "/users", status: :see_other
     end
   end
 

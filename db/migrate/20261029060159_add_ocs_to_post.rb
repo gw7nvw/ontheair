@@ -3,6 +3,5 @@ class AddOcsToPost < ActiveRecord::Migration[8.0]
     add_column :posts, :is_portable, :boolean
     add_column :posts, :is_qrp, :boolean
     add_column :posts, :is_mobile, :boolean
-
   end
 end

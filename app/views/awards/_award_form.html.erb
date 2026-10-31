@@ -90,12 +90,7 @@
 
       <%= f.submit @submit_button, id: "submit", class: "btn btn-small btn-primary btn-hightlight" %>
       <%  if(@submit_button == "Save Changes" and current_user and current_user.is_admin) %>
-        <%= button_to "Delete Award",
-              award_path(@award),
-              method: :delete,
-              form: { onsubmit: "submitHandler(event,'delete');" },
-              data: { confirm: "Are you sure?" }, # If you want a quick native confirmation popup
-              class: "btn btn-danger" %>
+        <%=  link_to "Delete", "/awards/#{@award.id}/destroy", class: "btn btn-danger", remote: true, :onclick => "linkHandler(event,'delete')" %>
       <% end %>
  
     </div>

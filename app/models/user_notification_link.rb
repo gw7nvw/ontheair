@@ -22,7 +22,7 @@ class UserNotificationLink < ApplicationRecord
       mode: spot.mode||"",
       spot_types: spot.spot_type,
       activator_callsign: spot.activatorCallsign,
-      code_array: spot.code 
+      code_array: spot.code
     )
   }
 
@@ -31,10 +31,10 @@ class UserNotificationLink < ApplicationRecord
   end
 
   def strip_blanks
-    self.bands=self.bands-[""] if self.bands
-    self.continents=self.continents-[""] if self.continents
-    self.spot_types=self.spot_types-[""] if self.spot_types
-    self.modes=self.modes-[""] if self.modes
+    self.bands=self.bands-[ "" ] if self.bands
+    self.continents=self.continents-[ "" ] if self.continents
+    self.spot_types=self.spot_types-[ "" ] if self.spot_types
+    self.modes=self.modes-[ "" ] if self.modes
     self.bands=nil if self.bands.blank?
     self.continents=nil if self.continents.blank?
     self.spot_types=nil if self.spot_types.blank?

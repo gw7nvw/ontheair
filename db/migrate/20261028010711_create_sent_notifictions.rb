@@ -7,7 +7,7 @@ class CreateSentNotifictions < ActiveRecord::Migration[8.0]
     end
 
     # Enforce uniqueness and optimize lookup speed
-    add_index :sent_notifications, [:consolidated_spot_id, :user_id], unique: true
+    add_index :sent_notifications, [ :consolidated_spot_id, :user_id ], unique: true
 
     # Optimize cleanup query speed
     add_index :sent_notifications, :created_at

@@ -79,12 +79,7 @@
 
       <%= f.submit @submit_button, id: "submit", class: "btn btn-small btn-primary btn-highlight" %>
       <%  if(@submit_button == "Save Changes" and (current_user.is_admin or current_user.id==@image.created_by_id)) %>
-        <%= button_to "Delete Photo",
-              photo_path(@image),
-              method: :delete,
-              form: { onsubmit: "submitHandler(event,'delete');" },
-              data: { confirm: "Are you sure?" }, # If you want a quick native confirmation popup
-              class: "btn btn-danger" %>
+        <%=  link_to "Delete", "/photos/#{@image.id}/delete", class: "btn btn-danger", remote: true, :onclick => "linkHandler(event,'delete')" %>
       <% end %>
     </div>
   <% end %>

@@ -88,9 +88,9 @@ class User < ActiveRecord::Base
       # convert to WGS84 (EPSG4326) for database
       fromproj = RGeo::CoordSys::Proj4.create(src_srs)
       toproj   = RGeo::CoordSys::Proj4.create(4326)
-  
+
       xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, x.to_f, y.to_f)
-  
+
       if xyarr and !xyarr[0].blank? and !xyarr[1].blank?
         locn = xyarr[0].to_s + " " + xyarr[1].to_s
         self.location = "POINT(#{locn})"
@@ -1722,7 +1722,7 @@ class User < ActiveRecord::Base
       match[1] # Returns the captured core base callsign
     else
       # Fallback safety default: If no slashes match, return the input string stripped
-      clean_input.gsub(/\/P|\/M/i, '')
+      clean_input.gsub(/\/P|\/M/i, "")
     end
   end
 
@@ -1809,7 +1809,7 @@ class User < ActiveRecord::Base
     if ENV["RAILS_ENV"] != "production"
       Resque.logger.info "NOTIFICATION: not sending in #{ENV['RAILS_ENV']} environment - #{notification}"
     else
-      PushoverService.send_alert(self, notification, message_url, comments, image, priority )
+      PushoverService.send_alert(self, notification, message_url, comments, image, priority)
     end
   end
 

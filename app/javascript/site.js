@@ -1016,6 +1016,17 @@ async function submitHandler(event, entity_name) {
 async function linkHandler(event, entity_name) {
     clearTimeout(refreshInterval);
 
+    if (entity_name === 'delete') {
+      // 1. Intercept and ask for confirmation
+      const confirmed = confirm("Are you sure you want to delete this item?");
+
+      // 2. If they click Cancel, kill the event completely
+      if (!confirmed) {
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+      }
+    }
     if(entity_name=='back_link') {
       site_back=true;
       history.back();

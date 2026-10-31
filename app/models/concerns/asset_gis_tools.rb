@@ -16,15 +16,15 @@ module AssetGisTools
     xyarr = RGeo::CoordSys::Proj4.transform_coords(fromproj, toproj, x, y)
   end
 
-  def check_for_minor(area,section)
-    #size
-    return true if area<100000 #10ha
+  def check_for_minor(area, section)
+    # size
+    return true if area<100000 # 10ha
     return true if [
-      's.23 - Local Purpose Reserve',
-      's.22 - Government Purpose Reserve',
-      's.24(3) - Fixed Marginal Strip',
+      "s.23 - Local Purpose Reserve",
+      "s.22 - Government Purpose Reserve",
+      "s.24(3) - Fixed Marginal Strip"
     ].include?(section)
-    return false
+    false
   end
 
   # Get a 'location' for a park from a boundary.  By default return the

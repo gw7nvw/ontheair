@@ -10,7 +10,7 @@ class MigrationMailer < ActionMailer::Base
       to: user_email,
       subject: "Upcoming changes at ParksNPeaks.org",
       body: html_content,
-      content_type: 'text/html'
+      content_type: "text/html"
     )
   end
 end

@@ -34,7 +34,7 @@ class Post < ActiveRecord::Base
   end
 
   def assign_operating_conditions
-    if self.callsign 
+    if self.callsign
       self.is_portable = true if self.callsign.upcase.match(/\/P$/)
       self.is_qrp = true if self.callsign.upcase.match(/\/QRP$/)
       self.is_mobile = true if self.callsign.upcase.match(/\/M$/)
@@ -91,7 +91,7 @@ class Post < ActiveRecord::Base
   end
 
   def add_map_image
-    map_image = MapImageService.generate_matrix(self.asset_codes, 'raw')
+    map_image = MapImageService.generate_matrix(self.asset_codes, "raw")
 
     # 2. Wrap the binary string in an in-memory IO stream buffer
     image_io = StringIO.new(map_image)
@@ -187,7 +187,7 @@ class Post < ActiveRecord::Base
     if user && (user.logs_pota == false) then newcodes = newcodes.reject { |code| Asset.get_asset_type_from_code(code) == "pota park" } end
     if user && (user.logs_wwff == false) then newcodes = newcodes.reject { |code| Asset.get_asset_type_from_code(code) == "wwff park" } end
 
-    #check we heven't deleted the original spotted codes
+    # check we heven't deleted the original spotted codes
     newcodes = (newcodes + asset_codes).uniq
 
     # check we haven't added illegal nfers
@@ -204,7 +204,7 @@ class Post < ActiveRecord::Base
         end
       end
     end
-    
+
     newcodes
   end
 
@@ -215,7 +215,7 @@ class Post < ActiveRecord::Base
       result = true
       messages = ""
       return { result: success, messages: "" } if do_not_publish == true
-    
+
       if topic && topic.is_spot
         # SPOT
         assets.each do |ac|
@@ -254,18 +254,18 @@ class Post < ActiveRecord::Base
             matched = true
           end
           next unless (result == false) || (matched == false)
-#          puts "DEBUG: send " + ac + " to PnP"
-#          pnp_response = Post.send_to_pnp(debug, ac, callsign, freq, mode, description, topic, idate, itime, tzname, self.updated_by_name)
-#          result = (result && pnp_response[:result])
-#          messages += pnp_response[:messages]
+          #          puts "DEBUG: send " + ac + " to PnP"
+          #          pnp_response = Post.send_to_pnp(debug, ac, callsign, freq, mode, description, topic, idate, itime, tzname, self.updated_by_name)
+          #          result = (result && pnp_response[:result])
+          #          messages += pnp_response[:messages]
         end
       else
-#        # ALERT so only send to PNP
-#        assets.each do |ac|
-#          pnp_response = Post.send_to_pnp(debug, ac, callsign, freq, mode, description, topic, idate, itime, tzname, self.updated_by_name)
-#          result = (result && pnp_response[:result])
-#          messages += pnp_response[:messages]
-#        end
+        #        # ALERT so only send to PNP
+        #        assets.each do |ac|
+        #          pnp_response = Post.send_to_pnp(debug, ac, callsign, freq, mode, description, topic, idate, itime, tzname, self.updated_by_name)
+        #          result = (result && pnp_response[:result])
+        #          messages += pnp_response[:messages]
+        #        end
       end
     end
     { result: result, messages: messages }
@@ -632,18 +632,18 @@ class Post < ActiveRecord::Base
       pnp_class = Asset.get_pnp_class_from_code(code)
       if pnp_class && (pnp_class != "")
         puts "sending alert to PnP"
-#        params = { "actClass" => pnp_class, "actCallsign" => callsign, "actSite" => code, "actMode" => mode.strip, "actFreq" => freq.strip, "actComments" => PostsHelper.convert_to_text(description.to_s), "userID" => "ZLOTA", "APIKey" => "4DDA205E08D2", "alDate" => tt ? tt.strftime("%Y-%m-%d") : "", "alTime" => tt ? tt.strftime("%H:%M") : "", "optDay" => dayflag ? "1" : "0" }
-#        uri = URI("http://parksnpeaks.org/api/ALERT" + dbtext)
-#        http = Net::HTTP.new(uri.host, uri.port)
-#        req = Net::HTTP::Post.new(uri.path, "Content-Type" => "application/json", "User-Agent" => "ontheair.nz")
-#        req.body = params.to_json
-#        begin
-#          response = http.request(req)
-#        rescue StandardError
-#          messages = "Failed to contact PnP server"
-#        else
-#          messages = "Sent to PnP; "
-#        end
+        #        params = { "actClass" => pnp_class, "actCallsign" => callsign, "actSite" => code, "actMode" => mode.strip, "actFreq" => freq.strip, "actComments" => PostsHelper.convert_to_text(description.to_s), "userID" => "ZLOTA", "APIKey" => "4DDA205E08D2", "alDate" => tt ? tt.strftime("%Y-%m-%d") : "", "alTime" => tt ? tt.strftime("%H:%M") : "", "optDay" => dayflag ? "1" : "0" }
+        #        uri = URI("http://parksnpeaks.org/api/ALERT" + dbtext)
+        #        http = Net::HTTP.new(uri.host, uri.port)
+        #        req = Net::HTTP::Post.new(uri.path, "Content-Type" => "application/json", "User-Agent" => "ontheair.nz")
+        #        req.body = params.to_json
+        #        begin
+        #          response = http.request(req)
+        #        rescue StandardError
+        #          messages = "Failed to contact PnP server"
+        #        else
+        #          messages = "Sent to PnP; "
+        #        end
       end
     end
     if topic.is_spot
@@ -651,20 +651,20 @@ class Post < ActiveRecord::Base
       code = code.delete("[")
       pnp_class = Asset.get_pnp_class_from_code(code)
       if pnp_class && (pnp_class != "")
-#        params = { "actClass" => pnp_class, "actCallsign" => (callsign || updated_by_name), "actSite" => code, "mode" => mode.strip, "freq" => freq.strip, "comments" => PostsHelper.convert_to_text(description.to_s), "userID" => "ZLOTA", "APIKey" => "4DDA205E08D2" }
-#        puts "sending spot to PnP"
-#        uri = URI("http://parksnpeaks.org/api/SPOT" + dbtext)
-#        puts "DEBUG: http://parksnpeaks.org/api/SPOT" + dbtext
-#        http = Net::HTTP.new(uri.host, uri.port)
-#        req = Net::HTTP::Post.new(uri.path, "Content-Type" => "application/json", "User-Agent" => "ontheair.nz")
-#        req.body = params.to_json
-#        begin
-#          response = http.request(req)
-#        rescue StandardError
-#          messages = "Failed to contact PnP server"
-#        else
-#          messages = "Sent to PnP; "
-#        end
+        #        params = { "actClass" => pnp_class, "actCallsign" => (callsign || updated_by_name), "actSite" => code, "mode" => mode.strip, "freq" => freq.strip, "comments" => PostsHelper.convert_to_text(description.to_s), "userID" => "ZLOTA", "APIKey" => "4DDA205E08D2" }
+        #        puts "sending spot to PnP"
+        #        uri = URI("http://parksnpeaks.org/api/SPOT" + dbtext)
+        #        puts "DEBUG: http://parksnpeaks.org/api/SPOT" + dbtext
+        #        http = Net::HTTP.new(uri.host, uri.port)
+        #        req = Net::HTTP::Post.new(uri.path, "Content-Type" => "application/json", "User-Agent" => "ontheair.nz")
+        #        req.body = params.to_json
+        #        begin
+        #          response = http.request(req)
+        #        rescue StandardError
+        #          messages = "Failed to contact PnP server"
+        #        else
+        #          messages = "Sent to PnP; "
+        #        end
       end
     end
     if response && (response != "")

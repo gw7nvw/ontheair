@@ -158,8 +158,9 @@ else
   resources :asset_web_links, only: [ :create ]
   get "asset_web_links/:id/delete", to: "asset_web_links#delete"
 
-  resources :assets, only: [ :index, :show, :edit, :new, :create, :update, :destroy ]
+  resources :assets, only: [ :index, :show, :edit, :new, :create, :update ]
   match "/assets/:id/associations", to: "assets#associations", via: "get"
+  match "/assets/:id/delete", to: "assets#destroy", via: "get"
   match "/assets/:id/map_associate", to: "assets#map_associate", via: "get"
   match "/assets/:id/find_poly", to: "assets#map_find_poly", via: "get"
   match "/assets/:id/poly_by_id", to: "assets#map_poly_by_id", via: "get"
@@ -174,6 +175,7 @@ else
   get "assets/:id/refresh_pota", to: "assets#refresh_pota"
 
   resources :awards, only: [ :index, :show, :edit, :new, :create, :update, :destroy ]
+  match "/awards/:id/destroy", to: "awards#destroy", via: "get"
 
   resources :callsigns, only: [ :create, :edit, :update ]
   get "callsigns/:id/delete", to: "callsigns#delete"
@@ -182,8 +184,8 @@ else
   resources :mode_mappings, only: [ :index, :edit, :update, :create ]
   get "mode_mappings/:id/delete", to: "mode_mappings#delete"
 
-# template: [:index, :show, :new, :create, :edit, :update, :destroy]
-  resources :comments, only: [:index, :show, :new, :create, :edit, :update, :destroy]
+  # template: [:index, :show, :new, :create, :edit, :update, :destroy]
+  resources :comments, only: [ :index, :show, :new, :create, :edit, :update, :destroy ]
   get "comments/:id/delete", to: "comments#destroy"
 
   resources :contacts, only: [ :index, :show, :new, :create ]
@@ -209,7 +211,7 @@ else
 
   get "logs/upload", to: "logs#upload" # log uploads
   post "logs/upload", to: "logs#savefile" # log uploads
-  resources :logs, only: [:index, :show, :new, :create, :edit, :update]
+  resources :logs, only: [ :index, :show, :new, :create, :edit, :update ]
   get "logs/:id/delete", to: "logs#delete"
 
   match "/logs/:id/save", to: "logs#save", as: "log_save_data", via: "post" # spreadsheet editor
@@ -238,7 +240,7 @@ else
   resources :sessions, only: [ :new, :create, :destroy ]
   # resources :qsl, only: [:show] #not currently active
 
-  resources :users, only: [:index, :show, :new, :create, :edit, :update, :destroy]
+  resources :users, only: [ :index, :show, :new, :create, :edit, :update, :destroy ]
   get "users/:id/assets", to: "users#assets"
   get "users/:id/wishlist", to: "users#wishlist"
   get "users/:id/test_notification", to: "users#test_notification"
@@ -250,10 +252,11 @@ else
   get "users/:id/p2p", to: "users#p2p"
   get "users/:id/add", to: "users#add"
   get "users/:id/delete", to: "users#delete"
+  get "users/:id/destroy", to: "users#destroy"
   get "users/:id/set_external", to: "users#update_external"
   match "/signup",  to: "users#new",         via: "get"
 
-  resources :user_notification_links, only: [:new, :create, :edit, :update]
+  resources :user_notification_links, only: [ :new, :create, :edit, :update ]
   get "user_notification_links/:id/delete", to: "user_notification_links#delete"
 
   post "posts/sms", to: "posts#sms"
@@ -265,6 +268,7 @@ else
   get "photos/:id/delete", to: "photos#destroy"
 
   resources :topics, only: [ :index, :new, :create, :show, :edit, :update, :destroy ]
+  get "topics/:id/delete", to: "topics#destroy"
 
   # match '/queries/asset', to: 'queries#asset',    via:'get'
   resources :query, only: [ :index ]

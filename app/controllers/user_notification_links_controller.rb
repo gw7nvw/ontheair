@@ -1,5 +1,5 @@
 # typed: false
-    
+
 class UserNotificationLinksController < ApplicationController
   include ApplicationHelper
   include UserViewPreparer
@@ -12,7 +12,7 @@ class UserNotificationLinksController < ApplicationController
     end
     if !@user then
       flash[:error] = "Invalid user or notification record"
-      redirect_to '/'
+      redirect_to "/"
     else
       render "users/notifications"
     end
@@ -25,7 +25,7 @@ class UserNotificationLinksController < ApplicationController
     else
       @filter = UserNotificationLink.find_by(id: params[:id])
       @filter.assign_attributes(user_notification_link_params) if @filter
-      #disallow blank entries
+      # disallow blank entries
       cleaned_values = @filter.attributes
         .except("id", "created_at", "updated_at", "user_id", "priority")
         .values
@@ -60,7 +60,7 @@ class UserNotificationLinksController < ApplicationController
     else
       puts "THERE ***************************************"
       @filter = UserNotificationLink.new(user_notification_link_params)
-      #disallow blank entries
+      # disallow blank entries
       # Flatten nested arrays and remove empty strings/nils
       cleaned_values = @filter.attributes
         .except("id", "created_at", "updated_at", "user_id", "priority")
@@ -107,8 +107,6 @@ class UserNotificationLinksController < ApplicationController
   private
 
   def user_notification_link_params
-    params.require(:user_notification_link).permit(:id, :user_id, :activator_callsign, :code, :priority, continents: [], modes: [], bands: [], spot_types: [] )
+    params.require(:user_notification_link).permit(:id, :user_id, :activator_callsign, :code, :priority, continents: [], modes: [], bands: [], spot_types: [])
   end
-
 end
-

@@ -165,7 +165,7 @@ def self.fetch
       begin
         dups = ExternalAlert.where(starttime: alert[:starttime].tr("A-Z,a-z,[()]", "").strip, activatingCallsign: alert[:activatingCallsign], code: alert[:code], frequency: alert[:frequency], mode: alert[:mode], programme: alert[:programme])
         if !(dups && dups.count.positive?)
-           #puts "Creating alert: "+alert.to_json.to_s
+           # puts "Creating alert: "+alert.to_json.to_s
            result=ExternalAlert.create(alert)
            puts "ERROR: Create alert failed" if !result
         end
@@ -178,9 +178,9 @@ def self.fetch
     # tidy up
     oneweekago=Time.at(Time.now.to_i - 60 * 60 * 24 * 7).in_time_zone("UTC").to_s
 
-    if ENV["RAILS_ENV"]!='test'
+    if ENV["RAILS_ENV"]!="test"
       puts "PURGING OLD ALERTS"
-      ActiveRecord::Base.connection.execute("delete from external_alerts where starttime + (duration::float * interval '1 hour') < '#{oneweekago}'"); puts "PURGING" if ENV["RAILS_ENV"]!='test'
+      ActiveRecord::Base.connection.execute("delete from external_alerts where starttime + (duration::float * interval '1 hour') < '#{oneweekago}'"); puts "PURGING" if ENV["RAILS_ENV"]!="test"
     end
 
   @all_alerts

@@ -58,7 +58,7 @@ class TopicsController < ApplicationController
             render "edit"
           end
       else
-        redirect_to '/'
+        redirect_to "/"
       end
   end
 

@@ -33,14 +33,16 @@ class CommentsController < ApplicationController
   def destroy
     if signed_in?
       @comment = Comment.find_by_id(params[:id])
-      code = @comment.code
+      code = @comment.code if @comment
       if @comment && (current_user.is_admin || (current_user.id == @comment.updated_by_id))
         if @comment.destroy
           flash[:success] = "Comment deleted, id:" + params[:id]
           if code
-            redirect_to "/assets/" + code.tr("/", "_")
+            redirect_to "/assets/" + code.tr("/", "_"), status: :see_other
+            nil
           else
-            redirect_to "/comments"
+            redirect_to "/comments", status: :see_other
+            nil
           end
         else
           flash[:error] = "Failed to delete comment"
@@ -49,11 +51,13 @@ class CommentsController < ApplicationController
         end
       else
         flash[:error] = "You do not have permissions to delete this comment"
-        redirect_to "/"
+        redirect_to "/", status: :see_other
+        nil
       end
     else
       flash[:error] = "Failed to delete comment"
-      redirect_to "/"
+      redirect_to "/", status: :see_other
+      nil
     end
   end
 
@@ -69,19 +73,24 @@ class CommentsController < ApplicationController
 
             # Handle a successful update.
             if @comment.code
-              redirect_to "/assets/" + @comment.code.tr("/", "_")
+              redirect_to "/assets/" + @comment.code.tr("/", "_"), status: :see_other
+              nil
             else
               render "show"
+              nil
             end
           else
             render "edit"
+            nil
           end
       else
         flash[:error] = "You do not have permissions to update this comment"
         redirect_to "/assets/" + @comment.code.tr("/", "_")
+        nil
       end # do we have permissions
     else
-      redirect_to "/"
+      redirect_to "/", status: :see_other
+      nil
     end # signed in
   end
 
@@ -95,7 +104,8 @@ class CommentsController < ApplicationController
         @edit = true
 
         if @comment.code
-          redirect_to "/assets/" + @comment.code.tr("/", "_")
+          redirect_to "/assets/" + @comment.code.tr("/", "_"), status: :see_other
+          nil
         else
           render "show"
         end
@@ -106,7 +116,7 @@ class CommentsController < ApplicationController
         render "new"
       end
     else
-      redirect_to "/"
+      redirect_to "/", status: :see_other
     end
   end
 

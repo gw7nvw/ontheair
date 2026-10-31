@@ -53,7 +53,8 @@ class PhotosController < ApplicationController
 
         if @image.destroy
           flash[:success] = "Image deleted, id:" + params[:id]
-          redirect_to "/topics/" + topic.id.to_s
+          redirect_to "/topics/" + topic.id.to_s, status: :see_other
+          nil
         else
           flash[:error] = "Failed to delete image"
           edit
@@ -61,7 +62,7 @@ class PhotosController < ApplicationController
         end
       else
         flash[:error] = "Failed to delete image"
-        redirect_to "/"
+        redirect_to "/", status: :see_other
       end
     else
       flash[:error] = "Failed to delete image"
@@ -96,7 +97,7 @@ class PhotosController < ApplicationController
           render "show"
       else
         flash[:error] = "Sorry - you don't have permissions to post to this topic"
-        redirect_to "/"
+        redirect_to "/", status: :see_other
       end # do we have permissions
     else
       redirect_to "/"
@@ -138,7 +139,7 @@ class PhotosController < ApplicationController
         render "new"
       end
     else
-      redirect_to "/"
+      redirect_to "/", status: :see_other
     end
   end
 

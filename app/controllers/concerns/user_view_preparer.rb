@@ -3,10 +3,10 @@ module UserViewPreparer
 
   private
   def prepare_user_show_data(user_id)
-    #if we were passed an integer
+    # if we were passed an integer
     @user = User.find_by(id: user_id)
     @user = User.find_by(callsign: user_id) if !@user
-    if !@user 
+    if !@user
       users = UserCallsign.where(callsign: user_id)
       if users && (users.count > 0)
         @user = users.first.user

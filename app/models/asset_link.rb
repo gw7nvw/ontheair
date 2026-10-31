@@ -36,8 +36,7 @@ class AssetLink < ActiveRecord::Base
   end
 
   def self.find_equivalent(code)
-    als = AssetLink.find_by_sql [ "select al1.* from asset_links al1 inner join asset_links al2 on al2.containing_code = al1.contained_code and al2.contained_code = al1.containing_code where al1.contained_code = ?", code]
+    als = AssetLink.find_by_sql [ "select al1.* from asset_links al1 inner join asset_links al2 on al2.containing_code = al1.contained_code and al2.contained_code = al1.containing_code where al1.contained_code = ?", code ]
     als.pluck(:containing_code)
   end
-
 end

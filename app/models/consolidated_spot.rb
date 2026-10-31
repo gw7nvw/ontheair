@@ -2,7 +2,7 @@ class ConsolidatedSpot < ActiveRecord::Base
   include MapHelper
 
   before_save { before_save_actions }
-  after_commit :trigger_notifications, on: [:create, :update]
+  after_commit :trigger_notifications, on: [ :create, :update ]
 
   def before_save_actions
      add_band
@@ -22,8 +22,8 @@ class ConsolidatedSpot < ActiveRecord::Base
         dxccs = DxccPrefix.find_by(prefix: "VK") if !dxccs and reference.match(/^VK-.*/)
         # ILLW
         dxccs = DxccPrefix.find_by("'#{reference}' like concat(iso_code,'0%%')") if !dxccs
-        if dxccs 
-          self.dxcc = dxccs.prefix 
+        if dxccs
+          self.dxcc = dxccs.prefix
           self.continent = dxccs.continent_code
         end
       end
@@ -181,19 +181,19 @@ SQL
   def trigger_notifications
     puts "Processing notifications for #{self.to_json}"
     # 1. Determine if this was a brand-new insert or an update
-    # transaction_include_any_action?(:create) is the foolproof Rails way 
+    # transaction_include_any_action?(:create) is the foolproof Rails way
     # to detect a true INSERT state within an after_commit callback.
-    is_new_record = transaction_include_any_action?([:create])
+    is_new_record = transaction_include_any_action?([ :create ])
 
     # 2. For updates, confirm that significant data actually changed.
     # If a user just updates an unrelated admin flag or timestamp, we don't spam notifications.
     if !is_new_record
-      significant_fields = ['frequency', 'mode', 'code', 'activatorCallsign']
-      changed_fields = (significant_fields & saved_changes.keys) 
+      significant_fields = [ "frequency", "mode", "code", "activatorCallsign" ]
+      changed_fields = (significant_fields & saved_changes.keys)
       return unless changed_fields.any?
 
       # No notifications if frequency stays within the KHz
-      if changed_fields==['frequency'] and saved_change_to_frequency
+      if changed_fields==[ "frequency" ] and saved_change_to_frequency
         old_frequency, new_frequency = saved_change_to_frequency
         return if old_frequency.to_d.truncate(3)!=new_frequency.to_d.truncate(3)
       end

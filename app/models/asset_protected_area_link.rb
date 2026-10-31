@@ -6,14 +6,14 @@ class AssetProtectedAreaLink < ActiveRecord::Base
   def self.seed_from_assets
     AssetProtectedAreaLink.destroy_all
 
-    assets = Asset.where(asset_type: 'park').order(:name)
+    assets = Asset.where(asset_type: "park").order(:name)
     assets.each do |asset|
-      napalis_id=asset.old_code.gsub('ZLP/','')
+      napalis_id=asset.old_code.gsub("ZLP/", "")
       napalis_id = napalis_id.to_i if napalis_id
       if napalis_id>0
         asset.update_column(:name_id, napalis_id.to_s)
-        asset.update_column(:name_source, 'napalis')
-        begin 
+        asset.update_column(:name_source, "napalis")
+        begin
           AssetProtectedAreaLink.create(asset_code: asset.code, napalis_id: napalis_id)
         rescue
           dup = AssetProtectedAreaLink.find_by(napalis_id: napalis_id)

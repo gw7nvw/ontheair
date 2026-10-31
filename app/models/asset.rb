@@ -338,7 +338,7 @@ class Asset < ApplicationRecord
   # Virtual calculated fields
 
   def nb_code
-    code.gsub('-', "\u2011")
+    code.gsub("-", "\u2011")
   end
 
   def self.maidenhead_to_lat_lon(maidenhead)

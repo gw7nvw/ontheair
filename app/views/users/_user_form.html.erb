@@ -185,12 +185,8 @@
 
       <%= f.submit @submit_button, id: "submit", onclick: "signupHandler();", class: "btn btn-small btn-primary btn-highlight" %>
       <%  if(@submit_button == "Save Changes" and current_user and current_user.is_admin) %>
-           <%= button_to "Delete User",
-              user_path(@user),
-              method: :delete,
-              form: { onsubmit: "submitHandler(event,'delete');" },
-              data: { confirm: "Are you sure?" }, # If you want a quick native confirmation popup
-              class: "btn btn-danger" %>
+
+        <%=  link_to "Delete", "/users/#{@user.id}/destroy", class: "btn btn-danger", remote: true, :onclick => "linkHandler(event,'delete')" %>
       <% end %>
 
       <div class="erow"><small><i>By registering to this site you are agreeing to our privacy and security policy. Details are available on the <%=link_to 'Pricacy and Security Policy', '/topics/46', target: '_blank'%> page</i></small></div>

@@ -193,7 +193,7 @@ class PostsController < ApplicationController
     @post.referenced_time = t.to_time if @topic.is_spot
     @post.duration = 1 if @topic.is_alert
     @post.title = params[:title] if params[:title]
-    redirect_to "/" unless @topic
+    redirect_to "/", status: :see_other unless @topic
     if params[:op_id]
       op = Post.find_by_id(params[:op_id])
       if op
@@ -271,19 +271,22 @@ class PostsController < ApplicationController
 
         if @post.destroy
           flash[:success] = "Post deleted, id:" + params[:id]
-          redirect_to "/topics/" + topic.id.to_s
+          redirect_to "/topics/" + topic.id.to_s, status: :see_other
+          nil
         else
           flash[:error] = "Failed to delete post"
           edit
           render "edit"
+          nil
         end
       else
         flash[:error] = "Failed to delete post"
-        redirect_to "/"
+        redirect_to "/", status: :see_other
+        nil
       end
     else
       flash[:error] = "Failed to delete post"
-      redirect_to "/"
+      redirect_to "/", status: :see_other
     end
   end
 
@@ -346,10 +349,10 @@ class PostsController < ApplicationController
             render "edit"
           end
       else
-        redirect_to "/"
+        redirect_to "/", status: :see_other
       end # do we have permissions
     else
-      redirect_to "/"
+      redirect_to "/", status: :see_other
     end # signed in
   end
 
@@ -409,8 +412,8 @@ class PostsController < ApplicationController
       @post.is_mobile = true if @post.callsign.upcase.match(/\/M$/)
 
       suffix=""
-      suffix='/M' if @post.is_mobile
-      suffix='/P' if @post.is_portable
+      suffix="/M" if @post.is_mobile
+      suffix="/P" if @post.is_portable
 
       if !invalid && (debug || (!debug && @post.save))
         @post.add_map_image if @topic.is_spot || @topic.is_alert
@@ -429,7 +432,7 @@ class PostsController < ApplicationController
         flash[:success] = "Posted! "
         @edit = true
         if params[:pnp] == "on"
-          @post.do_not_publish = false #override if pnp specified
+          @post.do_not_publish = false # override if pnp specified
           success = @post.send_to_all(debug, current_user, @post.callsign+suffix, @post.asset_codes, @post.freq, @post.mode, @post.description, @topic, @post.referenced_date.strftime("%Y-%m-%d"), @post.referenced_time.strftime("%H:%M"), "UTC")
           puts "DEBUG: controller success: " + success.to_s
           flash[:error] = success[:messages] if success[:result] == false
@@ -449,7 +452,7 @@ class PostsController < ApplicationController
       end
     else
       puts "Topoic: " + @topic.to_s
-      redirect_to "/"
+      redirect_to "/", status: :see_other
     end
   end
 

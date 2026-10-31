@@ -166,7 +166,7 @@ class ApplicationController < ActionController::Base
   end
 
   def admin_user
-    redirect_to '/', notice: "You do not have permissions to access this page" unless current_user.is_admin
+    redirect_to "/", notice: "You do not have permissions to access this page" unless current_user.is_admin
   end
 
   def log_visit

@@ -1,21 +1,21 @@
-require 'mini_magick'
+require "mini_magick"
 include AssetGisTools
-require_dependency Rails.root.join('app', 'models', 'local_map_tile.rb')
+require_dependency Rails.root.join("app", "models", "local_map_tile.rb")
 
 class MapImageService
-  def self.generate_matrix(codes, format = 'base64')
+  def self.generate_matrix(codes, format = "base64")
     codes
     asset = Asset.get_most_accurate_location(codes)
-    location = asset[:location] if asset 
+    location = asset[:location] if asset
     return nil unless location
-   # if NZTM_LNG_RANGE.cover?(location.x) && NZTM_LAT_RANGE.cover?(location.y) 
-   #   a=generate_2193_matrix(location.x, location.y, 9, 3, 3) if location
-   # else
+      # if NZTM_LNG_RANGE.cover?(location.x) && NZTM_LAT_RANGE.cover?(location.y)
+      #   a=generate_2193_matrix(location.x, location.y, 9, 3, 3) if location
+      # else
       a=generate_3857_matrix(location.x, location.y, 9, 3, 3) if location
-   # end
-    if format=='base64' then
+    # end
+    if format=="base64" then
       image = Base64.strict_encode64(a)
-    else 
+    else
       image = a
     end
     image
@@ -41,7 +41,7 @@ class MapImageService
     puts int_x, minx, maxx
     puts int_y, miny, maxy
 
-    return matrix_tiles(xsize, ysize, zoom, minx, miny, maxx, maxy, offset_x, offset_y, tile_server, false)
+    matrix_tiles(xsize, ysize, zoom, minx, miny, maxx, maxy, offset_x, offset_y, tile_server, false)
   end
 
   def self.generate_2193_matrix(lng_deg, lat_deg, z, xsize, ysize)
@@ -71,20 +71,20 @@ class MapImageService
     offset_x = 512 - sx # apply direction / offset used in 'convert'
     offset_y = 256 + sy # apply direction / offset used in 'convert'
 
-    return matrix_tiles(xsize, ysize, z, minx, miny, maxx, maxy, offset_x, offset_y, tile_server, true)
+    matrix_tiles(xsize, ysize, z, minx, miny, maxx, maxy, offset_x, offset_y, tile_server, true)
   end
 end
   private
-  
+
   def download_tile(x, y, z, tile_server)
     # fill in reqired x, y, z to URL
 
     local_tile = ::LocalMapTile.find_by_sql [
     "SELECT tile_bytes FROM local_map_tiles WHERE z = ? AND x = ? AND y = ?",
-    z, x, y]
+    z, x, y ]
 
     if local_tile and local_tile.count>0
-      data = local_tile.first['tile_bytes']
+      data = local_tile.first["tile_bytes"]
     else
       url = tile_server.gsub("{x}", x.to_s).gsub("{y}", y.to_s).gsub("{z}", z.to_s)
       # download tile
@@ -96,7 +96,7 @@ end
           "Referer" => "http://new.ontheair.nz",
           "User-Agent" => "ontheair"
         ).read
-  
+
       rescue
         data = blank_tile()
       end
@@ -112,7 +112,7 @@ end
     end.to_blob
   end
 
-  def matrix_tiles(xsize, ysize, z, minx, miny, maxx, maxy, offset_x, offset_y, tile_server, reverse=true)
+  def matrix_tiles(xsize, ysize, z, minx, miny, maxx, maxy, offset_x, offset_y, tile_server, reverse = true)
   begin
     y_iterator = reverse ? (miny..maxy).reverse_each : (miny..maxy).each
     in_memory_images = []
@@ -122,14 +122,14 @@ end
         (minx..maxx).each do |x|
           puts "download_tile(#{x}, #{y}, #{z}, #{tile_server})"
           raw_binary_blob = download_tile(x, y, z, tile_server)
-        
+
           # INSTANTLY convert the binary string into a MiniMagick image buffer object
           image_buffer = MiniMagick::Image.read(raw_binary_blob)
-          
+
           # Track the object to keep its memory reference alive during this block execution
           in_memory_images << image_buffer
-          
-          # Pass the memory reference pointer string path (e.g. "/tmp/mini_magick2026...") 
+
+          # Pass the memory reference pointer string path (e.g. "/tmp/mini_magick2026...")
           # safely into the shell command array instead of passing raw binary content!
           m << image_buffer.path
         end
@@ -152,9 +152,9 @@ end
     end
 
     combined_image.to_blob
-#  rescue StandardError => e
-#    Rails.logger.error "MapImageService failed: #{e.message}"
-#    nil
+  #  rescue StandardError => e
+  #    Rails.logger.error "MapImageService failed: #{e.message}"
+  #    nil
   ensure
     # Clean up the memory files immediately from RAM/temp space once finished
     in_memory_images.each(&:destroy!) rescue nil

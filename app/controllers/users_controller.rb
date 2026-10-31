@@ -223,7 +223,7 @@ class UsersController < ApplicationController
     @user.hide_news_at = Time.now
 
     @user.read_only = true unless @user.valid_callsign?
-    @user.convert_location_params(params[:x],params[:y]) 
+    @user.convert_location_params(params[:x], params[:y])
     if @user.save
       @user.reload
       sign_in @user
@@ -267,7 +267,7 @@ class UsersController < ApplicationController
           render "edit"
         end
     else
-      redirect_to "/"
+      redirect_to "/", status: :see_other
     end
   end
 
@@ -279,7 +279,7 @@ class UsersController < ApplicationController
         @user = User.find_by_id(params[:id].to_i)
         @user.assign_attributes(user_database_params)
         puts "X: #{params[:user][:x]}, y: #{params[:user][:y]}"
-        @user.convert_location_params(params[:user][:x],params[:user][:y]) 
+        @user.convert_location_params(params[:user][:x], params[:user][:y])
         puts @user.location
         if password && !password.empty?
           @user.password = password
@@ -317,7 +317,7 @@ class UsersController < ApplicationController
           end
         end
     else
-      redirect_to "/"
+      redirect_to "/", status: :see_other
     end
   end
 

@@ -3,7 +3,6 @@ class CreateUserNotificationLinks < ActiveRecord::Migration[8.0]
     enable_extension 'pg_trgm' unless extension_enabled?('pg_trgm')
 
     create_table :user_notification_links do |t|
-
       t.integer :user_id, null: false
 
       # Exact match arrays (Defaulting to empty array to match your consolidated_spots pattern)
@@ -15,7 +14,7 @@ class CreateUserNotificationLinks < ActiveRecord::Migration[8.0]
       # Free-text wildcard columns (Stored uppercase in application layer)
       t.string :activator_callsign
       t.string :code
-      
+
       # Priority
       t.integer :priority, default: 0, null: false
 
@@ -23,11 +22,10 @@ class CreateUserNotificationLinks < ActiveRecord::Migration[8.0]
 
     # 2. Add an explicit foreign key or index on user_id for relational hygiene
     t.index :user_id
-
     end
     # 3. Add a multi-column GIN index for the multi-select array lookups
     add_index :user_notification_links,
-              [:continents, :bands, :modes, :spot_types],
+              [ :continents, :bands, :modes, :spot_types ],
               name: 'idx_unl_arrays',
               using: :gin
 

@@ -96,10 +96,10 @@ module AssetImportTools
     deleted_count=0
 
     need_resume = true if resume_at != nil
-    if dxcc=='AU' then
+    if dxcc=="AU" then
       urls = [ "https://api.pota.app/park/grids/-43/143/-39/149/0", "https://api.pota.app/park/grids/-23/113/-11/155/0", "https://api.pota.app/park/grids/-30/113/-23/135/0", "https://api.pota.app/park/grids/-30/135/-23/155/0", "https://api.pota.app/park/grids/-39/113/-35/135/0", "https://api.pota.app/park/grids/-39/135/-35/155/0", "https://api.pota.app/park/grids/-35/113/-30/155/0" ]
-    elsif dxcc=='NZ' then
-      urls = ['https://api.pota.app/park/grids/-47.5/165/-40/180/0', 'https://api.pota.app/park/grids/-40/165/-34/180/0', 'https://api.pota.app/park/grids/-55.0/165/-47.5/180/0', 'https://api.pota.app/park/grids/-45/-178/-42/-175/0']
+    elsif dxcc=="NZ" then
+      urls = [ "https://api.pota.app/park/grids/-47.5/165/-40/180/0", "https://api.pota.app/park/grids/-40/165/-34/180/0", "https://api.pota.app/park/grids/-55.0/165/-47.5/180/0", "https://api.pota.app/park/grids/-45/-178/-42/-175/0" ]
     end
 
     urls.each do |url|
@@ -166,11 +166,11 @@ module AssetImportTools
                     else
                       AdminTask.create(task_type: "error", affected_id: p.code, affected_table: "asset", description: "Failed to create new POTA site: #{p.to_json}")
                     end
-                    if dxcc=='AU'
+                    if dxcc=="AU"
                       result = p.find_vk_capad_park(silent)
                       p.reload
                       result2 = p.find_vk_state_park(silent) if !p.boundary
-                    elsif dxcc=='NZ'
+                    elsif dxcc=="NZ"
                       p.find_zlota_park(silent)
                     end
                     AdminTask.create(task_type: "action", affected_id: self.code, affected_table: "asset", affected_url: self.url, action_url: (self.url||"")+"/map_associate", description: "Could not auto-assign boundary, none found") if !p.boundary
@@ -1235,7 +1235,7 @@ module AssetImportTools
       if ignore == false
         puts "enter asset id to match: "
         res_code = gets
-        if res_code and res_code.length>0 
+        if res_code and res_code.length>0
           zps = Asset.where(code: res_code.strip)
         else
           AdminTask.create(task_type: "action", affected_id: self.code, affected_table: "asset", affected_url: self.url, action_url: (self.url||"")+"/map_associate", description: "Could not auto-assign ZLP park boundary, none found")

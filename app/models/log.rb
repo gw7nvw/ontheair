@@ -82,7 +82,7 @@ class Log < ActiveRecord::Base
   def tidy_codes
     codes=[]
     self.asset_codes.each do |ac|
-      this_codes=ac.split(' ')
+      this_codes=ac.split(" ")
       this_codes.each do |this_code|
         codes << this_code.upcase&.strip if this_code
       end

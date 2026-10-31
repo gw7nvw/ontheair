@@ -16,26 +16,26 @@ test "should successfully fetch data from external APIs" do
 
   assert_equal 295, sota.count, "Expected 295 SOTA records"
   assert_equal sota.first.attributes.excluding([ "created_at", "updated_at", "id" ]),
-    {"starttime" => "2026-08-28 16:20:00.000000000 UTC +00:00".to_time, "activatingCallsign" => "EB2GKK/P", "code" => "EA2/NV-140", "name" => "Monteidorra, 831m, 2 pts", "frequency" => "14-cw", "comments" => "73! (de EB2GKK)", "mode" => nil, "programme" => "SOTA", "duration" => "1", "dxcc" => "EA", "continent" => "EU", "source" => nil, "source_id" => nil, "codes" => ["EA2/NV-140"]},
+    { "starttime" => "2026-08-28 16:20:00.000000000 UTC +00:00".to_time, "activatingCallsign" => "EB2GKK/P", "code" => "EA2/NV-140", "name" => "Monteidorra, 831m, 2 pts", "frequency" => "14-cw", "comments" => "73! (de EB2GKK)", "mode" => nil, "programme" => "SOTA", "duration" => "1", "dxcc" => "EA", "continent" => "EU", "source" => nil, "source_id" => nil, "codes" => [ "EA2/NV-140" ] },
     "Got correct 1st SOTA salwrt"
   assert_equal sota.last.attributes.excluding([ "created_at", "updated_at", "id" ]),
-    { "starttime" => "2028-12-01 12:00:00.000000000 UTC +00:00".to_time, "activatingCallsign" => "NG2E", "code" => "W4V/HB-008", "name" => "Cow Knob, 1230m, 10 pts", "frequency" => "20-cw, 40-cw, 146-fm", "comments" => " (de NG2E)", "mode" => nil, "programme" => "SOTA", "duration" => "1", "dxcc" => nil, "continent" => nil, "source" => nil, "source_id" => nil, "codes" => ["W4V/HB-008"] },
+    { "starttime" => "2028-12-01 12:00:00.000000000 UTC +00:00".to_time, "activatingCallsign" => "NG2E", "code" => "W4V/HB-008", "name" => "Cow Knob, 1230m, 10 pts", "frequency" => "20-cw, 40-cw, 146-fm", "comments" => " (de NG2E)", "mode" => nil, "programme" => "SOTA", "duration" => "1", "dxcc" => nil, "continent" => nil, "source" => nil, "source_id" => nil, "codes" => [ "W4V/HB-008" ] },
     "Got correct last SOTA spot"
 
   assert_equal wwff.count, 26, "Got 26 WWFF records"
   assert_equal wwff.first.attributes.excluding([ "created_at", "updated_at", "id" ]),
-    {"starttime" => "2026-08-01 10:00:00.000000000 UTC +00:00".to_time, "activatingCallsign" => "ZX2O", "code" => "PYFF-0362", "name" => "[PYFF-0362]", "frequency" => "40m, 20m, 17m, 15m, 12m, 10m", "comments" => " (de PY2TIM)", "mode" => "CW, FT8", "programme" => "WWFF", "duration" => "709.0", "dxcc" => "PY", "continent" => "SA", "source" => nil, "source_id" => nil, "codes" => ["PYFF-0362"]},
+    { "starttime" => "2026-08-01 10:00:00.000000000 UTC +00:00".to_time, "activatingCallsign" => "ZX2O", "code" => "PYFF-0362", "name" => "[PYFF-0362]", "frequency" => "40m, 20m, 17m, 15m, 12m, 10m", "comments" => " (de PY2TIM)", "mode" => "CW, FT8", "programme" => "WWFF", "duration" => "709.0", "dxcc" => "PY", "continent" => "SA", "source" => nil, "source_id" => nil, "codes" => [ "PYFF-0362" ] },
     "Got correct 1st WWFF spot"
   assert_equal wwff.last.attributes.excluding([ "created_at", "updated_at", "id" ]),
-    { "starttime" => "2026-09-08 13:00:00.000000000 UTC +00:00".to_time, "activatingCallsign" => "OU7M/P", "code" => "OZFF-0012", "name" => "[OZFF-0012]", "frequency" => "80m, 40m, 20m, 15m, 10m", "comments" => "EDR Fieldday - PSE RS(T) + Serie no (de OZ7AEI)", "mode" => "SSB, CW, FT8", "programme" => "WWFF", "duration" => "24.0", "dxcc" => "OZ", "continent" => "EU", "source" => nil, "source_id" => nil, "codes" => ["OZFF-0012"] },
+    { "starttime" => "2026-09-08 13:00:00.000000000 UTC +00:00".to_time, "activatingCallsign" => "OU7M/P", "code" => "OZFF-0012", "name" => "[OZFF-0012]", "frequency" => "80m, 40m, 20m, 15m, 10m", "comments" => "EDR Fieldday - PSE RS(T) + Serie no (de OZ7AEI)", "mode" => "SSB, CW, FT8", "programme" => "WWFF", "duration" => "24.0", "dxcc" => "OZ", "continent" => "EU", "source" => nil, "source_id" => nil, "codes" => [ "OZFF-0012" ] },
     "Got correct last WWFF spot"
 
   assert_equal pota.count, 100, "Got 100 POTA records"
   assert_equal pota.first.attributes.excluding([ "created_at", "updated_at", "id" ]),
-    { "starttime" => "2026-02-15 20:25:00.000000000 UTC +00:00".to_time, "activatingCallsign" => "K2AYE", "code" => "US-3812", "name" => "Fleming Wildlife Management Area", "frequency" => "20 meter", "comments" => "", "mode" => "", "programme" => "POTA", "duration" => "5686.566666666667", "dxcc" => "US", "continent" => "EU", "source" => nil, "source_id" => nil, "codes" => ["US-3812"] },
+    { "starttime" => "2026-02-15 20:25:00.000000000 UTC +00:00".to_time, "activatingCallsign" => "K2AYE", "code" => "US-3812", "name" => "Fleming Wildlife Management Area", "frequency" => "20 meter", "comments" => "", "mode" => "", "programme" => "POTA", "duration" => "5686.566666666667", "dxcc" => "US", "continent" => "EU", "source" => nil, "source_id" => nil, "codes" => [ "US-3812" ] },
     "Got correct 1st POTA spot"
   assert_equal pota.last.attributes.excluding([ "created_at", "updated_at", "id" ]),
-    { "starttime" => "2027-04-17 00:00:00.000000000 UTC +00:00", "activatingCallsign" => "N6EF", "code" => "US-3432", "name" => "Folsom Lake State Recreation Area", "frequency" => "40 to 10 CW, SSB, FT8", "comments" => "Camping for Support Your Parks weekend", "mode" => "", "programme" => "POTA", "duration" => "40.0", "dxcc" => "US", "continent" => "EU", "source" => nil, "source_id" => nil, "codes" => ["US-3432"]},
+    { "starttime" => "2027-04-17 00:00:00.000000000 UTC +00:00", "activatingCallsign" => "N6EF", "code" => "US-3432", "name" => "Folsom Lake State Recreation Area", "frequency" => "40 to 10 CW, SSB, FT8", "comments" => "Camping for Support Your Parks weekend", "mode" => "", "programme" => "POTA", "duration" => "40.0", "dxcc" => "US", "continent" => "EU", "source" => nil, "source_id" => nil, "codes" => [ "US-3432" ] },
     "Got correct last POTA spot"
 
   # check repull does not trigger duplicates
@@ -62,7 +62,7 @@ test "should include local alerts" do
     ea = ExternalAlert.import_hota_alerts(hota_alerts)
 
     assert_equal ea.first.attributes.excluding([ "created_at", "updated_at", "id" ]),
-      { "starttime" => t1, "activatingCallsign" => user2.callsign, "code" => asset1.code, "name" => "#{asset1.name} [#{asset1.code}] {}; #{asset2.name} [#{asset2.code}] {}", "frequency" => "7.09", "comments" => "This is a comment", "mode" => "SSB", "programme" => "ZLOTA", "duration" => "1", "dxcc" => "ZL", "continent" => "OC", "source" => nil, "source_id" => nil, "codes" => [asset1.code, asset2.code] },
+      { "starttime" => t1, "activatingCallsign" => user2.callsign, "code" => asset1.code, "name" => "#{asset1.name} [#{asset1.code}] {}; #{asset2.name} [#{asset2.code}] {}", "frequency" => "7.09", "comments" => "This is a comment", "mode" => "SSB", "programme" => "ZLOTA", "duration" => "1", "dxcc" => "ZL", "continent" => "OC", "source" => nil, "source_id" => nil, "codes" => [ asset1.code, asset2.code ] },
     "External alerts list internal alert"
 end
 end

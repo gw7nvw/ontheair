@@ -7,7 +7,7 @@ namespace :resque do
     # This hook forces your worker sub-processes to load the full Rails
     # environment, giving your jobs full access to ActiveRecord and PostGIS models!
     ENV["QUEUE"] ||= "*"
-    require 'resque'
+    require "resque"
   end
 
   task scheduler: :setup

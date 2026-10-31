@@ -13,7 +13,7 @@ class AssetsController < ApplicationController
     @asset=Asset.find_by(code: params[:id].gsub("_", "/"))
     if @asset.nil?
       flash[:error] = "Sorry - " + code + " does not exist in our database"
-      redirect_to "/assets"
+      redirect_to "/assets", status: :see_other
       true
     else
       @newchild=AssetLink.new
@@ -25,14 +25,14 @@ class AssetsController < ApplicationController
   def map_associate
     if !signed_in? || !(current_user.is_web_admin || current_user.is_admin)
       flash[:error] = "You do not have permissions to modify this asset"
-      redirect_to "/assets"
+      redirect_to "/assets", status: :see_other
     else
       @items=[]
       @asset=Asset.find_by(code: params[:id].gsub("_", "/"))
       @item = Asset.new if !@item
       if @asset.nil?
         flash[:error] = "Sorry - " + code + " does not exist in our database"
-        redirect_to "/assets"
+        redirect_to "/assets", status: :see_other
       return true
       end
       @datasources=DataSource.all.pluck(:name).sort
@@ -69,7 +69,7 @@ class AssetsController < ApplicationController
   def map_find_poly
     if !signed_in? || !(current_user.is_web_admin || current_user.is_admin)
       flash[:error] = "You do not have permissions to modify this asset"
-      redirect_to "/assets"
+      redirect_to "/assets", status: :see_other
     else
       @items=[]
       @asset=Asset.find_by(code: params[:id].gsub("_", "/"))
@@ -103,7 +103,7 @@ class AssetsController < ApplicationController
   def map_apply_poly
     if !signed_in? || !(current_user.is_web_admin || current_user.is_admin)
       flash[:error] = "You do not have permissions to modify this asset"
-      redirect_to "/assets"
+      redirect_to "/assets", status: :see_other
     else
       @items=[]
       @asset=Asset.find_by(code: params[:id].gsub("_", "/"))
@@ -220,7 +220,7 @@ class AssetsController < ApplicationController
       end
     end
     if params[:referring] == "wishlist" then
-      redirect_to "/users/"+user.callsign+"/wishlist"
+      redirect_to "/users/"+user.callsign+"/wishlist", status: :see_other
     else
       show
       render "show"
@@ -398,14 +398,14 @@ class AssetsController < ApplicationController
           index_prep
           render "index"
         else
-          redirect_to "/assets/" + @asset.safecode
+          redirect_to "/assets/" + @asset.safecode, status: :see_other
         end
       else
         render "new"
       end
     else
       flash[:error] = "You do not have permissions to create a new asset"
-      redirect_to "/assets"
+      redirect_to "/assets", status: :see_other
     end
   end
 
@@ -414,26 +414,26 @@ class AssetsController < ApplicationController
     if signed_in? && current_user.is_modifier
         asset = Asset.find_by_id(params[:id])
         if asset
-          als = AssetLink.where(contained_code: asset.code) 
+          als = AssetLink.where(contained_code: asset.code)
           als.destroy_all
           als = AssetLink.where(containing_code: asset.code)
           als.destroy_all
           als = AssetWebLink.where(asset_code: asset.code)
           als.destroy_all
         end
-  
+
         if asset && asset.destroy
           index_prep
           flash[:success] = "Asset deleted, id:" + params[:id]
-          redirect_to "/assets"
-        else 
-          edit 
+          redirect_to "/assets", status: :see_other
+        else
+          edit
           flash[:error] = "Failed to delete asset, id:" + params[:id]
           render "edit"
         end
     else
       flash[:error] = "You do not have permissions to update an asset"
-      redirect_to "/assets"
+      redirect_to "/assets", status: :see_other
     end
   end
 
@@ -445,7 +445,7 @@ class AssetsController < ApplicationController
         flash[:error] = "Asset not found: " + params[:id]
 
         # tried to update a nonexistant asset
-        redirect_to "/assets"
+        redirect_to "/assets", status: :see_other
       else
 
         @asset.assign_attributes(asset_params)
@@ -462,7 +462,7 @@ class AssetsController < ApplicationController
             index_prep
             render "index"
           else
-            redirect_to "/assets/" + @asset.safecode
+            redirect_to "/assets/" + @asset.safecode, status: :see_other
           end
         else
           render "edit"
@@ -470,7 +470,7 @@ class AssetsController < ApplicationController
       end
     else
       flash[:error] = "You do not have permissions to update an asset"
-      redirect_to "/assets"
+      redirect_to "/assets", status: :see_other
     end
   end
 
