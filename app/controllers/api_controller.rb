@@ -703,7 +703,7 @@ class ApiController < ApplicationController
     res = '"FALSE"'
     if api_authenticate(params)
       user = User.find_by(callsign: params[:userID].upcase)
-      user = User.find_by(pnp_username: params[:userID])
+      user = User.find_by(pnp_username: params[:userID]) if !user
       res='"TRUE"' if user
     end
     render plain: res
