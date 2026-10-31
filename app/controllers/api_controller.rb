@@ -291,6 +291,7 @@ class ApiController < ApplicationController
     user = User.find_by(callsign: params[:callsign].upcase, pin: params[:pin].upcase)
     # APIKey
     user = User.find_by(callsign: params[:callsign].upcase, pnp_APIKey: params[:pin]) if !user
+    user = User.find_by(pnp_username: params[:callsign], pnp_APIKey: params[:pin]) if !user
     # Password
     if !user
       user ||= User.find_by(callsign: params[:callsign].upcase)
