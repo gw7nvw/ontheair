@@ -703,6 +703,7 @@ class ApiController < ApplicationController
     res = '"FALSE"'
     if api_authenticate(params)
       user = User.find_by(callsign: params[:userID].upcase)
+      user = User.find_by(pnp_username: params[:userID])
       res='"TRUE"' if user
     end
     render plain: res
@@ -720,7 +721,7 @@ class ApiController < ApplicationController
     if params[:userID] && params[:APIKey]
       user=User.find_by(callsign: params[:userID].upcase, pin: params[:APIKey].upcase, activated: true)
       user=User.find_by(callsign: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase, pnp_imported: true) if !user
-      user=User.find_by(pnp_username: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase, pnp_imported: true) if !user
+      user=User.find_by(pnp_username: params[:userID], pnp_APIKey: params[:APIKey].upcase, pnp_imported: true) if !user
 
       valid = true if user
     end

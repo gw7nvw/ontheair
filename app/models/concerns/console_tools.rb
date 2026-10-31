@@ -10,7 +10,7 @@ module ConsoleTools
       # Define the precise landmass bounding boxes for Zoom 9
       if dxcc=="VK" then
         regions = [ { name: "Australia",   z: 9, x_range: (416..475), y_range: (270..325) } ]
-      elsif dxcc="ZL" then
+      elsif dxcc=="ZL" then
         regions = [ { name: "New Zealand", z: 9, x_range: (492..510), y_range: (307..334) } ]
       else
         puts "Unknown region #{dxcc}"
