@@ -89,14 +89,19 @@ module AssetImportTools
     AdminTask.create(task_type: "report", affected_table: "asset", description: "Updated #{dxccs} ILLW lighthouses. Read: #{read_count}, New: #{new_count}, Updated: #{updated_count}, Deleted: #{deleted_count}")
   end
 
-  def Asset.import_vk_pota(update = true, redraw = false, silent = false, resume_at = nil)
+  def Asset.import_pota(dxcc,  update = true, redraw = false, silent = false, resume_at = nil)
     read_count = 0
     new_count=0
     updated_count=0
     deleted_count=0
 
     need_resume = true if resume_at != nil
-    urls = [ "https://api.pota.app/park/grids/-43/143/-39/149/0", "https://api.pota.app/park/grids/-23/113/-11/155/0", "https://api.pota.app/park/grids/-30/113/-23/135/0", "https://api.pota.app/park/grids/-30/135/-23/155/0", "https://api.pota.app/park/grids/-39/113/-35/135/0", "https://api.pota.app/park/grids/-39/135/-35/155/0", "https://api.pota.app/park/grids/-35/113/-30/155/0" ]
+    if dxcc=='AU' then
+      urls = [ "https://api.pota.app/park/grids/-43/143/-39/149/0", "https://api.pota.app/park/grids/-23/113/-11/155/0", "https://api.pota.app/park/grids/-30/113/-23/135/0", "https://api.pota.app/park/grids/-30/135/-23/155/0", "https://api.pota.app/park/grids/-39/113/-35/135/0", "https://api.pota.app/park/grids/-39/135/-35/155/0", "https://api.pota.app/park/grids/-35/113/-30/155/0" ]
+    elsif dxcc=='NZ' then
+      urls = ['https://api.pota.app/park/grids/-47.5/165/-40/180/0', 'https://api.pota.app/park/grids/-40/165/-34/180/0', 'https://api.pota.app/park/grids/-55.0/165/-47.5/180/0', 'https://api.pota.app/park/grids/-45/-178/-42/-175/0']
+    end
+
     urls.each do |url|
       data = nil
       data = fetch_external_url(url)
@@ -118,7 +123,7 @@ module AssetImportTools
         ref = properties["reference"]
         need_resume = false if need_resume and resume_at == properties["reference"]
         if !need_resume then
-          if ref[0..1]=="AU"
+          if ref[0..1]==dxcc
             p = Asset.find_by(code: properties["reference"])
             new = false
             unless p
@@ -161,9 +166,13 @@ module AssetImportTools
                     else
                       AdminTask.create(task_type: "error", affected_id: p.code, affected_table: "asset", description: "Failed to create new POTA site: #{p.to_json}")
                     end
-                    result = p.find_vk_capad_park(silent)
-                    p.reload
-                    result2 = p.find_vk_state_park(silent) if !p.boundary
+                    if dxcc=='AU'
+                      result = p.find_vk_capad_park(silent)
+                      p.reload
+                      result2 = p.find_vk_state_park(silent) if !p.boundary
+                    elsif dxcc=='NZ'
+                      p.find_zlota_park(silent)
+                    end
                     AdminTask.create(task_type: "action", affected_id: self.code, affected_table: "asset", affected_url: self.url, action_url: (self.url||"")+"/map_associate", description: "Could not auto-assign boundary, none found") if !p.boundary
                   end
                 end
@@ -1185,7 +1194,7 @@ module AssetImportTools
     end
   end
 
-  def Asset.find_zlota_park(ignore = false)
+  def find_zlota_park(ignore = false)
     searchname = self.name.gsub("'", "''")
     zps = Asset.find_by_sql [ " select id, name, code, asset_type, location from assets where asset_type='park' and name='#{searchname}' and is_active=true" ]
     if !zps || zps.count.zero?
@@ -1226,7 +1235,11 @@ module AssetImportTools
       if ignore == false
         puts "enter asset id to match: "
         res_code = gets
-        zps = Asset.where(code: res_code.strip)
+        if res_code and res_code.length>0 
+          zps = Asset.where(code: res_code.strip)
+        else
+          AdminTask.create(task_type: "action", affected_id: self.code, affected_table: "asset", affected_url: self.url, action_url: (self.url||"")+"/map_associate", description: "Could not auto-assign ZLP park boundary, none found")
+        end
       else
         AdminTask.create(task_type: "action", affected_id: self.code, affected_table: "asset", affected_url: self.url, action_url: (self.url||"")+"/map_associate", description: "Could not auto-assign ZLP park boundary, none found")
       end
