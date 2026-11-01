@@ -5,9 +5,9 @@
     <% count += 1 %>
       <tr>
         <td rowspan=2><% spot[:spot_type].uniq.each do |st| %><%if st=="ZLOTA" then %><b><%=st%></b><% else %><%=st%> <% end %> <br/> <% end %> <%if spot[:is_qrp] then %> QRP <br/> <%end%> <%if spot[:post_id] and spot[:post_id].count>0 then %><%=link_to 'View','/topics/35?post='+(-spot[:post_id].last).to_s,remote: true,  :id => 'view', :onclick => "linkHandler(event,'view')"%><% end %></td>
-        <td><%if spot[:time] and spot[:time].last then %><%=spot[:time].last.to_time.in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=spot[:time].last.to_time.in_time_zone(@tz.name).strftime("%H:%M:%S")%></b> (<%=@tz.name%>)<% end %></td>
+        <td style='max-width: 150px'><%if spot[:time] and spot[:time].last then %><%=spot[:time].last.to_time.in_time_zone(@tz.name).strftime("%Y-%m-%d")%> <b><%=spot[:time].last.to_time.in_time_zone(@tz.name).strftime("%H:%M:%S")%></b></br> (<%=@tz.name%>)<% end %></td>
         <td><span style="white-space: nowrap;"><b><%=render :partial => 'callsign',  :locals => {:this_callsign => spot[:activatorCallsign]} %></b><%=render :partial => 'call_suffix',  :locals => {:item => spot} %></span></td>
-        <td>@ 
+        <td style='max-width: 100px'>@ 
           <% codes=spot[:code] %>
           <% if codes.kind_of?(Array)==false then codes=[codes] end %>
           <% validlink=false %>
@@ -24,6 +24,7 @@
               <% else %>
                 <%=code.upcase%>
               <% end %>
+              </br>  
             </span>
           <% end %>
         </td>
