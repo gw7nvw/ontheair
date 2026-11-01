@@ -59,6 +59,76 @@ class PostsControllerTest < ActionController::TestCase
     assert_select ".box_header", /#{make_regex_safe(asset2.codename)}/, "location"
   end
 
+  test "Comments, asset_codes or location mandatory for spot" do
+    sign_in users(:zl4nvw)
+    user1=User.find_by(callsign: "ZL4NVW")
+    asset1=create_test_asset(location: create_point(173.1, -43))
+    asset2=create_test_asset(location: create_point(173.1, -44))
+
+    get :new, params: { topic_id: SPOT_TOPIC }
+    assert_response :success
+
+    # This user uses non-UTC so display will be in localtime
+    thedate=Time.now
+    tz=Timezone.find_by_id(user1.timezone)
+    userdate=thedate.in_time_zone(tz.name)
+
+    # create post
+    post :create, params: { topic_id: SPOT_TOPIC, pnp: "off", post: { callsign: "ZL4TEST", freq: "7.090", mode: "AM"} }
+    assert_response :success
+    assert_select ".alert-error", /A spot must contain at least a description/, "Error message"
+
+
+    # show new post page
+    assert_select "#submit", { value: "Create Post" }
+  end
+
+
+  test "Frequency mandatory for non-QRT spot" do
+    sign_in users(:zl4nvw)
+    user1=User.find_by(callsign: "ZL4NVW")
+    asset1=create_test_asset(location: create_point(173.1, -43))
+    asset2=create_test_asset(location: create_point(173.1, -44))
+
+    get :new, params: { topic_id: SPOT_TOPIC }
+    assert_response :success
+
+    # This user uses non-UTC so display will be in localtime
+    thedate=Time.now
+    tz=Timezone.find_by_id(user1.timezone)
+    userdate=thedate.in_time_zone(tz.name)
+
+    # create post
+    post :create, params: { topic_id: SPOT_TOPIC, pnp: "off", post: { callsign: "ZL4TEST", mode: "AM", description: "Ad-hoc QRP activity"} }
+    assert_response :success
+    assert_select ".alert-error", /A spot must contain a frequency/, "Error message"
+
+
+    # show new post page
+    assert_select "#submit", { value: "Create Post" }
+  end
+
+
+  test "Frequency not mandatory for QRT spot" do
+    sign_in users(:zl4nvw)
+    user1=User.find_by(callsign: "ZL4NVW")
+    asset1=create_test_asset(location: create_point(173.1, -43))
+    asset2=create_test_asset(location: create_point(173.1, -44))
+
+    get :new, params: { topic_id: SPOT_TOPIC }
+    assert_response :success
+
+    # This user uses non-UTC so display will be in localtime
+    thedate=Time.now
+    tz=Timezone.find_by_id(user1.timezone)
+    userdate=thedate.in_time_zone(tz.name)
+
+    # create post
+    post :create, params: { topic_id: SPOT_TOPIC, pnp: "off", post: { callsign: "ZL4TEST", mode: "QRT", description: "Ad-hoc QRP activity"} }
+    assert_response :success
+    assert_select ".alert-success", /Posted/, "Success message"
+  end
+
   test "Can spot from asset" do
     sign_in users(:zl4nvw)
     user1=User.find_by(callsign: "ZL4NVW")
@@ -159,6 +229,30 @@ class PostsControllerTest < ActionController::TestCase
     assert_select ".box_header", /#{userdate.strftime("%Y-%m-%d %H:%M")}/, "date"
     assert_select ".box_header", /#{make_regex_safe(asset1.codename)}/, "location"
     assert_select ".box_header", /#{make_regex_safe(asset2.codename)}/, "location"
+  end
+
+  test "Alert requires location, description or asset-codes"  do
+    sign_in users(:zl4nvw)
+    user1=User.find_by(callsign: "ZL4NVW")
+    asset1=create_test_asset(location: create_point(173.1, -43))
+    asset2=create_test_asset(location: create_point(173.1, -44))
+
+    get :new, params: { topic_id: ALERT_TOPIC }
+    assert_response :success
+
+    thedate=Time.now
+    tz=Timezone.find_by_id(user1.timezone)
+    userdate=thedate.in_time_zone(tz.name)
+    # create post
+    post :create, params: { topic_id: ALERT_TOPIC, pnp: "off", post: { referenced_date: userdate.strftime("%Y-%m-%d"), referenced_time: userdate.strftime("%H:%M"), freq: "7.090", mode: "AM", duration: 1 } }
+    assert_response :success
+    put response.body
+    assert_select ".alert-error", /An alert must contain at least a description/, "Error message"
+
+
+    # show new post page
+    assert_select "#submit", { value: "Create Post" }
+
   end
 
   # TODO: edit spot, alert

@@ -321,32 +321,46 @@ class PostsController < ApplicationController
           if topic.is_alert
             @post.referenced_time = (params[:post][:referenced_date] + " " + params[:post][:referenced_time]).to_time.in_time_zone(@tz.name).in_time_zone("UTC").to_time
             @post.referenced_date = (params[:post][:referenced_date] + " " + params[:post][:referenced_time]).to_time.in_time_zone(@tz.name).in_time_zone("UTC").to_time
+            invalid, messages = validate_alert(@post)
+            errors += messages.join('; ') if messages
           end
 
-          @post.updated_by_id = current_user.id
-          if @post.save
-            isimage = @post.is_image
-            if isimage
-              @image = Image.new
-              @image.image = File.open(@post.image.path, "rb")
-              @image.post_id = @post.id
-              unless @image.save
-                flash[:error] = ""
-                @image.errors.full_messages.each do |e|
-                  flash[:error] += e
-                  puts e
+          if @topic.is_spot
+            invalid, messages = validate_spot(@post)
+            errors += messages.join('; ') if messages
+          end
+
+          if !invalid
+            @post.updated_by_id = current_user.id
+            if @post.save
+              isimage = @post.is_image
+              if isimage
+                @image = Image.new
+                @image.image = File.open(@post.image.path, "rb")
+                @image.post_id = @post.id
+                unless @image.save
+                  flash[:error] = ""
+                  @image.errors.full_messages.each do |e|
+                    flash[:error] += e
+                    puts e
+                  end
                 end
+                @post.image = nil
+                @post.save
               end
-              @post.image = nil
-              @post.save
+  
+              flash[:success] = "Post updated"
+  
+              # Handle a successful update.
+              render "show"
+            else
+              render "edit"
             end
-
-            flash[:success] = "Post updated"
-
-            # Handle a successful update.
-            render "show"
           else
-            render "edit"
+            errors = "Error creating post: " + errors
+            flash[:error] = errors
+            @edit = true
+            render "new"
           end
       else
         redirect_to "/", status: :see_other
@@ -395,6 +409,8 @@ class PostsController < ApplicationController
           t=(params[:post][:referenced_date] + " " + params[:post][:referenced_time]).to_time
           @post.referenced_time = Time.new.in_time_zone(@tz.name).change(year: t.year, month: t.month, day: t.day, hour: t.hour, min: t.min, sec: t.sec).in_time_zone("UTC").to_time
           @post.referenced_date = @post.referenced_time
+          invalid, messages = validate_alert(@post)
+          errors += messages.join('; ') if messages
         else
           invalid = true
           errors += "Date / time are required; "
@@ -404,6 +420,8 @@ class PostsController < ApplicationController
       if @topic.is_spot
         @post.referenced_time = Time.now
         @post.referenced_date = Time.now
+        invalid, messages = validate_spot(@post)
+        errors += messages.join('; ') if messages
       end
       @topic.last_updated = Time.now
 
@@ -460,5 +478,33 @@ class PostsController < ApplicationController
 
   def post_params
     params.require(:post).permit(:title, :description, :image, :do_not_publish, :duration, :is_hut, :is_park, :is_island, :is_summit, :site, :freq, :mode, :hut, :park, :island, :summit, :callsign, :asset_codes, :do_not_lookup)
+  end
+
+  def validate_spot(post)
+    messages = []
+    invalid = false
+    if post.description.blank? and post.asset_codes.blank? and post.location.blank?
+      messages << ["A spot must contain at least a description, a reference code or a location"]
+      invalid = true
+    end
+
+    if post.mode.upcase != "QRT" and post.freq.blank?
+      messages << ["A spot must contain a frequency, unless the mode is QRT"]
+      invalid = true
+    end
+
+    return invalid, messages
+  end
+
+  def validate_alert(post)
+    messages = []
+   nvalid = false 
+    if post.description.blank? and post.asset_codes.blank? and post.location.blank?
+      messages << ["An alert must contain at least a description, a reference code or a location"]
+
+      invalid = true
+    end
+ 
+    return invalid, messages
   end
 end

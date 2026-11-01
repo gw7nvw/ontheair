@@ -43,7 +43,7 @@ class Item < ActiveRecord::Base
         else
           sites = []
         end
-        summary = callsign + " spotted on " + ((self.end_item.freq && !self.end_item.freq.empty?) || (self.end_item.mode && !self.end_item.mode.empty?) ? self.end_item.freq + " - " + self.end_item.mode : "UNKNOWN") + " at " + (sites && sites.count.positive? ? sites.first + (if sites && (sites.count > 1) then " et al." else "" end) : "UNKNOWN")
+        summary = callsign + " spotted on " + (((self.end_item.freq && !self.end_item.freq.empty?) || (self.end_item.mode && !self.end_item.mode.empty?)) ? (self.end_item.freq||"UNKNOWN") + " - " + self.end_item.mode : "UNKNOWN") + " at " + (sites && sites.count.positive? ? sites.first + (if sites && (sites.count > 1) then " et al." else "" end) : "UNKNOWN")
 
       elsif self.topic.is_alert
         if self.end_item.site then
