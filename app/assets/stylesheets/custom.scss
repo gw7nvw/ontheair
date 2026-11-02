@@ -38,14 +38,14 @@ $lightblue: #4444ff;
 .spots-bar th,
 .spots-bar td {
   /* Scales down on small screens, expands up to a maximum of 10px */
-  padding: 6px 1.5vw;
+  padding: 6px 0.5%;
 }
 
 /* On standard/desktop screens, give it the full comfortable spacing */
 @media (min-width: 440px) {
   .spots-bar th,
   .spots-bar td {
-    padding: 6px;
+    padding: 10px;
   }
 }
 }
@@ -1131,11 +1131,11 @@ input {
 }
 .spot-table th:nth-child(2),
 .spot-table td:nth-child(2) {
-  min-width: 90px;
+  min-width: 70px;
 }
 .spot-table th:nth-child(3),
 .spot-table td:nth-child(3) {
-  min-width: 53px;
+  min-width: 50px;
 }
 .spot-table th:nth-child(4),
 .spot-table td:nth-child(4) {
@@ -1143,7 +1143,7 @@ input {
 }
 .spot-table th:nth-child(5),
 .spot-table td:nth-child(5) {
-  min-width: 53px;
+  min-width: 50px;
 }
 .spot-table th:nth-child(5),
 .spot-table td:nth-child(5) {
