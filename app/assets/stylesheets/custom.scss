@@ -314,7 +314,7 @@ textarea {
   width: 100%;
   height: 100%;
   overflow-x: auto;
-  overflow-y: scroll; /* Forces scrollbar space so content isn't hidden under a hidden track */
+  overflow-y: hidden; /* Forces scrollbar space so content isn't hidden under a hidden track */
   white-space: nowrap;
   vertical-align: middle;
   line-height: 40px;
@@ -332,14 +332,17 @@ textarea {
 }
 
 .bordered_box {
-    display: inline-block;
+    vertical-align: center;
+//    display: inline-block;
     position: relative;
     border: 1px solid #ccc;
     border-radius: .2em;
     background-color: #f7f7f7;
-    width: 98%;
+    //width: 98%;
     font-size: .8em;
-    margin: 1em 0;
+    margin-left: 1%;
+    margin-right: 1%;
+    margin-top: 1em;
     z-index: 999;
 }
 
@@ -1087,7 +1090,61 @@ input {
     font-size: 0.9em !important;
     line-height: 1.1em !important;
   }
-  
+ 
+  .spots-bar {
+    height:auto;
+    width: 100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    float: left;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS devices */
+  } 
+
+  .spots-bar table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+  }
+
+  .spots-bar th,
+  .spots-bar td {
+  padding: 10px;
+
+  /* Achieves native wrapping but prevents single-word breaking */
+  word-break: normal;
+  overflow-wrap: break-word;
+
+  /* CRITICAL FOR ZOOM/LOW-RES:
+     Gives columns a minimum footprint so they slide-scroll instead of
+     crushing down to 1-character columns when squeezed. Adjust as needed. */
+}
+
+
+.spot-table th:nth-child(1),
+.spot-table td:nth-child(1) {
+  min-width: 47px;
+}
+.spot-table th:nth-child(2),
+.spot-table td:nth-child(2) {
+  min-width: 100px;
+}
+.spot-table th:nth-child(3),
+.spot-table td:nth-child(3) {
+  min-width: 60px;
+}
+.spot-table th:nth-child(4),
+.spot-table td:nth-child(4) {
+  min-width: 80px;
+}
+.spot-table th:nth-child(5),
+.spot-table td:nth-child(5) {
+  min-width: 60px;
+}
+.spot-table th:nth-child(5),
+.spot-table td:nth-child(5) {
+  min-width: 60px;
+}
+
   .photo-bar {
     height:auto;
     width: 100%;
