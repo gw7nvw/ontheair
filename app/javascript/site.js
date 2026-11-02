@@ -223,7 +223,7 @@ function site_zoom_end_callback() {
 function add_swipe() {
 window.addEventListener('touchstart', function(e) {
     // 1. EXCLUDE MAP: If touch started inside the map div, abort completely
-    if (e.target.closest('#map_div') || e.target.closest('.photo-bar')) {
+    if (e.target.closest('#map_div') || e.target.closest('.photo-bar') || e.target.closest('.spots-bar')) {
         swipeHandled = true; // Blocks the rest of this gesture sequence
         return;
     }
