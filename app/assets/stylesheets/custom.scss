@@ -34,6 +34,20 @@ $lightblue: #4444ff;
     /* 2. Optional: If it still wiggles off-screen, add a safe transform margin nudge */
     transform: translateX(10px) !important;
   }
+
+.spots-bar th,
+.spots-bar td {
+  /* Scales down on small screens, expands up to a maximum of 10px */
+  padding: 6px 1.5vw;
+}
+
+/* On standard/desktop screens, give it the full comfortable spacing */
+@media (min-width: 440px) {
+  .spots-bar th,
+  .spots-bar td {
+    padding: 6px;
+  }
+}
 }
 
 a {
@@ -1108,7 +1122,6 @@ input {
 
   .spots-bar th,
   .spots-bar td {
-  padding: 10px;
 
   /* Achieves native wrapping but prevents single-word breaking */
   word-break: normal;
@@ -1119,30 +1132,36 @@ input {
      crushing down to 1-character columns when squeezed. Adjust as needed. */
 }
 
+.table-container th,
+.table-container td {
+  /* Scales down on small screens, expands up to a maximum of 10px */
+  padding: 6px 1.5vw; 
+  max-width: 10px; /* Optional cap if your framework supports it, otherwise use a media query */
+}
 
 .spot-table th:nth-child(1),
 .spot-table td:nth-child(1) {
-  min-width: 47px;
+  min-width: 33px;
 }
 .spot-table th:nth-child(2),
 .spot-table td:nth-child(2) {
-  min-width: 100px;
+  min-width: 90;
 }
 .spot-table th:nth-child(3),
 .spot-table td:nth-child(3) {
-  min-width: 60px;
+  min-width: 53px;
 }
 .spot-table th:nth-child(4),
 .spot-table td:nth-child(4) {
-  min-width: 80px;
+  min-width: 70px;
 }
 .spot-table th:nth-child(5),
 .spot-table td:nth-child(5) {
-  min-width: 60px;
+  min-width: 53px;
 }
 .spot-table th:nth-child(5),
 .spot-table td:nth-child(5) {
-  min-width: 60px;
+  min-width: 50px;
 }
 
   .photo-bar {
