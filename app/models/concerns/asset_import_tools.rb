@@ -173,7 +173,7 @@ module AssetImportTools
                     elsif dxcc=="NZ"
                       p.find_zlota_park(silent)
                     end
-                    AdminTask.create(task_type: "action", affected_id: self.code, affected_table: "asset", affected_url: self.url, action_url: (self.url||"")+"/map_associate", description: "Could not auto-assign boundary, none found") if !p.boundary
+                    AdminTask.create(task_type: "action", affected_id: p.code, affected_table: "asset", affected_url: p.url, action_url: (p.url||"")+"/map_associate", description: "Could not auto-assign boundary, none found") if !p.boundary
                   end
                 end
               else
@@ -1158,7 +1158,7 @@ module AssetImportTools
     cs = Capad.where("pa_id like '#{id}'")
     if cs.count==1
       # just assign it
-      self.boundary = get_capad_boundary(cs.first.pa_id)
+      self.boundary = Asset.get_capad_boundary(cs.first.pa_id)
       self.geom_id = cs.first.pa_id
       self.geom_source="CAPAD"
       self.save
@@ -1174,7 +1174,7 @@ module AssetImportTools
         c=cs[id.to_i-1]
         self.geom_id = c.pa_id
         self.geom_source="CAPAD"
-        self.boundary = get_capad_boundary(c.pa_id)
+        self.boundary = Asset.get_capad_boundary(c.pa_id)
         self.save
         puts "assigned "+c.name+" to "+self.name
       end
@@ -1257,7 +1257,7 @@ module AssetImportTools
   end
 
 
-  def Asset.find_vk_capad_park(ignore = false)
+  def find_vk_capad_park(ignore = false)
     puts "CAPAD PARK ---------------------------------------------"
    messages = ""
    if true # !self.name.include?("Beach") and !self.name.include?("Wild and Scenic River")
@@ -1267,7 +1267,7 @@ module AssetImportTools
       cs = Capad.find_by_sql [ %q{select "objectid", ST_Buffer(ST_Simplify("wkb_geometry",0.0002),0) as "wkb_geometry", "pa_id", "pa_pid", "name", "capad_type", "type_abbr", "iucn", "nrs_pa", "nrs_mpa", "gaz_area", "gis_area", "gaz_date", "latest_gaz", "state", "authority", "datasource", "governance", "comments", "environ", "overlap", "mgt_plan", "res_number", "zone_type", "epbc", "longitude", "latitude", "pa_system", "shape_leng", "shape_area" from capad where pa_id = }+self.geom_id.to_s+%q(;) ]
       if cs and cs.count>0 then
         puts "Found by CAPAD ID"
-        self.boundary = get_capad_boundary(cs.first.pa_id)
+        self.boundary = Asset.get_capad_boundary(cs.first.pa_id)
         self.save
         puts self.code
         found = true
@@ -1290,7 +1290,7 @@ module AssetImportTools
          if found==false and shortname.split(" ").uniq.sort == c_shortname.split(" ").uniq.sort
            self.geom_id = c.pa_id
            self.geom_source="CAPAD"
-           self.boundary = get_capad_boundary(c.pa_id)
+           self.boundary = Asset.get_capad_boundary(c.pa_id)
            self.save
            puts "assigned "+c.name+" to "+self.name
            found = true
@@ -1311,7 +1311,7 @@ module AssetImportTools
               c=cs[id.to_i-1]
               self.geom_id = c.pa_id
               self.geom_source="CAPAD"
-              self.boundary = get_capad_boundary(c.pa_id)
+              self.boundary = Asset.get_capad_boundary(c.pa_id)
               self.save
               puts "assigned "+c.name+" to "+self.name
            end
@@ -1323,7 +1323,7 @@ module AssetImportTools
          puts "Found: "+self.name+" = "+cs.first.name+" "+cs.first.capad_type
          self.geom_id = cs.first.pa_id
          self.geom_source="CAPAD"
-         self.boundary = get_capad_boundary(cs.first.pa_id)
+         self.boundary = Asset.get_capad_boundary(cs.first.pa_id)
          self.save
        else
          if ignore == true then
@@ -1335,7 +1335,7 @@ module AssetImportTools
            if id[0] == "y"  then
              self.geom_id = cs.first.pa_id
              self.geom_source="CAPAD"
-             self.boundary = get_capad_boundary(cs.first.pa_id)
+             self.boundary = Asset.get_capad_boundary(cs.first.pa_id)
              self.save
            end
          end
@@ -1350,7 +1350,7 @@ module AssetImportTools
    messages
   end
 
-  def Asset.capad_expand_abbreviations(name)
+  def capad_expand_abbreviations(name)
     name=name.gsub(" Remote and Natural Area - Schedule 6, National Parks Act", " Remote and Natural Area")
     name=name.upcase
     name=name.gsub("5(1)(H)", " ")
@@ -1420,7 +1420,7 @@ module AssetImportTools
     capad
   end
 
-  def Asset.find_vk_state_park(ignore = false)
+  def find_vk_state_park(ignore = false)
     puts "STATEPARK =============================================="
     sps = VkStatePark.find_by_sql [ %q{select * from vk_state_park where st_within ( st_geomfromtext('}+self.location.to_s+%q{', 4326), boundary);} ]  if self.location
 
@@ -1542,14 +1542,14 @@ module AssetImportTools
    end
   end
 
-  def Asset.add_govt_parks
+  def add_govt_parks
     if country == "ZL"
-      find_zlota_park
+      self.find_zlota_park
       reload
     elsif country == "VK"
-      find_vk_capad_park
+      self.find_vk_capad_park
       reload
-      find_vk_state_park if !boundary
+      self.find_vk_state_park if !boundary
     end
   end
 end
