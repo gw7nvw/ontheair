@@ -286,6 +286,8 @@ class ExternalActivation < ApplicationRecord
 
     table=get_table(body, 4)
     row_count = get_row_count(table)
+    puts "ROW_COUNT: #{row_count}"
+    return if row_count.blank? or row_count<3
     (3..row_count).each do |row_no|
       row = get_row(table,row_no)
       puts row
