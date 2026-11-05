@@ -20,7 +20,7 @@ CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public;
 -- Name: pg_stat_statements; Type: EXTENSION; Schema: -; Owner: -
 --
 
--- CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
 
 
 --
@@ -139,7 +139,8 @@ CREATE TABLE public.admin_settings (
     last_minute_sched_at timestamp without time zone,
     last_monthly_sched_at timestamp without time zone,
     last_sota_update_id character varying(255),
-    last_pota_update_id character varying(255)
+    last_pota_update_id character varying(255),
+    last_wwff_update_id character varying
 );
 
 
@@ -4135,6 +4136,7 @@ CREATE UNIQUE INDEX unique_schema_migrations ON public.schema_migrations USING b
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261105075502'),
 ('20261029201744'),
 ('20261029065950'),
 ('20261029060159'),

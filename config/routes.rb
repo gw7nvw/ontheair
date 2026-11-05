@@ -173,6 +173,7 @@ else
 
   get "assets/:id/refresh_sota", to: "assets#refresh_sota"
   get "assets/:id/refresh_pota", to: "assets#refresh_pota"
+  get "assets/:id/refresh_wwff", to: "assets#refresh_wwff"
 
   resources :awards, only: [ :index, :show, :edit, :new, :create, :update, :destroy ]
   match "/awards/:id/destroy", to: "awards#destroy", via: "get"

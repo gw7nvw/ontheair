@@ -299,6 +299,20 @@ class AssetsController < ApplicationController
       flash[:error] = "You must be signed in to do this"
     end
     redirect_to "/assets/" + params[:id]
+    return
+  end
+
+  def refresh_wwff
+    if signed_in?
+      a = Asset.find_by(safecode: params[:id])
+      if a && (a.asset_type == "wwff park")
+        ExternalActivation.update_wwff_activation(a)
+      end
+    else
+      flash[:error] = "You must be signed in to do this"
+    end
+    redirect_to "/assets/" + params[:id]
+    return
   end
 
   def refresh_sota
@@ -312,6 +326,7 @@ class AssetsController < ApplicationController
     end
 
     redirect_to "/assets/" + params[:id]
+    return
   end
 
   def show

@@ -19,7 +19,10 @@
       <%=  link_to "Update from SOTA", '/assets/'+@asset.safecode+'/refresh_sota', class: "btn btn-small btn-primary", remote: true, :id => 'sota', :onclick => "linkHandler(event,'sota')" %>
     <% end %>
     <% if @asset.asset_type=="pota park" %>
-      <%=  link_to "Update from POTA", '/assets/'+@asset.safecode+'/refresh_pota', class: "btn btn-small btn-primary", remote: true, :id => 'sota', :onclick => "linkHandler(event,'sota')" %>
+      <%=  link_to "Update from POTA", '/assets/'+@asset.safecode+'/refresh_pota', class: "btn btn-small btn-primary", remote: true, :id => 'pota', :onclick => "linkHandler(event,'pota')" %>
+    <% end %>
+    <% if @asset.asset_type=="wwff park" %>
+      <%=  link_to "Update from WWFF", '/assets/'+@asset.safecode+'/refresh_wwff', class: "btn btn-small btn-primary", remote: true, :id => 'wwff', :onclick => "linkHandler(event,'wwff')" %>
     <% end %>
     <% if write_access? and current_user.is_admin %>
       <%= link_to "Find Boundary", '/assets/'+@asset.safecode+'/map_associate', class: "btn btn-small btn-primary", remote: true, :id => 'map_associate', :onclick => "linkHandler(event,'map_associate')" %>

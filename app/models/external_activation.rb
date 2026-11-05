@@ -4,6 +4,7 @@
 
 class ExternalActivation < ApplicationRecord
   before_save { before_save_actions }
+  include AssetImportTools
 
   def before_save_actions
     remove_call_suffix
@@ -54,6 +55,23 @@ class ExternalActivation < ApplicationRecord
     end
   end
 
+  def self.import_next_wwff
+    last_code=""
+    as = AdminSettings.first
+    last_code = as.last_wwff_update_id if as
+    summits = Asset.find_by_sql [ "select * from assets where asset_type='wwff park' and code > '#{last_code}' order by code limit 1" ]
+    if summits and summits.count>0
+      summit = summits.first
+      update_wwff_activation(summit)
+      puts "DEBUG:  Update #{summit.code} from WWFF"
+      as.update_attribute(:last_wwff_update_id, summit.code)
+    else
+      # end of list, trigger restart and mark pass as done
+      as.update_attribute(:last_wwff_update_id, "")
+      as.update_attribute(:last_wwff_update_at, Time.now)
+    end
+  end
+
   def self.import_sota
     summits = Asset.where(asset_type: "summit")
     summits.each do |summit|
@@ -65,6 +83,13 @@ class ExternalActivation < ApplicationRecord
     summits = Asset.where(asset_type: "pota park").order(:code)
     summits.each do |summit|
       update_pota_activation(summit)
+    end
+  end
+
+  def self.import_wwff
+    summits = Asset.where(asset_type: "wwff park").order(:code)
+    summits.each do |summit|
+      update_wwff_activation(summit)
     end
   end
 
@@ -217,12 +242,79 @@ class ExternalActivation < ApplicationRecord
     end
   end
 
+  def self.update_wwff_activation(asset)
+    uri = URI.parse('https://wwff.co/directory')
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+
+    # 2. Initialize the POST Request
+    request = Net::HTTP::Post.new(uri.request_uri)
+    
+    # 3. Set the HTTP Headers
+    request['Content-Type'] = 'application/x-www-form-urlencoded'
+    request['Pragma'] = 'no-cache'
+    request['Cache-Control'] = 'no-cache'
+    request['Accept-Encoding'] = 'gzip, deflate' # Replicates the --compressed flag
+    
+    # 4. Set the Streamlined Form Data
+    request.set_form_data({
+      'progName' => asset.code[0..3],
+      'dxccName' => asset.code[0..3],
+      'refID'    => asset.code
+    })
+     
+    begin
+      response = http.request(request)
+
+      if response.code == '200'
+      # Handle the gzip compression safely
+        body = if response['content-encoding'] == 'gzip'
+               Zlib::GzipReader.new(StringIO.new(response.body)).read
+             else
+               response.body
+             end
+      
+          puts "Success! Response body length: #{body.length}"
+        # Your HTML content is now in the 'body' variable
+      else
+        puts "HTTP Request Failed with code: #{response.code}"
+      end
+    rescue StandardError => e
+      puts "An error occurred: #{e.message}"
+    end
+#    return body
+
+    table=get_table(body, 4)
+    row_count = get_row_count(table)
+    (3..row_count).each do |row_no|
+      row = get_row(table,row_no)
+      puts row
+      act_date = get_col(row,1)
+      act_call = get_col(row,2)
+      act_qsos = get_col(row,3)
+      sa = ExternalActivation.new
+      sa.asset_type = "wwff park"
+      sa.callsign = User.remove_call_suffix(act_call&.strip)
+      if sa.callsign then
+        puts "Activator: #{sa.callsign}"
+        sa.summit_code = asset.code
+        if act_date then sa.date = act_date end
+        sa.qso_count = act_qsos
+        dups = ExternalActivation.where(sa.attributes.except("id", "updated_at", "created_at", "user_id")).count
+        if dups.zero?
+          sa.save
+          puts sa.to_json
+        end
+      end
+    end
+  end
+    
   def self.update_pota_activation(asset)
     puts "Park: " + asset.code
     url = "https://api.pota.app/park/activations/" + asset.code.capitalize + "?count=all"
     raw_response = fetch_external_url(url)
     data = JSON.parse(raw_response.blank? ? "[]" : raw_response)
-
+    
     #   data = JSON.parse(open(url, ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE).read)
     if data && data.count.positive?
       puts "Activations: " + data.count.to_s

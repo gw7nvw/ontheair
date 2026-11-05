@@ -539,7 +539,7 @@ class Asset < ApplicationRecord
       c = nil
     end
 
-    if (asset_type == "summit") || (asset_type == "pota park")
+    if (asset_type == "summit") || (asset_type == "pota park") || (asset_type == "wwff park")
       as = ExternalActivation.find_by_sql [ "select * from external_activations where summit_code='" + code + "' order by date asc limit 1" ]
       if as && as[0] && (c.nil? || (as[0].date < c.date))
         c = Contact.new
@@ -668,7 +668,7 @@ class Asset < ApplicationRecord
 
       cs = Contact.find_by_sql [ " select id from contacts where (callsign1 = ? and (? = ANY(asset1_codes) or ? = ANY(asset1_codes))) or (callsign2 = ? and (? = ANY(asset2_codes) or ? = ANY(asset2_codes))) limit 1 ", callsign, code, old_code, callsign, code, old_code ]
 
-      if (asset_type == "summit") || (asset_type == "pota park")
+      if (asset_type == "summit") || (asset_type == "pota park") || (asset_type == "wwff park")
         as = ExternalActivation.find_by_sql [ "select * from external_activations where summit_code='" + code + "' and callsign = '" + callsign + "' limit 1" ]
       end
 
@@ -676,7 +676,7 @@ class Asset < ApplicationRecord
     else
       cs = Contact.find_by_sql [ " select id from contacts where (? = ANY(asset1_codes)) or (? = ANY(asset2_codes)) limit 1 ", code, code ]
 
-      if (asset_type == "summit") || (asset_type == "pota park")
+      if (asset_type == "summit") || (asset_type == "pota park") || (asset_type == "wwff park")
         as = ExternalActivation.find_by_sql [ "select * from external_activations where summit_code='" + code + "' limit 1" ]
       end
       (as && (as.count > 0)) || (cs && (cs.count > 0)) ? true : false
