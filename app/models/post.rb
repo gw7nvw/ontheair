@@ -436,7 +436,7 @@ class Post < ActiveRecord::Base
     if asset && (asset_type == "llota lake")
       payloadspot = {
         'callsign': callsign.upcase,
-        'frequency': (freq.to_f * 1000).to_s,
+        'frequency': (freq.to_f).to_s,
         'reference': a_code,
         'mode': mode.upcase,
         'source': "ontheair",

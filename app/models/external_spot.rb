@@ -186,7 +186,7 @@ def normalize_llota_spots(raw_spots)
       activatorCallsign: spot["callsign"]&.strip&.upcase,
       code:              spot["reference"]&.strip&.upcase,
       name:              spot["reference_name"]&.strip,
-      frequency:         spot["frequency"].present? ? (spot["frequency"].to_f / 1000.0).to_s : nil,
+      frequency:         spot["frequency"].present? ? (spot["frequency"].to_f).to_s : nil,
       mode:              spot["mode"]&.strip&.upcase,
       comments:          latest_history["comment"]&.to_s&.scrub&.slice(0, 255),
       points:            nil,
