@@ -460,6 +460,7 @@ class Post < ActiveRecord::Base
           result = false
           messages = "Failed to contact LLOTA server"
         else
+          Rails.logger.info "LLOTA Response: #{resonse.to_json}"
           if response["spot_id"] and response["spot_id"].to_i > 0 then
             messages = "Sent spot to LLOTA; "
             result = true
