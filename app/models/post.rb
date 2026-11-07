@@ -440,7 +440,8 @@ class Post < ActiveRecord::Base
         'reference': a_code,
         'mode': mode.upcase,
         'source': "ontheair",
-        'comments': description
+        'comments': description,
+        'spotter_eallsign': from.upcase
       }
 
       #        if debug then
@@ -460,7 +461,7 @@ class Post < ActiveRecord::Base
           result = false
           messages = "Failed to contact LLOTA server"
         else
-          Rails.logger.info "LLOTA Response: #{resonse.to_json}"
+          Rails.logger.info "LLOTA Response: #{response.to_json}"
           if response["spot_id"] and response["spot_id"].to_i > 0 then
             messages = "Sent spot to LLOTA; "
             result = true
