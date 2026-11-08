@@ -1058,6 +1058,8 @@ async function linkHandler(event, entity_name) {
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
+    event.preventDefault();
+    event.stopPropagation();
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -1093,6 +1095,7 @@ async function linkHandler(event, entity_name) {
     document.body.classList.remove("loading");
     document.getElementById("page_status").innerHTML = ''
   }
+  return false;
 }
 
 
