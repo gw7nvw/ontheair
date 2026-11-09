@@ -159,7 +159,7 @@ class PostsController < ApplicationController
         end
         @topic = Topic.find_by_id(topic_id)
         if defined?(Rails) && Rails.env.production?
-          @post.send_to_all(debug, user, @post.callsign, @post.asset_codes, @post.freq, @post.mode, @post.description, @topic, @post.referenced_date.strftime("%Y-%m-%d"), @post.referenced_time.strftime("%H:%M"), "UTC")
+          @post.send_to_all(debug)
         else
           puts "Skipping send_to_all in non-production environment"
         end
@@ -451,7 +451,7 @@ class PostsController < ApplicationController
         @edit = true
         if params[:pnp] == "on"
           @post.do_not_publish = false # override if pnp specified
-          success = @post.send_to_all(debug, current_user, @post.callsign+suffix, @post.asset_codes, @post.freq, @post.mode, @post.description, @topic, @post.referenced_date.strftime("%Y-%m-%d"), @post.referenced_time.strftime("%H:%M"), "UTC")
+          success = @post.send_to_all(debug)
           puts "DEBUG: controller success: " + success.to_s
           flash[:error] = success[:messages] if success[:result] == false
           if (success[:result] == true) && (success[:messages] != "") then flash[:success] += success[:messages] end

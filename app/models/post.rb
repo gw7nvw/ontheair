@@ -208,10 +208,18 @@ class Post < ActiveRecord::Base
     newcodes
   end
 
-  def send_to_all(debug, from, callsign, assets, freq, mode, description, topic, idate, itime, tzname)
-    if ENV["RAILS_ENV"] != "production"
-        Resque.logger.info "API: not sending in #{ENV['RAILS_ENV']} environment - #{[ debug, from, callsign, assets, freq, mode, description, topic, idate, itime, tzname ]}"
-    else
+  def send_to_all(debug = false)
+    from = User.find_by(id: self.updated_by_id)
+    return if !from
+    idate = self.referenced_date.strftime("%Y-%m-%d")
+    itime = self.referenced_time.strftime("%H:%M") 
+    tzname = "UTC"
+    topic = Topic.find_by(id: topic_id)
+    assets = self.asset_codes
+
+##    if ENV["RAILS_ENV"] != "production"
+#        Resque.logger.info "API: not sending in #{ENV['RAILS_ENV']} environment - #{[ debug, from, callsign, assets, freq, mode, description, topic, idate, itime, tzname ]}"
+#    else
       result = true
       messages = ""
       return { result: success, messages: "" } if do_not_publish == true
@@ -267,7 +275,7 @@ class Post < ActiveRecord::Base
         #          messages += pnp_response[:messages]
         #        end
       end
-    end
+#    end
     { result: result, messages: messages }
   end
 
