@@ -325,7 +325,7 @@ class PostsController < ApplicationController
             errors += messages.join('; ') if messages
           end
 
-          if @topic.is_spot
+          if topic.is_spot
             invalid, messages = validate_spot(@post)
             errors += messages.join('; ') if messages
           end
