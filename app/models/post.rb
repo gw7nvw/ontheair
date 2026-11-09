@@ -23,12 +23,12 @@ class Post < ActiveRecord::Base
   def before_save_actions
     check_codes
     self.mode = self.mode.upcase if self.mode
+    self.callsign=User.remove_call_suffix(callsign.upcase) if callsign
     location=get_most_accurate_location
     add_containing_codes
     # again to vet child codes added
     check_codes
     assign_operating_conditions
-    self.callsign=User.remove_call_suffix(callsign.upcase) if callsign
     update_site
     self.site = self.site[0..254] if self.site
   end
