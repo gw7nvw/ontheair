@@ -291,6 +291,7 @@ class PostsController < ApplicationController
   end
 
   def update
+    errors = ""
     if signed_in?
       @post = Post.find_by_id(params[:id])
       topic = @post.topic
