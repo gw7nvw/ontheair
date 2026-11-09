@@ -72,6 +72,23 @@ class ExternalActivation < ApplicationRecord
     end
   end
 
+  def self.import_next_siota
+    last_code=""
+    as = AdminSettings.first
+    last_code = as.last_siota_update_id if as
+    summits = Asset.find_by_sql [ "select * from assets where asset_type='silo' and code > '#{last_code}' order by code limit 1" ]
+    if summits and summits.count>0
+      summit = summits.first
+      update_siota_activation(summit)
+      puts "DEBUG:  Update #{summit.code} from SIOTA"
+      as.update_attribute(:last_siota_update_id, summit.code)
+    else
+      # end of list, trigger restart and mark pass as done
+      as.update_attribute(:last_siota_update_id, "")
+      as.update_attribute(:last_siota_update_at, Time.now)
+    end
+  end
+
   def self.import_sota
     summits = Asset.where(asset_type: "summit")
     summits.each do |summit|
@@ -86,6 +103,12 @@ class ExternalActivation < ApplicationRecord
     end
   end
 
+  def self.import_siota
+    summits = Asset.where(asset_type: "silo").order(:code)
+    summits.each do |summit|
+      update_siota_activation(summit)
+    end
+  end
   def self.import_wwff
     summits = Asset.where(asset_type: "wwff park").order(:code)
     summits.each do |summit|
@@ -240,6 +263,54 @@ class ExternalActivation < ApplicationRecord
         end
       end
     end
+  end
+
+  def self.update_siota_activation(asset)
+    url="https://www.silosontheair.com/silo/#{asset.code}"
+    uri=URI.parse(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    request = Net::HTTP::Get.new(uri.request_uri)
+    request["User-Agent"] = USER_AGENT_STRING
+    response = http.request(request)
+
+    tables = response.body.split('<div class="resp-table">')
+    rows = tables[2].split('<div class="resp-table-row">')
+    rows.each do |row|
+      cols=row.split('<div class="table-body-cell">')
+      data = []
+      if cols and cols[3] and cols[3].match(asset.code)
+        cols.each do |col| 
+          cleaned = col.gsub(/<[^>]*>/, '').gsub(/&.*;/,'')
+          data << cleaned.strip
+        end
+        ea=ExternalActivation.new
+        ea.asset_type='silo'
+        ea.callsign=data[1]
+        ea.summit_code=data[3]
+        ea.date=data[2]&.split('T')&.first
+        dups = ExternalActivation.where(ea.attributes.except("id", "updated_at", "created_at", "user_id")).count
+        if dups.zero?
+          ea.save
+          puts ea.to_json
+        end
+  
+        ec=ExternalChase.new
+        ec.asset_type='silo'
+        ec.callsign = data[4]
+        ec.band = data[5]
+        ec.mode = data[6]
+        ec.date = data[2]&.split('T')&.first
+        ec.time = data[2]
+        ec.summit_code = data[3]
+        dups = ExternalChase.where(ec.attributes.except("id", "updated_at", "created_at", "user_id")).count
+        if dups.zero?
+          ec.save
+          puts ec.to_json
+        end
+      end
+    end
+
   end
 
   def self.update_wwff_activation(asset)

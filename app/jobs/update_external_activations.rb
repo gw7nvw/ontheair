@@ -11,5 +11,6 @@ module UpdateExternalActivations
     ExternalActivation.import_next_sota
     ExternalActivation.import_next_pota
     ExternalActivation.import_next_wwff
+    ExternalActivation.import_next_siota
   end
 end
