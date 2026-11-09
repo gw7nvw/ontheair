@@ -315,6 +315,19 @@ class AssetsController < ApplicationController
     return
   end
 
+  def refresh_siota
+    if signed_in?
+      a = Asset.find_by(safecode: params[:id])
+      if a && (a.asset_type == "silo")
+        ExternalActivation.update_siota_activation(a)
+      end
+    else
+      flash[:error] = "You must be signed in to do this"
+    end
+    redirect_to "/assets/" + params[:id]
+    return
+  end
+
   def refresh_sota
     if signed_in?
       a = Asset.find_by(safecode: params[:id])
