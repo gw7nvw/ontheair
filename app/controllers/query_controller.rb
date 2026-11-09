@@ -31,7 +31,7 @@ class QueryController < ApplicationController
 
     # for a new search always have EXCLUDE minor enabled
     if @searchtext.blank? then
-      @minor=true
+      @minor=false
 
     # otherwise pick up value from last search
     else

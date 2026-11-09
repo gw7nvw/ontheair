@@ -358,6 +358,8 @@ class LogsController < ApplicationController
         cle.log_id = id
         cle.convert_user_timezone_to_utc(current_user)
 
+        Rails.logger.debug "ASSTE2_CODES: #{cle.asset2_codes.to_json}"
+        Rails.logger.debug "#{cle.to_json}"
         unless cle.save then status = 500; puts "error" end
         ids << cle.id
       end

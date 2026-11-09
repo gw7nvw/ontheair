@@ -1236,7 +1236,7 @@ function select_asset(field, code, name, x, y, loc, containing_codes, containing
     if(asset2_codes==null) {
       asset2_codes=[code];
     } else {
-      asset2_codes=asset2_codes.push(code) 
+      asset2_codes.push(code) 
     }
     if(asset2_names=='null'||asset2_names=='undefined'||asset2_names==null) {asset2_names=""};
     if(asset2_names && asset2_names.length>0) {asset2_names=asset2_names+"\n"};

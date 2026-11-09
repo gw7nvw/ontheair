@@ -19,8 +19,8 @@
     </div>
   </div>
   <div class="erow" style="margin-bottom:6px">
-    <span title="Include places that are not valid for NZOnTheAir in the results. This includes duplicate place names, names of groups of islands and lakes, reserves that are smaller than the minimum size, Queen's chain reserves, special purpose reserves, and others.">
-      <div class="rowtitle"> <%= @site_name%> only</div>
+    <span title="Include minor places in the results. This includes reserves that are smaller than the minimum size, and types of reserve that may not have a right of public access.">
+      <div class="rowtitle"> Exclude minor reserves</div>
     </span>
     <div class="rowtext">
       <input id="minor" name="minor" type="checkbox" <% if @minor then %> checked="checked" <% end %>>
