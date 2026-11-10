@@ -58,7 +58,9 @@
           <% if @topic.is_spot then %>
             <tr>
               <td>Operating callsign:</td>
-              <td style="padding:0px; margin:0px;" colspan=3><%=f.text_field :callsign, :style =>"padding:0px; margin:0px;" %></td>
+              <td style="padding:0px; margin:0px;"><%=f.text_field :callsign, :style =>"padding:0px; margin:0px;" %></td>
+              <td>QRP:</td>
+              <td style="padding:0px; margin:0px;"><%=f.checkbox :is_qrp, :style =>"padding:0px; margin:0px;" %></td>
             </tr>
           <% end %>
           <% if @topic.is_alert then %>

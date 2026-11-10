@@ -43,7 +43,7 @@ class PostSpotSaveTest < ActiveSupport::TestCase
     item=create_test_spot(user1, asset_codes: [ "My local picnic area", "ZLL/001" ])
     spot=item.post
 
-    assert_equal [].sort, spot.asset_codes.sort, "Known asset codes added correctly"
+    assert_equal ["My local picnic area", "ZLL/001"].sort, spot.asset_codes.sort, "Known asset codes added correctly"
     assert spot.description["Unknown location: My local picnic area"], "Correct description"
     assert spot.description["Unknown location: ZLL/001"], "Correct description"
   end

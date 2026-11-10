@@ -392,7 +392,9 @@ class PostsController < ApplicationController
           @post.location="POINT(#{x1} #{y1})"
           @post.loc_source="user"
         else
+          puts "HERE!!!"
           @post.asset_codes = params[:post][:asset_codes].upcase.delete("{").delete("}").split(",").map(&:strip)
+          puts "ACS: #{@post.asset_codes}"
         end
       end
 
@@ -476,7 +478,7 @@ class PostsController < ApplicationController
   private
 
   def post_params
-    params.require(:post).permit(:title, :description, :image, :do_not_publish, :duration, :is_hut, :is_park, :is_island, :is_summit, :site, :freq, :mode, :hut, :park, :island, :summit, :callsign, :asset_codes, :do_not_lookup)
+    params.require(:post).permit(:title, :description, :image, :do_not_publish, :duration, :is_hut, :is_park, :is_island, :is_summit, :site, :freq, :mode, :hut, :park, :island, :summit, :callsign, :asset_codes, :do_not_lookup, :is_qrp)
   end
 
   def validate_spot(post)

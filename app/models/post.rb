@@ -46,7 +46,11 @@ class Post < ActiveRecord::Base
     self.asset_codes.each do |ac|
       assets = Asset.assets_from_code(ac)
       maidenhead = (assets && (assets.count > 0) && assets.first[:asset] ? " {#{assets.first[:asset].maidenhead}}" : "")
-      sites += [ "#{(assets && (assets.count > 0) ? (assets.first[:name] || '') : '')} [#{ac}]#{maidenhead}" ]
+      if (assets && (assets.count > 0)) 
+          sites += [ "#{(assets.first[:name] || '')} [#{ac}]#{maidenhead}" ]
+      else
+        sites += ["[#{ac}]"]
+      end
     end
     self.site = sites.join("; ") if !sites.blank?
   end
@@ -154,14 +158,21 @@ class Post < ActiveRecord::Base
       a = Asset.assets_from_code(code)
       a = a.first
       asset = a[:asset] if a && a[:asset]
-      if !a && !(description || "").include?("Unknown location: " + code)
-        self.description = (description || "") + "; Unknown location: " + code
-        code = nil
+      if is_qrp then
+        if !a && !(description || "").include?(code)
+          self.description = [description,  code].compact.join('; ')
+          code = nil
+        end
+      else
+        if !a && !(description || "").include?("Unknown location: " + code)
+          self.description = [description,  "Unknown location: " + code].compact.join('; ')
+          code = nil
+        end
       end
       newcodes += [ code ] if code
     end
 
-    self.asset_codes = Asset.find_master_codes(newcodes.uniq)
+    self.asset_codes = Asset.find_master_codes(newcodes.uniq) if !newcodes.blank?
   end
 
   def add_containing_codes

@@ -191,8 +191,9 @@ class ApiController < ApplicationController
       assets = Asset.assets_from_code(asset_code)
       if !assets || assets.count.zero? || assets.first[:code].nil?
         puts "Asset not known:" + asset_code + " ... trying to continue"
-        a_code = ""
-        a_name = "Unrecognised location: " + asset_code
+        a_code = asset_code.upcase
+        a_codes = [asset_code.upcase]
+        a_name = "[#{asset_code.upcase}]"
         a_ext = false
       else
         a_code = assets.first[:code]
@@ -203,7 +204,7 @@ class ApiController < ApplicationController
 
       if params[:do_not_lookup] then p.do_not_lookup=true end
       if params[:do_not_publish] then p.do_not_publish=true end
-      p.asset_codes=a_code != "" ? a_codes : []
+      p.asset_codes=a_codes
       debug = p.description.upcase["DEBUG"] ? true : false
       al_date = Time.now.in_time_zone("UTC").strftime("%Y-%m-%d")
       al_time = Time.now.in_time_zone("UTC").strftime("%H:%M")
@@ -597,6 +598,7 @@ class ApiController < ApplicationController
       res = { success: true, message: "Thanks for the data!" }
       p = Post.new
       p.callsign = params[:actCallsign] || ""
+      p.is_qrp = true if params[:actClass].upcase == 'QRP'
       p.freq = params[:freq].to_f
       p.mode = params[:mode] || ""
       p.created_by_id = user.id
@@ -610,10 +612,10 @@ class ApiController < ApplicationController
       assets = Asset.assets_from_code(asset_code)
       if !assets || assets.count.zero? || assets.first[:code].nil?
         logger.error "Asset not known:" + asset_code + " ... trying to continue"
-        a_code = ""
-        p.site = asset_code
-        a_name = "Unrecognised location: " + asset_code
-        p.site=asset_code
+        puts "Asset not known:" + asset_code + " ... trying to continue"
+        a_code = asset_code.upcase
+        a_codes = [asset_code.upcase]
+        a_name = "[#{asset_code.upcase}]"
         a_ext = false
       else
         a_code = assets.first[:code]
@@ -623,7 +625,7 @@ class ApiController < ApplicationController
       end
 
       if params[:do_not_lookup] then p.do_not_lookup=true end
-      p.asset_codes=a_code != "" ? a_codes : []
+      p.asset_codes=a_codes
       debug = p.description.upcase["DEBUG"] ? true : false
       al_date = Time.now.in_time_zone("UTC").strftime("%Y-%m-%d")
       al_time = Time.now.in_time_zone("UTC").strftime("%H:%M")

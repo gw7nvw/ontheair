@@ -175,11 +175,15 @@ class Item < ActiveRecord::Base
 
     # handle unrecognised locations
     logger.debug "DEBUG - UNKNOWN LOACTION - FALLBACK"
-    if cs.code&.all?(&:blank?) != false
+    if cs.spot_type&.all?(&:blank?) != false
       cs.name += [ post.site ]
       cs.name.uniq!
       cs.code = [ "" ]*cs.name.length
-      cs.spot_type = [ "UNKNOWN" ]*cs.name.length
+      if cs.is_qrp == true then
+        cs.spot_type = [ "QRP" ]*cs.name.length
+      else
+        cs.spot_type = [ "UNKNOWN" ]*cs.name.length
+      end
     end
 
     cs.comments += [ post.updated_by_name+": "+(post.description||"") + " ("+post.created_at.strftime("%H:%M:%S")+")" ]
@@ -190,7 +194,6 @@ class Item < ActiveRecord::Base
 
   # Schedule delayed sending of emails
   def send_emails
-    puts "END: #{ENV['RAILS_ENV']}"
     logger.error "SENDING EMAILS #{ENV['RAILS_ENV']}"
     if ENV["RAILS_ENV"] == "production"
       Resque.enqueue(SendEmails, self.id)
