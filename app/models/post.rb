@@ -577,10 +577,11 @@ class Post < ActiveRecord::Base
           req = Net::HTTP::Get.new("#{url.path}?"+(payloadspot.collect { |k, v| "#{k}=#{CGI.escape(v.to_s)}" }.join("&")), "Content-Type" => "application/json", "Authorization" => "bearer " + access_token, "id_token" => id_token, "connection" => "keep-alive", "User-Agent" => "ontheair.nz")
           begin
             res = http.request(req)
-          rescue StandardError
+          rescue StandardError => e
             puts "Send to SOTA failed"
             result = false
             messages = "Failed to contact SOTA server"
+            PushoverService.send_admin_alert("Send spot to SOTA failed with: #{e.message}. Notify Andy MM0LLD if this persists.")
           else
             messages = "Sent spot to SOTA; "
             puts "DEBUG: SOTA response"
@@ -613,13 +614,14 @@ class Post < ActiveRecord::Base
 
             # Keycloak returns a 204 No Content response on a successful back-channel logout
             if response.code == "204" or response.code == "200"
-              Rails.logger.debug "SSO session successfully killed via direct API request! No zombies."
+              Rails.logger.debug "SSO session successfully terminated."
             else
               Rails.logger.error("Keycloak rejected the logout request: #{response.code} - #{response.body}")
-              PushoverService.send_alert(User.find(4), "SOTA logout returned #{response.code} - #{response.body}", nil, "", nil, 1) 
+              PushoverService.send_admin_alert("Send logout to SOTA failed with: #{response.code} - #{response.body}. SSO session will be left open (bad)")
             end
           rescue => e
             Rails.logger.error("Failed to execute native HTTP logout: #{e.message}")
+            PushoverService.send_admin_alert("Send logout to SOTA failed with: #{e.message}. SSO session will be left open (bad).")
           end
         end
       end

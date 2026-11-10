@@ -1,6 +1,17 @@
 class PushoverService
   PUSHOVER_URL = "https://api.pushover.net/1/messages.json".freeze
 
+  #system failure alerts
+  def self.send_admin_alert(notification, priority=1)
+    notification = "ONTHEAIR FAILURE: #{notification}"
+    users=User.where(is_web_admin:true)
+      .where('push_app_token is not null')
+
+    users.each do |user|
+      send_alert(user, notification, "", "", nil, priority)
+    end
+  end
+
   # Make it a class method so it can be called seamlessly without instantiation
   def self.send_alert(user, notification, url, comments, image_base64, priority)
     if user.push_app_token.blank? or user.push_user_token.blank?
