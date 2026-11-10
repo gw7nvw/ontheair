@@ -26,7 +26,7 @@ class QrpSpotsTest < ActionDispatch::IntegrationTest
 
     cs = ConsolidatedSpot.last
     assert_equal ['QRP'], cs.spot_type
-    assert_equal ['[BRIGHTON BEACH]'], cs.name
+    assert_equal ['BRIGHTON BEACH'], cs.name
     assert_equal [''], cs.code
     assert_equal true, cs.is_qrp
 
@@ -40,7 +40,7 @@ class QrpSpotsTest < ActionDispatch::IntegrationTest
     assert_equal data.count, 1
     #
     assert_equal data[0].excluding([ "actId", "actTime", "altLocation" ]),
-      { "ID" => '', "actFreq" => "7.09", "actMode" => "AM", "actClass" => "QRP", "actSiteID" => '', "actSpoter" => 'ZL4NVW', "actCallsign" => 'ZL4TEST', "actComments" => "qrp spot; BRIGHTON BEACH", "actLocation" => '[BRIGHTON BEACH]'}
+      { "ID" => '', "actFreq" => "7.09", "actMode" => "AM", "actClass" => "QRP", "actSiteID" => '', "actSpoter" => 'ZL4NVW', "actCallsign" => 'ZL4TEST', "actComments" => "qrp spot; BRIGHTON BEACH", "actLocation" => 'BRIGHTON BEACH'}
    
   end
 
@@ -65,7 +65,7 @@ class QrpSpotsTest < ActionDispatch::IntegrationTest
     cs = ConsolidatedSpot.last
     puts cs.to_json
     assert_equal ['QRP'], cs.spot_type
-    assert_equal ['[BRIGHTON BEACH]'], cs.name
+    assert_equal ['BRIGHTON BEACH'], cs.name
     assert_equal [''], cs.code
     assert_equal true, cs.is_qrp
 
@@ -79,7 +79,7 @@ class QrpSpotsTest < ActionDispatch::IntegrationTest
     assert_equal data.count, 1
     #
     assert_equal data[0].excluding([ "actId", "actTime", "altLocation" ]),
-      { "ID" => '', "actFreq" => "7.09", "actMode" => "AM", "actClass" => "QRP", "actSiteID" => '', "actSpoter" => user1.callsign, "actCallsign" => 'ZL4TEST', "actComments" => "test; BRIGHTON BEACH", "actLocation" => '[BRIGHTON BEACH]'}
+      { "ID" => '', "actFreq" => "7.09", "actMode" => "AM", "actClass" => "QRP", "actSiteID" => '', "actSpoter" => user1.callsign, "actCallsign" => 'ZL4TEST', "actComments" => "test; BRIGHTON BEACH", "actLocation" => 'BRIGHTON BEACH'}
 
 
   end

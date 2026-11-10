@@ -615,7 +615,7 @@ class ApiController < ApplicationController
         puts "Asset not known:" + asset_code + " ... trying to continue"
         a_code = asset_code.upcase
         a_codes = [asset_code.upcase]
-        a_name = "[#{asset_code.upcase}]"
+        a_name = "#{asset_code.upcase}"
         a_ext = false
       else
         a_code = assets.first[:code]

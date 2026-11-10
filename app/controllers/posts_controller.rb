@@ -392,9 +392,7 @@ class PostsController < ApplicationController
           @post.location="POINT(#{x1} #{y1})"
           @post.loc_source="user"
         else
-          puts "HERE!!!"
           @post.asset_codes = params[:post][:asset_codes].upcase.delete("{").delete("}").split(",").map(&:strip)
-          puts "ACS: #{@post.asset_codes}"
         end
       end
 

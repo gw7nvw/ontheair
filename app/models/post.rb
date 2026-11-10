@@ -49,7 +49,7 @@ class Post < ActiveRecord::Base
       if (assets && (assets.count > 0)) 
           sites += [ "#{(assets.first[:name] || '')} [#{ac}]#{maidenhead}" ]
       else
-        sites += ["[#{ac}]"]
+        sites += ["#{ac}"]
       end
     end
     self.site = sites.join("; ") if !sites.blank?
