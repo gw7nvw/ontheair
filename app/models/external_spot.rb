@@ -104,7 +104,7 @@ class ExternalSpot < ApplicationRecord
     # 6. Filter for only the external records that actually CHANGED or were NEW
     # during this minute's sweep (ignoring pristine un-changed duplicates)
     changed_external_rows = db_result.select do |row|
-      row["updated_at"] >= 1.minute.ago
+      row["updated_at"] >= 30.seconds.ago
     end
 
     # If there are changes, consolidate them into consolidated_spots
