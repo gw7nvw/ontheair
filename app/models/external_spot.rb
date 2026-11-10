@@ -81,6 +81,7 @@ class ExternalSpot < ApplicationRecord
     spots = fetch_wwff
     all_spots.concat(normalize_wwff_spots(spots))
 
+    puts "HERE"
     spots_string = fetch_hema
     all_spots.concat(normalize_hema_spots(spots_string))
 
@@ -358,6 +359,7 @@ def fetch_hema
     puts "ERROR: HEMA Timeout"
   else
   end
+  puts "HEMA: #{spots_string} :"
   spots_string
 end
 

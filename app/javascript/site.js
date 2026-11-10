@@ -977,7 +977,7 @@ async function submitHandler(event, entity_name) {
   // 1. Enable loading spinner
   document.body.classList.add("loading");
 
-  const timeoutMs = 5000;
+  const timeoutMs = 30000;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   fetchOptions.signal = controller.signal;

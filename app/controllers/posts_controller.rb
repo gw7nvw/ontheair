@@ -5,6 +5,7 @@
 class PostsController < ApplicationController
   require "uri"
   require "net/http"
+  include TimezoneTools
 
   before_action :signed_in_user, only: %i[destroy create update new edit]
   skip_before_action :verify_authenticity_token, only: %i[create update sms]
@@ -252,10 +253,6 @@ class PostsController < ApplicationController
     @referring = params[:referring] if params[:referring]
 
     redirect_to "/" unless (@post = Post.where(id: params[:id]).first)
-    if @post.referenced_time
-      @post.referenced_time = @post.referenced_time.in_time_zone(@tz.name)
-      @post.referenced_date = @post.referenced_date.in_time_zone(@tz.name).strftime("%Y-%m-%d 00:00 UTC").to_time
-    end
     @topic = Topic.find_by_id(@post.topic_id)
   end
 
@@ -320,8 +317,9 @@ class PostsController < ApplicationController
           end
 
           if topic.is_alert
-            @post.referenced_time = (params[:post][:referenced_date] + " " + params[:post][:referenced_time]).to_time.in_time_zone(@tz.name).in_time_zone("UTC").to_time
-            @post.referenced_date = (params[:post][:referenced_date] + " " + params[:post][:referenced_time]).to_time.in_time_zone(@tz.name).in_time_zone("UTC").to_time
+            @post.referenced_time = parse_local_time(params[:post][:referenced_date] + " " + params[:post][:referenced_time], @tz.name).in_time_zone("UTC").to_time
+
+            @post.referenced_date = @post.referenced_time
             invalid, messages = validate_alert(@post)
             errors += messages.join('; ') if messages
           end
@@ -407,8 +405,8 @@ class PostsController < ApplicationController
       @post.updated_by_id = current_user.id # current_user.id
       if @topic.is_alert
         if params[:post][:referenced_date] && !params[:post][:referenced_date].empty? && params[:post][:referenced_time] && !params[:post][:referenced_time].empty?
-          t=(params[:post][:referenced_date] + " " + params[:post][:referenced_time]).to_time
-          @post.referenced_time = Time.new.in_time_zone(@tz.name).change(year: t.year, month: t.month, day: t.day, hour: t.hour, min: t.min, sec: t.sec).in_time_zone("UTC").to_time
+          t=parse_local_time(params[:post][:referenced_date] + " " + params[:post][:referenced_time], @tz.name)
+          @post.referenced_time = t.in_time_zone("UTC").to_time
           @post.referenced_date = @post.referenced_time
           invalid, messages = validate_alert(@post)
           errors += messages.join('; ') if messages

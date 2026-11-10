@@ -626,6 +626,7 @@ class User < ActiveRecord::Base
   #       activations split over multiple logs
   ##########################################################################################
   def qualified(params = {})
+    puts params.to_json
     raise "asset_type is required in User.qualified" unless params[:asset_type]
 
     date_query = "'forever'"

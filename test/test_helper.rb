@@ -9,6 +9,7 @@ require "minitest/mock"
 require "vcr"
 
 
+
 VCR.configure do |config|
   # Where VCR will store recorded API payloads as YAML files
   config.cassette_library_dir = "test/vcr_cassettes"
@@ -16,6 +17,22 @@ VCR.configure do |config|
 
   # Crucial for Rails: allows local integration tests (Capybara/System tests) to keep working
   config.ignore_localhost = true
+  # Chagne date in hardcoded HEMA data
+  config.before_playback do |interaction, cassette|
+    puts "CALLBACK #{cassette.name}"
+    if cassette.name == "external_spot/fetch_success"
+      # 1. Decode the response body
+      body_text = interaction.response.body
+
+      # 2. Dynamically swap the hardcoded old date with today's date
+      old_date = "08/2026" # <- Change this to the exact date locked in your cassette
+      new_date = 1.month.from_now.strftime("%m/%Y")
+
+      updated_text = body_text.gsub(old_date, new_date)
+      # 3. Assign the updated text back (VCR handles re-encoding automatically)
+      interaction.response.body = updated_text
+    end
+  end
 end
 
 class ActiveSupport::TestCase

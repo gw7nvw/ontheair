@@ -61,7 +61,7 @@ class ApiPnpAllTest < ActionDispatch::IntegrationTest
       { "ID" => "GFF-0001", "ParkID" => "GFF-0001", "WWFFID" => "GFF-0001", "WWFFid" => "GFF-0001", "actFreq" => "7.19", "actMode" => "AM", "actTime" => t1.to_s.gsub(" UTC", ""), "actClass" => "WWFF", "actSiteID" => "GFF-0001", "actSpoter" => user1.callsign, "actCallsign" => "MM0FMF", "actComments" => "", "actLocation" => "", "altLocation" => "" },
       "first row should match"
     assert_equal data[1].excluding([ "actId" ]),
-      { "ID" => asset1.code, "ZLOTAID" => asset1.code, "actFreq" => "7.09", "actMode" => "SSB", "actTime" => t2.to_s.gsub(" UTC", ""), "actClass" => "ZLOTA", "actSiteID" => asset1.code, "actSpoter" => user1.callsign, "actCallsign" => user2.callsign, "actComments" => "cq cq", "actLocation" => asset1.code, "altLocation" => "" },
+      { "ID" => asset1.code, "ZLOTAID" => asset1.code, "actFreq" => "7.09", "actMode" => "SSB", "actTime" => t2.to_s.gsub(" UTC", ""), "actClass" => "ZLOTA", "actSiteID" => asset1.code, "actSpoter" => user1.callsign, "actCallsign" => user2.callsign, "actComments" => "cq cq", "actLocation" => asset1.code, "altLocation" => "#{asset1.name} [#{asset1.code}] {RE44bt}" },
       "second row should match"
   end
 
@@ -109,7 +109,7 @@ class ApiPnpAllTest < ActionDispatch::IntegrationTest
     data = JSON.parse(@response.body)
     assert_equal data.count, 1
     assert_equal data[0].excluding([ "actId" ]),
-      { "ID" => asset1.code, "ZLOTAID" => asset1.code, "actFreq" => "7.09", "actMode" => "SSB", "actTime" => t2.to_s.gsub(" UTC", ""), "actClass" => "ZLOTA", "actSiteID" => asset1.code, "actSpoter" => user1.callsign, "actCallsign" => user2.callsign, "actComments" => "cq cq", "actLocation" => asset1.code, "altLocation" => "" }
+      { "ID" => asset1.code, "ZLOTAID" => asset1.code, "actFreq" => "7.09", "actMode" => "SSB", "actTime" => t2.to_s.gsub(" UTC", ""), "actClass" => "ZLOTA", "actSiteID" => asset1.code, "actSpoter" => user1.callsign, "actCallsign" => user2.callsign, "actComments" => "cq cq", "actLocation" => asset1.code, "altLocation" => "#{asset1.name} [#{asset1.code}] {RE44bt}" }
       "last row should match"
 
     # use URL alias
@@ -120,7 +120,7 @@ class ApiPnpAllTest < ActionDispatch::IntegrationTest
     data = JSON.parse(@response.body)
     assert_equal data.count, 1
     assert_equal data[0].excluding([ "actId" ]),
-      { "ID" => asset1.code, "ZLOTAID" => asset1.code, "actFreq" => "7.09", "actMode" => "SSB", "actTime" => t2.to_s.gsub(" UTC", ""), "actClass" => "ZLOTA", "actSiteID" => asset1.code, "actSpoter" => user1.callsign, "actCallsign" => user2.callsign, "actComments" => "cq cq", "actLocation" => asset1.code, "altLocation" => "" }
+      { "ID" => asset1.code, "ZLOTAID" => asset1.code, "actFreq" => "7.09", "actMode" => "SSB", "actTime" => t2.to_s.gsub(" UTC", ""), "actClass" => "ZLOTA", "actSiteID" => asset1.code, "actSpoter" => user1.callsign, "actCallsign" => user2.callsign, "actComments" => "cq cq", "actLocation" => asset1.code, "altLocation" => "#{asset1.name} [#{asset1.code}] {RE44bt}" }
       "last row should match"
   end
 

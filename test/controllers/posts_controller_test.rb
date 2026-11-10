@@ -246,7 +246,7 @@ class PostsControllerTest < ActionController::TestCase
     # create post
     post :create, params: { topic_id: ALERT_TOPIC, pnp: "off", post: { referenced_date: userdate.strftime("%Y-%m-%d"), referenced_time: userdate.strftime("%H:%M"), freq: "7.090", mode: "AM", duration: 1 } }
     assert_response :success
-    put response.body
+    #puts response.body
     assert_select ".alert-error", /An alert must contain at least a description/, "Error message"
 
 

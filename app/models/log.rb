@@ -3,6 +3,8 @@
 # typed: false
 
 class Log < ActiveRecord::Base
+  include TimezoneTools
+
   validates :callsign1,  presence: true, length: { maximum: 50 }
 
   belongs_to :createdBy, class_name: "User"
@@ -158,12 +160,19 @@ class Log < ActiveRecord::Base
   end
 
   def update_contacts
+    if !timezone.blank?
+      tz = Timezone.find(timezone)
+    else 
+      tz = Timezone.find_by(name: 'UTC')
+    end
+
     contacts = Contact.where(log_id: id)
     contacts.each do |cle|
       cle.callsign1 = callsign1
       cle.date = date
       # pick up changes in date and apply to time
-      cle.time = Time.iso8601(date.strftime("%Y-%m-%d") + "T" + cle.time.strftime("%H:%M:%SZ"))
+      contact_localtime = cle.time.in_time_zone(tz.name)
+      cle.time = parse_local_time(date.strftime("%Y-%m-%d") + " " + contact_localtime.strftime("%H:%M"), tz.name).in_time_zone('UTC')
       cle.loc_desc1 = loc_desc1
       cle.is_qrp1 = is_qrp1
       cle.power1 = power1

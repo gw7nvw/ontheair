@@ -78,6 +78,7 @@ group :test do
   gem "webmock"
   gem "vcr"
   gem "minitest-mock"
+  gem 'minitest-silence', require: false
 end
 
 gem "jsbundling-rails", "~> 1.3"

@@ -41,12 +41,14 @@ test "should successfully fetch data from external APIs" do
     "Got correct last POTA spot"
 
 
-  assert_equal hema.count, 10, "Got 10 HEMA records"
+  puts hema.to_json
+  next_month=1.month.from_now.strftime('%Y-%m')
+  assert_equal 10, hema.count, "Got 10 HEMA records"
   assert_equal hema.first.attributes.excluding([ "created_at", "updated_at", "id" ]),
-    { "time" => "2026-08-25 08:44:00.000000000 UTC +00:00".to_time, "callsign" => "HEMA_ASSISTANT", "activatorCallsign" => "5B/VK2JI/P", "code" => "5B/HCY-050", "name" => "Gerakómoutti", "frequency" => "14.285", "mode" => "SSB", "comments" => "", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => nil, "altM" => nil, "is_pnp" => nil, "source_api" => "HEMA", "source_id" => "2522fabab79c345514807d9b583c407f5fd71e9be5fb556bc1b2c82285eb1dfb" },
+    { "time" => "#{next_month}-25 08:44:00.000 UTC +00:00".to_time, "callsign" => "HEMA_ASSISTANT", "activatorCallsign" => "5B/VK2JI/P", "code" => "5B/HCY-050", "name" => "Gerakómoutti", "frequency" => "14.285", "mode" => "SSB", "comments" => "", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => nil, "altM" => nil, "is_pnp" => nil, "source_api" => "HEMA", "source_id" => "2522fabab79c345514807d9b583c407f5fd71e9be5fb556bc1b2c82285eb1dfb" },
     "Got correct 1st HEMA spot"
   assert_equal hema.last.attributes.excluding([ "created_at", "updated_at", "id" ]),
-    { "time" => "2026-08-23 10:03:00.000000000 UTC +00:00".to_time, "callsign" => "M0KCB", "activatorCallsign" => "MW0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.313", "mode" => "SSB", "comments" => "Qsy", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => nil, "altM" => nil, "is_pnp" => nil, "source_api" => "HEMA", "source_id" => "a0484861c27070228e686ebd7217732e30edd9d186171f637b13014fd60ee61a" },
+    { "time" => "#{next_month}-23 10:03:00.000 UTC +00:00".to_time, "callsign" => "M0KCB", "activatorCallsign" => "MW0KCB/P", "code" => "GW/HNW-044", "name" => "Moel Fodiar", "frequency" => "14.313", "mode" => "SSB", "comments" => "Qsy", "spot_type" => "HEMA", "epoch" => nil, "is_test" => nil, "points" => nil, "altM" => nil, "is_pnp" => nil, "source_api" => "HEMA", "source_id" => "a0484861c27070228e686ebd7217732e30edd9d186171f637b13014fd60ee61a" },
     "Got correct last HEMA spot"
 
   # assert_equal llota.count, 10, 'Got 10 LLOTA records'

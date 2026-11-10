@@ -583,22 +583,29 @@ class Post < ActiveRecord::Base
         if refresh_token
           begin
             # Pull configuration details dynamically from the gem's setup
-            token_url = Keycloak.auth_server_url
-            logout_url = token_url.sub("/token", "/logout")
+            logout_url = "https://sso.sota.org.uk/auth/realms/SOTA/protocol/openid-connect/logout"
             uri = URI.parse(logout_url)
+            http = Net::HTTP.new(uri.host, uri.port)
+            http.use_ssl = (uri.scheme == 'https')
 
-            # Fire a direct form-urlencoded POST request
-            response = Net::HTTP.post_form(uri, {
-              client_id: Rails.application.credentials.sota_client_id,
-              client_secret: Rails.application.credentials.sota_sota_secret,
-              refresh_token: refresh_token
-            })
+            client_id     = Rails.application.credentials.sota_client_id
+            client_secret = Rails.application.credentials.sota_secret
+            encoded_creds = Base64.strict_encode64("#{client_id}:#{client_secret}")
+
+            request = Net::HTTP::Post.new(uri.path)
+            request["Authorization"] = "Basic #{encoded_creds}"
+            request["Content-Type"]  = "application/x-www-form-urlencoded"
+
+            request.set_form_data({ "refresh_token" => refresh_token })
+
+            response = http.request(request)
 
             # Keycloak returns a 204 No Content response on a successful back-channel logout
-            if response.code == "204"
+            if response.code == "204" or response.code == "200"
               Rails.logger.debug "SSO session successfully killed via direct API request! No zombies."
             else
               Rails.logger.error("Keycloak rejected the logout request: #{response.code} - #{response.body}")
+              PushoverService.send_alert(User.find(4), "SOTA logout returned #{response.code} - #{response.body}", nil, "", nil, 1) 
             end
           rescue => e
             Rails.logger.error("Failed to execute native HTTP logout: #{e.message}")

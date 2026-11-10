@@ -113,16 +113,16 @@ class UserQualifiedExternalTest < ActiveSupport::TestCase
     user5=create_test_user
 
     asset1=create_test_asset(asset_type: "park")
-    activation=create_test_external_activation(user1, asset1, qso_count: 4, date: "2022-01-01".to_date)
+    activation=create_test_external_activation(user1, asset1, qso_count: 4, date: "2023-01-01".to_date)
 
-    log=create_test_log(user1, asset_codes: [ asset1.code ], date: "2023-01-02".to_date)
-    contact=create_test_contact(user1, user2, log_id: log.id, asset1_codes: [ asset1.code ], time: "2023-01-02 00:00:00".to_time)
-    contact2=create_test_contact(user1, user3, log_id: log.id, asset1_codes: [ asset1.code ], time: "2023-01-02 00:00:00".to_time)
-    contact3=create_test_contact(user1, user4, log_id: log.id, asset1_codes: [ asset1.code ], time: "2023-01-02 00:00:00".to_time)
-    contact4=create_test_contact(user1, user5, log_id: log.id, asset1_codes: [ asset1.code ], time: "2023-01-02 00:00:00".to_time)
+    log=create_test_log(user1, asset_codes: [ asset1.code ], date: "2023-01-03".to_date)
+    contact=create_test_contact(user1, user2, log_id: log.id, asset1_codes: [ asset1.code ], time: "2023-01-03 00:00:00".to_time)
+    contact2=create_test_contact(user1, user3, log_id: log.id, asset1_codes: [ asset1.code ], time: "2023-01-03 00:00:00".to_time)
+    contact3=create_test_contact(user1, user4, log_id: log.id, asset1_codes: [ asset1.code ], time: "2023-01-03 00:00:00".to_time)
+    contact4=create_test_contact(user1, user5, log_id: log.id, asset1_codes: [ asset1.code ], time: "2023-01-03 00:00:00".to_time)
 
     assert user1.qualified(asset_type: "park", include_external: true).sort==[ asset1.code ], "Location listed only once: "+user1.qualified(asset_type: "park", include_external: true).to_json
-    assert user1.qualified(asset_type: "park", include_external: true, by_year: true).sort==[ asset1.code, asset1.code ], "Location listed only once: "+user1.qualified(asset_type: "park", include_external: true, by_year: true).to_json
+    assert user1.qualified(asset_type: "park", include_external: true, by_year: true).sort==[ asset1.code ], "Location listed only once: "+user1.qualified(asset_type: "park", include_external: true, by_year: true).to_json
     assert user1.qualified(asset_type: "park", include_external: true, by_day: true).sort==[ asset1.code, asset1.code ], "Location listed twice for different days: "+user1.qualified(asset_type: "park", include_external: true, by_day: true).to_json
   end
 end
