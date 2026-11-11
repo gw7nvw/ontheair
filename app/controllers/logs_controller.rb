@@ -331,7 +331,7 @@ class LogsController < ApplicationController
         cle.is_qrp1 = log.is_qrp1
         cle.power1 = log.power1
         cle.is_portable1 = log.is_portable1
-        cle.timezone = log.timezone
+        cle.timezone = 3
         cle.x1 = log.x1
         cle.y1 = log.y1
         cle.location1 = log.location1

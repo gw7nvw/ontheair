@@ -142,6 +142,7 @@ const map_geolocation = new Geolocation({
   },
   projection: getProjection(map_projection_name),
 });
+window.map_geolocation = map_geolocation
 
 function map_enable_tracking() {
   map_show_position=!map_show_position;
