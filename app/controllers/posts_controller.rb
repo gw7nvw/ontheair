@@ -232,6 +232,7 @@ class PostsController < ApplicationController
       if params[:spot].to_i > 0
         spot = ConsolidatedSpot.find_by(id: params[:spot].to_i)
         if spot
+          @post.is_qrp = spot.is_qrp
           @post.callsign = spot.activatorCallsign
           @post.freq = spot.frequency
           @post.mode = spot.mode
@@ -240,6 +241,7 @@ class PostsController < ApplicationController
       else
         spot = Post.find_by(id: -params[:spot].to_i)
         if spot
+          @post.is_qrp = spot.is_qrp
           @post.callsign = spot.callsign
           @post.freq = spot.freq
           @post.mode = spot.mode
