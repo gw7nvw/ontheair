@@ -37,6 +37,8 @@
      </div>
   </div>
 
+  <div class="rowtitle">SMS</div>
+  <p>Last SMS heartbeat received: <%= time_ago_in_words(AdminSettings.first.sms_heartbeat) %> ago
   <div class="rowtitle">Memory</div>
   <div class='erow'>
     <%=raw @memstats.gsub(/[\r\n]+/, '<br/>')%>
