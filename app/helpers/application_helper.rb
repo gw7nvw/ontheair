@@ -5,6 +5,15 @@
 module ApplicationHelper
   require "net/http"
 
+  def time_distance(secs)
+    result = "unknown"
+    if secs<60 then result = "#{secs.round(0)} secs" end
+    if secs>=60 and secs<3600 then result = "#{(secs/60).round(0)} mins" end
+    if secs>=3600 and secs<86400 then result = "#{(secs/3600).round(0)} hours" end
+    if secs>=86400 then result = "#{(secs/86400).round(0)} days" end
+    result
+  end
+
   def sign_in(user)
     remember_token = User.new_token
     Rails.logger.info "Assign RT: " + remember_token

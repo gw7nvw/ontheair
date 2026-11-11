@@ -36,7 +36,13 @@ class PostsController < ApplicationController
     end
 
     #heartbeat
-    if params[:text]=="HEARTBEAT" then
+    if params[:text]=="HEARTBEAT-VK" or (params[:text]=="HEARTBEAT" and params[:from].include?("+61")) then
+      as=AdminSettings.first
+      as.update_column(:vk_sms_heartbeat, Time.now)
+      render json: { result: "success" }
+      return
+    end
+    if params[:text]=="HEARTBEAT-ZL" or (params[:text]=="HEARTBEAT" and params[:from].include?("+64")) then
       as=AdminSettings.first
       as.update_column(:sms_heartbeat, Time.now)
       render json: { result: "success" }
