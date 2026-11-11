@@ -508,14 +508,15 @@ class ApiController < ApplicationController
       p.mode = params[:actMode] || ""
       p.created_by_id = user.id
       p.updated_by_id = user.id
+      p.is_qrp = true if params[:actClass]&.upcase == 'QRP'
       p.description = params[:actComments] || ""
       asset_code = params[:actSite] || ""
       assets = Asset.assets_from_code(asset_code)
       if !assets || assets.count.zero? || assets.first[:code].nil?
         logger.error "Asset not known:" + asset_code + " ... trying to continue"
-        a_code = ""
-        p.site=asset_code
-        a_name = "Unrecognised location: " + asset_code
+        a_code = asset_code.upcase
+        a_codes = [asset_code.upcase]
+        a_name = "#{asset_code.upcase}"
         a_ext = false
       else
         a_code = assets.first[:code]
@@ -736,7 +737,7 @@ class ApiController < ApplicationController
     alerts.each do |alert|
       pnp_alert={}
       pnp_alert[:alID] = alert.id
-      pnp_alert[:WWFFID] = alert.get_codes.first
+      pnp_alert[:WWFFID] = alert.get_codes.first if alert.programme!='QRP'
       pnp_alert[:actSiteID] = alert.get_codes.first
       pnp_alert[:allAssetCodes] = alert.get_codes
       pnp_alert[:CallSign] = alert.activatingCallsign

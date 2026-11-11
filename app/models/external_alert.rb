@@ -3,6 +3,7 @@ class ExternalAlert < ApplicationRecord
 
   attribute :codes, :string, array: true, default: -> { [] }
   after_find :set_default_codes
+  attr_accessor :is_qrp
 
   def get_codes
     if codes and codes.count>0 then codes else [ code ] end
@@ -209,14 +210,15 @@ def self.import_hota_alerts(alerts)
     dxcc = ""
     continent = Continent.find_by(code: "OC")
     asset = Asset.find_by(code: code)
-    programme="ZLOTA" # default
+    programme="UNKNOWN" # default
+    programme='QRP' if alert.is_qrp #Default for QRP
     if asset then
       dxcc = asset.country
       dxccs = DxccPrefix.find_by(prefix: dxcc)
       continent = dxccs.continent
       programme=asset.type.pnp_class
     end
-    ext_alert=ExternalAlert.new(id: -alert.item_id, starttime: alert.referenced_time, duration: alert.duration, activatingCallsign: alert.callsign, codes: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: programme, dxcc: dxcc, continent: continent.code, code: code)
+    ext_alert=ExternalAlert.new(id: -(alert.item_id||alert.temp_item_id), starttime: alert.referenced_time, duration: alert.duration, activatingCallsign: alert.callsign, codes: alert.asset_codes, name: alert.site, frequency: alert.freq, mode: alert.mode, comments: alert.description, programme: programme, dxcc: dxcc, continent: continent.code, code: code, is_qrp: alert.is_qrp)
     all_alerts+=[ ext_alert ]
   end
   all_alerts

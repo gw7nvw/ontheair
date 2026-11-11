@@ -5,7 +5,8 @@
      else stylestr=''  end %>
     <tr <%=raw(stylestr)%> >
       <td>
-         <%if alert[:programme]=="ZLOTA" then %><b><%=alert[:programme]%></b><% else %><%=alert[:programme]%> <% end %><br>
+        <%if alert[:programme]=="ZLOTA" then %><b><%=alert[:programme]%></b><% else %><%=alert[:programme]%> <% end %><br>
+         <%if alert.is_qrp and alert[:programme]!='QRP' then %> QRP <br/> <%end%>
          <%if alert[:id] and alert[:id].to_i<0 then %><%=link_to 'View','/topics/1?post='+(-alert[:id]).to_s,remote: true,  :id => 'view', :onclick => "linkHandler(event,'view')"%><% end %> 
          <%if alert[:id] and alert[:id].to_i>0 and current_user and (current_user.is_admin or current_user.is_web_admin or current_user.callsign == alert[:activatingCallsign]) then %> <%=link_to 'Delete','/alerts/'+(alert[:id]).to_s+"/delete",remote: true,  :id => 'delete', :onclick => "linkHandler(event,'delete')"%><% end %>
       </td>

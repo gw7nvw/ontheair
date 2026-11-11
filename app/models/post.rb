@@ -15,6 +15,7 @@ class Post < ActiveRecord::Base
 
   before_save { before_save_actions }
   after_save { after_save_actions }
+  attr_accessor :temp_item_id
 
   def after_save_actions
     update_item
