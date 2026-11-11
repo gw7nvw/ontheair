@@ -35,6 +35,13 @@ class PostsController < ApplicationController
       posttype="spot"
     end
 
+    #heartbeat
+    if params[:text]=="HEARTBEAT" then
+      as=AdminSettings.first
+      as.update_column(:sms_heartbeat, Time.now)
+      render json: { result: "success" }
+      return
+    end
     # passkey = nil
     acctnumber = params[:from] || params[:From]
     acctnumber = acctnumber&.strip&.delete(" ")
