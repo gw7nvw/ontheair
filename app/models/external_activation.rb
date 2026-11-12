@@ -266,6 +266,7 @@ class ExternalActivation < ApplicationRecord
   end
 
   def self.update_siota_activation(asset)
+    rows=[]
     url="https://www.silosontheair.com/silo/#{asset.code}"
     uri=URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
@@ -275,7 +276,7 @@ class ExternalActivation < ApplicationRecord
     response = http.request(request)
 
     tables = response.body.split('<div class="resp-table">')
-    rows = tables[2].split('<div class="resp-table-row">')
+    rows = tables[2].split('<div class="resp-table-row">') if tables and tables.count>2
     rows.each do |row|
       cols=row.split('<div class="table-body-cell">')
       data = []
