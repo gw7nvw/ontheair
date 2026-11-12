@@ -57,13 +57,13 @@
       <% zl_heard = (Time.now - AdminSettings.first.sms_heartbeat).to_i
       if zl_heard>60*60*24 then bcol="#882222" else bcol="#006400" end  %>
       SMS Gateways last heard:
-      <span class="bubble1" style="background: <%= bcol %> !important" title="Send an SMS with contents HEARTBEAT to this number to test connectivity. Then update the page to check the time has updated">
+      <span class="bubble1" style="background: <%= bcol %> !important" title="Send an SMS to this number to test connectivity. Then update the page to check the time has updated">
         <%= DxccPrefix.find_by(prefix: 'ZL').sms_gateway %> <%= time_distance(zl_heard)%>
       </span>&nbsp;
 
       <% vk_heard = (Time.now - AdminSettings.first.vk_sms_heartbeat).to_i
       if vk_heard>60*60*24 then bcol="#882222" else bcol="#006400" end  %>
-      <span class="bubble1" style="background: <%= bcol %> !important" title="Send an SMS with contents HEARTBEAT to this number to test connectivity. Then update the page to check the time has updated">
+      <span class="bubble1" style="background: <%= bcol %> !important" title="Send an SMS to this number to test connectivity. Then update the page to check the time has updated">
           <%= DxccPrefix.find_by(prefix: 'VK').sms_gateway %> <%=time_distance(vk_heard)%>
       </span>
     </div>
