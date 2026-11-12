@@ -229,9 +229,9 @@ class Post < ActiveRecord::Base
     topic = Topic.find_by(id: topic_id)
     assets = self.asset_codes
 
-##    if ENV["RAILS_ENV"] != "production"
-#        Resque.logger.info "API: not sending in #{ENV['RAILS_ENV']} environment - #{[ debug, from, callsign, assets, freq, mode, description, topic, idate, itime, tzname ]}"
-#    else
+    if ENV["RAILS_ENV"] != "production"
+        Resque.logger.info "API: not sending in #{ENV['RAILS_ENV']} environment - #{[ debug, from, callsign, assets, freq, mode, description, topic, idate, itime, tzname ]}"
+    else
       result = true
       messages = ""
       return { result: success, messages: "" } if do_not_publish == true
@@ -287,7 +287,7 @@ class Post < ActiveRecord::Base
         #          messages += pnp_response[:messages]
         #        end
       end
-#    end
+    end
     { result: result, messages: messages }
   end
 
