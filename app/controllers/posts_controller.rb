@@ -12,6 +12,7 @@ class PostsController < ApplicationController
 
   def sms
     result="failed"
+    msgs=[""]
 
     logger.info params.to_json
     logger.info response.body.to_json
@@ -23,8 +24,8 @@ class PostsController < ApplicationController
     puts "DEBUG SMS"
     body = params[:text] || params[:Body]
     lines = body.split(/\r?\n/)
-    msgs = lines[0].split
-    logger.debug "DEBUG msgs "+msgs.to_json
+    msgs = lines[0].split if lines and lines.count>0
+    logger.debug "DEBUG msgs "+msgs.to_json 
     if msgs[0].upcase=="ALERT" then
       posttype="alert"
       msgs=msgs[1..-1]
@@ -35,19 +36,22 @@ class PostsController < ApplicationController
       posttype="spot"
     end
 
-    #heartbeat
-    if params[:text]=="HEARTBEAT-VK" or (params[:text]=="HEARTBEAT" and params[:from].include?("+61")) then
+    #update last heard
+    if params[:sim] == 'VK5'
       as=AdminSettings.first
       as.update_column(:vk_sms_heartbeat, Time.now)
-      render json: { result: "success" }
-      return
     end
-    if params[:text]=="HEARTBEAT-ZL" or (params[:text]=="HEARTBEAT" and params[:from].include?("+64")) then
+    if params[:sim] == 'sim1'
       as=AdminSettings.first
       as.update_column(:sms_heartbeat, Time.now)
+    end
+
+    #heartbeat
+    if params[:text]&.upcase&.starts_with?("HEARTBEAT")
       render json: { result: "success" }
       return
     end
+
     # passkey = nil
     acctnumber = params[:from] || params[:From]
     acctnumber = acctnumber&.strip&.delete(" ")
