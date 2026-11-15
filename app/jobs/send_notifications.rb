@@ -40,7 +40,7 @@ class SendNotifications
           next # Already notified within the hour
         end
 
-        Resque.logger.info("SEND_NOTIFICTAION: #{user.callsign} #{summary}")
+        Resque.logger.info("SEND_NOTIFICTAION: #{user.callsign} #{summary} #{link.notification_type}")
         puts "SEND_NOTIFICTAION: #{user.callsign} #{summary}"
         case link.notification_type
         when NOTIFICATION_PUSHOVER
