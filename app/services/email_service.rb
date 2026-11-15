@@ -29,7 +29,7 @@ class EmailService
   # Fast non-blocking enqueue inside the loop
   def self.send_alert(user, payload, image_base64)
     return if user.email.blank?
-
+    Resque.logger.info "SEND_ALERT: #{user.email} #{user.callsign}"
     SpotMailer.alert(
       user.email,
       payload.subject,
