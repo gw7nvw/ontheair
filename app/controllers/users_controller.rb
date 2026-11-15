@@ -333,22 +333,17 @@ class UsersController < ApplicationController
       show
       render "notifications"
     else
-      if params[:topic_id] == "external" then
-        @user.push_include_external = true
-        @user.save
-      else
-        @topic = Topic.find_by_id(params[:topic_id])
+      @topic = Topic.find_by_id(params[:topic_id])
 
-        if @user && @topic
-          utl = UserTopicLink.new
-          utl.user_id = @user.id
-          utl.topic_id = @topic.id
-          utl.mail = true if params[:method] == "mail"
-          utl.notification = true if params[:method] == "notification"
-          utl.save
-        else
-          flash[:error] = "Error locating user or topic specified"
-        end
+      if @user && @topic
+        utl = UserTopicLink.new
+        utl.user_id = @user.id
+        utl.topic_id = @topic.id
+        utl.mail = true if params[:method] == "mail"
+        utl.notification = true if params[:method] == "notification"
+        utl.save
+      else
+        flash[:error] = "Error locating user or topic specified"
       end
       @topics = Topic.where(is_active: true)
       prepare_user_show_data(params[:id])
@@ -364,27 +359,20 @@ class UsersController < ApplicationController
   def delete
     @user = current_user
     if current_user && current_user.is_admin then @user = User.where(callsign: params[:id]).first end
-    if params[:topic_id] == "external" then
-      @user.push_include_external = false
-      @user.save
-      show
-      render "notifications"
-    else
-      @topic = Topic.find_by_id(params[:topic_id])
+    @topic = Topic.find_by_id(params[:topic_id])
 
-      if @user && @topic
-        utls = UserTopicLink.find_by_sql [ "select * from user_topic_links where user_id=" + @user.id.to_s + " and topic_id=" + @topic.id.to_s + " and #{params[:method]} = true" ]
-        utls.each(&:destroy)
-      else
-        flash[:error] = "Error locating user or topic specified"
-      end
-      @topics = Topic.where(is_active: true)
-      prepare_user_show_data(params[:id])
-      @filter = UserNotificationLink.new
-      @filter.priority=0
-      @filter.user_id = @user.id
-      render "notifications"
+    if @user && @topic
+      utls = UserTopicLink.find_by_sql [ "select * from user_topic_links where user_id=" + @user.id.to_s + " and topic_id=" + @topic.id.to_s + " and #{params[:method]} = true" ]
+      utls.each(&:destroy)
+    else
+      flash[:error] = "Error locating user or topic specified"
     end
+    @topics = Topic.where(is_active: true)
+    prepare_user_show_data(params[:id])
+    @filter = UserNotificationLink.new
+    @filter.priority=0
+    @filter.user_id = @user.id
+    render "notifications"
   end
 
   def assets_to_csv(items)

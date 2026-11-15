@@ -58,6 +58,19 @@ class ConsolidatedSpot < ActiveRecord::Base
     summary = activatorCallsign + " spotted on " + ((self.frequency && !self.frequency.empty?) || (self.mode && !self.mode.empty?) ? self.frequency + " - " + self.mode : "UNKNOWN") + " at " + (sites && sites.count.positive? ? sites.first + (if sites && (sites.count > 1) then " et al." else "" end) : "UNKNOWN")
   end
 
+  def asset_names
+    asset_names=[]
+    self.code.each do |cd|
+      asset = Asset.find_by(code: cd)
+      if asset then
+        asset_names << asset.full_name
+      else
+        asset_names << cd
+      end
+    end
+    asset_names
+  end
+
   def url
     "https://ontheair.nz/spots"
   end

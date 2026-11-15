@@ -2301,7 +2301,8 @@ CREATE TABLE public.user_notification_links (
     code character varying,
     priority integer DEFAULT 0 NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    notification_type integer
 );
 
 
@@ -4140,6 +4141,7 @@ CREATE UNIQUE INDEX unique_schema_migrations ON public.schema_migrations USING b
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261115011946'),
 ('20261111073528'),
 ('20261111052141'),
 ('20261110075502'),

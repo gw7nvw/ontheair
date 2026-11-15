@@ -1,0 +1,25 @@
+<div style="font-family: sans-serif; line-height: 1.5; color: #222222; max-width: 600px;">
+  <h2 style="margin-bottom: 8px;"><%= @summary %></h2>
+
+  <ul>
+  <% @asset_names.each do |an|%>
+    <li><%=an%></li>
+  <% end %>
+  </ul>
+
+  <% if @comment.present? %>
+    <p style="background: #f4f4f4; padding: 10px; border-left: 3px solid #0066cc;">
+      <%= @comment %>
+    </p>
+  <% end %>
+
+  <p>
+    <a href="<%= @message_url %>" style="display: inline-block; padding: 10px 16px; background: #0066cc; color: #ffffff; text-decoration: none; border-radius: 4px;">
+      View Spot Details
+    </a>
+  </p>
+
+  <div style="margin-top: 16px;">
+    <img src="cid:map.jpg" alt="Spot Grid Map" style="max-width: 100%; height: auto; border: 1px solid #cccccc;" />
+  </div>
+</div>

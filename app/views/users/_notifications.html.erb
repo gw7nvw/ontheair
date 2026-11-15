@@ -44,20 +44,18 @@
   </div>
 
   <p>Ontheair offers two alternatives to receive updates about on-air activity: <b>emails</b> and instant <b>notifications</b>.  Emails are ideal for non-time-sensitive communications such as Alerts and news feeds, but are subject to delays of up to 15 minutes through some email providers.  Notifications are instantaneous and are ideal for receiving prompt information about spots.</p>
-  <p>The email service is a single bulk email to all subscribers and so does not allow any filtering - you receive everything or nothing.  Due to the volume of emails and the costs associated, emails for spots are limited to only spots created locally at ontheair.nz. </p>
-  <p>The notification service is individual and allows custom filters to be applied as to which spots you receive. The notification service can notify you about all spots, whether entered locally here at ontheair, or on other sites such as SOTAWatch, POTA.app, WWFF.co, etc</p>
   <p>Use of our Notifications service requires you to install the <b>Pushover</b> app on your mobile device, to hold a pushover account, and to have added an application for 'ontheair' to your pushover account. See <b>User's Guide</b> (under the Info menu) for details of how to set this up.  Pushover will charge a 1-off fee for this service after the initial free trial period.</p>
-  <p>We request that where possible you use email only for alerts and news, and subscribe to pushover notifications for spots: the volume of emails through the email service is the single biggest cost to running ontheair.</p>
+  <p>We request that where possible you use email only for alerts and news, and subscribe to pushover notifications for spots: ontheair are charged based on the volume of emails we send - this is the single biggest cost to running ontheair.</p>
     
   <div class="sectiontitle" id="page_title">
     Pushover Notifications account details
   </div>
   <div class="erow" id="notif_app">
-    Pushover App token : <%= @user.push_app_token %>
+    Pushover App token : <%= @user.push_app_token||"You have not entered your pushover account details" %>
   </div>
 
   <div class="erow" id="notif_user">
-    Pushover User token : <%= @user.push_user_token %>
+    Pushover User token : <%= @user.push_user_token||"You have not entered your pushover account details" %>
   </div>
 
   <div class="erow" id="push_comments">
@@ -78,13 +76,13 @@
     </div>
   </div>
 
-  <% if @user.push_include_external %>
     <% 
       @continents=Continent.where("name != 'all'").pluck(:name, :code)
       @bands=Band.all.order(:min_frequency).pluck(:meter_band)
       @modes=[ 'AM', 'CW','DATA','FM','FT4','FT8','SSB']
       @programmes=[ 'HEMA', 'POTA', 'SOTA', 'SiOTA', 'WWFF', 'ZLOTA']
       @priorities = [['Lowest', -2], ['Low', -1], ['Normal', 0], ['High', 1]]
+      @notification_types = [['Pushover', NOTIFICATION_PUSHOVER], ['Email', NOTIFICATION_EMAIL]]
     %>
     <div class="erow" id="notifications">
       <h2>Spot Notification Filters</h2>
@@ -103,7 +101,8 @@
             <th>Mode</th>
             <th>Activator Callsign</th>
             <th>Site Reference</th>
-            <th>Notification Priority</th>
+            <th>Priority</th>
+            <th>Delivery</th>
             <th>Actions</th>
           </tr>
 
@@ -117,6 +116,7 @@
                 <td> <%=unl.activator_callsign%> </td>
                 <td> <%=unl.code%> </td>
                 <td> <%=unl.priority_name%> </td>
+                <td> <%=unl.type_name%> </td>
                 <td>
                   <%=  link_to "Edit", "/user_notification_links/#{unl.id}/edit#notifications", class: "btn btn-small btn-primary", remote: true,  :id => 'edit_notification', :onclick => "linkHandler(event,'edit_notification')"  %>
                   <%=  link_to "Delete", "/user_notification_links/#{unl.id}/delete?user_id=#{@user.id}", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_notification', :onclick => "linkHandler(event,'delete_notification')" %>
@@ -134,11 +134,11 @@
             <td><%= f.text_field :activator_callsign%></td>
             <td><%= f.text_field :code%></td>
             <td><%= f.select :priority, @priorities %></td>
+            <td><%= f.select :notification_type, @notification_types %></td>
             <% if @filter.id == nil then submit_name='Add filter' else submit_name='Save filter' end %>
             <td><%= f.submit submit_name, :id => "update", :onclick => "submitHandler(event,'Updating...');", :class => "btn btn-small" %></td>
           </tr>
         </table>
-      <% end %>
     </div>
 
     <div class="erow">
@@ -155,21 +155,6 @@
     <tr>
       <th>Topic</th>
       <th>Email</th>
-      <th>Notification</th>
-    </tr>
-    <tr>
-      <% topic=Topic.find_by_id(SPOT_TOPIC) %>
-      <td> SPOTS* </td>
-      <td> <% if topic.subscribed(@user) then  %>
-        Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_spot', :onclick => "linkHandler(event,'delete_spot')"  %> 
-      <% else %> 
-        No&nbsp;<%=  link_to "Add*", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small", remote: true,  :id => 'add_spot', :onclick => "linkHandler(event,'add_spot')", title: "Sending large numbers of SPOT emails is the single biggest cost to running ontheair.nz.  Please consider installing the pushover app and using notifications instead. See the last section of the user's guide for details"  %>
-      <% end %></td>
-      <td> <% if @user.push_include_external then  %>
-        Yes&nbsp;<%=  link_to "Delete", '/users/'+@user.callsign+"/delete?topic_id=external&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_external', :onclick => "linkHandler(event,'delete_external')"  %>
-      <% else %>
-        No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=external&method=notification", class: "btn btn-small btn-primary", remote: true,  :id => 'add_external', :onclick => "linkHandler(event,'add_external')"  %>
-      <% end %></td>
     </tr>
     <tr>
       <% topic=Topic.find_by_id(ALERT_TOPIC) %>
@@ -179,7 +164,6 @@
       <% else %> 
         No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'add_alert', :onclick => "linkHandler(event,'add_alert')"  %>
       <% end %></td>
-      <td></td>
     </tr>
     <tr>
       <% topic=Topic.find_by_id(VK_NEWS_TOPIC) %>
@@ -189,7 +173,6 @@
       <% else %> 
         No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'add_news', :onclick => "linkHandler(event,'add_news')"  %>
       <% end %></td>
-      <td></td>
     </tr>
     <tr>
       <% topic=Topic.find_by_id(NEWS_TOPIC) %>
@@ -199,12 +182,8 @@
       <% else %> 
         No&nbsp;<%=  link_to "Add", '/users/'+@user.callsign+"/add?topic_id=#{topic.id.to_s}&method=mail", class: "btn btn-small btn-primary", remote: true,  :id => 'add_news', :onclick => "linkHandler(event,'add_news')"  %>
       <% end %></td>
-      <td></td>
     </tr>
   </table>
-
-  <small><i><b>*</b>Sending large numbers of SPOT emails is the single biggest cost to running ontheair.nz.  Please consider installing the pushover app and using notifications instead. See the last section of the user's guide for details.  <br/>
-Please note that spot <b>emails</b> are limited to only spots posted at ontheair.nz.  Spot <b>notifications</b> will include all spots for all programmes that match your filter criteria irrespective of where they are posted</i></small>
   <div class="erow">
     <div class="hrline">
       <hr noshade size="4">

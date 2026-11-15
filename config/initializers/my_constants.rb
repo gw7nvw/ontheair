@@ -22,6 +22,10 @@
   # mutex locks
   SCHED_LOCK = 1
 
+  #notifcation types
+  NOTIFICATION_PUSHOVER = 1
+  NOTIFICATION_EMAIL = 2
+
   USER_AGENT_STRING = "ontheair.nz [v3.0] (contact: admin@ontheair.nz)"
 
   # per scheme regex - should move to db

@@ -204,6 +204,7 @@ class Item < ActiveRecord::Base
   def self.send_emails_now(itemid)
     item=Item.find(itemid)
     if item and item.topic_id
+      return if item.topic_id == SPOT_TOPIC #remove this once spot links are deleted
       raw_image = item.raw_image
       summary = item.summary
       subs = UserTopicLink.where(topic_id: item.topic_id)

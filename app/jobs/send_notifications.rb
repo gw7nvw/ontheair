@@ -21,6 +21,10 @@ class SendNotifications
       # 3. HEAVY CPU OPERATION: Generate map/payload EXACTLY ONCE
       image_base64 = MapImageService.generate_matrix(spot.code) # Matrix 9 tiles into 1 jpeg
       message_url  = spot.url
+      last_comment = spot.comments.last
+      asset_names = spot.asset_names
+      summary = spot.summary
+      email_payload = nil # Lazily rendered once if at least one email subscriber matches
 
       # 4. ITERATE & DISPATCH HTTP CALLS SEQUENTIALLY
       # Because the image is pre-compiled, this loop executes extremely fast.
@@ -36,10 +40,17 @@ class SendNotifications
           next # Already notified within the hour
         end
 
-        Resque.logger.info("SEND_NOTIFICTAION: #{user.callsign} #{spot.summary}")
-        puts "SEND_NOTIFICTAION: #{user.callsign} #{spot.summary}"
-        # Ship individual payload using user-isolated tokens
-        PushoverService.send_alert(user, spot.summary, message_url, spot.comments.last, image_base64, link.priority)
+        Resque.logger.info("SEND_NOTIFICTAION: #{user.callsign} #{summary}")
+        puts "SEND_NOTIFICTAION: #{user.callsign} #{summary}"
+        case link.notification_type
+        when NOTIFICATION_PUSHOVER
+          PushoverService.send_alert(user, summary, message_url, last_comments, image_base64, link.priority)
+        when NOTIFICATION_EMAIL
+          email_payload ||= EmailService.prepare_payload(summary, asset_names, message_url, last_comment)
+          EmailService.send_alert(user, email_payload, image_base64)
+        else
+          Resque.logger.error "Invalid Notification type: #{link.notification_type} for user_id: #{link.user_id}"
+        end
       end
 
       # 5. Clean up old ledger data safely at the end of the run

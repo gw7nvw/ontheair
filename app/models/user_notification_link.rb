@@ -58,6 +58,15 @@ class UserNotificationLink < ApplicationRecord
     end
   end
 
+  def type_name
+    case notification_type
+    when NOTIFICATION_PUSHOVER
+      "Pushover"
+    when NOTIFICATION_EMAIL
+      "Email"
+    end
+  end
+
   def self.priority_from_name(name)
     case name
     when "Lowest"

@@ -1,0 +1,18 @@
+<%= @summary %>
+
+<% @asset_names.each do |an|%>
+  * <%=an%>
+<% end %>
+
+=======================================================
+
+<% if @comment.present? %>
+
+<%= @comment %>
+
+=======================================================
+<% end %>
+
+View Spot Details: <%= @message_url %>
+
+(See map attached as map.jpg)

@@ -107,6 +107,6 @@ class UserNotificationLinksController < ApplicationController
   private
 
   def user_notification_link_params
-    params.require(:user_notification_link).permit(:id, :user_id, :activator_callsign, :code, :priority, continents: [], modes: [], bands: [], spot_types: [])
+    params.require(:user_notification_link).permit(:id, :user_id, :activator_callsign, :code, :priority, :notification_type, continents: [], modes: [], bands: [], spot_types: [])
   end
 end
