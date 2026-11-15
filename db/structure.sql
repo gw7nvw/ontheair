@@ -1991,7 +1991,8 @@ CREATE TABLE public.schema_migrations (
 CREATE TABLE public.sent_notifications (
     user_id integer NOT NULL,
     consolidated_spot_id integer NOT NULL,
-    created_at timestamp(6) without time zone DEFAULT now() NOT NULL
+    created_at timestamp(6) without time zone DEFAULT now() NOT NULL,
+    notification_type integer DEFAULT 1 NOT NULL
 );
 
 
@@ -3855,6 +3856,13 @@ CREATE INDEX idx_nz_tribal_lands_quite_simplified_3857 ON public.nz_tribal_lands
 
 
 --
+-- Name: idx_sent_notifications_spot_user_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sent_notifications_spot_user_type ON public.sent_notifications USING btree (consolidated_spot_id, user_id, notification_type);
+
+
+--
 -- Name: idx_tribal_lands_boundary_quite_simplified; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4030,13 +4038,6 @@ CREATE INDEX index_ratings_on_user_id ON public.ratings USING btree (user_id);
 
 
 --
--- Name: index_sent_notifications_on_consolidated_spot_id_and_user_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX index_sent_notifications_on_consolidated_spot_id_and_user_id ON public.sent_notifications USING btree (consolidated_spot_id, user_id);
-
-
---
 -- Name: index_sent_notifications_on_created_at; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4141,6 +4142,7 @@ CREATE UNIQUE INDEX unique_schema_migrations ON public.schema_migrations USING b
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261115041208'),
 ('20261115011946'),
 ('20261111073528'),
 ('20261111052141'),

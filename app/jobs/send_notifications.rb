@@ -35,7 +35,7 @@ class SendNotifications
 
         # Deduplicate updates using your one-hour ledger table
         begin
-          SentNotification.create!(user_id: user.id, consolidated_spot_id: spot.id)
+          SentNotification.create!(user_id: user.id, notification_type: link.notification_type, consolidated_spot_id: spot.id)
         rescue ActiveRecord::RecordNotUnique
           next # Already notified within the hour
         end
