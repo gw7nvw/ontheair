@@ -44,7 +44,7 @@ class SendNotifications
         puts "SEND_NOTIFICTAION: #{user.callsign} #{summary}"
         case link.notification_type
         when NOTIFICATION_PUSHOVER
-          PushoverService.send_alert(user, summary, message_url, last_comments, image_base64, link.priority)
+          PushoverService.send_alert(user, summary, message_url, last_comment, image_base64, link.priority)
         when NOTIFICATION_EMAIL
           email_payload ||= EmailService.prepare_payload(summary, asset_names, message_url, last_comment)
           EmailService.send_alert(user, email_payload, image_base64)
