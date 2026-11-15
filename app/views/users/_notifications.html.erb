@@ -84,70 +84,73 @@
       @priorities = [['Lowest', -2], ['Low', -1], ['Normal', 0], ['High', 1]]
       @notification_types = [['Pushover', NOTIFICATION_PUSHOVER], ['Email', NOTIFICATION_EMAIL]]
     %>
-    <div class="erow" id="notifications">
-      <h2>Spot Notification Filters</h2>
-      <small><i>The following are the filters applied to spots before they are forwarded to your mobile device via pushover notifications.  Select one or more search terms in each field, or leave blank to include all.<br>
-          <ul>
-            <li> We do not allow all spots from all continents to be forwarded as the overhead is too high.  At least one filter must be specified</li>
-            <li>Callsign and reference are comma-separated lists of filter terms. Use '*' as a wildcard. E.g.: VK*,ZL* will match all VK... and ZL... cllsigns</li>
-          </ul>
-      </i></small>
-      <%= form_for(@filter, remote: true) do |f| %>
-        <table id="notification_table">
-          <tr>
-            <th>Programme</th>
-            <th><span title="Two-letter codes: OC, EU, NA, SA, AF, AS, AN">Continent</span></th>
-            <th>Band</th>
-            <th>Mode</th>
-            <th>Activator Callsign</th>
-            <th>Site Reference</th>
-            <th>Priority</th>
-            <th>Delivery</th>
-            <th>Actions</th>
-          </tr>
+  <div class="erow" id="notifications">
+    <h2>Spot Notification Filters</h2>
+    <%= form_for(@filter, remote: true) do |f| %>
+      <table id="notification_table">
+        <tr>
+          <th>Programme</th>
+          <th><span title="Two-letter codes: OC, EU, NA, SA, AF, AS, AN">Continent</span></th>
+          <th>Band</th>
+          <th>Mode</th>
+          <th>Activator Callsign</th>
+          <th>Site Reference</th>
+          <th>Priority</th>
+          <th>Delivery</th>
+          <th>Actions</th>
+        </tr>
 
-          <% @user.notification_links.each do |unl| %>
-            <% if unl.id != @filter.id %>
-              <tr>    
-                <td> <%=(if unl.spot_types.blank? then ["All"] else unl.spot_types end).join(', ')%> </td>
-                <td> <%=(if unl.continents.blank? then ["All"] else unl.continents end).join(', ')%> </td>
-                <td> <%=(if unl.bands.blank? then ["All"] else unl.bands end).join(', ')%> </td>
-                <td> <%=(if unl.modes.blank? then ["All"] else unl.modes end).join(', ')%> </td>
-                <td> <%=unl.activator_callsign%> </td>
-                <td> <%=unl.code%> </td>
-                <td> <%=unl.priority_name%> </td>
-                <td> <%=unl.type_name%> </td>
-                <td>
-                  <%=  link_to "Edit", "/user_notification_links/#{unl.id}/edit#notifications", class: "btn btn-small btn-primary", remote: true,  :id => 'edit_notification', :onclick => "linkHandler(event,'edit_notification')"  %>
-                  <%=  link_to "Delete", "/user_notification_links/#{unl.id}/delete?user_id=#{@user.id}", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_notification', :onclick => "linkHandler(event,'delete_notification')" %>
-                </td>
-              </tr>
-            <% end %>
+        <% @user.notification_links.each do |unl| %>
+          <% if unl.id != @filter.id %>
+            <tr>    
+              <td> <%=(if unl.spot_types.blank? then ["All"] else unl.spot_types end).join(', ')%> </td>
+              <td> <%=(if unl.continents.blank? then ["All"] else unl.continents end).join(', ')%> </td>
+              <td> <%=(if unl.bands.blank? then ["All"] else unl.bands end).join(', ')%> </td>
+              <td> <%=(if unl.modes.blank? then ["All"] else unl.modes end).join(', ')%> </td>
+              <td> <%=unl.activator_callsign%> </td>
+              <td> <%=unl.code%> </td>
+              <td> <%=unl.priority_name%> </td>
+              <td> <%=unl.type_name%> </td>
+              <td>
+                <%=  link_to "Edit", "/user_notification_links/#{unl.id}/edit#notifications", class: "btn btn-small btn-primary", remote: true,  :id => 'edit_notification', :onclick => "linkHandler(event,'edit_notification')"  %>
+                <%=  link_to "Delete", "/user_notification_links/#{unl.id}/delete?user_id=#{@user.id}", class: "btn btn-small btn-primary", remote: true,  :id => 'delete_notification', :onclick => "linkHandler(event,'delete_notification')" %>
+              </td>
+            </tr>
           <% end %>
+        <% end %>
 
-          <tr>
-            <%= f.hidden_field :user_id %>
-            <td><%= f.select :spot_types, @programmes, { include_blank: "All"},  { multiple: true }%></td>
-            <td><%= f.select :continents, @continents, { include_blank: "All"},  { multiple: true }%></td>
-            <td><%= f.select :bands, @bands, { include_blank: "All"},  { multiple: true }%></td>
-            <td><%= f.select :modes, @modes, { include_blank: "All"},  { multiple: true }%></td>
-            <td><%= f.text_field :activator_callsign%></td>
-            <td><%= f.text_field :code%></td>
-            <td><%= f.select :priority, @priorities %></td>
-            <td><%= f.select :notification_type, @notification_types %></td>
-            <% if @filter.id == nil then submit_name='Add filter' else submit_name='Save filter' end %>
-            <td><%= f.submit submit_name, :id => "update", :onclick => "submitHandler(event,'Updating...');", :class => "btn btn-small" %></td>
-          </tr>
-        </table>
+        <tr>
+         <%= f.hidden_field :user_id %>
+          <td><%= f.select :spot_types, @programmes, { include_blank: "All"},  { multiple: true }%></td>
+          <td><%= f.select :continents, @continents, { include_blank: "All"},  { multiple: true }%></td>
+          <td><%= f.select :bands, @bands, { include_blank: "All"},  { multiple: true }%></td>
+          <td><%= f.select :modes, @modes, { include_blank: "All"},  { multiple: true }%></td>
+          <td><%= f.text_field :activator_callsign%></td>
+          <td><%= f.text_field :code%></td>
+          <td><%= f.select :priority, @priorities %></td>
+          <td><%= f.select :notification_type, @notification_types %></td>
+          <% if @filter.id == nil then submit_name='Add filter' else submit_name='Save filter' end %>
+          <td><%= f.submit submit_name, :id => "update", :onclick => "submitHandler(event,'Updating...');", :class => "btn btn-small" %></td>
+        </tr>
+      </table>
+      <p>
+        <i>The following are the filters applied to spots before they are forwarded via email or pushover notifications.  Select one or more search terms in each field, or leave blank to include all.<br>
+            <ul>
+              <li>We do not allow all spots from all continents to be forwarded as the overhead is too high.  At least one filter must be specified</li>
+              <li>Callsign and reference are comma-separated lists of filter terms. Use '*' as a wildcard. E.g.: VK*,ZL* will match all VK... and ZL... cllsigns</li>
+              <li>Make sure you select the correct delivery method: <b>Email</b> or <b>Pushover</b></li>
+              <li>You must add your pushover account details to your profile to use pushover instant notifciations</li>
+            </ul>
+        </i>
+      </p>
+    <% end %>
+  </div>
+  <div class="erow">
+    <div class="hrline">
+      <hr noshade size="4">
     </div>
+  </div>
 
-    <div class="erow">
-      <div class="hrline">
-        <hr noshade size="4">
-      </div>
-    </div>
-
-  <% end %>
 
   <h2>Mail</h2>
   <p>Select the topics for which you would like to receive emails of any new posts</p>
