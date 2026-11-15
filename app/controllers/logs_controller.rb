@@ -4,6 +4,7 @@
 
 class LogsController < ApplicationController
   before_action :signed_in_user, only: %i[index show edit editcontact update new create upload savefile delete]
+  before_action :write_access_user, only: %i[edit editcontact update new create upload savefile delete]
 
   skip_before_action :verify_authenticity_token, only: %i[save savefile]
 

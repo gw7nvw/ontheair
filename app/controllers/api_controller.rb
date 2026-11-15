@@ -173,7 +173,7 @@ class ApiController < ApplicationController
   end
 
   def spot_post
-    if api_authenticate(params)
+    if api_authenticate_write(params)
       user = User.find_by(callsign: params[:userID].upcase)
       res = { success: true, message: "Thanks for the data!" }
       p = Post.new
@@ -240,13 +240,13 @@ class ApiController < ApplicationController
       end
     else
       puts "Authentication failed"
-      res = { success: false, message: "Authentication failed!" }
+      res = { success: false, message: "Authentication failed or insufficient permissions!" }
     end
     render json: res
   end
 
   def logs_post
-    if api_authenticate(params)
+    if api_authenticate_write(params)
       user = User.find_by(callsign: params[:userID].upcase)
       res = { success: true, message: "Thanks for the data!" }
       @upload = Upload.new
@@ -263,7 +263,7 @@ class ApiController < ApplicationController
         res = { success: false, message: "Warnings: " + logs[:errors].join(", ") }
       end
     else
-      res = { success: false, message: "Login failed using supplied credentials" }
+      res = { success: false, message: "Login failed or insufficient permissions using supplied credentials" }
     end
     render json: res
   end
@@ -499,7 +499,7 @@ class ApiController < ApplicationController
     end
 
     logger.debug params.to_json
-    if api_authenticate(params)
+    if api_authenticate_write(params)
       user = User.find_by(callsign: params[:userID].upcase)
       res = { success: true, message: "Thanks for the data!" }
       p = Post.new
@@ -566,7 +566,7 @@ class ApiController < ApplicationController
 
     else
       logger.error "Authentication failed"
-      res = { success: false, message: "Authentication failed!" }
+      res = { success: false, message: "Authentication failed or insufficient permissions!" }
     end
     logger.debug res.to_json
     render json: res
@@ -594,7 +594,7 @@ class ApiController < ApplicationController
       # hopefully we got some real params as the API is designed to do!
     end
     logger.debug params.to_s
-    if api_authenticate(params)
+    if api_authenticate_write(params)
       user = User.find_by(callsign: params[:userID].upcase)
       res = { success: true, message: "Thanks for the data!" }
       p = Post.new
@@ -658,7 +658,7 @@ class ApiController < ApplicationController
       end
     else
       logger.error "Authentication failed"
-      res = { success: false, message: "Authentication failed!" }
+      res = { success: false, message: "Authentication failed or insufficient permissions!" }
     end
     logger.debug res.to_json
     render json: res
@@ -728,6 +728,19 @@ class ApiController < ApplicationController
       user=User.find_by(pnp_username: params[:userID], pnp_APIKey: params[:APIKey].upcase, pnp_imported: true) if !user
 
       valid = true if user
+    end
+    valid
+  end
+
+  def api_authenticate_write(params)
+    valid = false
+
+    if params[:userID] && params[:APIKey]
+      user=User.find_by(callsign: params[:userID].upcase, pin: params[:APIKey].upcase, activated: true)
+      user=User.find_by(callsign: params[:userID].upcase, pnp_APIKey: params[:APIKey].upcase, pnp_imported: true) if !user
+      user=User.find_by(pnp_username: params[:userID], pnp_APIKey: params[:APIKey].upcase, pnp_imported: true) if !user
+
+      valid = true if user and !user.read_only
     end
     valid
   end

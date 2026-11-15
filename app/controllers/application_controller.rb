@@ -165,6 +165,10 @@ class ApplicationController < ActionController::Base
     redirect_to signin_url + "?referring_url=" + CGI.escape(request.fullpath), notice: "Please sign in." unless signed_in?
   end
 
+  def write_access_user
+    redirect_to signin_url + "?referring_url=" + CGI.escape(request.fullpath), notice: "Please sign in." if !signed_in? or current_user.read_only
+  end
+
   def admin_user
     redirect_to "/", notice: "You do not have permissions to access this page" unless current_user.is_admin
   end

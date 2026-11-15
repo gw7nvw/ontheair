@@ -20,7 +20,7 @@ CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public;
 -- Name: pg_stat_statements; Type: EXTENSION; Schema: -; Owner: -
 --
 
-CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
+-- CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
 
 
 --

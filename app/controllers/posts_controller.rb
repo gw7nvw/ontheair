@@ -7,7 +7,7 @@ class PostsController < ApplicationController
   require "net/http"
   include TimezoneTools
 
-  before_action :signed_in_user, only: %i[destroy create update new edit]
+  before_action :write_access_user, only: %i[destroy create update new edit]
   skip_before_action :verify_authenticity_token, only: %i[create update sms]
 
   def sms

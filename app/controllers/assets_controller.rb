@@ -8,6 +8,7 @@ class AssetsController < ApplicationController
   include AssetGisTools
 
   before_action :signed_in_user, only: %i[edit update create new map_associate associations add_wish remove_wish rate map_associate map_find_poly map_apply_poly destroy]
+  before_action :write_access_user, only: %i[edit update create new map_associate associations  rate map_associate map_find_poly map_apply_poly destroy]
 
   def associations
     @asset=Asset.find_by(code: params[:id].gsub("_", "/"))
