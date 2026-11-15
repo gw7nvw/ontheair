@@ -80,8 +80,8 @@ Rails.application.configure do
 
     authentication:       "login",
     enable_starttls_auto: true,
-
-    # 🛠️ THE CRITICAL OPENSSL 3 BYPASS:
+     open_timeout: 5,
+     read_timeout: 10,
     # This prevents Ruby 3.4 from throwing alert 42 over local loopback certificates!
     openssl_verify_mode:  "none"
   }
