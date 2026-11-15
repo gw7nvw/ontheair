@@ -5,9 +5,9 @@ class SpotMailer < ApplicationMailer
     if image_base64.present?
       attachments.inline["map.jpg"] = {
         mime_type: "image/jpeg",
-        content: Base64.strict_decode64(image_base64),
-        cid: "map.jpg"
+        content: Base64.strict_decode64(image_base64)
       }
+      attachments.inline["map.jpg"].content_id = "<map.jpg@ontheair.nz>"
     end
 
     mail(from: "admin@ontheair.nz", to: email, subject: subject) do |format|
