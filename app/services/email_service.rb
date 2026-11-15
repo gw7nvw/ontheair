@@ -30,12 +30,16 @@ class EmailService
   def self.send_alert(user, payload, image_base64)
     return if user.email.blank?
     Resque.logger.info "SEND_ALERT: #{user.email} #{user.callsign}"
+    begin
     SpotMailer.alert(
       user.email,
       payload.subject,
       payload.html_body,
       payload.text_body,
       image_base64
-    ).deliver_later
+    ).deliver_now
+    rescue => e
+      Resque.logger.info "SEND ALERT: FAILED for #{user.email} #{user.callsign}:  #{e.class} - #{e.message}"
+    end
   end
 end
