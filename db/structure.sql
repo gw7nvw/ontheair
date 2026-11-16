@@ -1842,7 +1842,8 @@ CREATE TABLE public.posts (
     loc_source character varying(255),
     is_portable boolean,
     is_qrp boolean,
-    is_mobile boolean
+    is_mobile boolean,
+    spotter_callsign character varying
 );
 
 
@@ -2454,7 +2455,8 @@ CREATE TABLE public.users (
     pnp_username character varying(255),
     pnp_status character varying(255),
     push_active boolean,
-    location public.geometry(Point,4326)
+    location public.geometry(Point,4326),
+    is_machine boolean
 );
 
 
@@ -4142,6 +4144,8 @@ CREATE UNIQUE INDEX unique_schema_migrations ON public.schema_migrations USING b
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261116012036'),
+('20261116011247'),
 ('20261115041208'),
 ('20261115011946'),
 ('20261111073528'),

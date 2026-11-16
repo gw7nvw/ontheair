@@ -49,7 +49,7 @@ NEWS_TOPIC=4
 VK_NEWS_TOPIC=49
 SPOT_TOPIC=35
 ALERT_TOPIC=1
-
+AdminSettings.create( qrpnz_email: nil, admin_email: nil, created_at: "2022-04-18 03:23:33.728811000 +0000", updated_at: "2026-11-16 01:39:56.455785000 +0000", last_sota_activation_update_at: "2026-11-05 06:47:35.607768000 +0000", last_sota_update_at: nil, last_pota_update_at: "2026-10-10 01:45:55.540781000 +0000", last_wwff_update_at: nil, last_spot_read: "2026-11-16 01:40:37.578807000 +0000", sota_epoch: "f5abe96c-6201-4011-8ee2-78ce8628e0d0", default_projection: "EPSG:2193", default_layer: "NZTM Topo 2019", default_x: "1680000", default_y: "5420000", title: "ZL ... On The Air", name: "ZLOTA", imagepath: "icons/hota-logo4.JPG", sota_alert_epoch: "685b724f-8622-4ec9-8ca2-9e30c2944815", last_minute_sched_at: "2026-03-10 04:59:39.454211000 +0000", last_monthly_sched_at: "2026-03-10 04:22:46.839355000 +0000", last_sota_update_id: "VK4/NT-087", last_pota_update_id: "AU-9190", last_wwff_update_id: "VKFF-2952", last_siota_update_id: "VK-WRA4", last_siota_update_at: nil, sms_heartbeat: "2026-11-15 00:25:05.377290000 +0000", vk_sms_heartbeat: "2026-11-15 18:39:09.289719000 +0000")
 ModeMapping.destroy_all
 ModeMapping.create(raw_mode: "USB", parent_group: "SSB")
 ModeMapping.create(raw_mode: "LSB", parent_group: "SSB")

@@ -73,4 +73,32 @@ class ApiPnpSpotTest < ActionDispatch::IntegrationTest
     assert_equal "ZL", cs.dxcc
     assert_equal "OC", cs.continent
   end
+
+  test "Can post a spot - APSPOT style" do
+    user1=create_test_user(activated: true, is_machine: true, read_only: true)
+    malformed_payload = %Q({"actClass":"SOTA","wwffID":"","comments":"test [APSPOT]","mode":"SSB","userID":"#{user1.callsign}","actSite":"ZL3\/OT-288","APIKey":"#{user1.pin}","freq":"7.0","actCallsign":"ZL4TEST", "spotter":"ZL3TEST"})
+    assert_difference "ConsolidatedSpot.count", 1, "Expected 1 new Consolidated Spot" do
+      post "/api/SPOT",
+         params: malformed_payload
+    end
+
+    assert_response :success
+
+    data = JSON.parse(@response.body)
+    assert_equal true, data["success"]
+
+    cs=ConsolidatedSpot.last
+
+    assert_equal [ "ZL3TEST" ], cs.callsign
+    assert_equal "ZL4TEST", cs.activatorCallsign
+    assert_equal [ "ZL3/OT-288" ], cs.code
+    assert_equal [ "ZL3/OT-288 [ZL3/OT-288]" ], cs.name
+    assert_equal "7.0", cs.frequency
+    assert_equal "SSB", cs.mode
+    assert_match /#{user1.callsign}: test \[APSPOT\] \(.+\)/, cs.comments.first
+    assert_equal [ "SOTA" ], cs.spot_type
+    assert_equal "40m", cs.band
+    assert_equal "ZL", cs.dxcc
+    assert_equal "OC", cs.continent
+  end
 end

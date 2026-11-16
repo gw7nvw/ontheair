@@ -1159,7 +1159,7 @@ class UsersControllerTest < ActionController::TestCase
 
     # mail
     table=get_table_test(@response.body, "mail_table")
-    row=get_row_test(table, 3)
+    row=get_row_test(table, 2)
     assert_match /ALERTS/, get_col_test(row, 1), "ALERTS"
     assert_match /No/, get_col_test(row, 2), "No mail"
 
@@ -1168,7 +1168,7 @@ class UsersControllerTest < ActionController::TestCase
 
     # mail
     table=get_table_test(@response.body, "mail_table")
-    row=get_row_test(table, 3)
+    row=get_row_test(table, 2)
     assert_match /ALERTS/, get_col_test(row, 1), "ALERTS"
     assert_match /Yes/, get_col_test(row, 2), "mail enabled"
 
@@ -1177,7 +1177,7 @@ class UsersControllerTest < ActionController::TestCase
 
     # mail
     table=get_table_test(@response.body, "mail_table")
-    row=get_row_test(table, 3)
+    row=get_row_test(table, 2)
     assert_match /ALERTS/, get_col_test(row, 1), "ALERTS"
     assert_match /No/, get_col_test(row, 2), "no mail enabled"
   end

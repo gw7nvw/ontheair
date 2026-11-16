@@ -160,7 +160,7 @@ class Item < ActiveRecord::Base
     cs.frequency = round_freq if round_freq and round_freq != "" and round_freq.to_d != 0
     cs.mode = post.mode if post.mode and post.mode != ""
     cs.time += [ if post.referenced_time then post.referenced_time else self.created_at end ]
-    cs.callsign += [ post.updated_by_name ]
+    cs.callsign += [ if post.spotter_callsign then post.spotter_callsign else post.updated_by_name end ]
     cs.is_portable = true if post.is_portable
     cs.is_qrp = true if post.is_qrp
     cs.is_mobile = true if post.is_mobile

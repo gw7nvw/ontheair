@@ -12,7 +12,7 @@ class ConsolidatedSpotNotificationsTest < ActiveSupport::TestCase
   end
 
   test "send notification once, do not resend if local update occurs" do
-    link = UserNotificationLink.create(user_id: @user.id,  continents: [ "EU" ], bands: [], modes: [ "CW" ], spot_types: [], activator_callsign: "", code: "", priority: 0)
+    link = UserNotificationLink.create(user_id: @user.id,  continents: [ "EU" ], bands: [], modes: [ "CW" ], spot_types: [], activator_callsign: "", code: "", priority: 0, notification_type: NOTIFICATION_PUSHOVER)
     # 1. Stub the MapImageService to return a fake dummy binary string instead of doing real tile work
     MapImageService.stub :generate_matrix, "fake_binary_jpeg_blob" do
       # Step 1 - submit notification and verify that notifiction is sent
@@ -39,7 +39,7 @@ class ConsolidatedSpotNotificationsTest < ActiveSupport::TestCase
   end
 
   test "trigger notifiction on continents" do
-    link = UserNotificationLink.create(user_id: @user.id,  continents: [ "EU" ], bands: [], modes: [ "CW" ], spot_types: [], activator_callsign: "", code: "", priority: 0)
+    link = UserNotificationLink.create(user_id: @user.id,  continents: [ "EU" ], bands: [], modes: [ "CW" ], spot_types: [], activator_callsign: "", code: "", priority: 0, notification_type: NOTIFICATION_PUSHOVER)
     MapImageService.stub :generate_matrix, "fake_binary_jpeg_blob" do
       # Step 1 - submit matching notification and verify that notifiction is sent
       assert_difference -> { SentNotification.count }, 1 do
@@ -74,7 +74,7 @@ class ConsolidatedSpotNotificationsTest < ActiveSupport::TestCase
   end
 
   test "trigger notifiction when no continents listed" do
-    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [ "CW" ], spot_types: [], activator_callsign: "", code: "", priority: 0)
+    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [ "CW" ], spot_types: [], activator_callsign: "", code: "", priority: 0, notification_type: NOTIFICATION_PUSHOVER)
     MapImageService.stub :generate_matrix, "fake_binary_jpeg_blob" do
       # Step 1 - submit matching notification and verify that notifiction is sent
       assert_difference -> { SentNotification.count }, 1 do
@@ -89,7 +89,7 @@ class ConsolidatedSpotNotificationsTest < ActiveSupport::TestCase
   end
 
   test "trigger notifiction on bands" do
-    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [ "20m" ], modes: [ "CW" ], spot_types: [], activator_callsign: "", code: "", priority: 0)
+    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [ "20m" ], modes: [ "CW" ], spot_types: [], activator_callsign: "", code: "", priority: 0, notification_type: NOTIFICATION_PUSHOVER)
     MapImageService.stub :generate_matrix, "fake_binary_jpeg_blob" do
       # Step 1 - submit matching notification and verify that notifiction is sent
       assert_difference -> { SentNotification.count }, 1 do
@@ -124,7 +124,7 @@ class ConsolidatedSpotNotificationsTest < ActiveSupport::TestCase
   end
 
   test "trigger notifiction when no bands listed" do
-    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [ "CW" ], spot_types: [], activator_callsign: "", code: "", priority: 0)
+    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [ "CW" ], spot_types: [], activator_callsign: "", code: "", priority: 0, notification_type: NOTIFICATION_PUSHOVER)
     MapImageService.stub :generate_matrix, "fake_binary_jpeg_blob" do
       # Step 1 - submit matching notification and verify that notifiction is sent
       assert_difference -> { SentNotification.count }, 1 do
@@ -139,7 +139,7 @@ class ConsolidatedSpotNotificationsTest < ActiveSupport::TestCase
   end
 
   test "trigger notification on modes" do
-    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [ "SSB", "AM" ], spot_types: [], activator_callsign: "", code: "", priority: 0)
+    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [ "SSB", "AM" ], spot_types: [], activator_callsign: "", code: "", priority: 0, notification_type: NOTIFICATION_PUSHOVER)
     MapImageService.stub :generate_matrix, "fake_binary_jpeg_blob" do
       # Step 1 - submit matching notification and verify that notifiction is sent
       assert_difference -> { SentNotification.count }, 1 do
@@ -184,7 +184,7 @@ class ConsolidatedSpotNotificationsTest < ActiveSupport::TestCase
   end
 
   test "trigger notifiction when no modes listed" do
-    link = UserNotificationLink.create(user_id: @user.id,  continents: [ "EU" ], bands: [], modes: [], spot_types: [], activator_callsign: "", code: "", priority: 0)
+    link = UserNotificationLink.create(user_id: @user.id,  continents: [ "EU" ], bands: [], modes: [], spot_types: [], activator_callsign: "", code: "", priority: 0, notification_type: NOTIFICATION_PUSHOVER)
     MapImageService.stub :generate_matrix, "fake_binary_jpeg_blob" do
       # Step 1 - submit matching notification and verify that notifiction is sent
       assert_difference -> { SentNotification.count }, 1 do
@@ -199,7 +199,7 @@ class ConsolidatedSpotNotificationsTest < ActiveSupport::TestCase
   end
 
   test "trigger notification on spot_types" do
-    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [], spot_types: [ "WWFF", "POTA" ], activator_callsign: "", code: "", priority: 0)
+    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [], spot_types: [ "WWFF", "POTA" ], activator_callsign: "", code: "", priority: 0, notification_type: NOTIFICATION_PUSHOVER)
     MapImageService.stub :generate_matrix, "fake_binary_jpeg_blob" do
       # Step 1 - submit matching notification and verify that notifiction is sent
       assert_difference -> { SentNotification.count }, 1 do
@@ -276,7 +276,7 @@ class ConsolidatedSpotNotificationsTest < ActiveSupport::TestCase
   end
 
   test "trigger notification on callsign" do
-    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [], spot_types: [ "WWFF" ], activator_callsign: "G*,F*", code: "", priority: 0)
+    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [], spot_types: [ "WWFF" ], activator_callsign: "G*,F*", code: "", priority: 0, notification_type: NOTIFICATION_PUSHOVER)
     MapImageService.stub :generate_matrix, "fake_binary_jpeg_blob" do
       # Step 1 - submit matching notification and verify that notifiction is sent
       assert_difference -> { SentNotification.count }, 1 do
@@ -315,7 +315,7 @@ class ConsolidatedSpotNotificationsTest < ActiveSupport::TestCase
   end
 
   test "trigger notification on code" do
-    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [], spot_types: [ "WWFF" ], activator_callsign: "", code: "G*,F*", priority: 0)
+    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [], spot_types: [ "WWFF" ], activator_callsign: "", code: "G*,F*", priority: 0, notification_type: NOTIFICATION_PUSHOVER)
     MapImageService.stub :generate_matrix, "fake_binary_jpeg_blob" do
       # Step 1 - submit matching notification and verify that notifiction is sent
       assert_difference -> { SentNotification.count }, 1 do
@@ -376,7 +376,7 @@ class ConsolidatedSpotNotificationsTest < ActiveSupport::TestCase
   end
 
   test "trigger notification on update if type changes" do
-    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [], spot_types: [ "POTA" ], activator_callsign: "", code: "", priority: 0)
+    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [], spot_types: [ "POTA" ], activator_callsign: "", code: "", priority: 0, notification_type: NOTIFICATION_PUSHOVER)
     MapImageService.stub :generate_matrix, "fake_binary_jpeg_blob" do
       # Step 1 - submit non-matching notification and verify that notifiction is sent
       assert_difference -> { SentNotification.count }, 0 do
@@ -400,7 +400,7 @@ class ConsolidatedSpotNotificationsTest < ActiveSupport::TestCase
   end
 
   test "do not trigger notification on update if type does not changes" do
-    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [], spot_types: [ "WWFF" ], activator_callsign: "", code: "", priority: 0)
+    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [], spot_types: [ "WWFF" ], activator_callsign: "", code: "", priority: 0, notification_type: NOTIFICATION_PUSHOVER)
     MapImageService.stub :generate_matrix, "fake_binary_jpeg_blob" do
       # Step 1 - submit non-matching notification and verify that notifiction is sent
       assert_difference -> { SentNotification.count }, 1 do
@@ -424,7 +424,7 @@ class ConsolidatedSpotNotificationsTest < ActiveSupport::TestCase
   end
 
   test "trigger notification from local spot" do
-    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [], spot_types: [ "POTA" ], activator_callsign: "", code: "", priority: 0)
+    link = UserNotificationLink.create(user_id: @user.id,  continents: [], bands: [], modes: [], spot_types: [ "POTA" ], activator_callsign: "", code: "", priority: 0, notification_type: NOTIFICATION_PUSHOVER)
     MapImageService.stub :generate_matrix, "fake_binary_jpeg_blob" do
       # Step 1 - submit matching spot post and verify that notifiction is sent
       assert_difference -> { SentNotification.count }, 1 do
