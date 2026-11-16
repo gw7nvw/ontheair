@@ -55,7 +55,7 @@ class ConsolidatedSpot < ActiveRecord::Base
     else
       sites = []
     end
-    summary = activatorCallsign + " spotted on " + ((self.frequency && !self.frequency.empty?) || (self.mode && !self.mode.empty?) ? self.frequency + " - " + self.mode : "UNKNOWN") + " at " + (sites && sites.count.positive? ? sites.first + (if sites && (sites.count > 1) then " et al." else "" end) : "UNKNOWN")
+    summary = (activatorCallsign||"UNKNOWN") + " spotted on " + ((self.frequency && !self.frequency.empty?) || (self.mode && !self.mode.empty?) ? self.frequency + " - " + self.mode : "UNKNOWN") + " at " + (sites && sites.count.positive? ? sites.first + (if sites && (sites.count > 1) then " et al." else "" end) : "UNKNOWN")
   end
 
   def asset_names
