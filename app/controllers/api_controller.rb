@@ -173,70 +173,80 @@ class ApiController < ApplicationController
   end
 
   def spot_post
-    if api_authenticate_write(params)
+    if api_authenticate(params)
       user = User.find_by(callsign: params[:userID].upcase)
-      res = { success: true, message: "Thanks for the data!" }
-      p = Post.new
-      p.callsign = params[:activator] || ""
-      p.freq = params[:frequency].to_f/1000
-      p.mode = params[:mode] || ""
-      p.created_by_id = user.id
-      p.updated_by_id = user.id
-      p.description = params[:comments] || ""
-      if !user then
-        user = User.find_by(callsign: "GUEST")
-        p.description = p.description + " (via "+params[:spotter]+")"
-      end
-      asset_code = params[:reference] || ""
-      assets = Asset.assets_from_code(asset_code)
-      if !assets || assets.count.zero? || assets.first[:code].nil?
-        puts "Asset not known:" + asset_code + " ... trying to continue"
-        a_code = asset_code.upcase
-        a_codes = [asset_code.upcase]
-        a_name = "[#{asset_code.upcase}]"
-        a_ext = false
+      if !user or (user.read_only and !user.is_machine) then
+        res = { success: false, message: "Insufficient permissions" }
       else
-        a_code = assets.first[:code]
-        a_codes = assets.map { |a| a[:code] }
-        a_name = assets.first[:name]
-        a_ext = assets.first[:external]
-      end
-
-      if params[:do_not_lookup] then p.do_not_lookup=true end
-      if params[:do_not_publish] then p.do_not_publish=true end
-      p.asset_codes=a_codes
-      debug = p.description.upcase["DEBUG"] ? true : false
-      al_date = Time.now.in_time_zone("UTC").strftime("%Y-%m-%d")
-      al_time = Time.now.in_time_zone("UTC").strftime("%H:%M")
-      p.referenced_time = (al_date + " " + al_time + " UTC").to_time
-      p.referenced_date = (al_date + " 00:00:00 UTC").to_time
-      p.updated_at = Time.now
-      p.title = "SPOT: " + p.callsign + " spotted portable at " + a_name + " [" + a_code + "] on " + p.freq.to_s + "/" + p.mode + " at " + Time.now.in_time_zone("Pacific/Auckland").strftime("%Y-%m-%d %H:%M") + "NZ"
-      topic_id = if debug
-                       TEST_SPOT_TOPIC
-      else
-                       SPOT_TOPIC
-      end
-      success = p.save
-      if success
-        if a_ext == false
-          p.add_map_image
-          success = p.save
-        end
-
-        item = Item.new
-        item.topic_id = topic_id
-        item.item_type = "post"
-        item.item_id = p.id
-        item.save
-        if ENV["RAILS_ENV"] == "production"
-          item.send_emails unless p.do_not_publish
+        user = User.find_by(callsign: params[:userID].upcase)
+        res = { success: true, message: "Thanks for the data!" }
+        p = Post.new
+        p.callsign = params[:activator] || ""
+        if user.is_machine then
+          p.spotter_callsign = params[:spotter] || ""
         else
-          Item.send_emails_now(item.id) unless p.do_not_publish
+          p.spotter_callsign = user.callsign
         end
-      else
-        puts "Bad spot"
-        res = { success: false, message: u.errors.first.to_s }
+        p.freq = params[:frequency].to_f/1000
+        p.mode = params[:mode] || ""
+        p.created_by_id = user.id
+        p.updated_by_id = user.id
+        p.description = params[:comments] || ""
+        if !user then
+          user = User.find_by(callsign: "GUEST")
+          p.description = p.description + " (via "+params[:spotter]+")"
+        end
+        asset_code = params[:reference] || ""
+        assets = Asset.assets_from_code(asset_code)
+        if !assets || assets.count.zero? || assets.first[:code].nil?
+          puts "Asset not known:" + asset_code + " ... trying to continue"
+          a_code = asset_code.upcase
+          a_codes = [asset_code.upcase]
+          a_name = "[#{asset_code.upcase}]"
+          a_ext = false
+        else
+          a_code = assets.first[:code]
+          a_codes = assets.map { |a| a[:code] }
+          a_name = assets.first[:name]
+          a_ext = assets.first[:external]
+        end
+  
+        if params[:do_not_lookup] then p.do_not_lookup=true end
+        if params[:do_not_publish] then p.do_not_publish=true end
+        p.asset_codes=a_codes
+        debug = p.description.upcase["DEBUG"] ? true : false
+        al_date = Time.now.in_time_zone("UTC").strftime("%Y-%m-%d")
+        al_time = Time.now.in_time_zone("UTC").strftime("%H:%M")
+        p.referenced_time = (al_date + " " + al_time + " UTC").to_time
+          p.referenced_date = (al_date + " 00:00:00 UTC").to_time
+        p.updated_at = Time.now
+        p.title = "SPOT: " + p.callsign + " spotted portable at " + a_name + " [" + a_code + "] on " + p.freq.to_s + "/" + p.mode + " at " + Time.now.in_time_zone("Pacific/Auckland").strftime("%Y-%m-%d %H:%M") + "NZ"
+        topic_id = if debug
+                         TEST_SPOT_TOPIC
+        else
+                         SPOT_TOPIC
+        end
+        success = p.save
+        if success
+          if a_ext == false
+            p.add_map_image
+            success = p.save
+          end
+  
+            item = Item.new
+          item.topic_id = topic_id
+          item.item_type = "post"
+          item.item_id = p.id
+          item.save
+          if ENV["RAILS_ENV"] == "production"
+            item.send_emails unless p.do_not_publish
+            else
+            Item.send_emails_now(item.id) unless p.do_not_publish
+          end
+        else
+          puts "Bad spot"
+          res = { success: false, message: u.errors.first.to_s }
+        end
       end
     else
       puts "Authentication failed"
