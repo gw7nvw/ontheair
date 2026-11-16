@@ -608,7 +608,7 @@ class ApiController < ApplicationController
           p.spotter_callsign = user.callsign
         end
 
-        p.is_qrp = true if params[:actClass].upcase == 'QRP'
+        p.is_qrp = true if params[:actClass]&.upcase == 'QRP'
         p.freq = params[:freq].to_f
         p.mode = params[:mode] || ""
         p.created_by_id = user.id
