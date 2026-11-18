@@ -89,13 +89,13 @@ class ApiPnpSpotTest < ActionDispatch::IntegrationTest
 
     cs=ConsolidatedSpot.last
 
-    assert_equal [ "ZL3TEST" ], cs.callsign
+    assert_equal [ user1.callsign ], cs.callsign
     assert_equal "ZL4TEST", cs.activatorCallsign
     assert_equal [ "ZL3/OT-288" ], cs.code
     assert_equal [ "ZL3/OT-288 [ZL3/OT-288]" ], cs.name
     assert_equal "7.0", cs.frequency
     assert_equal "SSB", cs.mode
-    assert_match /#{user1.callsign}: test \[APSPOT\] \(.+\)/, cs.comments.first
+    assert_match /ZL3TEST: test \[APSPOT\] \(.+\)/, cs.comments.first
     assert_equal [ "SOTA" ], cs.spot_type
     assert_equal "40m", cs.band
     assert_equal "ZL", cs.dxcc

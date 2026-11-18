@@ -1,7 +1,13 @@
-<span title="<%=DxccPrefix.name_from_call((this_callsign||"").upcase.strip)%>"><%user=User.find_by_full_callsign((this_callsign||"").strip)%>
-   <% if user then %>
+<%user=User.find_by_full_callsign((this_callsign||"").strip)%>
+<% if !user or !(user&.is_machine==true) %>
+  <span title="<%=DxccPrefix.name_from_call((this_callsign||"").upcase.strip)%>">
+<% else %>
+  <span>
+<% end %>
+
+   <% if user and !(user&.is_machine==true) then %>
      <%=link_to (this_callsign||"").upcase, "users/"+user.callsign, remote: true,  :id => 'link', :onclick => "linkHandler(event,'link')" %>
-   <% elsif ["ZLOTA","PNP","SMS","APSPOT"].include?((this_callsign||"").upcase.strip) then %>
+   <% elsif user&.is_machine==true or ["ZLOTA","PNP","SMS","APSPOT"].include?((this_callsign||"").upcase.strip) then %>
      <%=(this_callsign||"").upcase.strip%>
    <% else%>
      <%=link_to (this_callsign||"").upcase.strip, 'https://qrz.com/db/'+(this_callsign||"").upcase.strip, target: "_blank", class: "non_member" %>&nbsp<img src="/icons/external-link-symbol-12.png">
