@@ -274,7 +274,7 @@ class EmailReceiver
           end
           @topic = Topic.find_by_id(topic_id)
           if defined?(Rails) && Rails.env.production?
-            @post.send_to_all(debug, user.callsign, @post.callsign,  @post.asset_codes,  @post.freq, @post.mode, @post.description, @topic, al_date, al_time, "UTC")
+            @post.send_to_all(debug)
           else
             Resque.logger.debug "SKIPPING: send_to_all in non-production environment"
           end
