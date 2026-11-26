@@ -537,7 +537,7 @@ function site_add_layers() {
           TIME: getSentinelTimeWindow(14),
           MAXCC: 90,
           PRIORITY: 'mostRecent'
-	}, "CC Copernicus Sentinel2", "https://documentation.dataspace.copernicus.eu/Data/SentinelMissions/Sentinel2.html", 8, 15);
+	}, "CC Copernicus Sentinel2", "https://documentation.dataspace.copernicus.eu/Data/SentinelMissions/Sentinel2.html", 5, 15);
 
 	// trigger update time window on select this layer
 	sentinelSnowLayer.on('change:visible', () => {
