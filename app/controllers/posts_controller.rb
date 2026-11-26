@@ -278,7 +278,7 @@ class PostsController < ApplicationController
   def destroy
     if signed_in?
       @post = Post.find_by_id(params[:id])
-      topic = @post.topic
+      @topic = @post.topic
       if @post && (current_user.is_admin || (current_user.id == @post.created_by_id))
         @item = @post.item
         @item.destroy if @item
@@ -287,7 +287,7 @@ class PostsController < ApplicationController
 
         if @post.destroy
           flash[:success] = "Post deleted, id:" + params[:id]
-          redirect_to "/topics/" + topic.id.to_s, status: :see_other
+          redirect_to "/topics/" + @topic.id.to_s, status: :see_other
           nil
         else
           flash[:error] = "Failed to delete post"
@@ -310,7 +310,7 @@ class PostsController < ApplicationController
     errors = ""
     if signed_in?
       @post = Post.find_by_id(params[:id])
-      topic = @post.topic
+      @topic = @post.topic
       if @post && (current_user.is_admin || (current_user.id == @post.created_by_id))
           @post.assign_attributes(post_params)
           if params[:post][:asset_codes]
@@ -335,7 +335,7 @@ class PostsController < ApplicationController
             @post.site += (assets && (assets.count > 0) ? assets.first[:name] : "") + " [" + ac + "] " + (assets && (assets.count > 0) && assets.first[:asset] ? "{" + assets.first[:asset].maidenhead + "}; " : "")
           end
 
-          if topic.is_alert
+          if @topic.is_alert
             @post.referenced_time = parse_local_time(params[:post][:referenced_date] + " " + params[:post][:referenced_time], @tz.name).in_time_zone("UTC").to_time
 
             @post.referenced_date = @post.referenced_time
@@ -343,14 +343,14 @@ class PostsController < ApplicationController
             errors += messages.join('; ') if messages
           end
 
-          if topic.is_spot
+          if @topic.is_spot
             invalid, messages = validate_spot(@post)
             errors += messages.join('; ') if messages
           end
 
           if !invalid
             @post.updated_by_id = current_user.id
-            if @post.save
+            if @post.save(context: :user_submission)
               isimage = @post.is_image
               if isimage
                 @image = Image.new
@@ -372,13 +372,23 @@ class PostsController < ApplicationController
               # Handle a successful update.
               render "show"
             else
+              errors = "Error creating post: " + errors
+              flash[:error] = errors
+              @post.errors.full_messages.each do |e|
+                flash[:error] += e
+              end
               render "edit"
             end
           else
             errors = "Error creating post: " + errors
             flash[:error] = errors
+            @post.errors.full_messages.each do |e|
+              flash[:error] += e
+              puts e
+            end
+
             @edit = true
-            render "new"
+            render "edit"
           end
       else
         redirect_to "/", status: :see_other
@@ -451,7 +461,7 @@ class PostsController < ApplicationController
       suffix="/M" if @post.is_mobile
       suffix="/P" if @post.is_portable
 
-      if !invalid && (debug || (!debug && @post.save))
+      if !invalid && (debug || (!debug && @post.save(context: :user_submission)))
         @post.add_map_image if @topic.is_spot || @topic.is_alert
         unless debug
           item = Item.new
@@ -483,6 +493,10 @@ class PostsController < ApplicationController
       else
         errors = "Error creating post: " + errors
         flash[:error] = errors
+        @post.errors.full_messages.each do |e|
+          flash[:error] += e
+          puts e
+        end
         @edit = true
         render "new"
       end

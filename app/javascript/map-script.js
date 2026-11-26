@@ -28,6 +28,7 @@
 import Map from "ol/Map";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
+import TileWMS from 'ol/source/TileWMS';
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import XYZ from "ol/source/XYZ";
@@ -333,6 +334,26 @@ function map_add_wmts_layer(name,url,layer,source,maxresolution,numzooms,project
      numZoomLevels: numzooms
    });
    map_layer_count=map_layer_count+1;
+}
+
+function map_add_wms_layer(name,url,params,copyright, copyright_link, min_zoom, max_zoom) {
+   maplayers[map_layer_count]=new TileLayer({
+     source: new TileWMS({
+       projection: epsg3857,
+       url: url,
+       params: params,
+       crossOrigin: 'anonymous',
+       maxZoom: max_zoom // Allow overzoom but don't donload more tiles
+     }),
+     name: name,
+     minZoom: min_zoom,
+     copyright: copyright,
+     copyright_link: copyright_link,
+     visible: false,
+     projection: epsg3857,
+   });
+   map_layer_count=map_layer_count+1;
+   return maplayers[map_layer_count-1]
 }
 
 function map_add_raster_layer(name,url,source,maxresolution,numzooms,copyright, copyright_link, min_zoom, max_zoom) {
@@ -1093,6 +1114,7 @@ window.map_init_mapspast = map_init_mapspast;
 window.map_add_projections = map_add_projections;
 window.map_add_wmts_layer = map_add_wmts_layer;
 window.map_add_raster_layer = map_add_raster_layer;
+window.map_add_wms_layer = map_add_wms_layer;
 window.map_add_vector_layer = map_add_vector_layer;
 window.map_on_click_activate = map_on_click_activate;
 window.map_on_click_deactivate = map_on_click_deactivate;

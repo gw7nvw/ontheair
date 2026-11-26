@@ -13,9 +13,22 @@ class Post < ActiveRecord::Base
 
   do_not_validate_attachment_file_type :image
 
+  with_options on: :user_submission do
+    validate :freq_is_valid
+  end
+
   before_save { before_save_actions }
   after_save { after_save_actions }
   attr_accessor :temp_item_id
+
+  def freq_is_valid
+    if self.freq
+      band = Band.find_by('? >= min_frequency and ?<= max_frequency', self.freq, self.freq)
+      if !band
+        errors.add(:freq, "The frequency #{self.freq} MHz does not lie in a recognised amater band")
+      end
+    end
+  end
 
   def after_save_actions
     update_item

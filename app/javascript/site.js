@@ -13,6 +13,7 @@ var site_projection=site_default_projection;
 var refreshInterval;
 var currZoom;
 var debug_response;
+var sentinelSnowLayer;
 import WKT from 'ol/format/WKT';
 import TileLayer from "ol/layer/Tile";
 import XYZ from "ol/source/XYZ";
@@ -521,14 +522,33 @@ function site_set_map_filters(filter, list) {
   site_map_layers[filter]=list;
 }
 
+function getSentinelTimeWindow(daysBack = 14) {
+  const end = new Date().toISOString().split('T')[0];
+  const start = new Date(Date.now() - daysBack * 86400000).toISOString().split('T')[0];
+  return `${start}/${end}`;
+}
+
 function site_add_layers() {
         map_add_raster_layer('OpenHikingMap', 'https://tile.openmaps.fr/openhikingmap/{z}/{x}/{y}.png', 'osm', 0, 23, "CC OpenHikingMap, OpenStreetMap", "https://wiki.openstreetmap.org/wiki/OpenHikingMap", 0, 18);
-        map_add_raster_layer('Sentinel 2 Imagery', 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg', 'osm', 0, 23, "CC EOX GmbH", "https://cloudless.eox.at/license-non-commercial", 0, 18);
-        //map_add_raster_layer('NZTM Topo 2019', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
-        //map_add_raster_layer('NZTM Topo 2019', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11, "CC LINZ", "https://www.linz.govt.nz/copyright");
+        map_add_raster_layer('Sentinel 2 Cloudless Imagery', 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg', 'osm', 0, 23, "CC EOX GmbH", "https://cloudless.eox.at/license-non-commercial", 0, 18);
+
+	sentinelSnowLayer=map_add_wms_layer('Sentinel 2 Latest Imagery', 'https://sh.dataspace.copernicus.eu/ogc/wms/a40662b0-939e-4baf-b470-07703a685bf8', {            LAYERS: 'TRUE-COLOR-S2L2A', // Layer ID  CDSE
+          FORMAT: 'image/jpeg',   
+          TIME: getSentinelTimeWindow(14),
+          MAXCC: 90,
+          PRIORITY: 'mostRecent'
+	}, "CC Copernicus Sentinel2", "https://documentation.dataspace.copernicus.eu/Data/SentinelMissions/Sentinel2.html", 8, 15);
+
+	// trigger update time window on select this layer
+	sentinelSnowLayer.on('change:visible', () => {
+          if (sentinelSnowLayer.getVisible()) {
+            sentinelSnowLayer.getSource().updateParams({
+              TIME: getSentinelTimeWindow(14)
+            });
+          }
+        });
+
         map_add_raster_layer('NZTM Topo 2019', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/topo50-2019/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375,15, "CC LINZ", "https://www.linz.govt.nz/copyright", 6, 15);
-//        map_add_raster_layer('NZTM Topo 2019', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/3857/topo50-2019/{z}/{x}/{y}.png', 'osm', 0, 15, "CC LINZ", "https://www.linz.govt.nz/copyright");
-        //map_add_raster_layer('Public Access Land', 'https://s3-ap-southeast-2.amazonaws.com/au.mapspast.org.nz/pal-2193/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 11);
         map_add_raster_layer('Public Access Land', 'https://object-storage.nz-por-1.catalystcloud.io/v1/AUTH_b1d1ad52024f4f1b909bfea0e41fbff8/mapspast/2193/pal-2193/{z}/{x}/{-y}.png', 'mapspast', 4891.969809375, 15, "CC LINZ", "https://www.linz.govt.nz/copyright", 6, 15);
         map_add_raster_layer('(LINZ) Topo50 latest','http://tiles-a.data-cdn.linz.govt.nz/services;key=d8c83efc690a4de4ab067eadb6ae95e4/tiles/v4/layer=767/EPSG:2193/{z}/{x}/{y}.png','linz',8690, 17, "CC LINZ", "https://www.linz.govt.nz/copyright", 4, 17);
         map_add_raster_layer('(LINZ) Airphoto latest','https://basemaps.linz.govt.nz/v1/tiles/aerial/2193/{z}/{x}/{y}.png?api='+LINZ_API_KEY,'linz',8690, 17, "CC LINZ", "https://www.linz.govt.nz/copyright", 9, 19);
