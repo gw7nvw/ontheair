@@ -22,8 +22,8 @@ class Post < ActiveRecord::Base
   attr_accessor :temp_item_id
 
   def freq_is_valid
-    if self.freq
-      band = Band.find_by('? >= min_frequency and ?<= max_frequency', self.freq, self.freq)
+    if self.freq and self.freq.to_f>0 
+      band = Band.find_by('? >= min_frequency and ?<= max_frequency', self.freq.to_f, self.freq.to_f)
       if !band
         errors.add(:freq, "The frequency #{self.freq} MHz does not lie in a recognised amater band")
       end
@@ -160,7 +160,7 @@ class Post < ActiveRecord::Base
 
   def item
     item = nil
-    items = Item.find_by_sql [ "select * from items where item_type='post' and item_id=" + id.to_s ]
+    items = Item.find_by_sql [ "select * from items where item_type='post' and item_id=" + id.to_s ] if id
     item = items.first if items
     item
   end
